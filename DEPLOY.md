@@ -9,9 +9,9 @@
 
 ### Produção (Vercel)
 - **URL Principal**: https://pdv-allimport.vercel.app
-- **URL Alternativa**: https://pdv-allimport-2pe26fut7-radiosystem.vercel.app
+- **URL Mais Recente**: https://pdv-allimport-hqgl29bb6-radiosystem.vercel.app
 - **Dashboard Vercel**: https://vercel.com/radiosystem/pdv-allimport
-- **Status**: ✅ Online e Funcionando
+- **Status**: ✅ Online e Funcionando (Redeploy: 31/07/2025)
 
 ### Preview (Vercel)
 - **URL Preview**: https://pdv-allimport-ek217znco-radiosystem.vercel.app
@@ -174,5 +174,6 @@ dist/assets/index-BGuOmuNn.js     268.34 kB │ gzip: 82.61 kB
 O sistema PDV Allimport está agora **100% disponível online** e funcionando corretamente com todas as tecnologias integradas. O repositório GitHub foi criado e todo o código foi enviado com sucesso.
 
 **URLs para testar:**
-- Produção: https://pdv-allimport.vercel.app
-- Preview: https://pdv-allimport-ek217znco-radiosystem.vercel.app
+- Produção Principal: https://pdv-allimport.vercel.app
+- Deploy Mais Recente: https://pdv-allimport-hqgl29bb6-radiosystem.vercel.app
+- GitHub: https://github.com/Raidosystem/Pdv-Allimport

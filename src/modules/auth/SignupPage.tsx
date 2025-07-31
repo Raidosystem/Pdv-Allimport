@@ -102,7 +102,7 @@ export function SignupPage() {
                   <strong>📧 Email não chegou?</strong><br/>
                   • Verifique sua caixa de spam/lixo eletrônico<br/>
                   • O envio pode demorar alguns minutos<br/>
-                  • Em desenvolvimento, use o link "Reenviar" abaixo
+                  • Link abre localhost? <Link to="/email-help" className="text-primary-600 underline">Clique aqui</Link>
                 </p>
               </div>
               <div className="space-y-3">

@@ -5,6 +5,7 @@ import { SignupPage } from './modules/auth/SignupPage'
 import { EmailConfirmationPage } from './modules/auth/EmailConfirmationPage'
 import { ResendConfirmationPage } from './modules/auth/ResendConfirmationPage'
 import { TestLoginPage } from './modules/auth/TestLoginPage'
+import { EmailInstructionsPage } from './modules/auth/EmailInstructionsPage'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -24,6 +25,7 @@ function App() {
           <Route path="/confirm-email" element={<EmailConfirmationPage />} />
           <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
           <Route path="/test-login" element={<TestLoginPage />} />
+          <Route path="/email-help" element={<EmailInstructionsPage />} />
           
           {/* Rotas protegidas */}
           <Route 

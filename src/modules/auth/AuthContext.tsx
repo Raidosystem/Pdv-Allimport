@@ -53,15 +53,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
-    // Para desenvolvimento: desabilitar confirmação de email
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${window.location.origin}/confirm-email`,
-        // Para desenvolvimento, pode comentar a linha abaixo para pular confirmação
-        // skipEmailConfirmation: true
+        emailRedirectTo: `${baseUrl}/confirm-email`,
       }
     })
     return { data, error }
@@ -73,19 +73,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const resendConfirmation = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    
     const { data, error } = await supabase.auth.resend({
       type: 'signup',
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/confirm-email`
+        emailRedirectTo: `${baseUrl}/confirm-email`
       }
     })
     return { data, error }
   }
 
   const resetPassword = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${baseUrl}/reset-password`
     })
     return { data, error }
   }

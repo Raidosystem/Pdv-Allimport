@@ -13,31 +13,82 @@ export function EmailConfirmationPage() {
   useEffect(() => {
     const confirmEmail = async () => {
       const token = searchParams.get('token')
+      const tokenHash = searchParams.get('token_hash')
       const type = searchParams.get('type')
+      const accessToken = searchParams.get('access_token')
+      const refreshToken = searchParams.get('refresh_token')
 
-      if (!token || type !== 'email') {
-        setStatus('error')
-        setMessage('Link de confirmação inválido')
+      console.log('URL params:', { token, tokenHash, type, accessToken, refreshToken })
+
+      // Método 1: Se temos access_token e refresh_token (link direto)
+      if (accessToken && refreshToken) {
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+          
+          if (error) {
+            setStatus('error')
+            setMessage('Erro ao confirmar email com tokens.')
+          } else {
+            setStatus('success')
+            setMessage('Email confirmado com sucesso!')
+          }
+        } catch (error) {
+          setStatus('error')
+          setMessage('Erro inesperado ao confirmar email.')
+        }
         return
       }
 
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'email'
-        })
+      // Método 2: Se temos token_hash
+      if (tokenHash && type === 'email') {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'email'
+          })
 
-        if (error) {
+          if (error) {
+            setStatus('error')
+            setMessage('Erro ao confirmar email. O link pode ter expirado.')
+          } else {
+            setStatus('success')
+            setMessage('Email confirmado com sucesso!')
+          }
+        } catch (error) {
           setStatus('error')
-          setMessage('Erro ao confirmar email. O link pode ter expirado.')
-        } else {
-          setStatus('success')
-          setMessage('Email confirmado com sucesso!')
+          setMessage('Erro inesperado ao confirmar email.')
         }
-      } catch (error) {
-        setStatus('error')
-        setMessage('Erro inesperado ao confirmar email.')
+        return
       }
+
+      // Método 3: Token simples (fallback)
+      if (token && type === 'email') {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'email'
+          })
+
+          if (error) {
+            setStatus('error')
+            setMessage('Erro ao confirmar email. O link pode ter expirado.')
+          } else {
+            setStatus('success')
+            setMessage('Email confirmado com sucesso!')
+          }
+        } catch (error) {
+          setStatus('error')
+          setMessage('Erro inesperado ao confirmar email.')
+        }
+        return
+      }
+
+      // Nenhum parâmetro válido encontrado
+      setStatus('error')
+      setMessage('Link de confirmação inválido ou expirado.')
     }
 
     confirmEmail()

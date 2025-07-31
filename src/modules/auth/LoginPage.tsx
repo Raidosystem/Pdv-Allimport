@@ -34,92 +34,126 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-primary-50 to-primary-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-3">
-            <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center shadow-lg">
-              <ShoppingCart className="w-7 h-7 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-transparent"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-400/10 rounded-full blur-3xl"></div>
+      </div>
 
-        <Card>
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-secondary-900 mb-2">
-              Bem-vindo de volta
-            </h2>
-            <p className="text-secondary-600">
-              Entre com sua conta para acessar o sistema
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-lg bg-danger-50 border border-danger-200">
-                <p className="text-sm text-danger-600">{error}</p>
+      <div className="relative w-full max-w-md">
+        {/* Logo Card */}
+        <Card className="mb-6 bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+          <div className="text-center py-6">
+            <Link to="/" className="inline-flex items-center space-x-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                <ShoppingCart className="w-8 h-8 text-white" />
               </div>
-            )}
+              <div>
+                <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
+                <p className="text-primary-600 font-medium">Sistema de Vendas</p>
+              </div>
+            </Link>
+          </div>
+        </Card>
 
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
-            />
-
-            <div className="relative">
-              <Input
-                label="Senha"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-8 text-secondary-400 hover:text-secondary-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
+        {/* Login Card */}
+        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <ShoppingCart className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-secondary-900 mb-2">
+                Bem-vindo de volta
+              </h2>
+              <p className="text-secondary-600 text-lg">
+                Acesse seu sistema PDV
+              </p>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              loading={loading}
-              disabled={!email || !password}
-            >
-              Entrar
-            </Button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+                  <p className="text-red-600 font-medium text-center">{error}</p>
+                </div>
+              )}
 
-          <div className="mt-6 text-center">
-            <p className="text-secondary-600">
-              Não tem uma conta?{' '}
-              <Link to="/signup" className="text-primary-500 hover:text-primary-600 font-medium">
-                Cadastre-se grátis
+              <div className="space-y-4">
+                <Input
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  required
+                  className="text-lg p-4"
+                />
+
+                <div className="relative">
+                  <Input
+                    label="Senha"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="text-lg p-4 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-12 text-secondary-400 hover:text-secondary-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full text-lg py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transform hover:scale-[1.02] transition-all"
+                loading={loading}
+                disabled={!email || !password}
+              >
+                Entrar no Sistema
+              </Button>
+            </form>
+
+            <div className="mt-8 space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-secondary-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-secondary-500">Não tem conta?</span>
+                </div>
+              </div>
+              
+              <Link to="/signup" className="block">
+                <Button 
+                  variant="outline" 
+                  className="w-full text-lg py-4 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
+                >
+                  Criar conta grátis
+                </Button>
               </Link>
-            </p>
-          </div>
+            </div>
 
-          <div className="mt-4 text-center">
-            <Link 
-              to="/" 
-              className="text-sm text-secondary-500 hover:text-secondary-700"
-            >
-              ← Voltar para o início
-            </Link>
+            <div className="mt-6 text-center">
+              <Link 
+                to="/" 
+                className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors"
+              >
+                ← Voltar para o início
+              </Link>
+            </div>
           </div>
         </Card>
       </div>

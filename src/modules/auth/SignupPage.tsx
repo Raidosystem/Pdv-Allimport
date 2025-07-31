@@ -53,16 +53,22 @@ export function SignupPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await signUp(formData.email, formData.password, {
+    const { data, error } = await signUp(formData.email, formData.password, {
       full_name: formData.fullName,
       company_name: formData.companyName
     })
     
     if (error) {
-      setError(error.message === 'User already registered' 
-        ? 'Este email já está cadastrado' 
-        : 'Erro ao criar conta. Tente novamente.')
+      console.log('Signup error:', error) // Para debug
+      if (error.message === 'User already registered') {
+        setError('Este email já está cadastrado')
+      } else if (error.message.includes('email')) {
+        setError('Problema com o email. Verifique se está correto.')
+      } else {
+        setError(`Erro ao criar conta: ${error.message}`)
+      }
     } else {
+      console.log('Signup success:', data) // Para debug
       setSuccess(true)
     }
     
@@ -88,14 +94,34 @@ export function SignupPage() {
               <h2 className="text-3xl font-bold text-secondary-900 mb-4">
                 Conta criada com sucesso!
               </h2>
-              <p className="text-secondary-600 text-lg mb-8">
-                Verifique seu email para confirmar sua conta e fazer login.
-              </p>
-              <Link to="/login">
-                <Button className="text-lg py-4 px-8 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg">
-                  Ir para Login
-                </Button>
-              </Link>
+              <div className="text-secondary-600 text-lg mb-8 space-y-3">
+                <p>
+                  Sua conta foi criada, mas precisa ser confirmada.
+                </p>
+                <p className="text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
+                  <strong>📧 Email não chegou?</strong><br/>
+                  • Verifique sua caixa de spam/lixo eletrônico<br/>
+                  • O envio pode demorar alguns minutos<br/>
+                  • Em desenvolvimento, use o link "Reenviar" abaixo
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Link to="/test-login">
+                  <Button className="text-lg py-4 px-8 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg w-full">
+                    Testar Login Agora
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" className="text-lg py-4 px-8 w-full">
+                    Ir para Login Normal
+                  </Button>
+                </Link>
+                <Link to="/resend-confirmation">
+                  <Button variant="outline" className="text-lg py-4 px-8 w-full">
+                    Reenviar Email de Confirmação
+                  </Button>
+                </Link>
+              </div>
             </div>
           </Card>
         </div>

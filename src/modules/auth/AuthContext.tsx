@@ -53,12 +53,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    // Para desenvolvimento: desabilitar confirmação de email
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${window.location.origin}/confirm-email`
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
+        // Para desenvolvimento, pode comentar a linha abaixo para pular confirmação
+        // skipEmailConfirmation: true
       }
     })
     return { data, error }

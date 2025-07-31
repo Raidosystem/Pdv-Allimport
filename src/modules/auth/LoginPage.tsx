@@ -60,7 +60,6 @@ export function LoginPage() {
 
         {/* Login Card */}
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
           <div className="p-8">
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">

@@ -9,6 +9,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ data: any; error: any }>
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ data: any; error: any }>
   signOut: () => Promise<{ error: any }>
+  resendConfirmation: (email: string) => Promise<{ data: any; error: any }>
+  resetPassword: (email: string) => Promise<{ data: any; error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -54,9 +56,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: metadata ? {
-        data: metadata
-      } : undefined
+      options: {
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/confirm-email`
+      }
     })
     return { data, error }
   }
@@ -66,6 +69,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error }
   }
 
+  const resendConfirmation = async (email: string) => {
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/confirm-email`
+      }
+    })
+    return { data, error }
+  }
+
+  const resetPassword = async (email: string) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    })
+    return { data, error }
+  }
+
   const value: AuthContextType = {
     user,
     session,
@@ -73,6 +94,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signUp,
     signOut,
+    resendConfirmation,
+    resetPassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

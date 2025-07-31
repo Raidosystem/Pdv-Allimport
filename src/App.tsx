@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './modules/auth'
 import { LoginPage } from './modules/auth/LoginPage'
 import { SignupPage } from './modules/auth/SignupPage'
+import { EmailConfirmationPage } from './modules/auth/EmailConfirmationPage'
+import { ResendConfirmationPage } from './modules/auth/ResendConfirmationPage'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -18,6 +20,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/confirm-email" element={<EmailConfirmationPage />} />
+          <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
           
           {/* Rotas protegidas */}
           <Route 

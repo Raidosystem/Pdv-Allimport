@@ -27,7 +27,13 @@ export function LoginPage() {
     const { error } = await signIn(email, password)
     
     if (error) {
-      setError('Email ou senha incorretos')
+      if (error.message === 'Email not confirmed') {
+        setError('Por favor, confirme seu email antes de fazer login. Verifique sua caixa de entrada.')
+      } else if (error.message === 'Invalid login credentials') {
+        setError('Email ou senha incorretos')
+      } else {
+        setError('Erro ao fazer login. Tente novamente.')
+      }
     }
     
     setLoading(false)
@@ -145,7 +151,13 @@ export function LoginPage() {
               </Link>
             </div>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center space-y-3">
+              <Link 
+                to="/resend-confirmation" 
+                className="block text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              >
+                Não recebeu o email de confirmação?
+              </Link>
               <Link 
                 to="/" 
                 className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors"

@@ -5,7 +5,49 @@ import { toast } from 'react-hot-toast'
 
 export function useProducts() {
   const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+
+  // Carregar todos os produtos
+  const loadProducts = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('*')
+        .order('criado_em', { ascending: false })
+
+      if (error) throw error
+      setProducts(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error)
+      toast.error('Erro ao carregar produtos')
+      setProducts([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Deletar produto
+  const deleteProduct = async (productId: string) => {
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('produtos')
+        .delete()
+        .eq('id', productId)
+
+      if (error) throw error
+      
+      // Atualizar lista local
+      setProducts(prev => prev.filter(p => p.id !== productId))
+    } catch (error) {
+      console.error('Erro ao deletar produto:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Gerar código interno único
   const generateCode = async (): Promise<string> => {
@@ -187,8 +229,11 @@ export function useProducts() {
   }
 
   return {
+    products,
     loading,
     categories,
+    loadProducts,
+    deleteProduct,
     generateCode,
     fetchCategories,
     createCategory,

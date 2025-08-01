@@ -10,6 +10,7 @@ import { EmailInstructionsPage } from './modules/auth/EmailInstructionsPage'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { SalesPage } from './modules/sales/SalesPage'
+import { ProductsPage } from './modules/products/ProductsPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { DebugComponent } from './components/DebugComponent'
 import './App.css'
@@ -68,6 +69,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SalesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/produtos" 
+            element={
+              <ProtectedRoute>
+                <ProductsPage />
               </ProtectedRoute>
             } 
           />

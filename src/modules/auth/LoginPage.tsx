@@ -86,6 +86,29 @@ export function LoginPage() {
                 </div>
               )}
 
+              {/* Credenciais de Teste */}
+              <div className="p-4 rounded-xl bg-orange-50 border border-orange-200 shadow-sm">
+                <h3 className="text-orange-800 font-semibold text-center mb-2">
+                  🧪 Credenciais de Teste
+                </h3>
+                <div className="text-sm text-orange-700 space-y-1 mb-3">
+                  <p><strong>Email:</strong> teste@teste.com</p>
+                  <p><strong>Senha:</strong> teste@@</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEmail('teste@teste.com')
+                    setPassword('teste@@')
+                  }}
+                  className="w-full text-orange-700 border-orange-300 hover:bg-orange-100"
+                >
+                  Preencher Credenciais de Teste
+                </Button>
+              </div>
+
               <div className="space-y-4">
                 <Input
                   label="Email"

@@ -27,7 +27,7 @@ export function DashboardPage() {
       icon: ShoppingCart,
       color: 'primary',
       path: '/vendas',
-      comingSoon: true
+      comingSoon: false
     },
     {
       title: 'Clientes',

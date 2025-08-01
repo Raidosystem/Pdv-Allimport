@@ -1,0 +1,5 @@
+export { SalesPage } from './SalesPage'
+export { ProductSearch } from './components/ProductSearch'
+export { SaleResumo } from './components/SaleResumo'
+export { PagamentoForm } from './components/PagamentoForm'
+export { ClienteSelect } from './components/ClienteSelect'

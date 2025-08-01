@@ -11,6 +11,7 @@ import { SaleResumo } from './components/SaleResumo'
 import { PagamentoForm } from './components/PagamentoForm'
 import { ClienteSelect } from './components/ClienteSelect'
 import { CashRegisterModal } from './components/CashRegisterModal'
+import { ProductModal } from '../../components/product/ProductModal'
 import { salesService, cashRegisterService } from '../../services/sales'
 import type { Product, Customer, CashRegister } from '../../types/sales'
 import { formatCurrency } from '../../utils/format'
@@ -22,6 +23,7 @@ export function SalesPage() {
   const [loading, setLoading] = useState(false)
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
+  const [showProductModal, setShowProductModal] = useState(false)
 
   // Hooks do carrinho e cálculos
   const {
@@ -281,6 +283,7 @@ export function SalesPage() {
               <ProductSearch 
                 onProductSelect={handleProductSelect}
                 onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
+                onCreateProduct={() => setShowProductModal(true)}
               />
               <ClienteSelect 
                 selectedCustomer={customer}
@@ -373,6 +376,16 @@ export function SalesPage() {
         isOpen={showCashModal}
         onClose={() => setShowCashModal(false)}
         onOpenRegister={handleCashOpen}
+      />
+
+      {/* Modal de Cadastro de Produto */}
+      <ProductModal
+        isOpen={showProductModal}
+        onClose={() => setShowProductModal(false)}
+        onSuccess={() => {
+          setShowProductModal(false)
+          toast.success('Produto cadastrado com sucesso!')
+        }}
       />
     </div>
   )

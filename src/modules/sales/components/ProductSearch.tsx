@@ -11,9 +11,10 @@ import { formatCurrency } from '../../../utils/format'
 interface ProductSearchProps {
   onProductSelect: (product: Product, quantity?: number) => void
   onBarcodeSearch?: (barcode: string) => void
+  onCreateProduct?: () => void
 }
 
-export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearchProps) {
+export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduct }: ProductSearchProps) {
   const [barcode, setBarcode] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [products, setProducts] = useState<Product[]>([])
@@ -291,8 +292,11 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
         <div className="flex justify-center">
           <Button 
             onClick={() => {
-              // TODO: Implementar navegação para cadastro de produto
-              alert('Funcionalidade de cadastro de produto será implementada')
+              if (onCreateProduct) {
+                onCreateProduct()
+              } else {
+                alert('Funcionalidade de cadastro de produto será implementada')
+              }
             }}
             className="w-full max-w-sm h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all"
           >

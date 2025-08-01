@@ -86,32 +86,17 @@ export function PagamentoForm({
       <div className="space-y-6">
         {/* Cabeçalho com Status */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center space-x-4">
             <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
               <CreditCard className="w-7 h-7 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="text-center">
               <h3 className="text-xl font-bold text-secondary-900">Formas de Pagamento</h3>
               <p className="text-secondary-600 font-medium">
                 Total: {formatCurrency(totalAmount)}
               </p>
             </div>
-            <div className={`px-4 py-2 rounded-xl border-2 ${
-              isPaymentComplete 
-                ? 'bg-green-50 border-green-200 text-green-700' 
-                : 'bg-orange-50 border-orange-200 text-orange-700'
-            }`}>
-              <div className="flex items-center space-x-2">
-                {isPaymentComplete ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <AlertCircle className="w-5 h-5" />
-                )}
-                <span className="font-medium text-sm">
-                  {isPaymentComplete ? 'Completo' : 'Pendente'}
-                </span>
-              </div>
-            </div>
+            <div className="w-14"></div>
           </div>
 
           {/* Indicador Visual de Progresso */}
@@ -125,7 +110,7 @@ export function PagamentoForm({
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Pago: {formatCurrency(totalPaid)}</span>
             <span className="font-medium text-gray-900">
-              {remainingAmount > 0 ? `Falta: ${formatCurrency(remainingAmount)}` : 'Completo!'}
+              {remainingAmount > 0 ? `Falta: ${formatCurrency(remainingAmount)}` : 'Pago'}
             </span>
           </div>
         </div>
@@ -395,7 +380,7 @@ export function PagamentoForm({
               <div className="flex items-center justify-center space-x-2 text-green-700">
                 <CheckCircle className="w-6 h-6" />
                 <span className="text-lg font-semibold">
-                  ✅ Pagamento Completo - Pronto para Finalizar!
+                  ✅ Pagamento Finalizado - Pronto para Finalizar!
                 </span>
               </div>
             </div>

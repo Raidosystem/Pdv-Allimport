@@ -42,8 +42,7 @@ export function DashboardPage() {
       description: 'Controle de estoque e produtos',
       icon: Package,
       color: 'success',
-      path: '/produtos',
-      comingSoon: true
+      path: '/produtos'
     },
     {
       title: 'Caixa',

@@ -151,8 +151,8 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
             <Search className="w-7 h-7 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-secondary-900">Buscar Produtos</h3>
-            <p className="text-secondary-600 font-medium">Digite o nome, código ou escaneie o código de barras</p>
+            <h3 className="text-xl font-bold text-secondary-900">Busque Produtos</h3>
+            <p className="text-secondary-600 font-medium">Busque produtos ou adicione um produto avulso</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-primary-600">{products.length}</div>
@@ -161,10 +161,15 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
         </div>
 
         {/* Busca por código de barras melhorada */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <div className="flex items-center space-x-3 mb-3">
-            <Barcode className="w-5 h-5 text-blue-600" />
-            <span className="text-lg font-semibold text-blue-800">Código de Barras</span>
+        <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-lg">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Barcode className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-lg font-semibold text-blue-800">Código de Barras</span>
+              <p className="text-sm text-blue-600">Escaneie ou digite o código</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="md:col-span-3">
@@ -173,7 +178,7 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
                 type="text"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                placeholder="Digite ou escaneie o código de barras..."
+                placeholder="Escaneie ou digite o código de barras..."
                 data-search="barcode"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -181,14 +186,14 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
                     handleBarcodeSearch()
                   }
                 }}
-                className="h-12 text-base border-2 border-blue-200 focus:border-blue-500"
+                className="h-12 text-base border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500/20"
                 icon={<Barcode className="w-5 h-5" />}
               />
             </div>
             <Button
               onClick={handleBarcodeSearch}
               disabled={!barcode.trim() || loading}
-              className="h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold shadow-lg"
+              className="h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold shadow-lg transform hover:scale-105 transition-all"
             >
               {loading ? 'Buscando...' : 'Buscar'}
             </Button>
@@ -196,61 +201,67 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
         </div>
 
         {/* Busca por nome melhorada */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3">
-            <Package className="w-5 h-5 text-green-600" />
-            <span className="text-lg font-semibold text-secondary-900">Busca por Nome/SKU</span>
+        <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-lg">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-lg font-semibold text-green-800">Busca por Nome/SKU</span>
+              <p className="text-sm text-green-600">Digite o nome ou código do produto</p>
+            </div>
           </div>
           
-          <div className="relative">
-            <Input
-              ref={searchInputRef}
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Digite o nome ou SKU do produto..."
-              data-search="product"
-              onKeyDown={handleKeyDown}
-              className="h-12 text-base pl-12 pr-12 border-2 border-green-200 focus:border-green-500"
-            />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-400" />
-            {loading && (
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
-              </div>
-            )}
-          </div>
-
-          {/* Filtro por categoria melhorado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Categoria:</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full h-12 p-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-base"
-              >
-                <option value="">🏷️ Todas as categorias</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    📦 {category.name}
-                  </option>
-                ))}
-              </select>
+          <div className="space-y-4">
+            <div className="relative">
+              <Input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Digite o nome ou SKU do produto..."
+                data-search="product"
+                onKeyDown={handleKeyDown}
+                className="h-12 text-base pl-12 pr-12 border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20"
+              />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-400" />
+              {loading && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+                </div>
+              )}
             </div>
-            
-            {(searchTerm || selectedCategory) && (
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={clearSearch}
-                  className="w-full h-12 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+
+            {/* Filtro por categoria melhorado */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-green-700 mb-2">Categoria:</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full h-12 p-3 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-base"
                 >
-                  <Search className="w-4 h-4 mr-2" />
-                  Limpar Busca
-                </Button>
+                  <option value="">🏷️ Todas as categorias</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      📦 {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
+              
+              {(searchTerm || selectedCategory) && (
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    onClick={clearSearch}
+                    className="h-12 w-full bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                  >
+                    Limpar Busca
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -264,8 +275,8 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch }: ProductSearc
               </div>
             ) : products.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
-                <div className="p-4 bg-gray-50 border-b border-gray-200">
-                  <h4 className="font-semibold text-gray-900">
+                <div className="p-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+                  <h4 className="font-semibold text-lg">
                     {products.length} produto{products.length !== 1 ? 's' : ''} encontrado{products.length !== 1 ? 's' : ''}
                   </h4>
                 </div>

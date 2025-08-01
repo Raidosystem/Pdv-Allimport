@@ -1,131 +1,54 @@
 import { useState, useEffect } from 'react'
-import { Package, Plus, Download, Search, Filter, Grid, List } from 'lucide-react'
+import { Package, Plus, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { ProductModal } from '../../components/product/ProductModal'
-import { ProductList } from './components/ProductList'
-import { ProductGrid } from './components/ProductGrid'
-import { ProductFilters } from './components/ProductFilters'
-import { useProducts } from '../../hooks/useProducts'
-import { useAuth } from '../auth'
 import type { Product } from '../../types/product'
-import { generateProductsPDF } from '../../utils/pdfGenerator'
 
 export function ProductsPage() {
-  const { user } = useAuth()
-  const { products, loading, loadProducts, deleteProduct } = useProducts()
   const [showProductModal, setShowProductModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showFilters, setShowFilters] = useState(false)
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  
-  // Filtros
-  const [filters, setFilters] = useState({
-    category: '',
-    status: 'all',
-    stockLevel: 'all',
-    priceRange: { min: 0, max: 0 }
-  })
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
 
-  // Carregar produtos ao montar o componente
+  // Dados de exemplo para teste
+  const exampleProducts: Product[] = [
+    {
+      id: '1',
+      nome: 'Produto Exemplo 1',
+      codigo: 'PROD001',
+      categoria: 'Eletrônicos',
+      preco_venda: 299.90,
+      estoque: 10,
+      unidade: 'UN',
+      ativo: true,
+      descricao: 'Produto de exemplo para teste'
+    },
+    {
+      id: '2',
+      nome: 'Produto Exemplo 2',
+      codigo: 'PROD002',
+      categoria: 'Informática',
+      preco_venda: 599.90,
+      estoque: 5,
+      unidade: 'UN',
+      ativo: true,
+      descricao: 'Outro produto de exemplo'
+    }
+  ]
+
   useEffect(() => {
-    loadProducts()
-  }, [loadProducts])
-
-  // Filtrar produtos baseado nos critérios
-  useEffect(() => {
-    let filtered = products
-
-    // Filtro por termo de busca
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase()
-      filtered = filtered.filter((product: Product) => 
-        product.nome.toLowerCase().includes(term) ||
-        product.codigo.toLowerCase().includes(term) ||
-        product.categoria?.toLowerCase().includes(term)
-      )
-    }
-
-    // Filtro por categoria
-    if (filters.category && filters.category !== 'all') {
-      filtered = filtered.filter((product: Product) => product.categoria === filters.category)
-    }
-
-    // Filtro por status
-    if (filters.status !== 'all') {
-      filtered = filtered.filter((product: Product) => {
-        if (filters.status === 'active') return product.ativo
-        if (filters.status === 'inactive') return !product.ativo
-        return true
-      })
-    }
-
-    // Filtro por nível de estoque
-    if (filters.stockLevel !== 'all') {
-      filtered = filtered.filter((product: Product) => {
-        if (filters.stockLevel === 'low') return product.estoque <= 5
-        if (filters.stockLevel === 'out') return product.estoque === 0
-        if (filters.stockLevel === 'normal') return product.estoque > 5
-        return true
-      })
-    }
-
-    // Filtro por faixa de preço
-    if (filters.priceRange.min > 0 || filters.priceRange.max > 0) {
-      filtered = filtered.filter((product: Product) => {
-        const price = product.preco_venda
-        const minOk = filters.priceRange.min === 0 || price >= filters.priceRange.min
-        const maxOk = filters.priceRange.max === 0 || price <= filters.priceRange.max
-        return minOk && maxOk
-      })
-    }
-
-    setFilteredProducts(filtered)
-  }, [products, searchTerm, filters])
-
-  // Abrir modal para edição
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product)
-    setShowProductModal(true)
-  }
-
-  // Deletar produto
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return
-
-    try {
-      await deleteProduct(productId)
-      toast.success('Produto excluído com sucesso!')
-    } catch (error) {
-      console.error('Erro ao excluir produto:', error)
-      toast.error('Erro ao excluir produto')
-    }
-  }
-
-  // Gerar PDF da lista de produtos
-  const handleExportPDF = async () => {
-    try {
-      await generateProductsPDF(filteredProducts, {
-        filters: {
-          searchTerm,
-          category: filters.category,
-          status: filters.status,
-          stockLevel: filters.stockLevel
-        },
-        generatedBy: user?.email || 'Sistema',
-        generatedAt: new Date()
-      })
-      toast.success('PDF gerado com sucesso!')
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      toast.error('Erro ao gerar PDF')
-    }
-  }
+    // Simular carregamento
+    setLoading(true)
+    setTimeout(() => {
+      setProducts(exampleProducts)
+      setLoading(false)
+    }, 1000)
+  }, [])
 
   // Fechar modal
   const handleCloseModal = () => {
@@ -136,7 +59,6 @@ export function ProductsPage() {
   // Sucesso no modal
   const handleModalSuccess = () => {
     handleCloseModal()
-    loadProducts() // Recarregar produtos
     toast.success(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!')
   }
 
@@ -167,15 +89,6 @@ export function ProductsPage() {
             
             <div className="flex items-center space-x-3">
               <Button
-                onClick={handleExportPDF}
-                variant="outline"
-                disabled={filteredProducts.length === 0}
-                className="flex items-center space-x-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Exportar PDF</span>
-              </Button>
-              <Button
                 onClick={() => setShowProductModal(true)}
                 className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
               >
@@ -189,63 +102,18 @@ export function ProductsPage() {
 
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Barra de Ferramentas */}
+        {/* Barra de Busca */}
         <Card className="p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Busca */}
-            <div className="flex-1 relative">
-              <Input
-                type="text"
-                placeholder="Buscar produtos por nome, SKU ou categoria..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            </div>
-
-            {/* Controles */}
-            <div className="flex items-center space-x-3">
-              <Button
-                variant={showFilters ? "primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2"
-              >
-                <Filter className="w-4 h-4" />
-                <span>Filtros</span>
-              </Button>
-
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-                <Button
-                  variant={viewMode === 'grid' ? "primary" : "ghost"}
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-none"
-                  size="sm"
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? "primary" : "ghost"}
-                  onClick={() => setViewMode('list')}
-                  className="rounded-none"
-                  size="sm"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Buscar produtos por nome, código ou categoria..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
-
-          {/* Filtros */}
-          {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <ProductFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-                products={products}
-              />
-            </div>
-          )}
         </Card>
 
         {/* Estatísticas */}
@@ -303,7 +171,7 @@ export function ProductsPage() {
           </Card>
         </div>
 
-        {/* Lista/Grid de Produtos */}
+        {/* Lista de Produtos Simplificada */}
         {loading ? (
           <Card className="p-12">
             <div className="flex flex-col items-center justify-center space-y-4">
@@ -311,42 +179,102 @@ export function ProductsPage() {
               <p className="text-gray-600">Carregando produtos...</p>
             </div>
           </Card>
-        ) : filteredProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <Card className="p-12">
             <div className="text-center">
               <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {products.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado'}
+                Nenhum produto cadastrado
               </h3>
               <p className="text-gray-600 mb-6">
-                {products.length === 0 
-                  ? 'Comece cadastrando seu primeiro produto'
-                  : 'Tente ajustar os filtros ou termo de busca'
-                }
+                Comece cadastrando seu primeiro produto
               </p>
-              {products.length === 0 && (
-                <Button
-                  onClick={() => setShowProductModal(true)}
-                  className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Cadastrar Primeiro Produto
-                </Button>
-              )}
+              <Button
+                onClick={() => setShowProductModal(true)}
+                className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Cadastrar Primeiro Produto
+              </Button>
             </div>
           </Card>
-        ) : viewMode === 'grid' ? (
-          <ProductGrid
-            products={filteredProducts}
-            onEdit={handleEditProduct}
-            onDelete={handleDeleteProduct}
-          />
         ) : (
-          <ProductList
-            products={filteredProducts}
-            onEdit={handleEditProduct}
-            onDelete={handleDeleteProduct}
-          />
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Produto
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Código
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoria
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Preço
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estoque
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <Package className="w-5 h-5 text-gray-400" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.nome}
+                            </div>
+                            {product.descricao && (
+                              <div className="text-sm text-gray-500 truncate max-w-xs">
+                                {product.descricao}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-mono text-gray-900">{product.codigo}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{product.categoria || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          R$ {product.preco_venda.toFixed(2)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {product.estoque} {product.unidade}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          product.ativo
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         )}
       </main>
 

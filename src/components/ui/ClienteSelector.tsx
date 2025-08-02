@@ -29,11 +29,16 @@ const novoClienteSchema = z.object({
   }, 'CPF/CNPJ inválido'),
   email: z.string().email('E-mail inválido').optional().or(z.literal('')),
   endereco: z.string().optional(),
-  rua: z.string().optional(),
+  // Campos específicos de endereço
+  tipo_logradouro: z.string().optional(),
+  logradouro: z.string().optional(),
   numero: z.string().optional(),
+  complemento: z.string().optional(),
   bairro: z.string().optional(),
   cidade: z.string().optional(),
+  estado: z.string().optional(),
   cep: z.string().optional(),
+  ponto_referencia: z.string().optional(),
   tipo: z.enum(['Física', 'Jurídica']),
   observacoes: z.string().optional()
 })
@@ -78,35 +83,63 @@ export function ClienteSelector({
       cpf_cnpj: '',
       email: '',
       endereco: '',
-      rua: '',
+      tipo_logradouro: '',
+      logradouro: '',
       numero: '',
+      complemento: '',
       bairro: '',
       cidade: '',
+      estado: '',
       cep: '',
+      ponto_referencia: '',
       tipo: 'Física',
       observacoes: ''
     }
   })
 
   const tipoSelecionado = watch('tipo')
-  const rua = watch('rua')
+  const tipoLogradouro = watch('tipo_logradouro')
+  const logradouro = watch('logradouro')
   const numero = watch('numero')
+  const complemento = watch('complemento')
   const bairro = watch('bairro')
   const cidade = watch('cidade')
+  const estado = watch('estado')
   const cepWatch = watch('cep')
 
   // Atualizar endereço completo automaticamente
   useEffect(() => {
     const enderecoParts = []
-    if (rua) enderecoParts.push(rua)
+    
+    // Tipo de logradouro + logradouro
+    if (tipoLogradouro && logradouro) {
+      enderecoParts.push(`${tipoLogradouro} ${logradouro}`)
+    } else if (logradouro) {
+      enderecoParts.push(logradouro)
+    }
+    
+    // Número
     if (numero) enderecoParts.push(numero)
+    
+    // Complemento
+    if (complemento) enderecoParts.push(complemento)
+    
+    // Bairro
     if (bairro) enderecoParts.push(bairro)
-    if (cidade) enderecoParts.push(cidade)
-    if (cepWatch) enderecoParts.push(cepWatch)
+    
+    // Cidade + Estado
+    if (cidade && estado) {
+      enderecoParts.push(`${cidade} - ${estado}`)
+    } else if (cidade) {
+      enderecoParts.push(cidade)
+    }
+    
+    // CEP
+    if (cepWatch) enderecoParts.push(`CEP: ${cepWatch}`)
     
     const enderecoCompleto = enderecoParts.join(', ')
     setValue('endereco', enderecoCompleto)
-  }, [rua, numero, bairro, cidade, cepWatch, setValue])
+  }, [tipoLogradouro, logradouro, numero, complemento, bairro, cidade, estado, cepWatch, setValue])
 
   // Buscar clientes conforme digita
   useEffect(() => {
@@ -423,19 +456,40 @@ export function ClienteSelector({
             {/* Seção de Endereço Detalhado */}
             <div>
               <h4 className="text-md font-medium text-gray-900 mb-3">Endereço (opcional)</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rua/Avenida
+                    Tipo de Logradouro
                   </label>
-                  <input
-                    {...register('rua')}
-                    type="text"
+                  <select
+                    {...register('tipo_logradouro')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Rua das Flores"
-                  />
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="Rua">Rua</option>
+                    <option value="Avenida">Avenida</option>
+                    <option value="Travessa">Travessa</option>
+                    <option value="Alameda">Alameda</option>
+                    <option value="Praça">Praça</option>
+                    <option value="Estrada">Estrada</option>
+                    <option value="Rodovia">Rodovia</option>
+                  </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome do Logradouro
+                  </label>
+                  <input
+                    {...register('logradouro')}
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="das Flores"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Número
@@ -445,6 +499,18 @@ export function ClienteSelector({
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="123"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Complemento
+                  </label>
+                  <input
+                    {...register('complemento')}
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Apto 101, Bloco A"
                   />
                 </div>
 
@@ -461,7 +527,9 @@ export function ClienteSelector({
                     placeholder="00000-000"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Bairro
@@ -483,6 +551,59 @@ export function ClienteSelector({
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="São Paulo"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Estado (UF)
+                  </label>
+                  <select
+                    {...register('estado')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="AC">Acre</option>
+                    <option value="AL">Alagoas</option>
+                    <option value="AP">Amapá</option>
+                    <option value="AM">Amazonas</option>
+                    <option value="BA">Bahia</option>
+                    <option value="CE">Ceará</option>
+                    <option value="DF">Distrito Federal</option>
+                    <option value="ES">Espírito Santo</option>
+                    <option value="GO">Goiás</option>
+                    <option value="MA">Maranhão</option>
+                    <option value="MT">Mato Grosso</option>
+                    <option value="MS">Mato Grosso do Sul</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="PA">Pará</option>
+                    <option value="PB">Paraíba</option>
+                    <option value="PR">Paraná</option>
+                    <option value="PE">Pernambuco</option>
+                    <option value="PI">Piauí</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="RN">Rio Grande do Norte</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                    <option value="RO">Rondônia</option>
+                    <option value="RR">Roraima</option>
+                    <option value="SC">Santa Catarina</option>
+                    <option value="SP">São Paulo</option>
+                    <option value="SE">Sergipe</option>
+                    <option value="TO">Tocantins</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ponto de Referência (opcional)
+                  </label>
+                  <input
+                    {...register('ponto_referencia')}
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Próximo ao shopping, em frente à farmácia"
                   />
                 </div>
 

@@ -53,7 +53,7 @@ class CaixaService {
       const { data, error } = await supabase
         .from('caixa')
         .insert({
-          usuario_id: usuario.id,
+          user_id: usuario.id,
           valor_inicial: dados.valor_inicial,
           observacoes: dados.observacoes,
           status: 'aberto'
@@ -87,7 +87,7 @@ class CaixaService {
           *,
           movimentacoes_caixa (*)
         `)
-        .eq('usuario_id', usuario.id)
+        .eq('user_id', usuario.id)
         .eq('status', 'aberto')
         .order('data_abertura', { ascending: false })
         .limit(1)
@@ -133,7 +133,7 @@ class CaixaService {
     }
 
     if (filtros.usuario_id) {
-      query = query.eq('usuario_id', filtros.usuario_id);
+      query = query.eq('user_id', filtros.usuario_id);
     }
 
     const { data, error } = await query
@@ -163,7 +163,7 @@ class CaixaService {
         tipo: dados.tipo,
         descricao: dados.descricao,
         valor: dados.valor,
-        usuario_id: usuario.id
+        user_id: usuario.id
       })
       .select()
       .single();
@@ -221,7 +221,7 @@ class CaixaService {
         diferenca: diferenca,
         data_fechamento: new Date().toISOString(),
         observacoes: dados.observacoes || caixaAtual.observacoes,
-        atualizado_em: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
       .eq('id', caixaId)
       .select()
@@ -323,7 +323,7 @@ class CaixaService {
           *,
           movimentacoes_caixa (*)
         `)
-        .eq('usuario_id', usuario.id)
+        .eq('user_id', usuario.id)
         .order('data_abertura', { ascending: false });
 
       // Aplicar filtros

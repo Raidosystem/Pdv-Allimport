@@ -4,29 +4,49 @@
 
 -- ===== CRIAR/VERIFICAR TABELAS DE CAIXA =====
 
--- 1. Criar tabela caixa (substitui cash_registers)
-CREATE TABLE IF NOT EXISTS public.caixa (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    valor_inicial DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    valor_final DECIMAL(10,2),
-    data_abertura TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    data_fechamento TIMESTAMP WITH TIME ZONE,
-    status TEXT CHECK (status IN ('aberto', 'fechado')) DEFAULT 'aberto' NOT NULL,
-    diferenca DECIMAL(10,2),
-    observacoes TEXT,
-    criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    atualizado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
-);
+-- 1. Verificar se tabela caixa já existe, senão usar cash_registers existente
+DO $$
+BEGIN
+    -- Se a tabela caixa não existir, criar baseada na estrutura existente
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'caixa' AND table_schema = 'public') THEN
+        -- Verificar se cash_registers existe
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'cash_registers' AND table_schema = 'public') THEN
+            -- Usar cash_registers como base
+            CREATE TABLE public.caixa AS SELECT * FROM public.cash_registers WHERE false;
+            
+            -- Adicionar colunas que podem estar faltando
+            ALTER TABLE public.caixa 
+            ADD COLUMN IF NOT EXISTS diferenca DECIMAL(10,2),
+            ADD COLUMN IF NOT EXISTS observacoes TEXT,
+            ADD COLUMN IF NOT EXISTS criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            ADD COLUMN IF NOT EXISTS atualizado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+        ELSE
+            -- Criar nova tabela caixa
+            CREATE TABLE public.caixa (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+                valor_inicial DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                valor_final DECIMAL(10,2),
+                data_abertura TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+                data_fechamento TIMESTAMP WITH TIME ZONE,
+                status TEXT CHECK (status IN ('aberto', 'fechado')) DEFAULT 'aberto' NOT NULL,
+                diferenca DECIMAL(10,2),
+                observacoes TEXT,
+                criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+                atualizado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+            );
+        END IF;
+    END IF;
+END $$;
 
--- 2. Criar tabela movimentacoes_caixa
+-- 2. Criar tabela movimentacoes_caixa (adaptada para estrutura existente)
 CREATE TABLE IF NOT EXISTS public.movimentacoes_caixa (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    caixa_id UUID REFERENCES public.caixa(id) ON DELETE CASCADE NOT NULL,
+    caixa_id UUID NOT NULL, -- Será referência após verificar estrutura
     tipo TEXT CHECK (tipo IN ('entrada', 'saida')) NOT NULL,
     descricao TEXT NOT NULL,
     valor DECIMAL(10,2) NOT NULL,
-    usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     venda_id UUID, -- Referência opcional para vendas
     data TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
@@ -45,43 +65,43 @@ DROP POLICY IF EXISTS "Usuários podem atualizar seus próprios caixas" ON publi
 DROP POLICY IF EXISTS "Usuários podem ver movimentações dos seus caixas" ON public.movimentacoes_caixa;
 DROP POLICY IF EXISTS "Usuários podem criar movimentações" ON public.movimentacoes_caixa;
 
--- Criar políticas para caixa
+-- Criar políticas para caixa (usando user_id)
 CREATE POLICY "Usuários podem ver seus próprios caixas" ON public.caixa
-    FOR SELECT USING (auth.uid() = usuario_id);
+    FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Usuários podem criar caixas" ON public.caixa
-    FOR INSERT WITH CHECK (auth.uid() = usuario_id);
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Usuários podem atualizar seus próprios caixas" ON public.caixa
-    FOR UPDATE USING (auth.uid() = usuario_id);
+    FOR UPDATE USING (auth.uid() = user_id);
 
--- Criar políticas para movimentacoes_caixa
+-- Criar políticas para movimentacoes_caixa (usando user_id)
 CREATE POLICY "Usuários podem ver movimentações dos seus caixas" ON public.movimentacoes_caixa
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM public.caixa 
             WHERE caixa.id = movimentacoes_caixa.caixa_id 
-            AND caixa.usuario_id = auth.uid()
+            AND caixa.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Usuários podem criar movimentações" ON public.movimentacoes_caixa
     FOR INSERT WITH CHECK (
-        auth.uid() = usuario_id AND
+        auth.uid() = user_id AND
         EXISTS (
             SELECT 1 FROM public.caixa 
             WHERE caixa.id = movimentacoes_caixa.caixa_id 
-            AND caixa.usuario_id = auth.uid()
+            AND caixa.user_id = auth.uid()
         )
     );
 
 -- ===== ÍNDICES PARA PERFORMANCE =====
 
-CREATE INDEX IF NOT EXISTS idx_caixa_usuario_id ON public.caixa(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_caixa_user_id ON public.caixa(user_id);
 CREATE INDEX IF NOT EXISTS idx_caixa_status ON public.caixa(status);
 CREATE INDEX IF NOT EXISTS idx_caixa_data_abertura ON public.caixa(data_abertura);
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_caixa_id ON public.movimentacoes_caixa(caixa_id);
-CREATE INDEX IF NOT EXISTS idx_movimentacoes_usuario_id ON public.movimentacoes_caixa(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_movimentacoes_user_id ON public.movimentacoes_caixa(user_id);
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON public.movimentacoes_caixa(data);
 
 -- ===== FUNÇÕES AUTOMÁTICAS =====
@@ -115,7 +135,7 @@ CREATE TABLE IF NOT EXISTS public.clientes (
     observacoes TEXT,
     data_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL
 );
 
 -- RLS para clientes
@@ -126,13 +146,13 @@ DROP POLICY IF EXISTS "Usuários podem criar clientes" ON public.clientes;
 DROP POLICY IF EXISTS "Usuários podem atualizar seus próprios clientes" ON public.clientes;
 
 CREATE POLICY "Usuários podem ver seus próprios clientes" ON public.clientes
-    FOR SELECT USING (auth.uid() = usuario_id);
+    FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Usuários podem criar clientes" ON public.clientes
-    FOR INSERT WITH CHECK (auth.uid() = usuario_id);
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Usuários podem atualizar seus próprios clientes" ON public.clientes
-    FOR UPDATE USING (auth.uid() = usuario_id);
+    FOR UPDATE USING (auth.uid() = user_id);
 
 -- ===== GARANTIR CATEGORIES SEM RLS =====
 

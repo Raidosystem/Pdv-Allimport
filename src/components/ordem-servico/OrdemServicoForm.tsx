@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { 
-  User, 
-  Phone, 
-  Mail, 
   Smartphone, 
   Laptop, 
   Gamepad2, 
@@ -14,11 +11,11 @@ import {
   Settings,
   Calendar,
   DollarSign,
-  Save,
-  Search
+  Save
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
+import { ClienteSelectorOS } from './ClienteSelectorOS'
 import { ordemServicoService } from '../../services/ordemServicoService'
 import type { 
   NovaOrdemServicoForm, 
@@ -29,9 +26,6 @@ import type { Cliente } from '../../types/cliente'
 
 // Schema de validação
 const ordemServicoSchema = z.object({
-  cliente_nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  cliente_telefone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
-  cliente_email: z.string().email('Email inválido').optional().or(z.literal('')),
   tipo: z.enum(['Celular', 'Notebook', 'Console', 'Tablet', 'Outro']),
   marca: z.string().min(2, 'Marca é obrigatória'),
   modelo: z.string().min(2, 'Modelo é obrigatório'),
@@ -60,15 +54,12 @@ const TIPOS_EQUIPAMENTO: { value: TipoEquipamento; label: string; icon: any }[] 
 
 export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps) {
   const [loading, setLoading] = useState(false)
-  const [clientesSugeridos, setClientesSugeridos] = useState<Cliente[]>([])
-  const [mostrarSugestoes, setMostrarSugestoes] = useState(false)
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [checklist, setChecklist] = useState<ChecklistOS>({})
 
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(ordemServicoSchema),
@@ -76,36 +67,6 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       tipo: 'Celular'
     }
   })
-
-  const nomeCliente = watch('cliente_nome')
-
-  // Buscar clientes conforme digita
-  useEffect(() => {
-    const buscarClientes = async () => {
-      if (nomeCliente && nomeCliente.length >= 3) {
-        try {
-          const clientes = await ordemServicoService.buscarClientes(nomeCliente)
-          setClientesSugeridos(clientes)
-          setMostrarSugestoes(true)
-        } catch (error) {
-          console.error('Erro ao buscar clientes:', error)
-        }
-      } else {
-        setMostrarSugestoes(false)
-      }
-    }
-
-    const timeoutId = setTimeout(buscarClientes, 300)
-    return () => clearTimeout(timeoutId)
-  }, [nomeCliente])
-
-  // Selecionar cliente sugerido
-  const selecionarCliente = (cliente: Cliente) => {
-    setValue('cliente_nome', cliente.nome)
-    setValue('cliente_telefone', cliente.telefone)
-    setValue('cliente_email', cliente.email || '')
-    setMostrarSugestoes(false)
-  }
 
   // Atualizar checklist
   const atualizarChecklist = (campo: keyof ChecklistOS, valor: boolean) => {
@@ -117,13 +78,18 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
 
   // Submeter formulário
   const onSubmit = async (data: FormData) => {
+    if (!clienteSelecionado) {
+      toast.error('Selecione um cliente para continuar')
+      return
+    }
+
     setLoading(true)
     
     try {
       const novaOrdem: NovaOrdemServicoForm = {
-        cliente_nome: data.cliente_nome,
-        cliente_telefone: data.cliente_telefone,
-        cliente_email: data.cliente_email,
+        cliente_nome: clienteSelecionado.nome,
+        cliente_telefone: clienteSelecionado.telefone,
+        cliente_email: clienteSelecionado.email,
         tipo: data.tipo,
         marca: data.marca,
         modelo: data.modelo,
@@ -165,88 +131,10 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         
         {/* Seção: Cliente */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <User className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Dados do Cliente</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome do Cliente *
-              </label>
-              <div className="relative">
-                <input
-                  {...register('cliente_nome')}
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Digite o nome do cliente"
-                />
-                <Search className="w-4 h-4 text-gray-400 absolute right-3 top-3" />
-              </div>
-              
-              {/* Sugestões de clientes */}
-              {mostrarSugestoes && clientesSugeridos.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {clientesSugeridos.map((cliente) => (
-                    <button
-                      key={cliente.id}
-                      type="button"
-                      onClick={() => selecionarCliente(cliente)}
-                      className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="font-medium">{cliente.nome}</div>
-                        <div className="text-sm text-gray-500">{cliente.telefone}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-              
-              {errors.cliente_nome && (
-                <span className="text-red-500 text-sm">{errors.cliente_nome.message}</span>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefone *
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  {...register('cliente_telefone')}
-                  type="tel"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="(11) 99999-9999"
-                />
-              </div>
-              {errors.cliente_telefone && (
-                <span className="text-red-500 text-sm">{errors.cliente_telefone.message}</span>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email (opcional)
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  {...register('cliente_email')}
-                  type="email"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="cliente@email.com"
-                />
-              </div>
-              {errors.cliente_email && (
-                <span className="text-red-500 text-sm">{errors.cliente_email.message}</span>
-              )}
-            </div>
-          </div>
-        </Card>
+        <ClienteSelectorOS 
+          onClienteSelect={setClienteSelecionado}
+          clienteSelecionado={clienteSelecionado}
+        />
 
         {/* Seção: Informações do Aparelho */}
         <Card className="p-6">

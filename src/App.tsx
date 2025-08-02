@@ -109,7 +109,7 @@ function App() {
             } 
           />
           <Route 
-            path="/os" 
+            path="/ordens-servico" 
             element={
               <ProtectedRoute>
                 <OrdensServicoPage />
@@ -117,7 +117,7 @@ function App() {
             } 
           />
           <Route 
-            path="/os/:id" 
+            path="/ordens-servico/:id" 
             element={
               <ProtectedRoute>
                 <OrdemServicoDetalhePage />

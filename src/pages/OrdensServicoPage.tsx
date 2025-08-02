@@ -327,7 +327,7 @@ export function OrdensServicoPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          to={`/os/${ordem.id}`}
+                          to={`/ordens-servico/${ordem.id}`}
                           className="text-blue-600 hover:text-blue-900 p-1 rounded"
                           title="Visualizar"
                         >
@@ -335,7 +335,7 @@ export function OrdensServicoPage() {
                         </Link>
                         
                         <Link
-                          to={`/os/${ordem.id}/editar`}
+                          to={`/ordens-servico/${ordem.id}/editar`}
                           className="text-green-600 hover:text-green-900 p-1 rounded"
                           title="Editar"
                         >

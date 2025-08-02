@@ -115,7 +115,7 @@ export function OrdemServicoDetalhePage() {
           <p className="text-gray-600 mb-4">
             A ordem de serviço solicitada não existe ou você não tem permissão para visualizá-la.
           </p>
-          <Link to="/os">
+          <Link to="/ordens-servico">
             <Button className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Voltar para lista
@@ -132,7 +132,7 @@ export function OrdemServicoDetalhePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/os" className="text-gray-600 hover:text-gray-900">
+          <Link to="/ordens-servico" className="text-gray-600 hover:text-gray-900">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
@@ -151,7 +151,7 @@ export function OrdemServicoDetalhePage() {
             Imprimir
           </Button>
           
-          <Link to={`/os/${ordem.id}/editar`}>
+          <Link to={`/ordens-servico/${ordem.id}/editar`}>
             <Button className="gap-2">
               <Edit className="w-4 h-4" />
               Editar

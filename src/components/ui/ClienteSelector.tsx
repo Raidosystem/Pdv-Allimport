@@ -67,6 +67,7 @@ export function ClienteSelector({
   const [telefoneValue, setTelefoneValue] = useState('')
   const [cpfCnpjValue, setCpfCnpjValue] = useState('')
   const [cepValue, setCepValue] = useState('')
+  const [loadingCep, setLoadingCep] = useState(false)
 
   const {
     register,
@@ -207,11 +208,63 @@ export function ClienteSelector({
     setValue('cpf_cnpj', formatted)
   }
 
-  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '')
     const formatted = value.replace(/(\d{5})(\d{3})/, '$1-$2')
     setCepValue(formatted)
     setValue('cep', formatted)
+
+    // Buscar dados do CEP quando tiver 8 dígitos
+    if (value.length === 8) {
+      setLoadingCep(true)
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${value}/json/`)
+        const data = await response.json()
+        
+        if (!data.erro) {
+          // Preencher campos automaticamente
+          setValue('logradouro', data.logradouro || '')
+          setValue('bairro', data.bairro || '')
+          setValue('cidade', data.localidade || '')
+          setValue('estado', data.uf || '')
+          
+          // Determinar tipo de logradouro baseado no nome da rua
+          if (data.logradouro) {
+            const logradouro = data.logradouro.toLowerCase()
+            if (logradouro.startsWith('rua ')) {
+              setValue('tipo_logradouro', 'Rua')
+              setValue('logradouro', data.logradouro.replace(/^rua /i, ''))
+            } else if (logradouro.startsWith('avenida ')) {
+              setValue('tipo_logradouro', 'Avenida')
+              setValue('logradouro', data.logradouro.replace(/^avenida /i, ''))
+            } else if (logradouro.startsWith('travessa ')) {
+              setValue('tipo_logradouro', 'Travessa')
+              setValue('logradouro', data.logradouro.replace(/^travessa /i, ''))
+            } else if (logradouro.startsWith('alameda ')) {
+              setValue('tipo_logradouro', 'Alameda')
+              setValue('logradouro', data.logradouro.replace(/^alameda /i, ''))
+            } else if (logradouro.startsWith('praça ')) {
+              setValue('tipo_logradouro', 'Praça')
+              setValue('logradouro', data.logradouro.replace(/^praça /i, ''))
+            } else if (logradouro.startsWith('estrada ')) {
+              setValue('tipo_logradouro', 'Estrada')
+              setValue('logradouro', data.logradouro.replace(/^estrada /i, ''))
+            } else {
+              setValue('logradouro', data.logradouro)
+            }
+          }
+          
+          toast.success('Endereço preenchido automaticamente!')
+        } else {
+          toast.error('CEP não encontrado')
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error)
+        toast.error('Erro ao buscar CEP')
+      } finally {
+        setLoadingCep(false)
+      }
+    }
   }
 
   const onSubmitNovoCliente = async (data: NovoClienteData) => {
@@ -453,148 +506,168 @@ export function ClienteSelector({
               </div>
             </div>
 
-            {/* Seção de Endereço Detalhado */}
+            {/* Seção de Endereço */}
             <div>
               <h4 className="text-md font-medium text-gray-900 mb-3">Endereço (opcional)</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de Logradouro
-                  </label>
-                  <select
-                    {...register('tipo_logradouro')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="Rua">Rua</option>
-                    <option value="Avenida">Avenida</option>
-                    <option value="Travessa">Travessa</option>
-                    <option value="Alameda">Alameda</option>
-                    <option value="Praça">Praça</option>
-                    <option value="Estrada">Estrada</option>
-                    <option value="Rodovia">Rodovia</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome do Logradouro
-                  </label>
-                  <input
-                    {...register('logradouro')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="das Flores"
-                  />
+              
+              {/* CEP - Campo principal para busca automática */}
+              <div className="mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CEP <span className="text-blue-600">(preenche automaticamente)</span>
+                    </label>
+                    <input
+                      value={cepValue}
+                      onChange={handleCepChange}
+                      type="text"
+                      maxLength={9}
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${loadingCep ? 'bg-gray-100' : ''}`}
+                      placeholder="00000-000"
+                      disabled={loadingCep}
+                    />
+                    {loadingCep && (
+                      <span className="text-sm text-blue-600 mt-1">Buscando endereço...</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Número
-                  </label>
-                  <input
-                    {...register('numero')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="123"
-                  />
-                </div>
+              {/* Rua/Avenida */}
+              <div className="mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo
+                    </label>
+                    <select
+                      {...register('tipo_logradouro')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Tipo...</option>
+                      <option value="Rua">Rua</option>
+                      <option value="Avenida">Avenida</option>
+                      <option value="Travessa">Travessa</option>
+                      <option value="Alameda">Alameda</option>
+                      <option value="Praça">Praça</option>
+                      <option value="Estrada">Estrada</option>
+                      <option value="Rodovia">Rodovia</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Complemento
-                  </label>
-                  <input
-                    {...register('complemento')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Apto 101, Bloco A"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CEP
-                  </label>
-                  <input
-                    value={cepValue}
-                    onChange={handleCepChange}
-                    type="text"
-                    maxLength={9}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="00000-000"
-                  />
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome da Rua/Avenida
+                    </label>
+                    <input
+                      {...register('logradouro')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="das Flores, Paulista, etc."
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Bairro
-                  </label>
-                  <input
-                    {...register('bairro')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Centro"
-                  />
-                </div>
+              {/* Número - Campo separado */}
+              <div className="mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Número
+                    </label>
+                    <input
+                      {...register('numero')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="123"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cidade
-                  </label>
-                  <input
-                    {...register('cidade')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="São Paulo"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estado (UF)
-                  </label>
-                  <select
-                    {...register('estado')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="AC">Acre</option>
-                    <option value="AL">Alagoas</option>
-                    <option value="AP">Amapá</option>
-                    <option value="AM">Amazonas</option>
-                    <option value="BA">Bahia</option>
-                    <option value="CE">Ceará</option>
-                    <option value="DF">Distrito Federal</option>
-                    <option value="ES">Espírito Santo</option>
-                    <option value="GO">Goiás</option>
-                    <option value="MA">Maranhão</option>
-                    <option value="MT">Mato Grosso</option>
-                    <option value="MS">Mato Grosso do Sul</option>
-                    <option value="MG">Minas Gerais</option>
-                    <option value="PA">Pará</option>
-                    <option value="PB">Paraíba</option>
-                    <option value="PR">Paraná</option>
-                    <option value="PE">Pernambuco</option>
-                    <option value="PI">Piauí</option>
-                    <option value="RJ">Rio de Janeiro</option>
-                    <option value="RN">Rio Grande do Norte</option>
-                    <option value="RS">Rio Grande do Sul</option>
-                    <option value="RO">Rondônia</option>
-                    <option value="RR">Roraima</option>
-                    <option value="SC">Santa Catarina</option>
-                    <option value="SP">São Paulo</option>
-                    <option value="SE">Sergipe</option>
-                    <option value="TO">Tocantins</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Complemento
+                    </label>
+                    <input
+                      {...register('complemento')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Apto 101, Bloco A"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 mt-4">
+              {/* Localização */}
+              <div className="mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Bairro
+                    </label>
+                    <input
+                      {...register('bairro')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Centro"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cidade
+                    </label>
+                    <input
+                      {...register('cidade')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="São Paulo"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Estado (UF)
+                    </label>
+                    <select
+                      {...register('estado')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">UF...</option>
+                      <option value="AC">AC</option>
+                      <option value="AL">AL</option>
+                      <option value="AP">AP</option>
+                      <option value="AM">AM</option>
+                      <option value="BA">BA</option>
+                      <option value="CE">CE</option>
+                      <option value="DF">DF</option>
+                      <option value="ES">ES</option>
+                      <option value="GO">GO</option>
+                      <option value="MA">MA</option>
+                      <option value="MT">MT</option>
+                      <option value="MS">MS</option>
+                      <option value="MG">MG</option>
+                      <option value="PA">PA</option>
+                      <option value="PB">PB</option>
+                      <option value="PR">PR</option>
+                      <option value="PE">PE</option>
+                      <option value="PI">PI</option>
+                      <option value="RJ">RJ</option>
+                      <option value="RN">RN</option>
+                      <option value="RS">RS</option>
+                      <option value="RO">RO</option>
+                      <option value="RR">RR</option>
+                      <option value="SC">SC</option>
+                      <option value="SP">SP</option>
+                      <option value="SE">SE</option>
+                      <option value="TO">TO</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ponto de Referência */}
+              <div className="mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Ponto de Referência (opcional)
@@ -606,7 +679,10 @@ export function ClienteSelector({
                     placeholder="Próximo ao shopping, em frente à farmácia"
                   />
                 </div>
+              </div>
 
+              {/* Endereço Completo (Auto) */}
+              <div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Endereço Completo (auto)

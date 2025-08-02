@@ -14,6 +14,8 @@ import { ProductsPage } from './modules/products/ProductsPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
 import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
+import { OrdensServicoPage } from './pages/OrdensServicoPage'
+import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import './App.css'
@@ -103,6 +105,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <HistoricoCaixaPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/os" 
+            element={
+              <ProtectedRoute>
+                <OrdensServicoPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/os/:id" 
+            element={
+              <ProtectedRoute>
+                <OrdemServicoDetalhePage />
               </ProtectedRoute>
             } 
           />

@@ -65,8 +65,8 @@ export function DashboardPage() {
       description: 'Gestão de ordens de serviço',
       icon: FileText,
       color: 'danger',
-      path: '/os',
-      comingSoon: true
+      path: '/ordens-servico',
+      comingSoon: false
     }
   ]
 

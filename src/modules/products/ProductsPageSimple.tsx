@@ -6,9 +6,11 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { ProductModal } from '../../components/product/ProductModal'
+// import { useAuth } from '../auth'
 import type { Product } from '../../types/product'
 
 export function ProductsPage() {
+  // const { user } = useAuth()
   const [showProductModal, setShowProductModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -88,11 +90,6 @@ export function ProductsPage() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Link to="/test-categorias">
-                <Button variant="outline">
-                  🧪 Testar Categorias
-                </Button>
-              </Link>
               <Button
                 onClick={() => setShowProductModal(true)}
                 className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"

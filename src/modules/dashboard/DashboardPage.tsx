@@ -35,7 +35,7 @@ export function DashboardPage() {
       icon: Users,
       color: 'secondary',
       path: '/clientes',
-      comingSoon: true
+      comingSoon: false
     },
     {
       title: 'Produtos',

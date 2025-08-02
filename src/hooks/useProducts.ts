@@ -101,21 +101,67 @@ export function useProducts() {
 
   // Criar nova categoria
   const createCategory = async (name: string): Promise<Category | null> => {
+    if (!name.trim()) {
+      toast.error('Nome da categoria é obrigatório')
+      return null
+    }
+
     try {
+      console.log('🔄 Criando categoria:', name)
+      
+      // Verificar se já existe uma categoria com este nome
+      const { data: existing, error: checkError } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('name', name.trim())
+        .single()
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 = No rows found (que é o que queremos)
+        console.error('Erro ao verificar categoria existente:', checkError)
+        throw checkError
+      }
+
+      if (existing) {
+        toast.error('Já existe uma categoria com este nome')
+        return null
+      }
+
+      // Criar nova categoria
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ name }])
+        .insert([{ name: name.trim() }])
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro detalhado ao criar categoria:', error)
+        
+        // Tratar erros específicos
+        if (error.code === '23505') {
+          toast.error('Já existe uma categoria com este nome')
+        } else if (error.code === '42P01') {
+          toast.error('Tabela de categorias não encontrada. Entre em contato com o suporte.')
+        } else {
+          toast.error(`Erro ao criar categoria: ${error.message}`)
+        }
+        
+        throw error
+      }
       
+      console.log('✅ Categoria criada com sucesso:', data)
       toast.success('Categoria criada com sucesso!')
-      await fetchCategories() // Recarregar categorias
+      
+      // Recarregar categorias
+      await fetchCategories()
+      
       return data
     } catch (error) {
-      console.error('Erro ao criar categoria:', error)
-      toast.error('Erro ao criar categoria')
+      console.error('💥 Erro geral ao criar categoria:', error)
+      
+      // Se chegou até aqui e não foi tratado acima
+      toast.error('Erro inesperado ao criar categoria')
+      
       return null
     }
   }

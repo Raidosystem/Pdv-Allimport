@@ -11,6 +11,8 @@ import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ProductsPage } from './modules/products/ProductsPage'
+import { ClientesPage } from './modules/clientes/ClientesPage'
+import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { DebugComponent } from './components/DebugComponent'
 import './App.css'
@@ -77,6 +79,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProductsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/clientes" 
+            element={
+              <ProtectedRoute>
+                <ClientesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/test-categorias" 
+            element={
+              <ProtectedRoute>
+                <CategoryTestPage />
               </ProtectedRoute>
             } 
           />

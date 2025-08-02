@@ -50,7 +50,7 @@ export function DashboardPage() {
       icon: CreditCard,
       color: 'warning',
       path: '/caixa',
-      comingSoon: true
+      comingSoon: false
     },
     {
       title: 'Relatórios',

@@ -12,6 +12,7 @@ import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ProductsPage } from './modules/products/ProductsPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
+import { CaixaPage } from './pages/CaixaPage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { DebugComponent } from './components/DebugComponent'
@@ -87,6 +88,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ClientesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/caixa" 
+            element={
+              <ProtectedRoute>
+                <CaixaPage />
               </ProtectedRoute>
             } 
           />

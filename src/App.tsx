@@ -13,6 +13,8 @@ import { SalesPage } from './modules/sales/SalesPage'
 import { ProductsPage } from './modules/products/ProductsPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
 import { CaixaPage } from './pages/CaixaPage'
+import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
+import { DiagnosticPage } from './pages/DiagnosticPage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { DebugComponent } from './components/DebugComponent'
@@ -57,6 +59,7 @@ function App() {
           <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
           <Route path="/test-login" element={<TestLoginPage />} />
           <Route path="/email-help" element={<EmailInstructionsPage />} />
+          <Route path="/diagnostic" element={<DiagnosticPage />} />
           
           {/* Rotas protegidas */}
           <Route 
@@ -96,6 +99,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CaixaPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/caixa/historico" 
+            element={
+              <ProtectedRoute>
+                <HistoricoCaixaPage />
               </ProtectedRoute>
             } 
           />

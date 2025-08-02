@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   DollarSign, 
   Plus, 
@@ -12,6 +13,7 @@ import { StatusCaixa } from '../components/caixa/StatusCaixa';
 import { AberturaCaixaModal } from '../components/caixa/AberturaCaixaModal';
 import { FechamentoCaixaModal } from '../components/caixa/FechamentoCaixaModal';
 import { MovimentacoesCaixa } from '../components/caixa/MovimentacoesCaixa';
+import { SystemCheck } from '../components/SystemCheck';
 import type { AberturaCaixaForm, FechamentoCaixaForm, MovimentacaoForm } from '../types/caixa';
 
 export function CaixaPage() {
@@ -98,15 +100,20 @@ export function CaixaPage() {
               )}
 
               {/* Botão Histórico */}
-              <button
-                onClick={() => {/* TODO: Implementar histórico */}}
+              <Link
+                to="/caixa/historico"
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <History className="w-4 h-4" />
                 Histórico
-              </button>
+              </Link>
             </div>
           </div>
+        </div>
+
+        {/* Verificação do Sistema */}
+        <div className="mb-6">
+          <SystemCheck />
         </div>
 
         {/* Mensagem de Erro */}

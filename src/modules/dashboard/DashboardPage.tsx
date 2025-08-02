@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../auth'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { AuthDiagnostic } from '../../components/AuthDiagnostic'
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
@@ -132,6 +133,11 @@ export function DashboardPage() {
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        {/* Diagnóstico de Sistema */}
+        <div className="mb-8">
+          <AuthDiagnostic />
+        </div>
+
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">

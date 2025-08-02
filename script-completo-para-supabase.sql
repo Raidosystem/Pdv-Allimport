@@ -90,26 +90,7 @@ INSERT INTO public.clientes (nome, telefone, cpf_cnpj, email, endereco, tipo, ob
 SELECT 'Empresa XYZ Ltda', '11777779999', '12.345.678/0001-90', 'contato@empresaxyz.com', 'Rua Comercial, 789 - São Paulo/SP', 'Jurídica', 'Cliente corporativo'
 WHERE NOT EXISTS (SELECT 1 FROM public.clientes WHERE nome = 'Empresa XYZ Ltda');
 
--- ===== PARTE 4: VERIFICAR SE TUDO FUNCIONOU =====
-
--- Verificar categories
-SELECT 'CATEGORIAS:' as tabela, COUNT(*) as total FROM public.categories;
-SELECT * FROM public.categories LIMIT 3;
-
--- Verificar clientes  
-SELECT 'CLIENTES:' as tabela, COUNT(*) as total FROM public.clientes;
-SELECT * FROM public.clientes LIMIT 3;
-
--- Mostrar estrutura das tabelas
-SELECT 'ESTRUTURA CATEGORIES:' as info;
-SELECT column_name, data_type, is_nullable FROM information_schema.columns 
-WHERE table_name = 'categories' ORDER BY ordinal_position;
-
-SELECT 'ESTRUTURA CLIENTES:' as info;
-SELECT column_name, data_type, is_nullable FROM information_schema.columns 
-WHERE table_name = 'clientes' ORDER BY ordinal_position;
-
--- ===== PARTE 5: CRIAR TABELAS DO MÓDULO CAIXA =====
+-- ===== PARTE 4: CRIAR TABELAS DO MÓDULO CAIXA =====
 
 -- Verificar se tabela caixa existe
 SELECT 'Tabela caixa existe:' as status, 
@@ -203,10 +184,38 @@ BEGIN
 END;
 $$;
 
--- ===== PARTE 6: VERIFICAR TODAS AS TABELAS =====
+-- ===== PARTE 5: VERIFICAR SE TUDO FUNCIONOU =====
+
+-- Verificar categories
+SELECT 'CATEGORIAS:' as tabela, COUNT(*) as total FROM public.categories;
+SELECT * FROM public.categories LIMIT 3;
+
+-- Verificar clientes  
+SELECT 'CLIENTES:' as tabela, COUNT(*) as total FROM public.clientes;
+SELECT * FROM public.clientes LIMIT 3;
 
 -- Verificar caixa
 SELECT 'TABELA CAIXA:' as tabela, COUNT(*) as total FROM public.caixa;
 
 -- Verificar movimentações do caixa
 SELECT 'TABELA MOVIMENTAÇÕES CAIXA:' as tabela, COUNT(*) as total FROM public.movimentacoes_caixa;
+
+-- Mostrar estrutura das tabelas
+SELECT 'ESTRUTURA CATEGORIES:' as info;
+SELECT column_name, data_type, is_nullable FROM information_schema.columns 
+WHERE table_name = 'categories' ORDER BY ordinal_position;
+
+SELECT 'ESTRUTURA CLIENTES:' as info;
+SELECT column_name, data_type, is_nullable FROM information_schema.columns 
+WHERE table_name = 'clientes' ORDER BY ordinal_position;
+
+SELECT 'ESTRUTURA CAIXA:' as info;
+SELECT column_name, data_type, is_nullable FROM information_schema.columns 
+WHERE table_name = 'caixa' ORDER BY ordinal_position;
+
+SELECT 'ESTRUTURA MOVIMENTAÇÕES CAIXA:' as info;
+SELECT column_name, data_type, is_nullable FROM information_schema.columns 
+WHERE table_name = 'movimentacoes_caixa' ORDER BY ordinal_position;
+
+-- Resultado final
+SELECT '✅ TODAS AS TABELAS CRIADAS COM SUCESSO!' as resultado;

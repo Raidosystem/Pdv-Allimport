@@ -9,6 +9,22 @@ export function formatCurrency(value: number): string {
 }
 
 /**
+ * Formatar data brasileira
+ */
+export function formatDate(date: string | Date): string {
+  const d = new Date(date)
+  return d.toLocaleDateString('pt-BR')
+}
+
+/**
+ * Formatar data e hora brasileira
+ */
+export function formatDateTime(date: string | Date): string {
+  const d = new Date(date)
+  return d.toLocaleString('pt-BR')
+}
+
+/**
  * Formatar número como percentual
  */
 export function formatPercentage(value: number): string {

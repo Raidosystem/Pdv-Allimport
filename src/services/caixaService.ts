@@ -10,76 +10,103 @@ import type {
 } from '../types/caixa';
 
 class CaixaService {
+  // ===== HELPER PARA VERIFICAR AUTENTICAÇÃO =====
+  
+  private async getAuthenticatedUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      console.error('Erro de autenticação:', error);
+      throw new Error('Erro ao verificar autenticação. Faça login novamente.');
+    }
+    
+    if (!user) {
+      throw new Error('Usuário não autenticado. Faça login para continuar.');
+    }
+    
+    return user;
+  }
+
   // ===== ABERTURA DE CAIXA =====
   
   async abrirCaixa(dados: AberturaCaixaForm): Promise<Caixa> {
-    // 1. Verificar se já existe caixa aberto para o usuário hoje
-    const { data: usuario } = await supabase.auth.getUser();
-    if (!usuario.user) {
-      throw new Error('Usuário não autenticado');
+    try {
+      // 1. Verificar autenticação
+      const usuario = await this.getAuthenticatedUser();
+
+      const hoje = new Date().toISOString().split('T')[0];
+      
+      const { data: caixaAberto } = await supabase
+        .from('caixa')
+        .select('*')
+        .eq('usuario_id', usuario.id)
+        .eq('status', 'aberto')
+        .gte('data_abertura', `${hoje}T00:00:00`)
+        .lt('data_abertura', `${hoje}T23:59:59`)
+        .single();
+
+      if (caixaAberto) {
+        throw new Error('Já existe um caixa aberto para hoje. Feche o caixa atual antes de abrir um novo.');
+      }
+
+      // 2. Criar novo caixa
+      const { data, error } = await supabase
+        .from('caixa')
+        .insert({
+          usuario_id: usuario.id,
+          valor_inicial: dados.valor_inicial,
+          observacoes: dados.observacoes,
+          status: 'aberto'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao abrir caixa:', error);
+        throw new Error('Erro ao abrir caixa. Verifique se as tabelas estão criadas no Supabase.');
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Erro inesperado ao abrir caixa');
     }
-
-    const hoje = new Date().toISOString().split('T')[0];
-    
-    const { data: caixaAberto } = await supabase
-      .from('caixa')
-      .select('*')
-      .eq('usuario_id', usuario.user.id)
-      .eq('status', 'aberto')
-      .gte('data_abertura', `${hoje}T00:00:00`)
-      .lt('data_abertura', `${hoje}T23:59:59`)
-      .single();
-
-    if (caixaAberto) {
-      throw new Error('Já existe um caixa aberto para hoje. Feche o caixa atual antes de abrir um novo.');
-    }
-
-    // 2. Criar novo caixa
-    const { data, error } = await supabase
-      .from('caixa')
-      .insert({
-        usuario_id: usuario.user.id,
-        valor_inicial: dados.valor_inicial,
-        observacoes: dados.observacoes,
-        status: 'aberto'
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro ao abrir caixa:', error);
-      throw new Error('Erro ao abrir caixa. Tente novamente.');
-    }
-
-    return data;
   }
 
   // ===== BUSCAR CAIXA ATUAL =====
   
   async buscarCaixaAtual(): Promise<CaixaCompleto | null> {
-    const { data: usuario } = await supabase.auth.getUser();
-    if (!usuario.user) return null;
+    try {
+      const usuario = await this.getAuthenticatedUser();
 
-    const { data, error } = await supabase
-      .from('caixa')
-      .select(`
-        *,
-        movimentacoes_caixa (*)
-      `)
-      .eq('usuario_id', usuario.user.id)
-      .eq('status', 'aberto')
-      .order('data_abertura', { ascending: false })
-      .limit(1)
-      .single();
+      const { data, error } = await supabase
+        .from('caixa')
+        .select(`
+          *,
+          movimentacoes_caixa (*)
+        `)
+        .eq('usuario_id', usuario.id)
+        .eq('status', 'aberto')
+        .order('data_abertura', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Erro ao buscar caixa atual:', error);
-      throw new Error('Erro ao buscar caixa atual');
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar caixa atual:', error);
+        throw new Error('Erro ao buscar caixa atual');
+      }
+
+      if (!data) return null;
+
+      return this.calcularResumoCaixa(data);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('autenticado')) {
+        throw error;
+      }
+      return null;
     }
-
-    if (!data) return null;
-
-    return this.calcularResumoCaixa(data);
   }
 
   // ===== LISTAR CAIXAS COM FILTROS =====
@@ -127,10 +154,7 @@ class CaixaService {
     caixaId: string, 
     dados: MovimentacaoForm
   ): Promise<MovimentacaoCaixa> {
-    const { data: usuario } = await supabase.auth.getUser();
-    if (!usuario.user) {
-      throw new Error('Usuário não autenticado');
-    }
+    const usuario = await this.getAuthenticatedUser();
 
     const { data, error } = await supabase
       .from('movimentacoes_caixa')
@@ -139,14 +163,14 @@ class CaixaService {
         tipo: dados.tipo,
         descricao: dados.descricao,
         valor: dados.valor,
-        usuario_id: usuario.user.id
+        usuario_id: usuario.id
       })
       .select()
       .single();
 
     if (error) {
       console.error('Erro ao adicionar movimentação:', error);
-      throw new Error('Erro ao registrar movimentação');
+      throw new Error('Erro ao registrar movimentação. Verifique se as tabelas estão criadas no Supabase.');
     }
 
     return data;
@@ -285,6 +309,48 @@ class CaixaService {
     if (!data) return null;
 
     return this.calcularResumoCaixa(data);
+  }
+
+  // ===== HISTÓRICO DE CAIXAS =====
+  
+  async buscarHistorico(filtros: CaixaFiltros = {}): Promise<CaixaCompleto[]> {
+    try {
+      const usuario = await this.getAuthenticatedUser();
+
+      let query = supabase
+        .from('caixa')
+        .select(`
+          *,
+          movimentacoes_caixa (*)
+        `)
+        .eq('usuario_id', usuario.id)
+        .order('data_abertura', { ascending: false });
+
+      // Aplicar filtros
+      if (filtros.data_inicio) {
+        query = query.gte('data_abertura', `${filtros.data_inicio}T00:00:00`);
+      }
+
+      if (filtros.data_fim) {
+        query = query.lte('data_abertura', `${filtros.data_fim}T23:59:59`);
+      }
+
+      if (filtros.status && filtros.status !== 'todos') {
+        query = query.eq('status', filtros.status);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Erro ao buscar histórico:', error);
+        throw new Error('Erro ao buscar histórico do caixa');
+      }
+
+      return (data || []).map(caixa => this.calcularResumoCaixa(caixa));
+    } catch (error) {
+      console.error('Erro no serviço de histórico:', error);
+      throw error;
+    }
   }
 }
 

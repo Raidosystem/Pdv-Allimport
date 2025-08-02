@@ -11,7 +11,6 @@ import {
   Plus,
   Check,
   X,
-  MapPin,
   FileText
 } from 'lucide-react'
 import { Button } from '../ui/Button'

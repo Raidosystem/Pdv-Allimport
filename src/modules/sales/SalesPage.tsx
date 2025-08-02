@@ -9,16 +9,18 @@ import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/u
 import { ProductSearch } from './components/ProductSearch'
 import { SaleResumo } from './components/SaleResumo'
 import { PagamentoForm } from './components/PagamentoForm'
-import { ClienteSelect } from './components/ClienteSelect'
+import { ClienteSelector } from '../../components/ui/ClienteSelector'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductModal } from '../../components/product/ProductModal'
 import { salesService, cashRegisterService } from '../../services/sales'
 import type { Product, Customer, CashRegister } from '../../types/sales'
+import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
 
 export function SalesPage() {
   const { user } = useAuth()
   const [customer, setCustomer] = useState<Customer | null>(null)
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [cashRegister, setCashRegister] = useState<CashRegister | null>(null)
   const [loading, setLoading] = useState(false)
   const [cashReceived, setCashReceived] = useState<number>(0)
@@ -285,9 +287,11 @@ export function SalesPage() {
                 onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
                 onCreateProduct={() => setShowProductModal(true)}
               />
-              <ClienteSelect 
-                selectedCustomer={customer}
-                onCustomerSelect={setCustomer}
+              <ClienteSelector 
+                clienteSelecionado={clienteSelecionado}
+                onClienteSelect={setClienteSelecionado}
+                titulo="Cliente da Venda"
+                showCard={false}
               />
             </div>
 

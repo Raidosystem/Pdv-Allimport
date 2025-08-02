@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
-import { ClienteSelectorOS } from './ClienteSelectorOS'
+import { ClienteSelector } from '../ui/ClienteSelector'
 import { ordemServicoService } from '../../services/ordemServicoService'
 import type { 
   NovaOrdemServicoForm, 
@@ -131,7 +131,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         
         {/* Seção: Cliente */}
-        <ClienteSelectorOS 
+        <ClienteSelector 
           onClienteSelect={setClienteSelecionado}
           clienteSelecionado={clienteSelecionado}
         />

@@ -5,6 +5,11 @@ export interface Cliente {
   cpf_cnpj?: string
   email?: string
   endereco?: string
+  rua?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
+  cep?: string
   tipo: 'Física' | 'Jurídica'
   observacoes?: string
   ativo: boolean
@@ -18,6 +23,11 @@ export interface ClienteInput {
   cpf_cnpj?: string
   email?: string
   endereco?: string
+  rua?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
+  cep?: string
   tipo: 'Física' | 'Jurídica'
   observacoes?: string
   ativo: boolean

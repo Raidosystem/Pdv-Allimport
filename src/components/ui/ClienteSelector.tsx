@@ -11,7 +11,6 @@ import {
   Plus,
   Check,
   X,
-  MapPin,
   FileText
 } from 'lucide-react'
 import { Button } from '../ui/Button'
@@ -41,12 +40,19 @@ const novoClienteSchema = z.object({
 
 type NovoClienteData = z.infer<typeof novoClienteSchema>
 
-interface ClienteSelectorOSProps {
-  onClienteSelect: (cliente: Cliente) => void
+interface ClienteSelectorProps {
+  onClienteSelect: (cliente: Cliente | null) => void
   clienteSelecionado?: Cliente | null
+  titulo?: string
+  showCard?: boolean
 }
 
-export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: ClienteSelectorOSProps) {
+export function ClienteSelector({ 
+  onClienteSelect, 
+  clienteSelecionado, 
+  titulo = "Dados do Cliente",
+  showCard = true 
+}: ClienteSelectorProps) {
   const [busca, setBusca] = useState('')
   const [clientesEncontrados, setClientesEncontrados] = useState<Cliente[]>([])
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false)
@@ -72,6 +78,11 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
       cpf_cnpj: '',
       email: '',
       endereco: '',
+      rua: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      cep: '',
       tipo: 'Física',
       observacoes: ''
     }
@@ -129,7 +140,7 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
   }
 
   const limparSelecao = () => {
-    onClienteSelect(null as any)
+    onClienteSelect(null)
     setBusca('')
     setMostrarSugestoes(false)
   }
@@ -192,11 +203,11 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
     }
   }
 
-  return (
-    <Card className="p-6">
+  const content = (
+    <>
       <div className="flex items-center gap-2 mb-4">
         <User className="w-5 h-5 text-blue-600" />
-        <h2 className="text-lg font-semibold text-gray-900">Dados do Cliente</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{titulo}</h2>
       </div>
 
       {/* Campo de busca */}
@@ -303,6 +314,7 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
             <div className="font-medium">{clienteSelecionado.nome}</div>
             <div>{clienteSelecionado.telefone}</div>
             {clienteSelecionado.email && <div>{clienteSelecionado.email}</div>}
+            {clienteSelecionado.endereco && <div>{clienteSelecionado.endereco}</div>}
           </div>
         </div>
       )}
@@ -487,7 +499,9 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
                   />
                 </div>
               </div>
-            </div>            <div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Observações (opcional)
               </label>
@@ -525,6 +539,16 @@ export function ClienteSelectorOS({ onClienteSelect, clienteSelecionado }: Clien
           </form>
         </div>
       )}
-    </Card>
+    </>
   )
+
+  if (showCard) {
+    return (
+      <Card className="p-6">
+        {content}
+      </Card>
+    )
+  }
+
+  return <div>{content}</div>
 }

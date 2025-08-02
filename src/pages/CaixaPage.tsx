@@ -13,7 +13,6 @@ import { StatusCaixa } from '../components/caixa/StatusCaixa';
 import { AberturaCaixaModal } from '../components/caixa/AberturaCaixaModal';
 import { FechamentoCaixaModal } from '../components/caixa/FechamentoCaixaModal';
 import { MovimentacoesCaixa } from '../components/caixa/MovimentacoesCaixa';
-import { SystemCheck } from '../components/SystemCheck';
 import type { AberturaCaixaForm, FechamentoCaixaForm, MovimentacaoForm } from '../types/caixa';
 
 export function CaixaPage() {
@@ -111,10 +110,7 @@ export function CaixaPage() {
           </div>
         </div>
 
-        {/* Verificação do Sistema */}
-        <div className="mb-6">
-          <SystemCheck />
-        </div>
+
 
         {/* Mensagem de Erro */}
         {error && (

@@ -16,14 +16,12 @@ import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
-import { DebugComponent } from './components/DebugComponent'
 import './App.css'
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <DebugComponent />
         <Toaster 
           position="top-right"
           toastOptions={{

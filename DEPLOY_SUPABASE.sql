@@ -14,6 +14,11 @@ BEGIN
             -- Usar cash_registers como base
             CREATE TABLE public.caixa AS SELECT * FROM public.cash_registers WHERE false;
             
+            -- Renomear usuario_id para user_id se existir
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'caixa' AND column_name = 'usuario_id') THEN
+                ALTER TABLE public.caixa RENAME COLUMN usuario_id TO user_id;
+            END IF;
+            
             -- Adicionar colunas que podem estar faltando
             ALTER TABLE public.caixa 
             ADD COLUMN IF NOT EXISTS diferenca DECIMAL(10,2),
@@ -124,19 +129,30 @@ CREATE TRIGGER update_caixa_updated_at
 
 -- ===== GARANTIR TABELA CLIENTES =====
 
-CREATE TABLE IF NOT EXISTS public.clientes (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    nome TEXT NOT NULL,
-    telefone TEXT NOT NULL,
-    cpf_cnpj TEXT,
-    email TEXT,
-    endereco TEXT,
-    tipo TEXT CHECK (tipo IN ('Física', 'Jurídica')) DEFAULT 'Física',
-    observacoes TEXT,
-    data_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL
-);
+-- Verificar se clientes já existe, se não criar
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'clientes' AND table_schema = 'public') THEN
+        CREATE TABLE public.clientes (
+            id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+            nome TEXT NOT NULL,
+            telefone TEXT NOT NULL,
+            cpf_cnpj TEXT,
+            email TEXT,
+            endereco TEXT,
+            tipo TEXT CHECK (tipo IN ('Física', 'Jurídica')) DEFAULT 'Física',
+            observacoes TEXT,
+            data_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+            data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+            user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL
+        );
+    ELSE
+        -- Se existe mas tem usuario_id, renomear para user_id
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'clientes' AND column_name = 'usuario_id') THEN
+            ALTER TABLE public.clientes RENAME COLUMN usuario_id TO user_id;
+        END IF;
+    END IF;
+END $$;
 
 -- RLS para clientes
 ALTER TABLE public.clientes ENABLE ROW LEVEL SECURITY;

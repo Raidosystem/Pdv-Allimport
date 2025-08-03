@@ -5,17 +5,22 @@ Os emails de cadastro e recuperação de senha não estão chegando porque as co
 
 ## 🚀 SOLUÇÃO RÁPIDA - SIGA ESTAS ETAPAS:
 
+### 📋 SEÇÕES DO DASHBOARD SUPABASE:
+1. **URL Configuration** → Site URL + Redirect URLs
+2. **Emails** → Confirmações + Templates
+3. **Sign In / Providers** → Enable signups (se necessário)
+
 ### 1️⃣ ACESSE O DASHBOARD
 Abra: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
 
 ### 2️⃣ CONFIGURAR SITE URL
-**Localização:** Authentication > Settings > General
+**Localização:** Authentication > URL Configuration
 ```
 Site URL: https://pdv-allimport.vercel.app
 ```
 
 ### 3️⃣ CONFIGURAR REDIRECT URLS
-**Localização:** Authentication > Settings > Redirect URLs
+**Localização:** Authentication > URL Configuration > Redirect URLs
 **Adicione TODAS estas URLs:**
 ```
 https://pdv-allimport.vercel.app/confirm-email
@@ -27,17 +32,22 @@ http://localhost:5174/dashboard
 ```
 
 ### 4️⃣ HABILITAR CONFIRMAÇÕES DE EMAIL
-**Localização:** Authentication > Settings > Email Auth
+**Localização:** Authentication > Emails
 ```
 ✅ Enable email confirmations: LIGADO
 ✅ Enable email change confirmations: LIGADO  
-✅ Enable signups: LIGADO
+```
+
+### 4.1️⃣ HABILITAR SIGNUPS (SE NECESSÁRIO)
+**Localização:** Authentication > Sign In / Providers
+```
+✅ Enable signups: LIGADO (procure por esta opção)
 ```
 
 ### 5️⃣ CONFIGURAR TEMPLATES DE EMAIL
 
 #### A) EMAIL DE CONFIRMAÇÃO:
-**Localização:** Authentication > Settings > Email Templates > Confirm signup
+**Localização:** Authentication > Emails > Email Templates > Confirm signup
 
 **Subject:**
 ```
@@ -89,7 +99,7 @@ Confirme seu email - PDV Allimport
 ```
 
 #### B) EMAIL DE RECUPERAÇÃO DE SENHA:
-**Localização:** Authentication > Settings > Email Templates > Reset password
+**Localização:** Authentication > Emails > Email Templates > Reset password
 
 **Subject:**
 ```
@@ -166,13 +176,13 @@ Recuperação de senha - PDV Allimport
 
 ## ✅ CHECKLIST FINAL:
 
-- [ ] Site URL configurada: `https://pdv-allimport.vercel.app`
-- [ ] Redirect URLs configuradas (todas as 6 URLs)
-- [ ] Email confirmations: LIGADO
-- [ ] Email change confirmations: LIGADO
-- [ ] Enable signups: LIGADO
-- [ ] Template de confirmação configurado
-- [ ] Template de recuperação configurado
+- [ ] **URL Configuration:** Site URL configurada: `https://pdv-allimport.vercel.app`
+- [ ] **URL Configuration:** Redirect URLs configuradas (todas as 6 URLs)
+- [ ] **Emails:** Email confirmations: LIGADO
+- [ ] **Emails:** Email change confirmations: LIGADO
+- [ ] **Sign In / Providers:** Enable signups: LIGADO (se necessário)
+- [ ] **Emails > Templates:** Template de confirmação configurado
+- [ ] **Emails > Templates:** Template de recuperação configurado
 - [ ] Testado cadastro de nova conta
 - [ ] Testado recuperação de senha
 

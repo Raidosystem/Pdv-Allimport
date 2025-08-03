@@ -11,6 +11,39 @@ import type { Cliente } from '../types/cliente'
 
 class OrdemServicoService {
   
+  // Gerar número único para a OS
+  private async gerarNumeroOS(): Promise<string> {
+    const agora = new Date()
+    const ano = agora.getFullYear()
+    const mes = String(agora.getMonth() + 1).padStart(2, '0')
+    const dia = String(agora.getDate()).padStart(2, '0')
+    
+    // Buscar a última OS do dia para incrementar
+    const inicioDia = new Date(ano, agora.getMonth(), agora.getDate())
+    const fimDia = new Date(ano, agora.getMonth(), agora.getDate() + 1)
+    
+    const { data: ultimasOS } = await supabase
+      .from('ordens_servico')
+      .select('numero_os')
+      .gte('criado_em', inicioDia.toISOString())
+      .lt('criado_em', fimDia.toISOString())
+      .order('numero_os', { ascending: false })
+      .limit(1)
+    
+    let sequencial = 1
+    if (ultimasOS && ultimasOS.length > 0) {
+      const ultimoNumero = ultimasOS[0].numero_os
+      // Extrair o número sequencial do formato OS-YYYYMMDD-XXX
+      const match = ultimoNumero.match(/OS-\d{8}-(\d+)/)
+      if (match) {
+        sequencial = parseInt(match[1]) + 1
+      }
+    }
+    
+    const numeroSequencial = String(sequencial).padStart(3, '0')
+    return `OS-${ano}${mes}${dia}-${numeroSequencial}`
+  }
+
   // Buscar todas as ordens de serviço do usuário
   async buscarOrdens(filtros?: FiltrosOS): Promise<OrdemServico[]> {
     const user = await requireAuth()
@@ -99,7 +132,11 @@ class OrdemServicoService {
       throw new Error('Cliente é obrigatório')
     }
 
+    // Gerar número único para a OS
+    const numero_os = await this.gerarNumeroOS()
+
     const novaOrdem = {
+      numero_os,
       cliente_id,
       tipo: dadosForm.tipo,
       marca: dadosForm.marca,
@@ -109,7 +146,11 @@ class OrdemServicoService {
       checklist: dadosForm.checklist,
       observacoes: dadosForm.observacoes,
       defeito_relatado: dadosForm.defeito_relatado,
-      data_previsao: dadosForm.data_previsao || null, // Converter string vazia para null
+      // Mapeamento adicional para compatibilidade com schema existente
+      descricao_problema: dadosForm.defeito_relatado || 'Não informado',
+      equipamento: `${dadosForm.tipo || ''} ${dadosForm.marca || ''} ${dadosForm.modelo || ''}`.trim(),
+      status: 'Aberta',
+      data_previsao: dadosForm.data_previsao || null,
       valor_orcamento: dadosForm.valor_orcamento,
       usuario_id: user.id
     }

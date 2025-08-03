@@ -220,10 +220,11 @@ export function useProducts() {
 
       toast.success(id ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!')
       return true
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar produto:', error)
       
-      if (error.code === '23505') {
+      const isError = error as { code?: string }
+      if (isError.code === '23505') {
         toast.error('Código já existe. Use um código único.')
       } else {
         toast.error('Erro ao salvar produto')

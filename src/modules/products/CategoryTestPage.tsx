@@ -7,7 +7,7 @@ import { insertDefaultCategories, createCategorySimple, fixCategoryPolicies } fr
 
 export function CategoryTestPage() {
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<Record<string, unknown> | null>(null)
   const [newCategoryName, setNewCategoryName] = useState('')
 
   const runTests = async () => {

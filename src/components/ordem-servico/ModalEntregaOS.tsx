@@ -100,7 +100,7 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
       toast.success('Ordem de serviço encerrada com sucesso!')
       reset()
       onClose()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao entregar equipamento:', error)
       toast.error('Erro ao processar entrega')
     } finally {

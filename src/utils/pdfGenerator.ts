@@ -3,10 +3,32 @@ import 'jspdf-autotable'
 import type { Product } from '../types/product'
 import { formatCurrency } from './format'
 
+// Tipo para as opções do autoTable
+interface AutoTableOptions {
+  startY?: number
+  head?: string[][]
+  body?: string[][]
+  theme?: 'striped' | 'grid' | 'plain'
+  styles?: {
+    fontSize?: number
+    cellPadding?: number
+  }
+  headStyles?: {
+    fillColor?: number[]
+    textColor?: number | string
+    fontStyle?: string
+  }
+  alternateRowStyles?: {
+    fillColor?: number[]
+  }
+  columnStyles?: Record<number, { cellWidth?: number }>
+  margin?: { left?: number; right?: number }
+}
+
 // Extender o tipo jsPDF para incluir autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF
+    autoTable: (options: AutoTableOptions) => jsPDF
   }
 }
 

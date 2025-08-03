@@ -126,7 +126,7 @@ export function AuthDiagnostic() {
             if (categoriesError) newStatus.details.push(`  • Categorias: ${categoriesError.message}`);
             if (caixaError) newStatus.details.push(`  • Caixa: ${caixaError.message}`);
           }
-        } catch (error) {
+        } catch {
           newStatus.details.push('❌ Erro ao testar acesso às tabelas');
         }
       }

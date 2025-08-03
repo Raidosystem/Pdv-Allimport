@@ -46,11 +46,11 @@ const ordemServicoSchema = z.object({
 type FormData = z.infer<typeof ordemServicoSchema>
 
 interface OrdemServicoFormProps {
-  onSuccess?: (ordem: any) => void
+  onSuccess?: (ordem: Record<string, unknown>) => void
   onCancel?: () => void
 }
 
-const TIPOS_EQUIPAMENTO: { value: TipoEquipamento; label: string; icon: any }[] = [
+const TIPOS_EQUIPAMENTO: { value: TipoEquipamento; label: string; icon: React.ComponentType }[] = [
   { value: 'Celular', label: 'Celular', icon: Smartphone },
   { value: 'Notebook', label: 'Notebook', icon: Laptop },
   { value: 'Console', label: 'Console', icon: Gamepad2 },
@@ -113,11 +113,12 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       toast.success('Ordem de serviço criada com sucesso!')
       
       if (onSuccess) {
-        onSuccess(ordem)
+        onSuccess(ordem as unknown as Record<string, unknown>)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao criar ordem:', error)
-      toast.error(error.message || 'Erro ao criar ordem de serviço')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar ordem de serviço'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

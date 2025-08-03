@@ -58,7 +58,7 @@ export interface Sale {
   total_amount: number
   discount_amount: number
   payment_method: 'cash' | 'card' | 'pix' | 'mixed'
-  payment_details?: any
+  payment_details?: Record<string, string | number | boolean>
   status: 'pending' | 'completed' | 'cancelled'
   notes?: string
   created_at: string

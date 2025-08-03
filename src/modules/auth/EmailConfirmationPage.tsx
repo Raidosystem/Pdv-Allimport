@@ -35,7 +35,7 @@ export function EmailConfirmationPage() {
             setStatus('success')
             setMessage('Email confirmado com sucesso!')
           }
-        } catch (error) {
+        } catch {
           setStatus('error')
           setMessage('Erro inesperado ao confirmar email.')
         }
@@ -57,7 +57,7 @@ export function EmailConfirmationPage() {
             setStatus('success')
             setMessage('Email confirmado com sucesso!')
           }
-        } catch (error) {
+        } catch {
           setStatus('error')
           setMessage('Erro inesperado ao confirmar email.')
         }
@@ -79,7 +79,7 @@ export function EmailConfirmationPage() {
             setStatus('success')
             setMessage('Email confirmado com sucesso!')
           }
-        } catch (error) {
+        } catch {
           setStatus('error')
           setMessage('Erro inesperado ao confirmar email.')
         }

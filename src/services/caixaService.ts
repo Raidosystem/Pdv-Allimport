@@ -6,7 +6,8 @@ import type {
   AberturaCaixaForm, 
   FechamentoCaixaForm, 
   MovimentacaoForm,
-  CaixaFiltros 
+  CaixaFiltros,
+  CaixaResumo 
 } from '../types/caixa';
 
 class CaixaService {
@@ -85,7 +86,7 @@ class CaixaService {
         .from('caixa')
         .select(`
           *,
-          movimentacoes_caixa (*)
+          movimentacoes (*)
         `)
         .eq('user_id', usuario.id)
         .eq('status', 'aberto')
@@ -116,7 +117,7 @@ class CaixaService {
       .from('caixa')
       .select(`
         *,
-        movimentacoes_caixa (*)
+        movimentacoes (*)
       `);
 
     // Aplicar filtros
@@ -145,7 +146,7 @@ class CaixaService {
       throw new Error('Erro ao carregar histórico de caixas');
     }
 
-    return data.map((caixa: any) => this.calcularResumoCaixa(caixa));
+    return data.map((caixa: CaixaCompleto) => this.calcularResumoCaixa(caixa));
   }
 
   // ===== MOVIMENTAÇÕES =====
@@ -242,7 +243,7 @@ class CaixaService {
       .from('caixa')
       .select(`
         *,
-        movimentacoes_caixa (*)
+        movimentacoes (*)
       `)
       .eq('id', id)
       .single();
@@ -258,25 +259,27 @@ class CaixaService {
 
   // ===== FUNÇÕES AUXILIARES =====
   
-  private calcularResumoCaixa(caixa: any): CaixaCompleto {
-    const movimentacoes = caixa.movimentacoes_caixa || [];
-    
+  private calcularResumoCaixa(caixa: CaixaCompleto): CaixaCompleto {
+    const movimentacoes = caixa.movimentacoes || [];
+
     const total_entradas = movimentacoes
       .filter((m: MovimentacaoCaixa) => m.tipo === 'entrada')
-      .reduce((sum: number, m: MovimentacaoCaixa) => sum + m.valor, 0);
-    
+      .reduce((sum: number, m: MovimentacaoCaixa) => sum + m.valor, 0) || 0;
+
     const total_saidas = movimentacoes
       .filter((m: MovimentacaoCaixa) => m.tipo === 'saida')
-      .reduce((sum: number, m: MovimentacaoCaixa) => sum + m.valor, 0);
-    
-    const saldo_atual = caixa.valor_inicial + total_entradas - total_saidas;
+      .reduce((sum: number, m: MovimentacaoCaixa) => sum + m.valor, 0) || 0;
+
+    const saldo_atual = (caixa.valor_inicial || 0) + total_entradas - total_saidas;
+    const total_movimentacoes = movimentacoes.length;
 
     return {
       ...caixa,
       movimentacoes,
       total_entradas,
       total_saidas,
-      saldo_atual
+      saldo_atual,
+      total_movimentacoes
     };
   }
 
@@ -287,17 +290,17 @@ class CaixaService {
     return caixaAtual !== null;
   }
 
-  async obterResumoDoDia(): Promise<any> {
+  async obterResumoDoDia(): Promise<CaixaResumo | null> {
     const { data: usuario } = await supabase.auth.getUser();
     if (!usuario.user) return null;
 
     const hoje = new Date().toISOString().split('T')[0];
-    
+
     const { data } = await supabase
       .from('caixa')
       .select(`
         *,
-        movimentacoes_caixa (*)
+        movimentacoes (*)
       `)
       .eq('usuario_id', usuario.user.id)
       .gte('data_abertura', `${hoje}T00:00:00`)
@@ -321,7 +324,7 @@ class CaixaService {
         .from('caixa')
         .select(`
           *,
-          movimentacoes_caixa (*)
+          movimentacoes (*)
         `)
         .eq('user_id', usuario.id)
         .order('data_abertura', { ascending: false });

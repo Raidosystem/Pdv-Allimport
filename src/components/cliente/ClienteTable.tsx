@@ -49,7 +49,7 @@ export function ClienteTable({
     onFiltersChange(novosFiltros)
   }
 
-  const handleFilterChange = (key: keyof ClienteFilters, value: any) => {
+  const handleFilterChange = (key: keyof ClienteFilters, value: string | boolean | null) => {
     const novosFiltros = { ...filtros, [key]: value }
     setFiltros(novosFiltros)
     onFiltersChange(novosFiltros)

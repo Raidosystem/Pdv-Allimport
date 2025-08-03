@@ -21,7 +21,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | string | null>(null)
   const [isCodeManual, setIsCodeManual] = useState(false)
   
   const {
@@ -90,7 +90,7 @@ export function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps
       })
       
       if (product.imagem_url) {
-        setSelectedImage(product.imagem_url as any)
+        setSelectedImage(product.imagem_url as string)
       }
       setIsCodeManual(true)
     }

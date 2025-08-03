@@ -220,9 +220,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
       }
       
       onSuccess?.(clienteResult)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar cliente:', error)
-      toast.error(error.message || 'Erro ao salvar cliente')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar cliente'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

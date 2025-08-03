@@ -14,9 +14,10 @@ export function useOrdensServico(filtros?: FiltrosOS) {
     try {
       const dados = await ordemServicoService.buscarOrdens(filtros)
       setOrdens(dados)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao carregar ordens:', err)
-      setError(err.message || 'Erro ao carregar ordens de serviço')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar ordens de serviço'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -52,9 +53,10 @@ export function useOrdemServico(id: string) {
     try {
       const dados = await ordemServicoService.buscarPorId(id)
       setOrdem(dados)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao carregar ordem:', err)
-      setError(err.message || 'Erro ao carregar ordem de serviço')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar ordem de serviço'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

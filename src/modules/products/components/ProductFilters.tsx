@@ -3,14 +3,16 @@ import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
 import type { Product } from '../../../types/product'
 
+interface ProductFiltersState {
+  category: string
+  status: string
+  stockLevel: string
+  priceRange: { min: number; max: number }
+}
+
 interface ProductFiltersProps {
-  filters: {
-    category: string
-    status: string
-    stockLevel: string
-    priceRange: { min: number; max: number }
-  }
-  onFiltersChange: (filters: any) => void
+  filters: ProductFiltersState
+  onFiltersChange: (filters: ProductFiltersState) => void
   products: Product[]
 }
 
@@ -20,7 +22,7 @@ export function ProductFilters({ filters, onFiltersChange, products }: ProductFi
     new Set(products.map(p => p.categoria).filter(Boolean))
   ).sort()
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: string | number | { min: number; max: number }) => {
     onFiltersChange({
       ...filters,
       [key]: value

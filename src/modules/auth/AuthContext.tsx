@@ -1,16 +1,16 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>
-  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ data: any; error: any }>
-  signOut: () => Promise<{ error: any }>
-  resendConfirmation: (email: string) => Promise<{ data: any; error: any }>
-  resetPassword: (email: string) => Promise<{ data: any; error: any }>
+  signIn: (email: string, password: string) => Promise<{ data: unknown; error: AuthError | null }>
+  signUp: (email: string, password: string, metadata?: Record<string, unknown>) => Promise<{ data: unknown; error: AuthError | null }>
+  signOut: () => Promise<{ error: AuthError | null }>
+  resendConfirmation: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
+  resetPassword: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem('test-user')
           localStorage.removeItem('test-session')
         }
-      } catch (error) {
+      } catch {
         // Erro ao fazer parse, limpar localStorage
         localStorage.removeItem('test-user')
         localStorage.removeItem('test-session')
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { data, error }
   }
 
-  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
     // URL base para produção e desenvolvimento
     const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
     
@@ -202,3 +202,5 @@ export function useAuth() {
   }
   return context
 }
+
+export default AuthContext

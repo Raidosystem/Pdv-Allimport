@@ -62,7 +62,7 @@ export function SystemCheck() {
           } else {
             newStatus.message = 'Sistema configurado corretamente!';
           }
-        } catch (error) {
+        } catch {
           newStatus.database = false;
           newStatus.message = 'Erro ao verificar banco de dados.';
         }

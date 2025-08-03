@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { caixaService } from '../services/caixaService';
 import type { 
   CaixaCompleto, 
@@ -15,7 +15,7 @@ export function useCaixa() {
   const [error, setError] = useState<string | null>(null);
 
   // ===== CARREGAR CAIXA ATUAL =====
-  const carregarCaixaAtual = async () => {
+  const carregarCaixaAtual = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,7 +28,7 @@ export function useCaixa() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // ===== ABRIR CAIXA =====
   const abrirCaixa = async (dados: AberturaCaixaForm): Promise<boolean> => {
@@ -127,7 +127,7 @@ export function useCaixa() {
   // ===== CARREGAR CAIXA AO MONTAR COMPONENTE =====
   useEffect(() => {
     carregarCaixaAtual();
-  }, []);
+  }, [carregarCaixaAtual]);
 
   return {
     // Estados
@@ -168,7 +168,7 @@ export function useCaixaHistorico() {
 
   useEffect(() => {
     carregarHistorico();
-  }, []);
+  }, [carregarHistorico]);
 
   return {
     caixas,
@@ -207,7 +207,7 @@ export function useCaixaDetalhes(caixaId: string | null) {
     } else {
       setCaixa(null);
     }
-  }, [caixaId]);
+  }, [caixaId, carregarDetalhes]);
 
   return {
     caixa,

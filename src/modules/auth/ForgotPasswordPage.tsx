@@ -45,7 +45,7 @@ export function ForgotPasswordPage() {
 
       console.log('✅ Email de recuperação enviado com sucesso')
       setSent(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('💥 Erro inesperado:', error)
       setError('Erro inesperado ao enviar email de recuperação. Tente novamente em alguns minutos.')
     } finally {

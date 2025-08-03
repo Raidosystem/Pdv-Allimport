@@ -98,7 +98,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
         setTelefoneValue('')
         setCpfCnpjValue('')
       }
-    } catch (error) {
+    } catch {
       // Erro já tratado no hook useClientes
     }
   }

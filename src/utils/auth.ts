@@ -31,7 +31,7 @@ export async function getAuthenticatedUser(): Promise<User | null> {
           localStorage.removeItem('test-user')
           localStorage.removeItem('test-session')
         }
-      } catch (error) {
+      } catch {
         // Erro ao fazer parse, limpar localStorage
         localStorage.removeItem('test-user')
         localStorage.removeItem('test-session')

@@ -18,7 +18,7 @@ import { toast } from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { caixaService } from '../services/caixaService';
-import type { CaixaCompleto } from '../types/caixa';
+import type { HistoricoCaixa } from '../types/caixa';
 
 interface FiltrosHistorico {
   dataInicio: string;
@@ -27,7 +27,7 @@ interface FiltrosHistorico {
 }
 
 export function HistoricoCaixaPage() {
-  const [historico, setHistorico] = useState<CaixaCompleto[]>([]);
+  const [historico, setHistorico] = useState<HistoricoCaixa[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState<FiltrosHistorico>({
     dataInicio: '',
@@ -35,7 +35,7 @@ export function HistoricoCaixaPage() {
     status: 'todos'
   });
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-  const [detalheSelecionado, setDetalheSelecionado] = useState<CaixaCompleto | null>(null);
+  const [detalheSelecionado, setDetalheSelecionado] = useState<HistoricoCaixa | null>(null);
 
   useEffect(() => {
     carregarHistorico();
@@ -52,7 +52,21 @@ export function HistoricoCaixaPage() {
       };
 
       const dados = await caixaService.buscarHistorico(filtrosCaixa);
-      setHistorico(dados);
+
+      const historicoFormatado = dados.map((item) => ({
+        id: item.id,
+        data: item.data_abertura,
+        valor: item.valor_inicial,
+        data_abertura: item.data_abertura,
+        status: item.status,
+        valor_inicial: item.valor_inicial,
+        valor_final: item.valor_final,
+        diferenca: item.diferenca,
+        data_fechamento: item.data_fechamento,
+        observacoes: item.observacoes,
+        movimentacoes: item.movimentacoes,
+      }));
+      setHistorico(historicoFormatado);
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
       toast.error('Erro ao carregar histórico do caixa');

@@ -66,7 +66,7 @@ export function ResetPasswordPage() {
       setTimeout(() => {
         navigate('/login')
       }, 3000)
-    } catch (error: any) {
+    } catch {
       setError('Erro ao redefinir senha. Tente novamente.')
     } finally {
       setLoading(false)

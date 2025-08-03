@@ -28,9 +28,10 @@ export interface MovimentacaoCaixa {
 
 export interface CaixaCompleto extends Caixa {
   movimentacoes?: MovimentacaoCaixa[];
-  total_entradas?: number;
-  total_saidas?: number;
-  saldo_atual?: number;
+  total_entradas: number;
+  total_saidas: number;
+  saldo_atual: number;
+  total_movimentacoes: number;
 }
 
 export interface CaixaResumo {
@@ -62,4 +63,25 @@ export interface CaixaFiltros {
   data_inicio?: string;
   data_fim?: string;
   usuario_id?: string;
+}
+
+export interface HistoricoCaixa {
+  id: string;
+  data: string;
+  descricao?: string;
+  valor: number;
+  data_abertura: string;
+  status: 'aberto' | 'fechado';
+  valor_inicial: number;
+  valor_final?: number;
+  diferenca?: number;
+  data_fechamento?: string;
+  observacoes?: string;
+  movimentacoes?: Array<{
+    id: string;
+    tipo: 'entrada' | 'saida';
+    descricao: string;
+    valor: number;
+    data: string;
+  }>;
 }

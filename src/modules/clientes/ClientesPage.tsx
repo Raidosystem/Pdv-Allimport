@@ -52,7 +52,7 @@ export function ClientesPage() {
     setViewMode('list')
   }
 
-  const handleSubmitForm = async (data: any) => {
+  const handleSubmitForm = async (data: Cliente) => {
     if (clienteEditando) {
       await atualizarCliente(clienteEditando.id, data)
     } else {

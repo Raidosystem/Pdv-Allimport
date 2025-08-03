@@ -85,7 +85,7 @@ export interface PaymentMethod {
   type: 'cash' | 'card' | 'pix' | 'check' | 'credit'
   amount: number
   installments?: number
-  details?: Record<string, any>
+  details?: Record<string, string | number | boolean>
 }
 
 export interface Cashier {
@@ -130,7 +130,7 @@ export interface Report {
     start: string
     end: string
   }
-  data: Record<string, any>
+  data: Record<string, unknown>
   generatedBy: string
   createdAt: string
 }

@@ -174,9 +174,9 @@ export function ClienteSelector({
       onClienteSelect(clienteCriado)
       setBusca(clienteCriado.nome)
       fecharFormCadastro()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao criar cliente:', error)
-      toast.error(error.message || 'Erro ao cadastrar cliente')
+      toast.error((error as Error).message || 'Erro ao cadastrar cliente')
     } finally {
       setLoadingCadastro(false)
     }

@@ -48,7 +48,7 @@ export default function AuthConfigTest() {
       } else {
         setTestResult(`⚠️ Executando em: ${currentUrl} (desenvolvimento)`);
       }
-    } catch (error) {
+    } catch {
       setTestResult('❌ Erro ao testar configuração');
     }
   };

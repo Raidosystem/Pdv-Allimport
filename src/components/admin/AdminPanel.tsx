@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Database, Crown, LogIn } from 'lucide-react'
+import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Database, Crown } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'

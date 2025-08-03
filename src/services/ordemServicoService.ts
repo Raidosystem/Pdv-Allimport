@@ -1,5 +1,6 @@
 // 🔧 Serviço para Ordens de Serviço
 import { supabase } from '../lib/supabase'
+import { requireAuth } from '../utils/auth'
 import type { 
   OrdemServico, 
   NovaOrdemServicoForm, 
@@ -12,11 +13,7 @@ class OrdemServicoService {
   
   // Buscar todas as ordens de serviço do usuário
   async buscarOrdens(filtros?: FiltrosOS): Promise<OrdemServico[]> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     let query = supabase
       .from('ordens_servico')
@@ -62,11 +59,7 @@ class OrdemServicoService {
 
   // Buscar ordem por ID
   async buscarPorId(id: string): Promise<OrdemServico | null> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     const { data, error } = await supabase
       .from('ordens_servico')
@@ -88,11 +81,7 @@ class OrdemServicoService {
 
   // Criar nova ordem de serviço
   async criarOrdem(dadosForm: NovaOrdemServicoForm): Promise<OrdemServico> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     // Se não tem cliente_id, criar novo cliente
     let cliente_id = dadosForm.cliente_id
@@ -144,11 +133,7 @@ class OrdemServicoService {
 
   // Atualizar ordem de serviço
   async atualizarOrdem(id: string, dados: Partial<OrdemServico>): Promise<OrdemServico> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     const { data, error } = await supabase
       .from('ordens_servico')
@@ -171,11 +156,7 @@ class OrdemServicoService {
 
   // Atualizar apenas o status
   async atualizarStatus(id: string, novoStatus: StatusOS): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     const dadosAtualizacao: any = { status: novoStatus }
     
@@ -203,11 +184,7 @@ class OrdemServicoService {
     data_entrega: string
     data_fim_garantia?: string
   }): Promise<OrdemServico> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     const dadosAtualizacao = {
       status: 'Entregue' as StatusOS,
@@ -238,11 +215,7 @@ class OrdemServicoService {
 
   // Buscar clientes por termo
   async buscarClientes(termo: string): Promise<Cliente[]> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    await requireAuth()
 
     const { data, error } = await supabase
       .from('clientes')
@@ -261,11 +234,7 @@ class OrdemServicoService {
 
   // Criar ou buscar cliente existente
   private async criarOuBuscarCliente(nome: string, telefone: string, email?: string): Promise<Cliente> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    await requireAuth()
 
     // Primeiro, tentar encontrar cliente existente pelo telefone
     const { data: clienteExistente } = await supabase
@@ -307,11 +276,7 @@ class OrdemServicoService {
     prontos: number
     encerradas: number
   }> {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      throw new Error('Usuário não autenticado')
-    }
+    const user = await requireAuth()
 
     const { data, error } = await supabase
       .from('ordens_servico')

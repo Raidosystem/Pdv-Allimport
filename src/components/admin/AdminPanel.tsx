@@ -33,6 +33,7 @@ export function AdminPanel() {
   // Verificar se o usuário atual é admin
   const isAdmin = user?.email === 'admin@pdvallimport.com' || 
                   user?.email === 'novaradiosystem@outlook.com' || 
+                  user?.email === 'teste@teste.com' || // Permitir teste@teste.com como admin temporário
                   user?.app_metadata?.role === 'admin'
 
   useEffect(() => {
@@ -155,11 +156,19 @@ export function AdminPanel() {
           <div className="text-gray-600 mb-6 space-y-3">
             <p>Você não tem permissões de administrador para acessar este painel.</p>
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-blue-800 mb-2">Para criar o usuário administrador:</h3>
-              <div className="text-sm text-blue-700 space-y-1">
-                <p>1. Email: <strong>novaradiosystem@outlook.com</strong></p>
-                <p>2. Senha: <strong>@qw12aszx##</strong></p>
-                <p>3. Faça login com essas credenciais</p>
+              <h3 className="font-semibold text-blue-800 mb-2">📝 Instruções para acesso:</h3>
+              <div className="text-sm text-blue-700 space-y-2">
+                <div className="bg-white p-3 rounded border">
+                  <p className="font-medium">Opção 1 - Login Temporário (Teste):</p>
+                  <p>Email: <strong>teste@teste.com</strong></p>
+                  <p>Senha: <strong>teste@@</strong></p>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <p className="font-medium">Opção 2 - Admin Principal:</p>
+                  <p>Email: <strong>novaradiosystem@outlook.com</strong></p>
+                  <p>Senha: <strong>@qw12aszx##</strong></p>
+                  <p className="text-xs text-gray-600">Primeiro crie esta conta no sistema</p>
+                </div>
               </div>
             </div>
           </div>

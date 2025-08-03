@@ -186,9 +186,12 @@ export function AdminPanel() {
   }
 
   // Função para pré-preencher credenciais de teste
-  const fillTestCredentials = () => {
+  const fillTestCredentials = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     setLoginEmail('teste@teste.com')
     setLoginPassword('teste@@')
+    toast.success('Credenciais preenchidas!')
   }
 
   // Mostrar acesso negado apenas se há um usuário logado que não é admin
@@ -243,7 +246,7 @@ export function AdminPanel() {
       {/* Se não há usuário logado, mostrar login rápido */}
       {!user && (
         <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-indigo-800 to-black flex items-center justify-center p-4">
-          <Card className="p-8 text-center max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+          <div className="p-8 text-center max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-xl">
             <Shield className="w-16 h-16 mx-auto mb-4 text-indigo-600" />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
             <p className="text-gray-600 mb-6">Faça login para acessar o painel administrativo</p>
@@ -277,7 +280,11 @@ export function AdminPanel() {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowLoginPassword(!showLoginPassword)
+                    }}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -289,6 +296,9 @@ export function AdminPanel() {
                 type="submit"
                 disabled={loggingIn}
                 className="w-full bg-indigo-600 hover:bg-indigo-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
               >
                 {loggingIn ? 'Entrando...' : 'Fazer Login Admin'}
               </Button>
@@ -314,18 +324,24 @@ export function AdminPanel() {
             </div>
             
             <div className="space-y-3">
-              <Link to="/signup">
+              <Link 
+                to="/signup" 
+                className="block w-full"
+              >
                 <Button variant="outline" className="w-full">
                   Criar Conta Admin Principal
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link 
+                to="/dashboard" 
+                className="block w-full"
+              >
                 <Button variant="ghost" className="w-full">
                   Voltar ao PDV
                 </Button>
               </Link>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Database, Crown } from 'lucide-react'
+import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Database, Crown, LogIn } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
@@ -29,6 +29,12 @@ export function AdminPanel() {
   const [newUserPassword, setNewUserPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [creating, setCreating] = useState(false)
+
+  // Estados para login administrativo
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
   // Verificar se o usuário atual é admin ou se não está logado (para configuração inicial)
   const isAdmin = !user || // Permitir acesso quando não logado para configuração inicial
@@ -148,6 +154,44 @@ export function AdminPanel() {
     }
   }
 
+  // Função para login administrativo
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!loginEmail || !loginPassword) {
+      toast.error('Preencha email e senha')
+      return
+    }
+
+    try {
+      setLoggingIn(true)
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword
+      })
+
+      if (error) {
+        toast.error(`Erro no login: ${error.message}`)
+        return
+      }
+
+      toast.success('Login realizado com sucesso!')
+      // O componente será re-renderizado automaticamente devido ao useAuth
+    } catch (error) {
+      console.error('Erro no login:', error)
+      toast.error('Erro inesperado no login')
+    } finally {
+      setLoggingIn(false)
+    }
+  }
+
+  // Função para pré-preencher credenciais de teste
+  const fillTestCredentials = () => {
+    setLoginEmail('teste@teste.com')
+    setLoginPassword('teste@@')
+  }
+
   // Mostrar acesso negado apenas se há um usuário logado que não é admin
   const shouldShowAccessDenied = user && !isAdmin
 
@@ -201,23 +245,68 @@ export function AdminPanel() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
             <p className="text-gray-600 mb-6">Faça login para acessar o painel administrativo</p>
             
+            {/* Formulário de Login Direto */}
+            <form onSubmit={handleAdminLogin} className="space-y-4 mb-6">
+              <div className="text-left">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Admin
+                </label>
+                <Input
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="admin@exemplo.com"
+                  required
+                />
+              </div>
+              
+              <div className="text-left">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Senha
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="Sua senha admin"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              
+              <Button
+                type="submit"
+                disabled={loggingIn}
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+              >
+                {loggingIn ? 'Entrando...' : 'Fazer Login Admin'}
+              </Button>
+            </form>
+
+            {/* Credenciais de Teste */}
             <div className="space-y-4 mb-6">
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                 <h3 className="font-semibold text-indigo-800 mb-2">🚀 Login Rápido - Admin Temporário</h3>
-                <div className="text-sm text-indigo-700">
+                <div className="text-sm text-indigo-700 mb-3">
                   <p><strong>Email:</strong> teste@teste.com</p>
                   <p><strong>Senha:</strong> teste@@</p>
                 </div>
-                <Link to="/login">
-                  <Button 
-                    className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700"
-                    onClick={() => {
-                      // Pré-preencher as credenciais na página de login seria ideal
-                    }}
-                  >
-                    Login Administrativo
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={fillTestCredentials}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Preencher Credenciais de Teste
+                </Button>
               </div>
             </div>
             

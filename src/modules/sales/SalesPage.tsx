@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
+import { useCaixa } from '../../hooks/useCaixa'
 import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/useSales'
 import { ProductSearch } from './components/ProductSearch'
 import { SaleResumo } from './components/SaleResumo'
@@ -13,16 +14,16 @@ import { PagamentoForm } from './components/PagamentoForm'
 import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductModal } from '../../components/product/ProductModal'
-import { salesService, cashRegisterService } from '../../services/sales'
-import type { Product, Customer, CashRegister } from '../../types/sales'
+import { salesService } from '../../services/sales'
+import type { Product, Customer } from '../../types/sales'
 import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
 
 export function SalesPage() {
   const { user } = useAuth()
+  const { caixaAtual, abrirCaixa } = useCaixa()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
-  const [cashRegister, setCashRegister] = useState<CashRegister | null>(null)
   const [loading, setLoading] = useState(false)
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
@@ -62,16 +63,14 @@ export function SalesPage() {
   const totalPaid = getTotalPayments() + cashReceived
 
   // Verificar se pode finalizar a venda
-  const canFinalizeSale = items.length > 0 && totalPaid >= totalAmount && cashRegister
+  const canFinalizeSale = items.length > 0 && totalPaid >= totalAmount && caixaAtual?.status === 'aberto'
 
   // Verificar caixa aberto ao carregar
   useEffect(() => {
     const checkCashRegister = async () => {
       try {
-        const openRegister = await cashRegisterService.getOpenRegister()
-        setCashRegister(openRegister)
-        
-        if (!openRegister) {
+        // O hook useCaixa já verifica automaticamente
+        if (!caixaAtual || caixaAtual.status === 'fechado') {
           setShowCashModal(true)
         }
       } catch (error) {
@@ -83,20 +82,21 @@ export function SalesPage() {
     checkCashRegister()
   }, [])
 
-  const handleCashOpen = async (amount: number) => {
+    const handleOpenCashRegister = async (amount: number) => {
+    if (!user) return
+    
     try {
-      if (!user) {
-        toast.error('Usuário não logado')
-        return
+      setLoading(true)
+      const sucesso = await abrirCaixa({ valor_inicial: amount })
+      if (sucesso) {
+        setShowCashModal(false)
+        toast.success('Caixa aberto com sucesso!')
       }
-      
-      const register = await cashRegisterService.openRegister(amount, user.id)
-      setCashRegister(register)
-      setShowCashModal(false)
-      toast.success('Caixa aberto com sucesso!')
     } catch (error) {
       console.error('Erro ao abrir caixa:', error)
       toast.error('Erro ao abrir caixa')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -134,8 +134,8 @@ export function SalesPage() {
       return
     }
 
-    if (!user || !cashRegister) {
-      toast.error('Usuário ou caixa não identificado')
+    if (!user || !caixaAtual || caixaAtual.status !== 'aberto') {
+      toast.error('Caixa não está aberto para vendas')
       return
     }
 
@@ -145,7 +145,7 @@ export function SalesPage() {
       // Preparar dados da venda
       const saleData = {
         customer_id: customer?.id,
-        cash_register_id: cashRegister.id,
+        cash_register_id: caixaAtual.id,
         user_id: user.id,
         total_amount: totalAmount,
         discount_amount: discountAmount,
@@ -232,18 +232,18 @@ export function SalesPage() {
             <div className="flex items-center space-x-4">
               {/* Status do caixa */}
               <div className={`px-4 py-2 rounded-xl ${
-                cashRegister 
+                caixaAtual?.status === 'aberto'
                   ? 'bg-green-100 text-green-700 border border-green-200'
                   : 'bg-red-100 text-red-700 border border-red-200'
               }`}>
                 <div className="flex items-center space-x-2">
-                  {cashRegister ? (
+                  {caixaAtual?.status === 'aberto' ? (
                     <CheckCircle className="w-5 h-5" />
                   ) : (
                     <AlertCircle className="w-5 h-5" />
                   )}
                   <span className="font-medium">
-                    {cashRegister ? 'Caixa Aberto' : 'Caixa Fechado'}
+                    {caixaAtual?.status === 'aberto' ? 'Caixa Aberto' : 'Caixa Fechado'}
                   </span>
                 </div>
               </div>
@@ -270,7 +270,7 @@ export function SalesPage() {
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {!cashRegister ? (
+        {!caixaAtual || caixaAtual.status !== 'aberto' ? (
           /* Aviso de caixa fechado */
           <Card className="p-8 text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
@@ -383,7 +383,7 @@ export function SalesPage() {
       <CashRegisterModal
         isOpen={showCashModal}
         onClose={() => setShowCashModal(false)}
-        onOpenRegister={handleCashOpen}
+        onOpenRegister={handleOpenCashRegister}
       />
 
       {/* Modal de Cadastro de Produto */}

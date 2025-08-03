@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { ShoppingCart, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -69,64 +69,16 @@ export function SignupPage() {
       }
     } else {
       console.log('Signup success:', data) // Para debug
+      // Redirecionar diretamente para o dashboard após cadastro bem-sucedido
       setSuccess(true)
     }
     
     setLoading(false)
   }
 
+  // Se o cadastro foi bem-sucedido, redirecionar automaticamente para o dashboard
   if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-transparent"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-400/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative w-full max-w-md">
-          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-            <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <CheckCircle className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-secondary-900 mb-4">
-                Conta criada com sucesso!
-              </h2>
-              <div className="text-secondary-600 text-lg mb-8 space-y-3">
-                <p>
-                  Sua conta foi criada, mas precisa ser confirmada.
-                </p>
-                <p className="text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
-                  <strong>📧 Email não chegou?</strong><br/>
-                  • Verifique sua caixa de spam/lixo eletrônico<br/>
-                  • O envio pode demorar alguns minutos<br/>
-                  • Link abre localhost? <Link to="/email-help" className="text-primary-600 underline">Clique aqui</Link>
-                </p>
-              </div>
-              <div className="space-y-3">
-                <Link to="/test-login">
-                  <Button className="text-lg py-4 px-8 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg w-full">
-                    Testar Login Agora
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="outline" className="text-lg py-4 px-8 w-full">
-                    Ir para Login Normal
-                  </Button>
-                </Link>
-                <Link to="/resend-confirmation">
-                  <Button variant="outline" className="text-lg py-4 px-8 w-full">
-                    Reenviar Email de Confirmação
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-    )
+    return <Navigate to="/dashboard" replace />
   }
 
   return (

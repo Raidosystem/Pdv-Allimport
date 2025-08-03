@@ -137,17 +137,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
-    // URL base para produção e desenvolvimento
-    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
-    
+    // Criar conta sem obrigar confirmação de email
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${baseUrl}/confirm-email`,
+        // Removido emailRedirectTo para evitar fluxo de confirmação obrigatório
       }
     })
+
+    // Se a conta foi criada com sucesso, fazer login automático
+    if (data.user && !error) {
+      // Fazer login imediato após cadastro
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      
+      if (loginData.user && !loginError) {
+        return { data: loginData, error: null }
+      }
+    }
+
     return { data, error }
   }
 

@@ -80,8 +80,36 @@ export function AdminPanel() {
     }
   }
 
-  const confirmUserEmail = async (_userId: string, _email: string) => {
-    toast.error('Função não disponível sem permissões admin do Supabase')
+  const confirmUserEmail = async (userId: string, email: string) => {
+    try {
+      // Atualizar diretamente o status de confirmação do email no banco
+      const { error } = await supabase.auth.admin.updateUserById(userId, {
+        email_confirm: true
+      })
+      
+      if (error) {
+        console.log('Erro ao confirmar email via API admin:', error)
+        // Fallback: tentar atualizar diretamente na tabela auth.users (requer RLS configurado)
+        const { error: updateError } = await supabase
+          .from('auth.users')
+          .update({ 
+            email_confirmed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+        
+        if (updateError) {
+          toast.error('Erro ao confirmar email. Verifique permissões.')
+          return
+        }
+      }
+      
+      toast.success(`Email de ${email} confirmado manualmente!`)
+      loadUsers() // Recarregar lista de usuários
+    } catch (err) {
+      console.error('Erro ao confirmar email:', err)
+      toast.error('Erro ao confirmar email')
+    }
   }
 
   const toggleUserStatus = async (_userId: string, _email: string, _currentlyBanned: boolean) => {
@@ -119,7 +147,7 @@ export function AdminPanel() {
         return
       }
 
-      toast.success(`Usuário ${newUserEmail} criado com sucesso! Eles precisarão confirmar o email.`)
+      toast.success(`Usuário ${newUserEmail} criado com sucesso!`)
       setNewUserEmail('')
       setNewUserPassword('')
       loadUsers() // Recarregar lista

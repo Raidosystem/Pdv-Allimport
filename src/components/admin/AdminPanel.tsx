@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Database, Crown, LogIn } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -22,6 +22,7 @@ interface AdminUser {
 
 export function AdminPanel() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [newUserEmail, setNewUserEmail] = useState('')
@@ -292,16 +293,16 @@ export function AdminPanel() {
                 </div>
               </div>
               
-              <Button
+              <button
                 type="submit"
                 disabled={loggingIn}
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation()
                 }}
               >
                 {loggingIn ? 'Entrando...' : 'Fazer Login Admin'}
-              </Button>
+              </button>
             </form>
 
             {/* Credenciais de Teste */}
@@ -312,34 +313,37 @@ export function AdminPanel() {
                   <p><strong>Email:</strong> teste@teste.com</p>
                   <p><strong>Senha:</strong> teste@@</p>
                 </div>
-                <Button 
+                <button 
                   onClick={fillTestCredentials}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
+                  type="button"
+                  className="w-full px-4 py-2 text-sm font-medium text-indigo-700 bg-white border border-indigo-300 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   Preencher Credenciais de Teste
-                </Button>
+                </button>
               </div>
             </div>
             
             <div className="space-y-3">
-              <Link 
-                to="/signup" 
-                className="block w-full"
+              <button 
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate('/signup')
+                }}
+                className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
-                <Button variant="outline" className="w-full">
-                  Criar Conta Admin Principal
-                </Button>
-              </Link>
-              <Link 
-                to="/dashboard" 
-                className="block w-full"
+                Criar Conta Admin Principal
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate('/dashboard')
+                }}
+                className="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-transparent hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
-                <Button variant="ghost" className="w-full">
-                  Voltar ao PDV
-                </Button>
-              </Link>
+                Voltar ao PDV
+              </button>
             </div>
           </div>
         </div>

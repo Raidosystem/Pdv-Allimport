@@ -5,7 +5,6 @@ import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
-import { QuickFix } from '../../components/QuickFix'
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
@@ -83,20 +82,7 @@ export function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-                  <p className="text-red-600 font-medium text-center mb-3">{error}</p>
-                  {error.includes('não autenticado') || error.includes('Erro ao fazer login') && (
-                    <div className="text-center">
-                      <Link to="/diagnostic">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          Diagnóstico do Sistema
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
+                  <p className="text-red-600 font-medium text-center">{error}</p>
                 </div>
               )}
 
@@ -166,6 +152,16 @@ export function LoginPage() {
               >
                 Entrar no Sistema
               </Button>
+
+              {/* Link Esqueci a Senha */}
+              <div className="text-center">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
             </form>
 
             <div className="mt-8 space-y-4">
@@ -197,13 +193,6 @@ export function LoginPage() {
               </Link>
               
               <Link 
-                to="/diagnostic" 
-                className="block text-orange-600 hover:text-orange-700 font-medium transition-colors"
-              >
-                🔧 Problemas com o sistema? Clique aqui
-              </Link>
-              
-              <Link 
                 to="/" 
                 className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors"
               >
@@ -212,13 +201,6 @@ export function LoginPage() {
             </div>
           </div>
         </Card>
-        
-        {/* Quick Fix para problemas comuns */}
-        {error && (
-          <div className="mt-6">
-            <QuickFix onRetryLogin={() => handleSubmit(new Event('submit') as any)} />
-          </div>
-        )}
       </div>
     </div>
   )

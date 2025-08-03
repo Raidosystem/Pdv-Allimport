@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Users, Plus, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
-import { ClienteForm } from '../../components/cliente/ClienteForm'
+import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
 import { ClienteModal } from '../../components/cliente/ClienteModal'
 import { useClientes } from '../../hooks/useClientes'
@@ -100,11 +100,10 @@ export function ClientesPage() {
 
         {/* Conteúdo */}
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <ClienteForm
+          <ClienteFormulario
             cliente={clienteEditando || undefined}
-            onSubmit={handleSubmitForm}
+            onSuccess={handleSubmitForm}
             onCancel={handleCancelarForm}
-            loading={loading}
           />
         </main>
       </div>

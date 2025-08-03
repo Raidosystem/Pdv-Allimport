@@ -82,7 +82,7 @@ export function useEstatisticasOS() {
     emAnalise: 0,
     emConserto: 0,
     prontos: 0,
-    entregues: 0
+    encerradas: 0
   })
   const [loading, setLoading] = useState(true)
 

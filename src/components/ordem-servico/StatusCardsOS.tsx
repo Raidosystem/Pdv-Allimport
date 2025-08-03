@@ -34,8 +34,8 @@ const STATUS_CONFIG = {
     color: 'bg-green-50 text-green-600 border-green-200',
     textColor: 'text-green-900'
   },
-  entregues: {
-    label: 'Entregues',
+  encerradas: {
+    label: 'Encerradas',
     icon: TrendingUp,
     color: 'bg-gray-50 text-gray-600 border-gray-200',
     textColor: 'text-gray-900'
@@ -65,8 +65,8 @@ export function StatusCardsOS() {
         const Icon = config.icon
         
         return (
-          <Link key={key} to="/os" className="block">
-            <Card className={`p-4 border transition-all duration-200 hover:shadow-md ${config.color}`}>
+          <div key={key}>
+            <Card className={`p-4 border transition-all duration-200 hover:shadow-md ${config.color} cursor-default`}>
               <div className="flex items-center justify-between mb-2">
                 <Icon className="w-5 h-5" />
                 <span className={`text-2xl font-bold ${config.textColor}`}>
@@ -77,7 +77,7 @@ export function StatusCardsOS() {
                 {config.label}
               </div>
             </Card>
-          </Link>
+          </div>
         )
       })}
     </div>

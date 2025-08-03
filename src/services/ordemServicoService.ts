@@ -120,7 +120,7 @@ class OrdemServicoService {
       checklist: dadosForm.checklist,
       observacoes: dadosForm.observacoes,
       defeito_relatado: dadosForm.defeito_relatado,
-      data_previsao: dadosForm.data_previsao,
+      data_previsao: dadosForm.data_previsao || null, // Converter string vazia para null
       valor_orcamento: dadosForm.valor_orcamento,
       usuario_id: user.id
     }
@@ -196,7 +196,47 @@ class OrdemServicoService {
     }
   }
 
-  // Buscar clientes para autocomplete
+  // Processar entrega com garantia
+  async processarEntrega(id: string, dados: {
+    garantia_meses?: number
+    valor_final?: number
+    data_entrega: string
+    data_fim_garantia?: string
+  }): Promise<OrdemServico> {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('Usuário não autenticado')
+    }
+
+    const dadosAtualizacao = {
+      status: 'Entregue' as StatusOS,
+      data_entrega: dados.data_entrega,
+      valor_final: dados.valor_final,
+      garantia_meses: dados.garantia_meses || null,
+      data_fim_garantia: dados.data_fim_garantia || null
+    }
+
+    const { data, error } = await supabase
+      .from('ordens_servico')
+      .update(dadosAtualizacao)
+      .eq('id', id)
+      .eq('usuario_id', user.id)
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .single()
+
+    if (error) {
+      console.error('Erro ao processar entrega:', error)
+      throw new Error(`Erro ao processar entrega: ${error.message}`)
+    }
+
+    return data
+  }
+
+  // Buscar clientes por termo
   async buscarClientes(termo: string): Promise<Cliente[]> {
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -207,7 +247,6 @@ class OrdemServicoService {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('user_id', user.id)
       .or(`nome.ilike.%${termo}%,telefone.ilike.%${termo}%`)
       .order('nome')
       .limit(10)
@@ -228,11 +267,10 @@ class OrdemServicoService {
       throw new Error('Usuário não autenticado')
     }
 
-    // Primeiro, tentar encontrar cliente existente
+    // Primeiro, tentar encontrar cliente existente pelo telefone
     const { data: clienteExistente } = await supabase
       .from('clientes')
       .select('*')
-      .eq('user_id', user.id)
       .eq('telefone', telefone)
       .single()
 
@@ -244,8 +282,7 @@ class OrdemServicoService {
     const novoCliente = {
       nome,
       telefone,
-      email,
-      user_id: user.id
+      email: email || null
     }
 
     const { data, error } = await supabase
@@ -268,7 +305,7 @@ class OrdemServicoService {
     emAnalise: number
     emConserto: number
     prontos: number
-    entregues: number
+    encerradas: number
   }> {
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -283,7 +320,7 @@ class OrdemServicoService {
 
     if (error) {
       console.error('Erro ao buscar estatísticas:', error)
-      return { total: 0, emAnalise: 0, emConserto: 0, prontos: 0, entregues: 0 }
+      return { total: 0, emAnalise: 0, emConserto: 0, prontos: 0, encerradas: 0 }
     }
 
     const stats = {
@@ -291,7 +328,7 @@ class OrdemServicoService {
       emAnalise: data.filter(os => os.status === 'Em análise').length,
       emConserto: data.filter(os => ['Em conserto', 'Aguardando peças'].includes(os.status)).length,
       prontos: data.filter(os => os.status === 'Pronto').length,
-      entregues: data.filter(os => os.status === 'Entregue').length
+      encerradas: data.filter(os => os.status === 'Entregue').length
     }
 
     return stats

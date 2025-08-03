@@ -51,9 +51,9 @@ select
 from public.categories c where c.name = 'Serviços';
 
 -- Inserir cliente de exemplo
-insert into public.customers (name, email, phone, document, address) values 
+insert into public.clientes (nome, email, telefone, cpf_cnpj, endereco) values 
 ('Cliente Exemplo', 'cliente@exemplo.com', '(11) 99999-9999', '123.456.789-00', 
- '{"street": "Rua das Flores", "number": "123", "city": "São Paulo", "state": "SP", "zip_code": "01234-567"}'::jsonb);
+ 'Rua das Flores, 123 - São Paulo/SP - CEP: 01234-567');
 
 -- Função para gerar relatórios de vendas
 create or replace function public.get_sales_report(

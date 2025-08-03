@@ -32,7 +32,6 @@ const STATUS_OPTIONS: StatusOS[] = [
   'Aguardando peças',
   'Em conserto',
   'Pronto',
-  'Entregue',
   'Cancelado'
 ]
 

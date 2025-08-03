@@ -9,7 +9,7 @@ import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/u
 import { ProductSearch } from './components/ProductSearch'
 import { SaleResumo } from './components/SaleResumo'
 import { PagamentoForm } from './components/PagamentoForm'
-import { ClienteSelector } from '../../components/ui/ClienteSelector'
+import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductModal } from '../../components/product/ProductModal'
 import { salesService, cashRegisterService } from '../../services/sales'

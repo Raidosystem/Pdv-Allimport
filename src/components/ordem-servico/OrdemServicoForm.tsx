@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
-import { ClienteSelector } from '../ui/ClienteSelector'
+import { ClienteSelector } from '../ui/ClienteSelectorSimples'
 import { ordemServicoService } from '../../services/ordemServicoService'
 import type { 
   NovaOrdemServicoForm, 
@@ -31,9 +31,15 @@ const ordemServicoSchema = z.object({
   modelo: z.string().min(2, 'Modelo é obrigatório'),
   cor: z.string().optional(),
   numero_serie: z.string().optional(),
-  defeito_relatado: z.string().min(10, 'Descreva o defeito relatado'),
+  defeito_relatado: z.string().min(5, 'Defeito relatado é obrigatório (mínimo 5 caracteres)'),
   observacoes: z.string().optional(),
-  data_previsao: z.string().optional(),
+  data_previsao: z.string().optional().refine((val) => {
+    // Se for uma string vazia, permitir
+    if (!val || val === '') return true
+    // Se tiver valor, deve ser uma data válida
+    const date = new Date(val)
+    return !isNaN(date.getTime())
+  }, 'Data deve ser válida'),
   valor_orcamento: z.number().min(0, 'Valor deve ser positivo').optional()
 })
 
@@ -128,7 +134,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
         )}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         
         {/* Seção: Cliente */}
         <ClienteSelector 
@@ -262,8 +268,9 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
               <textarea
                 {...register('defeito_relatado')}
                 rows={3}
+                required={false}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Descreva o problema relatado pelo cliente..."
+                placeholder="Ex: Celular não liga, tela quebrada, bateria não carrega..."
               />
               {errors.defeito_relatado && (
                 <span className="text-red-500 text-sm">{errors.defeito_relatado.message}</span>

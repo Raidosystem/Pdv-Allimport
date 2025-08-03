@@ -27,6 +27,10 @@ export interface OrdemServico {
   valor_orcamento?: number
   valor_final?: number
   
+  // Garantia
+  garantia_meses?: number
+  data_fim_garantia?: string
+  
   // Controle
   usuario_id: string
   criado_em: string

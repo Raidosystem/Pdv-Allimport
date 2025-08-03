@@ -1,59 +1,11 @@
--- Inserir categorias iniciais
-insert into public.categories (name, description) values 
-('Eletrônicos', 'Produtos eletrônicos em geral'),
-('Acessórios', 'Acessórios diversos'),
-('Serviços', 'Serviços prestados'),
-('Peças', 'Peças de reposição');
+-- As categorias iniciais estão nas migrações
 
--- Inserir alguns produtos de exemplo
-insert into public.products (name, description, sku, price, cost, stock_quantity, category_id) 
-select 
-  'Cabo USB-C', 
-  'Cabo USB-C para carregamento e dados', 
-  'CABO-USBC-001', 
-  25.90, 
-  15.00, 
-  50,
-  c.id
-from public.categories c where c.name = 'Acessórios';
-
-insert into public.products (name, description, sku, price, cost, stock_quantity, category_id) 
-select 
-  'Carregador Universal', 
-  'Carregador universal para celulares', 
-  'CARR-UNIV-001', 
-  45.90, 
-  28.00, 
-  30,
-  c.id
-from public.categories c where c.name = 'Eletrônicos';
-
-insert into public.products (name, description, sku, price, cost, stock_quantity, category_id) 
-select 
-  'Película de Vidro', 
-  'Película de vidro temperado para smartphone', 
-  'PELIC-VID-001', 
-  15.90, 
-  8.00, 
-  100,
-  c.id
-from public.categories c where c.name = 'Acessórios';
-
-insert into public.products (name, description, sku, price, cost, stock_quantity, category_id) 
-select 
-  'Conserto de Tela', 
-  'Serviço de conserto de tela de smartphone', 
-  'SERV-TELA-001', 
-  120.00, 
-  80.00, 
-  999,
-  c.id
-from public.categories c where c.name = 'Serviços';
+-- Os produtos iniciais estão nas migrações
 
 -- Inserir cliente de exemplo
-insert into public.customers (name, email, phone, document, address) values 
+insert into public.clientes (nome, email, telefone, cpf_cnpj, endereco) values 
 ('Cliente Exemplo', 'cliente@exemplo.com', '(11) 99999-9999', '123.456.789-00', 
- '{"street": "Rua das Flores", "number": "123", "city": "São Paulo", "state": "SP", "zip_code": "01234-567"}'::jsonb);
+ 'Rua das Flores, 123 - São Paulo/SP - CEP: 01234-567');
 
 -- Função para gerar relatórios de vendas
 create or replace function public.get_sales_report(
@@ -133,8 +85,8 @@ begin
       select coalesce(sum(total_amount), 0) from public.sales 
       where date(created_at) = current_date
     ),
-    'total_customers', (
-      select count(*) from public.customers where active = true
+    'total_clientes', (
+      select count(*) from public.clientes where ativo = true
     ),
     'total_products', (
       select count(*) from public.products where active = true

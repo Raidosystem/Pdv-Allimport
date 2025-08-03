@@ -4,7 +4,6 @@ import { Users, Shield, Mail, Eye, EyeOff, CheckCircle, XCircle, UserPlus, Datab
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
-import { BackButton } from '../ui/BackButton'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../modules/auth'
 import { ensureAdminUserExists } from '../../utils/createAdminUser'
@@ -228,7 +227,11 @@ export function AdminPanel() {
                 Ir para Login
               </Button>
             </Link>
-            <BackButton />
+            <Link to="/dashboard">
+              <Button variant="ghost" className="w-full">
+                Voltar ao PDV
+              </Button>
+            </Link>
           </div>
         </Card>
       </div>
@@ -316,7 +319,11 @@ export function AdminPanel() {
                   Criar Conta Admin Principal
                 </Button>
               </Link>
-              <BackButton />
+              <Link to="/dashboard">
+                <Button variant="ghost" className="w-full">
+                  Voltar ao PDV
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>
@@ -330,7 +337,11 @@ export function AdminPanel() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <BackButton />
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800">
+                  ← Voltar ao PDV
+                </Button>
+              </Link>
               <div className="flex items-center space-x-3">
                 <Shield className="w-8 h-8 text-indigo-600" />
                 <div>

@@ -7,7 +7,8 @@ import {
   BarChart3, 
   FileText,
   LogOut,
-  User
+  User,
+  Settings
 } from 'lucide-react'
 import { useAuth } from '../auth'
 import { Button } from '../../components/ui/Button'
@@ -66,6 +67,14 @@ export function DashboardPage() {
       icon: FileText,
       color: 'danger',
       path: '/ordens-servico',
+      comingSoon: false
+    },
+    {
+      title: 'Administração',
+      description: 'Gerenciar usuários e configurações',
+      icon: Settings,
+      color: 'info',
+      path: '/admin',
       comingSoon: false
     }
   ]

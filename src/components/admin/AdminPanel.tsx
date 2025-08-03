@@ -30,8 +30,9 @@ export function AdminPanel() {
   const [showPassword, setShowPassword] = useState(false)
   const [creating, setCreating] = useState(false)
 
-  // Verificar se o usuário atual é admin
-  const isAdmin = user?.email === 'admin@pdvallimport.com' || 
+  // Verificar se o usuário atual é admin ou se não está logado (para configuração inicial)
+  const isAdmin = !user || // Permitir acesso quando não logado para configuração inicial
+                  user?.email === 'admin@pdvallimport.com' || 
                   user?.email === 'novaradiosystem@outlook.com' || 
                   user?.email === 'teste@teste.com' || // Permitir teste@teste.com como admin temporário
                   user?.app_metadata?.role === 'admin'
@@ -147,34 +148,39 @@ export function AdminPanel() {
     }
   }
 
-  if (!isAdmin) {
+  // Mostrar acesso negado apenas se há um usuário logado que não é admin
+  const shouldShowAccessDenied = user && !isAdmin
+
+  if (shouldShowAccessDenied) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-lg">
           <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h1>
           <div className="text-gray-600 mb-6 space-y-3">
-            <p>Você não tem permissões de administrador para acessar este painel.</p>
+            <p>O usuário <strong>{user.email}</strong> não tem permissões de administrador.</p>
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-blue-800 mb-2">📝 Instruções para acesso:</h3>
+              <h3 className="font-semibold text-blue-800 mb-2">📝 Faça logout e entre com uma conta admin:</h3>
               <div className="text-sm text-blue-700 space-y-2">
                 <div className="bg-white p-3 rounded border">
-                  <p className="font-medium">Opção 1 - Login Temporário (Teste):</p>
+                  <p className="font-medium">Admin Temporário:</p>
                   <p>Email: <strong>teste@teste.com</strong></p>
                   <p>Senha: <strong>teste@@</strong></p>
                 </div>
                 <div className="bg-white p-3 rounded border">
-                  <p className="font-medium">Opção 2 - Admin Principal:</p>
+                  <p className="font-medium">Admin Principal:</p>
                   <p>Email: <strong>novaradiosystem@outlook.com</strong></p>
                   <p>Senha: <strong>@qw12aszx##</strong></p>
-                  <p className="text-xs text-gray-600">Primeiro crie esta conta no sistema</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="space-y-3">
+            <Button onClick={() => supabase.auth.signOut()} className="w-full">
+              Fazer Logout
+            </Button>
             <Link to="/login">
-              <Button className="w-full">
+              <Button variant="outline" className="w-full">
                 Ir para Login
               </Button>
             </Link>
@@ -187,8 +193,51 @@ export function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      {/* Se não há usuário logado, mostrar login rápido */}
+      {!user && (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-indigo-800 to-black flex items-center justify-center p-4">
+          <Card className="p-8 text-center max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-indigo-600" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
+            <p className="text-gray-600 mb-6">Faça login para acessar o painel administrativo</p>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                <h3 className="font-semibold text-indigo-800 mb-2">🚀 Login Rápido - Admin Temporário</h3>
+                <div className="text-sm text-indigo-700">
+                  <p><strong>Email:</strong> teste@teste.com</p>
+                  <p><strong>Senha:</strong> teste@@</p>
+                </div>
+                <Link to="/login">
+                  <Button 
+                    className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700"
+                    onClick={() => {
+                      // Pré-preencher as credenciais na página de login seria ideal
+                    }}
+                  >
+                    Login Administrativo
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <Link to="/signup">
+                <Button variant="outline" className="w-full">
+                  Criar Conta Admin Principal
+                </Button>
+              </Link>
+              <BackButton />
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Conteúdo normal do admin quando logado */}
+      {user && (
+        <>
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -456,6 +505,8 @@ export function AdminPanel() {
           )}
         </Card>
       </div>
+      </>
+      )}
     </div>
   )
 }

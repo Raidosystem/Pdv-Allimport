@@ -8,6 +8,7 @@ import { ResetPasswordPage } from './modules/auth/ResetPasswordPage'
 import { EmailConfirmationPage } from './modules/auth/EmailConfirmationPage'
 import { ResendConfirmationPage } from './modules/auth/ResendConfirmationPage'
 import { EmailDiagnostic } from './components/admin/EmailDiagnostic'
+import { EmailFlowDiagnostic } from './components/admin/EmailFlowDiagnostic'
 import { AdminPanel } from './components/admin/AdminPanel'
 import { TestLoginPage } from './modules/auth/TestLoginPage'
 import { EmailInstructionsPage } from './modules/auth/EmailInstructionsPage'
@@ -65,6 +66,7 @@ function App() {
           <Route path="/confirm-email" element={<EmailConfirmationPage />} />
           <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
           <Route path="/email-diagnostic" element={<EmailDiagnostic />} />
+          <Route path="/email-flow-diagnostic" element={<EmailFlowDiagnostic />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/test-login" element={<TestLoginPage />} />
           <Route path="/email-help" element={<EmailInstructionsPage />} />

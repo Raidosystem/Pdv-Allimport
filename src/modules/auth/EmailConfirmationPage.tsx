@@ -17,25 +17,42 @@ export function EmailConfirmationPage() {
       const type = searchParams.get('type')
       const accessToken = searchParams.get('access_token')
       const refreshToken = searchParams.get('refresh_token')
+      const error = searchParams.get('error')
+      const errorDescription = searchParams.get('error_description')
 
-      console.log('URL params:', { token, tokenHash, type, accessToken, refreshToken })
+      console.log('URL params:', { token, tokenHash, type, accessToken, refreshToken, error, errorDescription })
+      
+      // Se há erro na URL, mostrar diretamente
+      if (error) {
+        setStatus('error')
+        setMessage(`Erro: ${errorDescription || error}`)
+        return
+      }
 
       // Método 1: Se temos access_token e refresh_token (link direto)
       if (accessToken && refreshToken) {
         try {
-          const { error } = await supabase.auth.setSession({
+          const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
           
           if (error) {
+            console.error('Erro ao definir sessão:', error)
             setStatus('error')
-            setMessage('Erro ao confirmar email com tokens.')
+            setMessage(`Erro ao confirmar email: ${error.message}`)
           } else {
+            console.log('Sessão definida com sucesso:', data)
             setStatus('success')
             setMessage('Email confirmado com sucesso!')
+            
+            // Redirecionar para dashboard após 2 segundos
+            setTimeout(() => {
+              window.location.href = '/dashboard'
+            }, 2000)
           }
-        } catch {
+        } catch (err) {
+          console.error('Erro inesperado:', err)
           setStatus('error')
           setMessage('Erro inesperado ao confirmar email.')
         }
@@ -43,21 +60,30 @@ export function EmailConfirmationPage() {
       }
 
       // Método 2: Se temos token_hash
-      if (tokenHash && type === 'email') {
+      if (tokenHash && type) {
         try {
-          const { error } = await supabase.auth.verifyOtp({
+          console.log('Tentando verificar OTP com token_hash:', tokenHash)
+          const { data, error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
-            type: 'email'
+            type: type as any // Permitir qualquer tipo para compatibilidade
           })
 
           if (error) {
+            console.error('Erro ao verificar OTP:', error)
             setStatus('error')
-            setMessage('Erro ao confirmar email. O link pode ter expirado.')
+            setMessage(`Erro ao confirmar email: ${error.message}`)
           } else {
+            console.log('OTP verificado com sucesso:', data)
             setStatus('success')
             setMessage('Email confirmado com sucesso!')
+            
+            // Redirecionar para dashboard após 2 segundos
+            setTimeout(() => {
+              window.location.href = '/dashboard'
+            }, 2000)
           }
-        } catch {
+        } catch (err) {
+          console.error('Erro inesperado ao verificar OTP:', err)
           setStatus('error')
           setMessage('Erro inesperado ao confirmar email.')
         }

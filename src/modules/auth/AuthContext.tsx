@@ -34,8 +34,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const user = JSON.parse(testUser)
         const session = JSON.parse(testSession)
         
-        // Verificar se a sessão ainda é válida (não expirou)
-        if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
+        // Verificar se o ID do usuário é válido (deve ser um UUID)
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)
+        
+        if (!isValidUUID) {
+          // ID inválido, limpar localStorage
+          console.log('Sessão com ID inválido detectada, limpando...')
+          localStorage.removeItem('test-user')
+          localStorage.removeItem('test-session')
+        } else if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
+          // Sessão válida e não expirada
           setUser(user)
           setSession(session)
           setLoading(false)
@@ -76,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (email === 'teste@teste.com' && password === 'teste@@') {
       // Criar uma sessão simulada para o usuário de teste
       const mockUser = {
-        id: 'test-user-id',
+        id: '00000000-0000-0000-0000-000000000001', // UUID válido para teste
         email: 'teste@teste.com',
         user_metadata: {
           name: 'Usuário Teste'

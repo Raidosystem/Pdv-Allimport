@@ -23,6 +23,17 @@ export async function getAuthenticatedUser(): Promise<User | null> {
         const user = JSON.parse(testUser)
         const session = JSON.parse(testSession)
         
+        // Verificar se o ID do usuário é válido (deve ser um UUID)
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)
+        
+        if (!isValidUUID) {
+          // ID inválido, limpar localStorage
+          console.log('Sessão com ID inválido detectada, limpando...')
+          localStorage.removeItem('test-user')
+          localStorage.removeItem('test-session')
+          return null
+        }
+        
         // Verificar se a sessão ainda é válida (não expirou)
         if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
           return user

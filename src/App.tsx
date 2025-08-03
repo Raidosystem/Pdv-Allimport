@@ -10,6 +10,7 @@ import { ResendConfirmationPage } from './modules/auth/ResendConfirmationPage'
 import { TestLoginPage } from './modules/auth/TestLoginPage'
 import { EmailInstructionsPage } from './modules/auth/EmailInstructionsPage'
 import EmailConfigTest from './components/admin/EmailConfigTest'
+import AuthConfigTest from './components/admin/AuthConfigTest'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { SalesPage } from './modules/sales/SalesPage'
@@ -64,6 +65,7 @@ function App() {
           <Route path="/test-login" element={<TestLoginPage />} />
           <Route path="/email-help" element={<EmailInstructionsPage />} />
           <Route path="/email-config-test" element={<EmailConfigTest />} />
+          <Route path="/auth-config-test" element={<AuthConfigTest />} />
           
           {/* Rotas protegidas */}
           <Route 

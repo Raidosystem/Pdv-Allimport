@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
+import { SupportContact } from '../../components/auth/SupportContact'
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -18,17 +19,35 @@ export function ForgotPasswordPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      console.log('🔄 Tentando enviar email de recuperação para:', email)
+      
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
 
+      console.log('📧 Resposta do Supabase:', { data, error })
+
       if (error) {
-        throw error
+        console.error('❌ Erro do Supabase:', error)
+        
+        // Tratar diferentes tipos de erro
+        if (error.message.includes('Email not confirmed')) {
+          setError('Este email ainda não foi confirmado. Verifique sua caixa de entrada para confirmar o email primeiro.')
+        } else if (error.message.includes('User not found')) {
+          setError('Nenhuma conta encontrada com este email. Verifique se o email está correto ou crie uma nova conta.')
+        } else if (error.message.includes('Email rate limit exceeded')) {
+          setError('Muitas tentativas de recuperação. Aguarde alguns minutos antes de tentar novamente.')
+        } else {
+          setError(`Erro: ${error.message}`)
+        }
+        return
       }
 
+      console.log('✅ Email de recuperação enviado com sucesso')
       setSent(true)
     } catch (error: any) {
-      setError('Erro ao enviar email de recuperação. Verifique se o email está correto.')
+      console.error('💥 Erro inesperado:', error)
+      setError('Erro inesperado ao enviar email de recuperação. Tente novamente em alguns minutos.')
     } finally {
       setLoading(false)
     }
@@ -59,6 +78,15 @@ export function ForgotPasswordPage() {
                 Enviamos um link para recuperação de senha para <strong>{email}</strong>. 
                 Verifique sua caixa de entrada e spam.
               </p>
+
+              <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <h3 className="text-amber-800 font-semibold mb-2">⚠️ Importante</h3>
+                <p className="text-amber-700 text-sm">
+                  Se você não receber o email em 10-15 minutos, pode ser que o serviço de email 
+                  esteja em configuração. Neste caso, entre em contato com o suporte ou tente 
+                  fazer login com sua senha atual.
+                </p>
+              </div>
 
               <div className="space-y-4">
                 <Link to="/login">
@@ -168,6 +196,10 @@ export function ForgotPasswordPage() {
                 Se você não receber o email em alguns minutos, verifique sua pasta de spam 
                 ou lixo eletrônico.
               </p>
+            </div>
+
+            <div className="mt-6">
+              <SupportContact userEmail={email} />
             </div>
           </div>
         </Card>

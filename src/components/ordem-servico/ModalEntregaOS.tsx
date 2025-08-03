@@ -12,6 +12,7 @@ import {
   Package
 } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { BackButton } from '../ui/BackButton'
 import { Card } from '../ui/Card'
 import type { OrdemServico } from '../../types/ordemServico'
 
@@ -121,12 +122,17 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
                 Encerrar Ordem de Serviço
               </h2>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 p-1 rounded"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <BackButton customAction={onClose} variant="ghost" size="sm">
+                Cancelar
+              </BackButton>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Informações do Reparo */}

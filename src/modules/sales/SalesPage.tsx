@@ -3,6 +3,7 @@ import { ShoppingCart, Printer, FileText, RotateCcw, CheckCircle, AlertCircle } 
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
+import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
 import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/useSales'
@@ -214,7 +215,10 @@ export function SalesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard" className="flex items-center space-x-3">
+              <BackButton customAction={() => window.location.href = '/dashboard'}>
+                Dashboard
+              </BackButton>
+              <div className="flex items-center space-x-3">
                 <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <ShoppingCart className="w-8 h-8 text-white" />
                 </div>
@@ -222,7 +226,7 @@ export function SalesPage() {
                   <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
                   <p className="text-primary-600 font-medium">Sistema de Vendas</p>
                 </div>
-              </Link>
+              </div>
             </div>
             
             <div className="flex items-center space-x-4">

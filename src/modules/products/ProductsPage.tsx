@@ -3,6 +3,7 @@ import { Package, Plus, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
+import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { ProductModal } from '../../components/product/ProductModal'
@@ -69,12 +70,9 @@ export function ProductsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link 
-                to="/dashboard" 
-                className="flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors"
-              >
-                <span>← Dashboard</span>
-              </Link>
+              <BackButton customAction={() => window.location.href = '/dashboard'}>
+                Dashboard
+              </BackButton>
               <div className="h-8 border-l border-gray-300"></div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">

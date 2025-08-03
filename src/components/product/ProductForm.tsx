@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Save, RotateCcw, Barcode as BarcodeIcon, Hash, Package } from 'lucide-react'
 
 import { Button } from '../ui/Button'
+import { BackButton } from '../ui/BackButton'
 import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
 import { ImageUpload } from '../ui/ImageUpload'
@@ -166,6 +167,7 @@ export function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps
               </p>
             </div>
           </div>
+          <BackButton />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

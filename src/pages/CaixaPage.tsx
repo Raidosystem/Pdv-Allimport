@@ -8,6 +8,7 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
+import { BackButton } from '../components/ui/BackButton';
 import { useCaixa } from '../hooks/useCaixa';
 import { StatusCaixa } from '../components/caixa/StatusCaixa';
 import { AberturaCaixaModal } from '../components/caixa/AberturaCaixaModal';
@@ -53,16 +54,21 @@ export function CaixaPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <div className="bg-orange-500 p-3 rounded-xl">
-                  <DollarSign className="w-8 h-8 text-white" />
-                </div>
-                Controle de Caixa
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Gerencie abertura, movimentações e fechamento do caixa
-              </p>
+            <div className="flex items-center gap-4">
+              <BackButton customAction={() => window.location.href = '/dashboard'}>
+                Dashboard
+              </BackButton>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="bg-orange-500 p-3 rounded-xl">
+                    <DollarSign className="w-8 h-8 text-white" />
+                  </div>
+                  Controle de Caixa
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  Gerencie abertura, movimentações e fechamento do caixa
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">

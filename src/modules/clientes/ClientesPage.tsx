@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Users, Plus, ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Users, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { BackButton } from '../../components/ui/BackButton'
 import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
 import { ClienteModal } from '../../components/cliente/ClienteModal'
@@ -78,21 +78,13 @@ export function ClientesPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/dashboard" 
-                  className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Dashboard</span>
-                </Link>
+                <BackButton customAction={() => window.location.href = '/dashboard'}>
+                  Dashboard
+                </BackButton>
                 <div className="h-8 border-l border-gray-300"></div>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar para Clientes</span>
-                </button>
+                <BackButton customAction={() => setViewMode('list')}>
+                  Voltar para Clientes
+                </BackButton>
               </div>
             </div>
           </div>
@@ -117,13 +109,9 @@ export function ClientesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link 
-                to="/dashboard" 
-                className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
+              <BackButton customAction={() => window.location.href = '/dashboard'}>
+                Dashboard
+              </BackButton>
               <div className="h-8 border-l border-gray-300"></div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">

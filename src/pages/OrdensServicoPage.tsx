@@ -14,6 +14,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import { BackButton } from '../components/ui/BackButton'
 import { Card } from '../components/ui/Card'
 import { ordemServicoService } from '../services/ordemServicoService'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
@@ -107,9 +108,14 @@ export function OrdensServicoPage() {
       
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ordens de Serviço</h1>
-          <p className="text-gray-600">Gerencie suas ordens de serviço técnico</p>
+        <div className="flex items-center gap-4">
+          <BackButton customAction={() => window.location.href = '/dashboard'}>
+            Dashboard
+          </BackButton>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Ordens de Serviço</h1>
+            <p className="text-gray-600">Gerencie suas ordens de serviço técnico</p>
+          </div>
         </div>
         
         <div className="flex gap-3">

@@ -72,7 +72,7 @@ export async function detectAuthProblems(): Promise<AuthError[]> {
         solutions: [
           'Tente fazer login novamente',
           'Limpe os cookies do navegador',
-          'Use as credenciais de teste: teste@teste.com / teste@@'
+          'Verifique suas credenciais de acesso'
         ]
       });
     } else if (!user) {
@@ -162,31 +162,24 @@ export function getErrorColor(type: AuthError['type']): string {
 
 export async function autoFixCommonProblems(): Promise<{ fixed: boolean; message: string }> {
   try {
-    // Tentar fazer login com credenciais de teste se não estiver autenticado
+    // Verificar se há problemas que podem ser corrigidos automaticamente
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'teste@teste.com',
-        password: 'teste@@'
-      });
-
-      if (!error) {
-        return {
-          fixed: true,
-          message: 'Login automático realizado com credenciais de teste'
-        };
-      }
+      return {
+        fixed: false,
+        message: 'Usuário não está autenticado. Faça login para continuar.'
+      };
     }
 
     return {
       fixed: false,
-      message: 'Nenhum problema foi corrigido automaticamente'
+      message: 'Nenhum problema foi identificado para correção automática'
     };
   } catch (error) {
     return {
       fixed: false,
-      message: `Erro ao tentar correção automática: ${error}`
+      message: `Erro ao verificar problemas: ${error}`
     };
   }
 }

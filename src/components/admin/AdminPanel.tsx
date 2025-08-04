@@ -7,6 +7,7 @@ import { Input } from '../ui/Input'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../modules/auth'
 import { ensureAdminUserExists } from '../../utils/createAdminUser'
+import { SubscriptionService } from '../../services/subscriptionService'
 import toast from 'react-hot-toast'
 
 interface AdminUser {
@@ -18,6 +19,12 @@ interface AdminUser {
   user_metadata: any
   app_metadata: any
   banned_until: string | null
+  // Novos campos para aprovação
+  approval_status?: 'pending' | 'approved' | 'rejected'
+  full_name?: string
+  company_name?: string
+  approved_by?: string
+  approved_at?: string
 }
 
 export function AdminPanel() {
@@ -40,7 +47,6 @@ export function AdminPanel() {
   const isAdmin = !user || // Permitir acesso quando não logado para configuração inicial
                   user?.email === 'admin@pdvallimport.com' || 
                   user?.email === 'novaradiosystem@outlook.com' || 
-                  user?.email === 'teste@teste.com' || // Permitir teste@teste.com como admin temporário
                   user?.app_metadata?.role === 'admin'
 
   useEffect(() => {
@@ -53,25 +59,66 @@ export function AdminPanel() {
     try {
       setLoading(true)
       
-      // Como não temos acesso à API admin, vamos mostrar apenas informações básicas
-      // Em um ambiente de produção, isso seria feito via uma tabela customizada
-      console.log('Função de listar usuários não disponível sem permissões admin')
+      // Verificar se a tabela user_approvals existe
+      const { data: tableExists } = await supabase
+        .from('user_approvals')
+        .select('count')
+        .limit(1)
+        .maybeSingle()
       
-      // Simular alguns usuários para demonstração
-      const mockUsers: AdminUser[] = [
-        {
-          id: '1',
-          email: 'teste@teste.com',
-          email_confirmed_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          user_metadata: { name: 'Usuário Teste' },
-          app_metadata: {},
-          banned_until: null
+      if (!tableExists && tableExists !== null) {
+        toast.error('Sistema de aprovação não configurado. Execute o script SQL primeiro.')
+        return
+      }
+      
+      // Carregar usuários da tabela user_approvals
+      const { data: approvals, error } = await supabase
+        .from('user_approvals')
+        .select(`
+          user_id,
+          email,
+          full_name,
+          company_name,
+          status,
+          approved_by,
+          approved_at,
+          created_at
+        `)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Erro ao carregar aprovações:', error)
+        if (error.code === 'PGRST116') {
+          toast.error('Tabela user_approvals não existe. Execute o script SQL de configuração.')
+        } else {
+          toast.error(`Erro ao carregar lista de usuários: ${error.message}`)
         }
-      ]
+        return
+      }
       
-      setUsers(mockUsers)
+      // Converter para formato AdminUser
+      const adminUsers: AdminUser[] = approvals?.map(approval => ({
+        id: approval.user_id,
+        email: approval.email,
+        email_confirmed_at: approval.status === 'approved' ? approval.approved_at : null,
+        created_at: approval.created_at,
+        last_sign_in_at: null,
+        user_metadata: { 
+          full_name: approval.full_name,
+          company_name: approval.company_name 
+        },
+        app_metadata: {},
+        banned_until: null,
+        approval_status: approval.status as 'pending' | 'approved' | 'rejected',
+        full_name: approval.full_name,
+        company_name: approval.company_name,
+        approved_by: approval.approved_by,
+        approved_at: approval.approved_at
+      })) || []
+      
+      setUsers(adminUsers)
+      console.log(`Carregados ${adminUsers.length} usuários`)
+      
     } catch (error) {
       console.error('Erro:', error)
       toast.error('Erro ao conectar com o sistema de usuários')
@@ -80,35 +127,66 @@ export function AdminPanel() {
     }
   }
 
-  const confirmUserEmail = async (userId: string, email: string) => {
+  const approveUser = async (userId: string, email: string) => {
     try {
-      // Atualizar diretamente o status de confirmação do email no banco
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        email_confirm: true
-      })
+      // 1. Atualizar status de aprovação
+      const { error: approvalError } = await supabase
+        .from('user_approvals')
+        .update({
+          status: 'approved',
+          approved_by: user?.id,
+          approved_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
       
-      if (error) {
-        console.log('Erro ao confirmar email via API admin:', error)
-        // Fallback: tentar atualizar diretamente na tabela auth.users (requer RLS configurado)
-        const { error: updateError } = await supabase
-          .from('auth.users')
-          .update({ 
-            email_confirmed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId)
-        
-        if (updateError) {
-          toast.error('Erro ao confirmar email. Verifique permissões.')
-          return
+      if (approvalError) {
+        console.error('Erro ao aprovar usuário:', approvalError)
+        toast.error('Erro ao aprovar usuário')
+        return
+      }
+
+      // 2. Ativar período de teste de 30 dias
+      try {
+        const trialResult = await SubscriptionService.activateTrial(email)
+        if (trialResult.success) {
+          toast.success(`✅ ${email} aprovado com período de teste de 30 dias!`)
+        } else {
+          toast.error(`⚠️ ${email} aprovado, mas houve erro ao ativar período de teste`)
         }
+      } catch (trialError) {
+        console.error('Erro ao ativar período de teste:', trialError)
+        toast.error(`⚠️ ${email} aprovado, mas houve erro ao ativar período de teste`)
       }
       
-      toast.success(`Email de ${email} confirmado manualmente!`)
-      loadUsers() // Recarregar lista de usuários
+      loadUsers() // Recarregar lista
     } catch (err) {
-      console.error('Erro ao confirmar email:', err)
-      toast.error('Erro ao confirmar email')
+      console.error('Erro ao aprovar usuário:', err)
+      toast.error('Erro ao aprovar usuário')
+    }
+  }
+
+  const rejectUser = async (userId: string, email: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_approvals')
+        .update({
+          status: 'rejected',
+          approved_by: user?.id,
+          approved_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+      
+      if (error) {
+        console.error('Erro ao rejeitar usuário:', error)
+        toast.error('Erro ao rejeitar usuário')
+        return
+      }
+      
+      toast.success(`Usuário ${email} rejeitado`)
+      loadUsers() // Recarregar lista
+    } catch (err) {
+      console.error('Erro ao rejeitar usuário:', err)
+      toast.error('Erro ao rejeitar usuário')
     }
   }
 
@@ -214,15 +292,6 @@ export function AdminPanel() {
     }
   }
 
-  // Função para pré-preencher credenciais de teste
-  const fillTestCredentials = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setLoginEmail('teste@teste.com')
-    setLoginPassword('teste@@')
-    toast.success('Credenciais preenchidas!')
-  }
-
   // Mostrar acesso negado apenas se há um usuário logado que não é admin
   const shouldShowAccessDenied = user && !isAdmin
 
@@ -235,17 +304,13 @@ export function AdminPanel() {
           <div className="text-gray-600 mb-6 space-y-3">
             <p>O usuário <strong>{user.email}</strong> não tem permissões de administrador.</p>
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-blue-800 mb-2">📝 Faça logout e entre com uma conta admin:</h3>
+              <h3 className="font-semibold text-blue-800 mb-2">📝 Acesso Restrito</h3>
               <div className="text-sm text-blue-700 space-y-2">
                 <div className="bg-white p-3 rounded border">
-                  <p className="font-medium">Admin Temporário:</p>
-                  <p>Email: <strong>teste@teste.com</strong></p>
-                  <p>Senha: <strong>teste@@</strong></p>
-                </div>
-                <div className="bg-white p-3 rounded border">
-                  <p className="font-medium">Admin Principal:</p>
-                  <p>Email: <strong>novaradiosystem@outlook.com</strong></p>
-                  <p>Senha: <strong>@qw12aszx##</strong></p>
+                  <p className="font-medium">Para acessar o painel administrativo:</p>
+                  <p>• Faça logout desta conta</p>
+                  <p>• Entre com uma conta de administrador</p>
+                  <p>• Contate o administrador do sistema se necessário</p>
                 </div>
               </div>
             </div>
@@ -333,21 +398,13 @@ export function AdminPanel() {
               </button>
             </form>
 
-            {/* Credenciais de Teste */}
+            {/* Login Admin */}
             <div className="space-y-4 mb-6">
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                <h3 className="font-semibold text-indigo-800 mb-2">🚀 Login Rápido - Admin Temporário</h3>
+                <h3 className="font-semibold text-indigo-800 mb-2">� Acesso Administrativo</h3>
                 <div className="text-sm text-indigo-700 mb-3">
-                  <p><strong>Email:</strong> teste@teste.com</p>
-                  <p><strong>Senha:</strong> teste@@</p>
+                  <p>Entre com suas credenciais de administrador para acessar o painel.</p>
                 </div>
-                <button 
-                  onClick={fillTestCredentials}
-                  type="button"
-                  className="w-full px-4 py-2 text-sm font-medium text-indigo-700 bg-white border border-indigo-300 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Preencher Credenciais de Teste
-                </button>
               </div>
             </div>
             
@@ -425,9 +482,9 @@ export function AdminPanel() {
             <div className="flex items-center">
               <CheckCircle className="w-8 h-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Emails Confirmados</p>
+                <p className="text-sm font-medium text-gray-600">Usuários Aprovados</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {users.filter(u => u.email_confirmed_at).length}
+                  {users.filter(u => u.approval_status === 'approved').length}
                 </p>
               </div>
             </div>
@@ -437,9 +494,9 @@ export function AdminPanel() {
             <div className="flex items-center">
               <Mail className="w-8 h-8 text-orange-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Aguardando Confirmação</p>
+                <p className="text-sm font-medium text-gray-600">Aguardando Aprovação</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {users.filter(u => !u.email_confirmed_at).length}
+                  {users.filter(u => u.approval_status === 'pending').length}
                 </p>
               </div>
             </div>
@@ -465,7 +522,6 @@ export function AdminPanel() {
               <Crown className="w-8 h-8 text-indigo-600" />
               <div>
                 <h2 className="text-xl font-semibold text-indigo-900">Usuário Administrador Principal</h2>
-                <p className="text-indigo-700">Email: novaradiosystem@outlook.com</p>
                 <p className="text-sm text-indigo-600">Criar ou verificar o usuário admin principal do sistema</p>
               </div>
             </div>
@@ -587,11 +643,15 @@ export function AdminPanel() {
                       <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
                           <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                            user.email_confirmed_at 
+                            user.approval_status === 'approved'
                               ? 'bg-green-100 text-green-800' 
+                              : user.approval_status === 'rejected'
+                              ? 'bg-red-100 text-red-800'
                               : 'bg-yellow-100 text-yellow-800'
                           }`}>
-                            {user.email_confirmed_at ? '✅ Confirmado' : '⏳ Pendente'}
+                            {user.approval_status === 'approved' ? '✅ Aprovado' : 
+                             user.approval_status === 'rejected' ? '❌ Rejeitado' : 
+                             '⏳ Pendente'}
                           </span>
                           
                           {user.banned_until && (
@@ -615,12 +675,34 @@ export function AdminPanel() {
                       
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">
-                          {!user.email_confirmed_at && (
+                          {user.approval_status === 'pending' && (
+                            <>
+                              <Button
+                                onClick={() => approveUser(user.id, user.email)}
+                                size="sm"
+                                variant="primary"
+                                title="Aprovar usuário"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                onClick={() => rejectUser(user.id, user.email)}
+                                size="sm"
+                                variant="outline"
+                                title="Rejeitar usuário"
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                          
+                          {user.approval_status === 'rejected' && (
                             <Button
-                              onClick={() => confirmUserEmail(user.id, user.email)}
+                              onClick={() => approveUser(user.id, user.email)}
                               size="sm"
                               variant="primary"
-                              title="Confirmar email"
+                              title="Aprovar usuário"
                             >
                               <CheckCircle className="w-4 h-4" />
                             </Button>

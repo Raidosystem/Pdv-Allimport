@@ -8,10 +8,7 @@ import {
   Settings, 
   RefreshCw, 
   User,
-  Key,
   Globe,
-  Eye,
-  EyeOff,
   Zap
 } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -29,7 +26,7 @@ interface DiagnosticStatus {
 }
 
 export function AuthDiagnostic() {
-  const { user, signIn, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [status, setStatus] = useState<DiagnosticStatus>({
     envConfig: false,
     supabaseConnection: false,
@@ -41,12 +38,6 @@ export function AuthDiagnostic() {
     errors: []
   });
   const [loading, setLoading] = useState(true);
-  const [showTestLogin, setShowTestLogin] = useState(false);
-  const [testCredentials, setTestCredentials] = useState({
-    email: 'teste@teste.com',
-    password: 'teste@@'
-  });
-  const [loginLoading, setLoginLoading] = useState(false);
   const [autoFixLoading, setAutoFixLoading] = useState(false);
 
   const runFullDiagnostic = async () => {
@@ -150,24 +141,6 @@ export function AuthDiagnostic() {
 
     setStatus(newStatus);
     setLoading(false);
-  };
-
-  const handleTestLogin = async () => {
-    setLoginLoading(true);
-    try {
-      const { error } = await signIn(testCredentials.email, testCredentials.password);
-      if (error) {
-        console.error('Erro no login de teste:', error);
-      } else {
-        // Aguardar um momento e refazer diagnóstico
-        setTimeout(() => {
-          runFullDiagnostic();
-        }, 1000);
-      }
-    } catch (error) {
-      console.error('Erro inesperado:', error);
-    }
-    setLoginLoading(false);
   };
 
   const handleAutoFix = async () => {
@@ -358,54 +331,8 @@ export function AuthDiagnostic() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-gray-800">Teste de Login:</h4>
-              <Button
-                onClick={() => setShowTestLogin(!showTestLogin)}
-                size="sm"
-                variant="outline"
-                className="gap-2"
-              >
-                {showTestLogin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                {showTestLogin ? 'Ocultar' : 'Mostrar'}
-              </Button>
-            </div>
-
-            {showTestLogin && (
-              <div className="p-4 bg-white rounded border space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email:
-                  </label>
-                  <input
-                    type="email"
-                    value={testCredentials.email}
-                    onChange={(e) => setTestCredentials(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Senha:
-                  </label>
-                  <input
-                    type="password"
-                    value={testCredentials.password}
-                    onChange={(e) => setTestCredentials(prev => ({ ...prev, password: e.target.value }))}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                  />
-                </div>
-                <Button
-                  onClick={handleTestLogin}
-                  loading={loginLoading}
-                  className="w-full gap-2"
-                >
-                  <Key className="w-4 h-4" />
-                  Testar Login
-                </Button>
-              </div>
-            )}
+          <div className="text-gray-600">
+            <p>Usuário não está logado. Faça login para continuar.</p>
           </div>
         )}
 

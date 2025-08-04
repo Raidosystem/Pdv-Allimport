@@ -80,35 +80,17 @@ export function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-                  <p className="text-red-600 font-medium text-center">{error}</p>
-                </div>
-              )}
+            </form>
 
-              {/* Credenciais de Teste */}
-              <div className="p-4 rounded-xl bg-orange-50 border border-orange-200 shadow-sm">
-                <h3 className="text-orange-800 font-semibold text-center mb-2">
-                  🧪 Credenciais de Teste
-                </h3>
-                <div className="text-sm text-orange-700 space-y-1 mb-3">
-                  <p><strong>Email:</strong> teste@teste.com</p>
-                  <p><strong>Senha:</strong> teste@@</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEmail('teste@teste.com')
-                    setPassword('teste@@')
-                  }}
-                  className="w-full text-orange-700 border-orange-300 hover:bg-orange-100"
-                >
-                  Preencher Credenciais de Teste
-                </Button>
+            {error && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+                <p className="text-red-700 text-sm font-medium">
+                  {error}
+                </p>
               </div>
+            )}
 
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <Input
                   label="Email"
@@ -163,6 +145,14 @@ export function LoginPage() {
                 </Link>
               </div>
             </form>
+
+            {error && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+                <p className="text-red-700 text-sm font-medium">
+                  {error}
+                </p>
+              </div>
+            )}
 
             <div className="mt-8 space-y-4">
               <div className="relative">

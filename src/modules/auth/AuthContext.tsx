@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
+import { SubscriptionService } from '../../services/subscriptionService'
 
 interface AuthContextType {
   user: User | null
@@ -11,6 +12,8 @@ interface AuthContextType {
   signOut: () => Promise<{ error: AuthError | null }>
   resendConfirmation: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
+  checkAccess: () => Promise<boolean>
+  isAdmin: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,41 +28,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar se há uma sessão de teste salva
-    const testUser = localStorage.getItem('test-user')
-    const testSession = localStorage.getItem('test-session')
-    
-    if (testUser && testSession) {
-      try {
-        const user = JSON.parse(testUser)
-        const session = JSON.parse(testSession)
-        
-        // Verificar se o ID do usuário é válido (deve ser um UUID)
-        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)
-        
-        if (!isValidUUID) {
-          // ID inválido, limpar localStorage
-          console.log('Sessão com ID inválido detectada, limpando...')
-          localStorage.removeItem('test-user')
-          localStorage.removeItem('test-session')
-        } else if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
-          // Sessão válida e não expirada
-          setUser(user)
-          setSession(session)
-          setLoading(false)
-          return
-        } else {
-          // Sessão expirada, limpar localStorage
-          localStorage.removeItem('test-user')
-          localStorage.removeItem('test-session')
-        }
-      } catch {
-        // Erro ao fazer parse, limpar localStorage
-        localStorage.removeItem('test-user')
-        localStorage.removeItem('test-session')
-      }
-    }
-
     // Obter sessão atual do Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -80,63 +48,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    // Verificação para credenciais de teste
-    if (email === 'teste@teste.com' && password === 'teste@@') {
-      // Criar uma sessão simulada para o usuário de teste
-      const mockUser = {
-        id: '00000000-0000-0000-0000-000000000001', // UUID válido para teste
-        email: 'teste@teste.com',
-        user_metadata: {
-          name: 'Usuário Teste'
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        email_confirmed_at: new Date().toISOString(),
-        phone: '',
-        confirmation_sent_at: undefined,
-        confirmed_at: new Date().toISOString(),
-        recovery_sent_at: undefined,
-        email_change_sent_at: undefined,
-        new_email: undefined,
-        invited_at: undefined,
-        action_link: undefined,
-        email_change: undefined,
-        phone_change: undefined,
-        factors: undefined,
-        identities: []
-      } as unknown as User
-
-      const mockSession = {
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
-        expires_in: 3600,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        token_type: 'bearer',
-        user: mockUser
-      } as Session
-
-      setUser(mockUser)
-      setSession(mockSession)
-      
-      // Salvar no localStorage para persistir entre reloads
-      localStorage.setItem('test-user', JSON.stringify(mockUser))
-      localStorage.setItem('test-session', JSON.stringify(mockSession))
-      
-      return { data: { user: mockUser, session: mockSession }, error: null }
-    }
-
-    // Caso contrário, usar autenticação normal do Supabase
+    // Usar autenticação normal do Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+
+    // Se login bem-sucedido, verificar se usuário está aprovado
+    if (data.user && !error) {
+      // Verificar se é admin (sempre aprovado)
+      const isAdmin = email === 'admin@pdvallimport.com' || 
+                     email === 'novaradiosystem@outlook.com'
+      
+      if (!isAdmin) {
+        // Verificar status de aprovação para usuários normais
+        const { data: approvalData, error: approvalError } = await supabase
+          .from('user_approvals')
+          .select('status')
+          .eq('user_id', data.user.id)
+          .single()
+        
+        if (approvalError || !approvalData) {
+          // Se não encontrou registro de aprovação, criar um pendente
+          await supabase.from('user_approvals').insert({
+            user_id: data.user.id,
+            email: data.user.email,
+            status: 'pending'
+          })
+          
+          // Fazer logout e retornar erro
+          await supabase.auth.signOut()
+          return { 
+            data: null, 
+            error: { 
+              message: 'Sua conta está pendente de aprovação pelo administrador. Aguarde a aprovação para acessar o sistema.',
+              name: 'PENDING_APPROVAL'
+            } as any 
+          }
+        }
+        
+        if (approvalData.status !== 'approved') {
+          // Usuário não aprovado, fazer logout
+          await supabase.auth.signOut()
+          return { 
+            data: null, 
+            error: { 
+              message: approvalData.status === 'rejected' 
+                ? 'Sua conta foi rejeitada pelo administrador. Entre em contato para mais informações.'
+                : 'Sua conta está pendente de aprovação pelo administrador. Aguarde a aprovação para acessar o sistema.',
+              name: 'PENDING_APPROVAL'
+            } as any 
+          }
+        }
+      }
+    }
+
     return { data, error }
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
+    console.log('=== SIGNUP DEBUG ===')
+    console.log('Email:', email)
+    console.log('Is Admin:', email === 'admin@pdvallimport.com' || email === 'novaradiosystem@outlook.com')
+    
     // Criar conta sem obrigar confirmação de email
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -147,16 +121,82 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     })
 
-    // Se a conta foi criada com sucesso, fazer login automático
+    console.log('Supabase signUp result:', { data, error })
+
+    // Se a conta foi criada com sucesso
     if (data.user && !error) {
-      // Fazer login imediato após cadastro
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      // Verificar se é admin (admins são auto-aprovados)
+      const isAdmin = email === 'admin@pdvallimport.com' || 
+                     email === 'novaradiosystem@outlook.com'
       
-      if (loginData.user && !loginError) {
-        return { data: loginData, error: null }
+      console.log('User created, isAdmin:', isAdmin)
+      
+      if (isAdmin) {
+        // Para admins, fazer login automático
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+        
+        if (loginData.user && !loginError) {
+          console.log('Admin auto-login success')
+          return { data: loginData, error: null }
+        }
+      } else {
+        console.log('Non-admin user - checking approval system')
+        // Para usuários normais, verificar se a tabela de aprovação existe
+        try {
+          const { error: approvalError } = await supabase
+            .from('user_approvals')
+            .select('user_id')
+            .eq('user_id', data.user.id)
+            .limit(1)
+          
+          console.log('Approval table check error:', approvalError)
+          
+          if (approvalError && approvalError.code === '42P01') {
+            // Tabela não existe - forçar logout e informar
+            await supabase.auth.signOut()
+            console.log('Approval system not configured')
+            return { 
+              data: { 
+                user: data.user, 
+                session: null 
+              }, 
+              error: {
+                message: 'APPROVAL_SYSTEM_NOT_CONFIGURED',
+                name: 'SETUP_REQUIRED'
+              } as any
+            }
+          }
+          
+          // Tabela existe - fazer logout normal e aguardar aprovação
+          await supabase.auth.signOut()
+          console.log('User created, logging out for approval')
+          return { 
+            data: { 
+              user: data.user, 
+              session: null 
+            }, 
+            error: {
+              message: 'PENDING_APPROVAL',
+              name: 'PENDING_APPROVAL'
+            } as any
+          }
+        } catch (err) {
+          // Em caso de erro, forçar logout de segurança
+          await supabase.auth.signOut()
+          return { 
+            data: { 
+              user: data.user, 
+              session: null 
+            }, 
+            error: {
+              message: 'PENDING_APPROVAL',
+              name: 'PENDING_APPROVAL'
+            } as any
+          }
+        }
       }
     }
 
@@ -201,6 +241,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { data, error }
   }
 
+  const checkAccess = async (): Promise<boolean> => {
+    if (!user?.email) return false
+    
+    // Admins sempre têm acesso
+    if (isAdmin()) return true
+    
+    try {
+      return await SubscriptionService.hasAccess(user.email)
+    } catch (error) {
+      console.error('Erro ao verificar acesso:', error)
+      return false
+    }
+  }
+
+  const isAdmin = (): boolean => {
+    return user?.email === 'admin@pdvallimport.com' || 
+           user?.email === 'novaradiosystem@outlook.com' ||
+           user?.app_metadata?.role === 'admin'
+  }
+
   const value: AuthContextType = {
     user,
     session,
@@ -210,6 +270,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut,
     resendConfirmation,
     resetPassword,
+    checkAccess,
+    isAdmin,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

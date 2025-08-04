@@ -13,8 +13,8 @@ export function QuickFix({ onRetryLogin }: QuickFixProps) {
       problem: "Usuário não autenticado",
       icon: <User className="w-5 h-5 text-orange-600" />,
       solutions: [
-        "Use as credenciais de teste: teste@teste.com / teste@@",
-        "Clique em 'Preencher Credenciais de Teste' na página de login",
+        "Faça login com suas credenciais de acesso",
+        "Verifique se sua conta está aprovada pelo administrador",
         "Verifique se está usando o email e senha corretos"
       ]
     },

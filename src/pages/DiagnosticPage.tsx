@@ -118,7 +118,7 @@ export function DiagnosticPage() {
               <div className="space-y-3 text-blue-700">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</div>
-                  <p><strong>Credenciais de Teste:</strong> Use "teste@teste.com" / "teste@@" para login rápido</p>
+                  <p><strong>Conta de Teste:</strong> Use suas credenciais de administrador para login</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</div>

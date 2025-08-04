@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from './AuthContext'
@@ -21,8 +21,16 @@ export function SignupPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  // Redirecionar se já estiver logado
-  if (user) {
+  console.log('SignupPage render - success:', success, 'loading:', loading)
+
+  // Monitorar mudanças no success
+  useEffect(() => {
+    console.log('useEffect - success mudou para:', success)
+  }, [success])
+
+  // Redirecionar se já estiver logado (mas não durante o processo de cadastro)
+  if (user && !loading) {
+    console.log('User detectado, redirecionando para dashboard:', user)
     return <Navigate to="/dashboard" replace />
   }
 
@@ -58,10 +66,26 @@ export function SignupPage() {
       company_name: formData.companyName
     })
     
+    console.log('=== DEBUG SIGNUP ===')
+    console.log('Data:', data)
+    console.log('Error:', error)
+    console.log('Error message:', error?.message)
+    console.log('===================')
+    
     if (error) {
       console.log('Signup error:', error) // Para debug
       if (error.message === 'User already registered') {
         setError('Este email já está cadastrado')
+      } else if (error.message === 'APPROVAL_SYSTEM_NOT_CONFIGURED') {
+        setError('Sistema de aprovação não configurado. Contate o administrador.')
+      } else if (error.message === 'PENDING_APPROVAL' || error.name === 'PENDING_APPROVAL') {
+        // Usuário cadastrado com sucesso, mas está pendente de aprovação
+        console.log('DETECTOU PENDING_APPROVAL - mostrando tela de sucesso')
+        console.log('Definindo success = true')
+        setLoading(false)
+        setSuccess(true)
+        console.log('Success definido, retornando...')
+        return // Não mostrar erro, mostrar página de sucesso
       } else if (error.message.includes('email')) {
         setError('Problema com o email. Verifique se está correto.')
       } else {
@@ -69,16 +93,62 @@ export function SignupPage() {
       }
     } else {
       console.log('Signup success:', data) // Para debug
-      // Redirecionar diretamente para o dashboard após cadastro bem-sucedido
+      // Mostrar mensagem de sucesso informando sobre aprovação
       setSuccess(true)
     }
     
     setLoading(false)
   }
 
-  // Se o cadastro foi bem-sucedido, redirecionar automaticamente para o dashboard
+  // Se o cadastro foi bem-sucedido, mostrar página de sucesso com informação sobre aprovação
   if (success) {
-    return <Navigate to="/dashboard" replace />
+    console.log('Renderizando página de sucesso!')
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-transparent"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative w-full max-w-md">
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-secondary-900 mb-4">
+                Conta criada com sucesso!
+              </h2>
+              <div className="text-secondary-600 text-lg mb-8 space-y-3">
+                <p className="text-sm bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <strong>⏳ Aguardando Aprovação</strong><br/>
+                  Sua conta foi criada, mas precisa ser aprovada por um administrador antes que você possa acessar todas as funcionalidades do sistema.
+                </p>
+                <p className="text-sm text-secondary-500">
+                  Você receberá uma confirmação quando sua conta for aprovada.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Link to="/login">
+                  <Button className="text-lg py-4 px-8 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg w-full">
+                    Fazer Login
+                  </Button>
+                </Link>
+                <Link to="/">
+                  <Button variant="ghost" className="text-secondary-600 w-full">
+                    ← Voltar ao início
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -103,7 +103,7 @@ export const PAYMENT_PLANS: PaymentPlan[] = [
     id: 'monthly',
     name: 'Plano Mensal',
     description: 'Acesso completo por 30 dias',
-    price: 29.90,
+    price: 59.90,
     currency: 'BRL',
     duration_days: 30,
     features: [

@@ -1,4 +1,5 @@
 import { Clock, AlertTriangle, Crown } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useSubscription } from '../../hooks/useSubscription'
 
 interface SubscriptionStatusProps {
@@ -54,15 +55,27 @@ export function SubscriptionStatus({ className = '' }: SubscriptionStatusProps) 
   }
 
   const statusInfo = getStatusInfo()
+  const shouldLinkToPayment = isInTrial && daysRemaining <= 7
 
-  return (
+  const StatusContent = () => (
     <div className={`
       inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border text-sm font-medium
       ${statusInfo.bgColor} ${statusInfo.textColor} ${statusInfo.borderColor}
+      ${shouldLinkToPayment ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
       ${className}
     `}>
       {statusInfo.icon}
       <span>{statusInfo.text}</span>
     </div>
   )
+
+  if (shouldLinkToPayment) {
+    return (
+      <Link to="/assinatura">
+        <StatusContent />
+      </Link>
+    )
+  }
+
+  return <StatusContent />
 }

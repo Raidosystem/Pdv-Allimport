@@ -33,7 +33,7 @@ O sistema agora possui um fluxo completo de assinatura com:
 - Acesso bloqueado até pagamento
 
 ### 4. **Pagamento**
-- Tela com valor de **R$ 29,90/mês**
+- Tela com valor de **R$ 59,90/mês**
 - Opções: PIX (instantâneo) ou Cartão (parcelamento)
 - QR Code dinâmico para PIX
 - Verificação automática de pagamento a cada 5 segundos
@@ -63,7 +63,7 @@ O sistema agora possui um fluxo completo de assinatura com:
 - payment_method (TEXT: pix, credit_card, debit_card)
 - payment_status (TEXT: pending, paid, failed, refunded)
 - payment_id (TEXT)
-- payment_amount (DECIMAL: 29.90)
+- payment_amount (DECIMAL: 59.90)
 - created_at, updated_at (TIMESTAMPTZ)
 ```
 
@@ -220,7 +220,7 @@ app.post('/webhook/mercadopago', (req, res) => {
 | Item | Valor | Período |
 |------|-------|---------|
 | Período de Teste | **Grátis** | 30 dias |
-| Assinatura Mensal | **R$ 29,90** | 30 dias |
+| Assinatura Mensal | **R$ 59,90** | 30 dias |
 
 ### **Incluído na Assinatura:**
 - ✅ Sistema PDV completo

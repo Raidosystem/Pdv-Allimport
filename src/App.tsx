@@ -17,6 +17,8 @@ import { OrdensServicoPage } from './pages/OrdensServicoPage'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
+import { SubscriptionGuard } from './components/SubscriptionGuard'
+import { PaymentPage } from './components/subscription/PaymentPage'
 import './App.css'
 
 function App() {
@@ -57,12 +59,24 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<AdminPanel />} />
           
+          {/* Página de Assinatura */}
+          <Route 
+            path="/assinatura" 
+            element={
+              <ProtectedRoute>
+                <PaymentPage onPaymentSuccess={() => window.location.href = '/dashboard'} />
+              </ProtectedRoute>
+            } 
+          />
+          
           {/* Rotas protegidas */}
           <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <SubscriptionGuard>
+                  <DashboardPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -70,7 +84,9 @@ function App() {
             path="/vendas" 
             element={
               <ProtectedRoute>
-                <SalesPage />
+                <SubscriptionGuard>
+                  <SalesPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -78,7 +94,9 @@ function App() {
             path="/produtos" 
             element={
               <ProtectedRoute>
-                <ProductsPage />
+                <SubscriptionGuard>
+                  <ProductsPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -86,7 +104,9 @@ function App() {
             path="/clientes" 
             element={
               <ProtectedRoute>
-                <ClientesPage />
+                <SubscriptionGuard>
+                  <ClientesPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -94,7 +114,9 @@ function App() {
             path="/caixa" 
             element={
               <ProtectedRoute>
-                <CaixaPage />
+                <SubscriptionGuard>
+                  <CaixaPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -102,7 +124,9 @@ function App() {
             path="/caixa/historico" 
             element={
               <ProtectedRoute>
-                <HistoricoCaixaPage />
+                <SubscriptionGuard>
+                  <HistoricoCaixaPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -110,7 +134,9 @@ function App() {
             path="/ordens-servico" 
             element={
               <ProtectedRoute>
-                <OrdensServicoPage />
+                <SubscriptionGuard>
+                  <OrdensServicoPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -118,7 +144,9 @@ function App() {
             path="/ordens-servico/:id" 
             element={
               <ProtectedRoute>
-                <OrdemServicoDetalhePage />
+                <SubscriptionGuard>
+                  <OrdemServicoDetalhePage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />
@@ -126,7 +154,9 @@ function App() {
             path="/test-categorias" 
             element={
               <ProtectedRoute>
-                <CategoryTestPage />
+                <SubscriptionGuard>
+                  <CategoryTestPage />
+                </SubscriptionGuard>
               </ProtectedRoute>
             } 
           />

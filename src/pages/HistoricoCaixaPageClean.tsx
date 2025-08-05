@@ -484,12 +484,12 @@ export function HistoricoCaixaPage() {
 
               <div>
                 <h4 className="text-md font-semibold text-gray-900 mb-3">
-                  Movimentações ({detalheSelecionado.movimentacoes?.length || 0})
+                  Movimentações ({detalheSelecionado.movimentacoes_caixa?.length || 0})
                 </h4>
                 
-                {detalheSelecionado.movimentacoes && detalheSelecionado.movimentacoes.length > 0 ? (
+                {detalheSelecionado.movimentacoes_caixa && detalheSelecionado.movimentacoes_caixa.length > 0 ? (
                   <div className="space-y-2">
-                    {detalheSelecionado.movimentacoes.map((mov) => (
+                    {detalheSelecionado.movimentacoes_caixa.map((mov) => (
                       <div key={mov.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <div className={`w-3 h-3 rounded-full ${

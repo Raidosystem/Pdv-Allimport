@@ -120,7 +120,7 @@ export function useCaixa() {
       total_entradas: caixaAtual.total_entradas || 0,
       total_saidas: caixaAtual.total_saidas || 0,
       saldo_atual: caixaAtual.saldo_atual || 0,
-      total_movimentacoes: caixaAtual.movimentacoes?.length || 0
+      total_movimentacoes: caixaAtual.movimentacoes_caixa?.length || 0
     };
   };
 

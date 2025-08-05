@@ -117,77 +117,36 @@ class MercadoPagoApiService {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
       console.log('🔍 Variáveis de ambiente:', {
-        isDev: this.isDevelopment,
+        isProduction: this.isProduction,
         hostname: window.location.hostname,
         viteToken: import.meta.env.VITE_MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO ENCONTRADO'
       });
       
-      // Verificar se está no Vercel (forçar chamada direta ao Mercado Pago)
+      // Verificar se está no Vercel (forçar uso da API do Vercel)
       const isVercel = window.location.hostname.includes('vercel.app') || 
                        window.location.hostname.includes('pdv-allimport');
       
-      if (isVercel || !this.isDevelopment) {
-        console.log('🎯 Ambiente produção detectado - fazendo chamada direta ao Mercado Pago...');
+      if (isVercel || this.isProduction) {
+        console.log('🎯 Ambiente produção detectado - usando API do Vercel...');
         try {
-          // Fazer chamada direta ao Mercado Pago usando fetch
-          let mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
-          
-          // Fallback: usar token hardcoded para produção se não encontrar a variável
-          if (!mpAccessToken && isVercel) {
-            mpAccessToken = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
-            console.log('⚡ Usando token de produção hardcoded');
-          }
-          
-          if (!mpAccessToken) {
-            throw new Error('Token do Mercado Pago não configurado');
-          }
-
-          const pixPayload = {
-            transaction_amount: data.amount,
-            description: data.description || 'Assinatura PDV Allimport',
-            payment_method_id: 'pix',
-            payer: {
-              email: data.userEmail,
-              first_name: data.userName || data.userEmail.split('@')[0],
-            },
-            external_reference: `pdv_${Date.now()}`,
-            notification_url: `${window.location.origin}/webhook/mp`,
-          };
-
-          console.log('📤 Enviando para Mercado Pago:', pixPayload);
-
-          const response = await fetch('https://api.mercadopago.com/v1/payments', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${mpAccessToken}`,
-              'Content-Type': 'application/json',
-              'X-Idempotency-Key': `pix_${Date.now()}_${Math.random()}`,
-            },
-            body: JSON.stringify(pixPayload),
-          });
-
-          if (!response.ok) {
-            throw new Error(`Mercado Pago API Error: ${response.status}`);
-          }
-
-          const mpResponse = await response.json();
-          console.log('✅ Resposta do Mercado Pago:', mpResponse);
+          console.log('✅ Fazendo requisição PIX via API Vercel...');
+          const response = await this.makeApiCall('/api/pix', 'POST', data);
 
           return {
             success: true,
-            paymentId: mpResponse.id?.toString() || '',
-            status: mpResponse.status,
-            qrCode: mpResponse.point_of_interaction?.transaction_data?.qr_code || '',
-            qrCodeBase64: mpResponse.point_of_interaction?.transaction_data?.qr_code_base64 || '',
-            ticketUrl: mpResponse.point_of_interaction?.transaction_data?.ticket_url || '',
+            paymentId: response.payment_id,
+            status: response.status,
+            qrCode: response.qr_code,
+            qrCodeBase64: response.qr_code_base64,
+            ticketUrl: response.ticket_url
           };
         } catch (error) {
-          console.error('❌ Erro na chamada direta ao Mercado Pago:', error);
+          console.error('❌ Erro na API Vercel para PIX:', error);
           // Em caso de erro, usar fallback demo
         }
       }
       
-      // Verificar se a API está disponível (fallback)
+      // Verificar se a API está disponível (fallback para desenvolvimento)
       const apiAvailable = await this.isApiAvailable();
       console.log('📡 API disponível?', apiAvailable);
       

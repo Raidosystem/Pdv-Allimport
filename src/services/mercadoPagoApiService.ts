@@ -325,15 +325,14 @@ class MercadoPagoApiService {
 
       console.log('✅ API disponível! Fazendo requisição real...');
       const response = await this.makeApiCall('/api/preference', 'POST', {
-        userEmail: data.userEmail,
-        userName: data.userName,
         amount: data.amount,
-        planName: data.description || 'Assinatura PDV Allimport'
+        description: data.description || 'Assinatura PDV Allimport',
+        email: data.userEmail
       });
 
       return {
         success: true,
-        paymentId: response.id,
+        paymentId: response.preference_id || response.id,
         checkoutUrl: response.init_point || response.sandbox_init_point
       };
     } catch (error) {

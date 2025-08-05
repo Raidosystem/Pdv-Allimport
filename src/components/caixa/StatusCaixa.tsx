@@ -159,7 +159,7 @@ export function StatusCaixa({ caixa, loading = false }: StatusCaixaProps) {
 
           <div className="flex items-center gap-2">
             <User className="w-4 h-4" />
-            <span>{caixa.movimentacoes?.length || 0} movimentações</span>
+            <span>{caixa.movimentacoes_caixa?.length || 0} movimentações</span>
           </div>
         </div>
 

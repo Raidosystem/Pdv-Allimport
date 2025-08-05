@@ -27,7 +27,7 @@ export interface MovimentacaoCaixa {
 }
 
 export interface CaixaCompleto extends Caixa {
-  movimentacoes?: MovimentacaoCaixa[];
+  movimentacoes_caixa?: MovimentacaoCaixa[];
   total_entradas: number;
   total_saidas: number;
   saldo_atual: number;

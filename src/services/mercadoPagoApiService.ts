@@ -101,29 +101,66 @@ class MercadoPagoApiService {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
       
-      // Verificar se está no Vercel (forçar produção)
+      // Verificar se está no Vercel (forçar chamada direta ao Mercado Pago)
       const isVercel = window.location.hostname.includes('vercel.app') || 
                        window.location.hostname.includes('pdv-allimport');
       
-      if (isVercel) {
-        console.log('🎯 Ambiente Vercel detectado - fazendo requisição PIX real...');
+      if (isVercel || !this.isDevelopment) {
+        console.log('🎯 Ambiente produção detectado - fazendo chamada direta ao Mercado Pago...');
         try {
-          const response = await this.makeApiCall('/api/pix', 'POST', data);
+          // Fazer chamada direta ao Mercado Pago usando fetch
+          const mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
+          
+          if (!mpAccessToken) {
+            throw new Error('Token do Mercado Pago não configurado');
+          }
+
+          const pixPayload = {
+            transaction_amount: data.amount,
+            description: data.description || 'Assinatura PDV Allimport',
+            payment_method_id: 'pix',
+            payer: {
+              email: data.userEmail,
+              first_name: data.userName || data.userEmail.split('@')[0],
+            },
+            external_reference: `pdv_${Date.now()}`,
+            notification_url: `${window.location.origin}/webhook/mp`,
+          };
+
+          console.log('📤 Enviando para Mercado Pago:', pixPayload);
+
+          const response = await fetch('https://api.mercadopago.com/v1/payments', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${mpAccessToken}`,
+              'Content-Type': 'application/json',
+              'X-Idempotency-Key': `pix_${Date.now()}_${Math.random()}`,
+            },
+            body: JSON.stringify(pixPayload),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Mercado Pago API Error: ${response.status}`);
+          }
+
+          const mpResponse = await response.json();
+          console.log('✅ Resposta do Mercado Pago:', mpResponse);
+
           return {
             success: true,
-            paymentId: response.payment_id,
-            status: response.status,
-            qrCode: response.qr_code,
-            qrCodeBase64: response.qr_code_base64,
-            ticketUrl: response.ticket_url
+            paymentId: mpResponse.id?.toString() || '',
+            status: mpResponse.status,
+            qrCode: mpResponse.point_of_interaction?.transaction_data?.qr_code || '',
+            qrCodeBase64: mpResponse.point_of_interaction?.transaction_data?.qr_code_base64 || '',
+            ticketUrl: mpResponse.point_of_interaction?.transaction_data?.ticket_url || '',
           };
         } catch (error) {
-          console.error('❌ Erro na API Vercel:', error);
-          // Em caso de erro na API do Vercel, usar fallback demo
+          console.error('❌ Erro na chamada direta ao Mercado Pago:', error);
+          // Em caso de erro, usar fallback demo
         }
       }
       
-      // Verificar se a API está disponível
+      // Verificar se a API está disponível (fallback)
       const apiAvailable = await this.isApiAvailable();
       console.log('📡 API disponível?', apiAvailable);
       

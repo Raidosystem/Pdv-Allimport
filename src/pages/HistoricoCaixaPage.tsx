@@ -64,7 +64,7 @@ export function HistoricoCaixaPage() {
         diferenca: item.diferenca,
         data_fechamento: item.data_fechamento,
         observacoes: item.observacoes,
-        movimentacoes: item.movimentacoes,
+        movimentacoes: item.movimentacoes_caixa,
       }));
       setHistorico(historicoFormatado);
     } catch (error) {

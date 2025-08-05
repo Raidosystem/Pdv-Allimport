@@ -19,6 +19,7 @@ import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
+import { PaymentTest } from './components/PaymentTest'
 import './App.css'
 
 function App() {
@@ -58,6 +59,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<AdminPanel />} />
+          
+          {/* Página de Teste de Pagamento */}
+          <Route path="/payment-test" element={<PaymentTest />} />
           
           {/* Página de Assinatura */}
           <Route 

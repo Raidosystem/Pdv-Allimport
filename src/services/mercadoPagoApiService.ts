@@ -1,6 +1,8 @@
 // API Backend Service para integração com Mercado Pago
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
+console.log('🔧 API_BASE_URL configurada:', API_BASE_URL);
+
 export interface PaymentData {
   userEmail: string;
   userName?: string;
@@ -22,6 +24,7 @@ export interface PaymentResponse {
 class MercadoPagoApiService {
   private async makeApiCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
     try {
+      console.log(`🌐 API Call: ${method} ${API_BASE_URL}${endpoint}`);
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
         headers: {
@@ -34,7 +37,9 @@ class MercadoPagoApiService {
         throw new Error(`API Error: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`✅ API Response:`, result);
+      return result;
     } catch (error) {
       console.error(`❌ Erro na API (${endpoint}):`, error);
       throw error;
@@ -43,9 +48,31 @@ class MercadoPagoApiService {
 
   private async isApiAvailable(): Promise<boolean> {
     try {
-      await this.makeApiCall('/api/health');
+      console.log('🔍 Verificando disponibilidade da API:', API_BASE_URL);
+      
+      // Fazer requisição com timeout mais longo
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+      
+      const response = await fetch(`${API_BASE_URL}/api/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ API disponível - resposta:', result);
       return true;
-    } catch {
+    } catch (error) {
+      console.log('❌ API não disponível - erro:', error);
       return false;
     }
   }
@@ -57,21 +84,10 @@ class MercadoPagoApiService {
 
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
-      // Verificar se a API está disponível
-      const apiAvailable = await this.isApiAvailable();
+      console.log('🚀 Iniciando createPixPayment com dados:', data);
       
-      if (!apiAvailable) {
-        console.warn('⚠️ API backend não disponível. Usando modo demo.');
-        return {
-          success: true,
-          paymentId: `demo_${Date.now()}`,
-          status: 'pending',
-          qrCode: this.generateMockQRCode(),
-          qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-          ticketUrl: '#demo-ticket'
-        };
-      }
-
+      // FORÇAR USO DA API REAL PARA TESTE
+      console.log('✅ Forçando uso da API real para PIX...');
       const response = await this.makeApiCall('/api/payments/pix', 'POST', data);
 
       return {
@@ -99,18 +115,10 @@ class MercadoPagoApiService {
 
   async createPaymentPreference(data: PaymentData): Promise<PaymentResponse> {
     try {
-      // Verificar se a API está disponível
-      const apiAvailable = await this.isApiAvailable();
+      console.log('🚀 Iniciando createPaymentPreference com dados:', data);
       
-      if (!apiAvailable) {
-        console.warn('⚠️ API backend não disponível. Usando modo demo.');
-        return {
-          success: true,
-          paymentId: `demo_pref_${Date.now()}`,
-          checkoutUrl: `${window.location.origin}/payment/demo?amount=${data.amount}&email=${encodeURIComponent(data.userEmail)}`
-        };
-      }
-
+      // FORÇAR USO DA API REAL PARA TESTE
+      console.log('✅ Forçando uso da API real para teste...');
       const response = await this.makeApiCall('/api/payments/preference', 'POST', {
         userEmail: data.userEmail,
         userName: data.userName,

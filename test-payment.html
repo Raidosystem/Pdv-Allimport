@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Payment API</title>
+</head>
+<body>
+    <h1>Teste da API de Pagamento</h1>
+    
+    <div>
+        <h2>PIX</h2>
+        <button onclick="testPix()">Testar PIX</button>
+        <div id="pixResult"></div>
+    </div>
+    
+    <div>
+        <h2>Cartão</h2>
+        <button onclick="testCard()">Testar Cartão</button>
+        <div id="cardResult"></div>
+    </div>
+
+    <script>
+        async function testPix() {
+            const result = document.getElementById('pixResult');
+            result.innerHTML = 'Carregando...';
+            
+            try {
+                const response = await fetch('http://localhost:3333/api/payments/pix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userEmail: 'teste@exemplo.com',
+                        userName: 'Teste Usuario',
+                        amount: 59.90,
+                        description: 'Teste PIX'
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.qr_code_base64) {
+                    result.innerHTML += '<br><img src="data:image/png;base64,' + data.qr_code_base64 + '" style="max-width: 200px;">';
+                }
+            } catch (error) {
+                result.innerHTML = 'Erro: ' + error.message;
+            }
+        }
+        
+        async function testCard() {
+            const result = document.getElementById('cardResult');
+            result.innerHTML = 'Carregando...';
+            
+            try {
+                const response = await fetch('http://localhost:3333/api/payments/preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userEmail: 'teste@exemplo.com',
+                        userName: 'Teste Usuario',
+                        amount: 59.90,
+                        planName: 'Teste Cartão'
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.init_point) {
+                    result.innerHTML += '<br><a href="' + data.init_point + '" target="_blank">Abrir Checkout</a>';
+                }
+            } catch (error) {
+                result.innerHTML = 'Erro: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

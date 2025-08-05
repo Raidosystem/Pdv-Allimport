@@ -16,6 +16,7 @@ import { useSubscription } from '../../hooks/useSubscription'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
+import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
 
 export function DashboardPage() {
@@ -123,6 +124,9 @@ export function DashboardPage() {
             <div className="flex items-center space-x-6">
               {/* Status da Assinatura - só mostrar se não estiver ativa */}
               {!isActive && <SubscriptionStatus />}
+              
+              {/* Contador de dias da assinatura ativa */}
+              {isActive && <SubscriptionCountdown />}
               
               <div className="flex items-center space-x-3 bg-secondary-50 rounded-xl px-4 py-2">
                 <User className="w-6 h-6 text-primary-500" />

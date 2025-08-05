@@ -86,8 +86,23 @@ class MercadoPagoApiService {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
       
-      // FORÇAR USO DA API REAL PARA TESTE
-      console.log('✅ Forçando uso da API real para PIX...');
+      // Verificar se a API está disponível
+      const apiAvailable = await this.isApiAvailable();
+      console.log('📡 API disponível?', apiAvailable);
+      
+      if (!apiAvailable) {
+        console.warn('⚠️ API backend não disponível. Usando modo demo.');
+        return {
+          success: true,
+          paymentId: `demo_${Date.now()}`,
+          status: 'pending',
+          qrCode: this.generateMockQRCode(),
+          qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          ticketUrl: '#demo-ticket'
+        };
+      }
+
+      console.log('✅ API disponível! Fazendo requisição PIX real...');
       const response = await this.makeApiCall('/api/payments/pix', 'POST', data);
 
       return {
@@ -117,8 +132,20 @@ class MercadoPagoApiService {
     try {
       console.log('🚀 Iniciando createPaymentPreference com dados:', data);
       
-      // FORÇAR USO DA API REAL PARA TESTE
-      console.log('✅ Forçando uso da API real para teste...');
+      // Verificar se a API está disponível
+      const apiAvailable = await this.isApiAvailable();
+      console.log('📡 API disponível?', apiAvailable);
+      
+      if (!apiAvailable) {
+        console.warn('⚠️ API backend não disponível. Usando modo demo.');
+        return {
+          success: true,
+          paymentId: `demo_pref_${Date.now()}`,
+          checkoutUrl: `${window.location.origin}/payment/demo?amount=${data.amount}&email=${encodeURIComponent(data.userEmail)}`
+        };
+      }
+
+      console.log('✅ API disponível! Fazendo requisição real...');
       const response = await this.makeApiCall('/api/payments/preference', 'POST', {
         userEmail: data.userEmail,
         userName: data.userName,

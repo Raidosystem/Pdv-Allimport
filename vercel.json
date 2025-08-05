@@ -5,6 +5,11 @@
   "outputDirectory": "dist",
   "installCommand": "npm install --ignore-scripts",
   "devCommand": "npm run dev",
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -30,7 +35,11 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|backend/).*)",
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

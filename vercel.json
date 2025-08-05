@@ -5,17 +5,6 @@
   "outputDirectory": "dist",
   "installCommand": "npm install --ignore-scripts",
   "devCommand": "npm run dev",
-  "functions": {
-    "api/health.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/pix.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/preference.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",

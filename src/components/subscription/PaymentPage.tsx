@@ -4,7 +4,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../modules/auth/AuthContext'
 import { useSubscription } from '../../hooks/useSubscription'
-import { MercadoPagoService } from '../../services/mercadoPagoService'
+import { mercadoPagoApiService as mercadoPagoService, type PaymentData } from '../../services/mercadoPagoApiService'
 import { PAYMENT_PLANS } from '../../types/subscription'
 import toast from 'react-hot-toast'
 
@@ -34,7 +34,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       const interval = setInterval(async () => {
         try {
           setCheckingPayment(true)
-          const status = await MercadoPagoService.checkPaymentStatus(pixData.payment_id)
+          const status = await mercadoPagoService.checkPaymentStatus(pixData.payment_id)
           
           if (status.approved) {
             setPaymentStatus('success')
@@ -67,22 +67,30 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       setLoading(true)
       const userName = user.user_metadata?.name || user.email.split('@')[0]
       
-      const pix = await MercadoPagoService.generatePixQRCode(
-        user.email,
-        userName,
-        plan.price,
-        plan.description
-      )
+      const pix = await mercadoPagoService.createPixPayment({
+        userEmail: user.email,
+        userName: userName,
+        amount: plan.price,
+        description: plan.description
+      })
 
-      setPixData(pix)
-      setPaymentStatus('waiting')
-      
-      // Verificar se é modo demo
-      if (pix.payment_id.startsWith('mock-')) {
-        setIsDemoMode(true)
-        toast.success('🧪 Modo demonstração: QR Code gerado para teste')
+      if (pix.success) {
+        setPixData({
+          qr_code: pix.qrCode || '',
+          qr_code_base64: pix.qrCodeBase64 || '',
+          payment_id: pix.paymentId || ''
+        })
+        setPaymentStatus('waiting')
+        
+        // Verificar se é modo demo
+        if (pix.paymentId?.startsWith('demo_')) {
+          setIsDemoMode(true)
+          toast.success('🧪 Modo demonstração: QR Code gerado para teste')
+        } else {
+          toast.success('QR Code PIX gerado! Escaneie para pagar.')
+        }
       } else {
-        toast.success('QR Code PIX gerado! Escaneie para pagar.')
+        toast.error('Erro ao gerar PIX. Tente novamente.')
       }
     } catch (error) {
       console.error('Erro ao gerar PIX:', error)
@@ -102,29 +110,35 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       setLoading(true)
       const userName = user.user_metadata?.name || user.email.split('@')[0]
       
-      const preference = await MercadoPagoService.createPaymentPreference(
-        user.email,
-        userName,
-        plan.price,
-        plan.name
-      )
+      const preference = await mercadoPagoService.createPaymentPreference({
+        userEmail: user.email,
+        userName: userName,
+        amount: plan.price,
+        description: plan.name
+      })
 
-      // Verificar se é modo demo
-      if (preference.id.startsWith('mock-')) {
-        setIsDemoMode(true)
-        toast.success('🧪 Modo demonstração: Checkout simulado')
-        // Em modo demo, simular sucesso após 3 segundos
-        setTimeout(() => {
-          setPaymentStatus('success')
-          toast.success('🎉 Pagamento simulado com sucesso!')
+      if (preference.success) {
+        // Verificar se é modo demo
+        if (preference.paymentId?.startsWith('demo_')) {
+          setIsDemoMode(true)
+          toast.success('🧪 Modo demonstração: Checkout simulado')
+          // Em modo demo, simular sucesso após 3 segundos
           setTimeout(() => {
-            onPaymentSuccess?.()
-          }, 2000)
-        }, 3000)
+            setPaymentStatus('success')
+            toast.success('🎉 Pagamento simulado com sucesso!')
+            setTimeout(() => {
+              onPaymentSuccess?.()
+            }, 2000)
+          }, 3000)
+        } else {
+          // Redirecionar para checkout do Mercado Pago
+          if (preference.checkoutUrl) {
+            window.open(preference.checkoutUrl, '_blank')
+            toast.success('Redirecionando para o checkout...')
+          }
+        }
       } else {
-        // Redirecionar para checkout do Mercado Pago
-        window.open(preference.init_point, '_blank')
-        toast.success('Redirecionando para o checkout...')
+        toast.error('Erro ao gerar checkout. Tente novamente.')
       }
     } catch (error) {
       console.error('Erro ao gerar checkout:', error)

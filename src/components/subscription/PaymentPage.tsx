@@ -72,6 +72,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
     try {
       setLoading(true)
+      setError('') // Limpar erros anteriores
       console.log('🚀 Iniciando geração de PIX para:', user.email)
       
       const userName = user.user_metadata?.name || user.email.split('@')[0]
@@ -101,11 +102,19 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         
         console.log('📱 Dados do PIX a serem salvos:', pixInfo);
         
+        // Verificar se pelo menos um dos QR codes foi gerado
+        if (!pixInfo.qr_code && !pixInfo.qr_code_base64) {
+          console.warn('⚠️ Nenhum QR Code foi gerado - forçando modo demo');
+          pixInfo.qr_code = 'demo_qr_code_' + Date.now();
+          pixInfo.qr_code_base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+          pixInfo.payment_id = 'demo_' + Date.now();
+        }
+        
         setPixData(pixInfo);
         setPaymentStatus('waiting');
         
         // Verificar se é modo demo
-        if (pix.paymentId?.startsWith('demo_')) {
+        if (pix.paymentId?.startsWith('demo_') || pixInfo.payment_id?.startsWith('demo_')) {
           setIsDemoMode(true);
           toast.success('🧪 Modo demonstração: QR Code gerado para teste');
         } else {
@@ -114,11 +123,13 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         }
       } else {
         console.error('❌ Erro na resposta do serviço:', pix);
+        setError('Erro ao gerar PIX. Tente novamente.');
         toast.error(pix?.error || 'Erro ao gerar PIX. Tente novamente.');
       }
     } catch (error) {
       console.error('❌ Erro ao gerar PIX:', error)
-      setError(error instanceof Error ? error.message : 'Erro desconhecido ao gerar PIX')
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao gerar PIX';
+      setError(errorMessage);
       toast.error('Erro ao gerar PIX. Tente novamente.')
     } finally {
       setLoading(false)
@@ -295,33 +306,44 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   Acessar sistema
                 </Button>
               </div>
-            ) : pixData && pixData.qr_code_base64 ? (
+            ) : pixData && (pixData.qr_code_base64 || pixData.qr_code) ? (
               /* Exibir QR Code PIX */
               <div className="text-center">
                 <h3 className="font-semibold text-secondary-900 mb-4">
                   Escaneie o QR Code para pagar
                 </h3>
                 
-                <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
-                  <img
-                    src={pixData.qr_code_base64.startsWith('data:') ? pixData.qr_code_base64 : `data:image/png;base64,${pixData.qr_code_base64}`}
-                    alt="QR Code PIX"
-                    className="w-48 h-48 mx-auto"
-                    onError={(e) => {
-                      console.error('Erro ao carregar QR Code:', e);
-                      console.log('QR Code Base64:', pixData.qr_code_base64);
-                      setError('Erro ao carregar QR Code. Tente gerar novamente.');
-                    }}
-                    onLoad={() => console.log('QR Code carregado com sucesso')}
-                  />
-                </div>
-
-                <div className="bg-secondary-50 p-4 rounded-lg mb-6">
-                  <p className="text-sm text-secondary-600 mb-2">Ou copie o código PIX:</p>
-                  <div className="bg-white p-3 rounded border font-mono text-sm break-all">
-                    {pixData.qr_code}
+                {pixData.qr_code_base64 ? (
+                  <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
+                    <img
+                      src={pixData.qr_code_base64.startsWith('data:') ? pixData.qr_code_base64 : `data:image/png;base64,${pixData.qr_code_base64}`}
+                      alt="QR Code PIX"
+                      className="w-48 h-48 mx-auto"
+                      onError={(e) => {
+                        console.error('Erro ao carregar QR Code:', e);
+                        console.log('QR Code Base64:', pixData.qr_code_base64);
+                        setError('Erro ao carregar QR Code. Tente gerar novamente.');
+                      }}
+                      onLoad={() => console.log('QR Code carregado com sucesso')}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
+                    <div className="w-48 h-48 mx-auto flex items-center justify-center bg-gray-100 rounded">
+                      <QrCode className="w-16 h-16 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">QR Code será exibido aqui</p>
+                  </div>
+                )}
+
+                {pixData.qr_code && (
+                  <div className="bg-secondary-50 p-4 rounded-lg mb-6">
+                    <p className="text-sm text-secondary-600 mb-2">Ou copie o código PIX:</p>
+                    <div className="bg-white p-3 rounded border font-mono text-sm break-all">
+                      {pixData.qr_code}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-center space-x-2 text-secondary-600 mb-6">
                   {checkingPayment ? (

@@ -24,12 +24,13 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   } | null>(null)
   const [checkingPayment, setCheckingPayment] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
+  const [isDemoMode, setIsDemoMode] = useState(false)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
 
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
-    if (pixData && paymentStatus === 'waiting') {
+    if (pixData && paymentStatus === 'waiting' && !pixData.payment_id.startsWith('mock-')) {
       const interval = setInterval(async () => {
         try {
           setCheckingPayment(true)
@@ -75,7 +76,14 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
       setPixData(pix)
       setPaymentStatus('waiting')
-      toast.success('QR Code PIX gerado! Escaneie para pagar.')
+      
+      // Verificar se é modo demo
+      if (pix.payment_id.startsWith('mock-')) {
+        setIsDemoMode(true)
+        toast.success('🧪 Modo demonstração: QR Code gerado para teste')
+      } else {
+        toast.success('QR Code PIX gerado! Escaneie para pagar.')
+      }
     } catch (error) {
       console.error('Erro ao gerar PIX:', error)
       toast.error('Erro ao gerar PIX. Tente novamente.')
@@ -101,10 +109,23 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         plan.name
       )
 
-      // Redirecionar para checkout do Mercado Pago
-      window.open(preference.init_point, '_blank')
-      
-      toast.success('Redirecionando para o checkout...')
+      // Verificar se é modo demo
+      if (preference.id.startsWith('mock-')) {
+        setIsDemoMode(true)
+        toast.success('🧪 Modo demonstração: Checkout simulado')
+        // Em modo demo, simular sucesso após 3 segundos
+        setTimeout(() => {
+          setPaymentStatus('success')
+          toast.success('🎉 Pagamento simulado com sucesso!')
+          setTimeout(() => {
+            onPaymentSuccess?.()
+          }, 2000)
+        }, 3000)
+      } else {
+        // Redirecionar para checkout do Mercado Pago
+        window.open(preference.init_point, '_blank')
+        toast.success('Redirecionando para o checkout...')
+      }
     } catch (error) {
       console.error('Erro ao gerar checkout:', error)
       toast.error('Erro ao gerar checkout. Tente novamente.')
@@ -133,6 +154,23 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <div className="mb-6 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium">Modo Demonstração</h3>
+                <p className="text-sm">Este é um ambiente de teste. Nenhum pagamento real será processado.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -246,6 +284,18 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   >
                     Pagar com cartão
                   </Button>
+                  {isDemoMode && (
+                    <Button
+                      onClick={() => {
+                        setPaymentStatus('success')
+                        toast.success('🎉 Pagamento PIX simulado com sucesso!')
+                        setTimeout(() => onPaymentSuccess?.(), 2000)
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      🧪 Simular Pagamento PIX
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (

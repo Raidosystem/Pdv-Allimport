@@ -7,6 +7,48 @@ const MP_BASE_URL = import.meta.env.VITE_MP_BASE_URL || 'https://api.mercadopago
 
 export class MercadoPagoService {
   
+  // Verificar se as credenciais estão configuradas
+  static hasCredentials(): boolean {
+    return !!(MP_ACCESS_TOKEN && MP_PUBLIC_KEY && MP_ACCESS_TOKEN !== '' && MP_PUBLIC_KEY !== '')
+  }
+
+  // Mock para desenvolvimento
+  static async createMockPreference(planPrice: number, planName: string): Promise<MercadoPagoPreference> {
+    // Simular um delay de API
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    return {
+      id: `mock-preference-${Date.now()}`,
+      init_point: 'https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=mock-preference',
+      sandbox_init_point: 'https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=mock-preference',
+      items: [{
+        id: 'pdv-subscription',
+        title: planName,
+        description: 'Assinatura do Sistema PDV Allimport',
+        quantity: 1,
+        currency_id: 'BRL',
+        unit_price: planPrice
+      }]
+    } as MercadoPagoPreference
+  }
+
+  // Mock para PIX
+  static async createMockPix(_amount: number): Promise<{ qr_code: string; qr_code_base64: string; payment_id: string }> {
+    // Simular um delay de API
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    const mockQRCode = "00020126360014BR.GOV.BCB.PIX013614584112345678905204000053039865802BR5925PDV ALLIMPORT LTDA6009SAO PAULO62070503***6304ABCD"
+    
+    // QR Code base64 simples (imagem de exemplo)
+    const mockQRBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    
+    return {
+      qr_code: mockQRCode,
+      qr_code_base64: mockQRBase64,
+      payment_id: `mock-payment-${Date.now()}`
+    }
+  }
+  
   // Criar preferência de pagamento
   static async createPaymentPreference(
     userEmail: string,
@@ -14,6 +56,12 @@ export class MercadoPagoService {
     planPrice: number,
     planName: string
   ): Promise<MercadoPagoPreference> {
+    // Se não tiver credenciais configuradas, usar mock
+    if (!this.hasCredentials()) {
+      console.warn('⚠️ Credenciais do Mercado Pago não configuradas. Usando mock para desenvolvimento.')
+      return this.createMockPreference(planPrice, planName)
+    }
+
     try {
       const preferenceData = {
         items: [
@@ -97,6 +145,12 @@ export class MercadoPagoService {
     amount: number,
     description: string
   ): Promise<{ qr_code: string; qr_code_base64: string; payment_id: string }> {
+    // Se não tiver credenciais configuradas, usar mock
+    if (!this.hasCredentials()) {
+      console.warn('⚠️ Credenciais do Mercado Pago não configuradas. Usando mock para desenvolvimento.')
+      return this.createMockPix(amount)
+    }
+
     try {
       const pixData = {
         transaction_amount: amount,

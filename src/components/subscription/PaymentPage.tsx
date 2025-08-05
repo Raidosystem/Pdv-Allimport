@@ -65,7 +65,16 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
     try {
       setLoading(true)
+      console.log('🚀 Iniciando geração de PIX para:', user.email)
+      
       const userName = user.user_metadata?.name || user.email.split('@')[0]
+      
+      console.log('📋 Dados do pagamento:', {
+        userEmail: user.email,
+        userName,
+        amount: plan.price,
+        description: plan.description
+      })
       
       const pix = await mercadoPagoService.createPixPayment({
         userEmail: user.email,
@@ -73,6 +82,8 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         amount: plan.price,
         description: plan.description
       })
+
+      console.log('✅ Resposta do serviço PIX:', pix)
 
       if (pix.success) {
         setPixData({
@@ -87,13 +98,15 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           setIsDemoMode(true)
           toast.success('🧪 Modo demonstração: QR Code gerado para teste')
         } else {
+          setIsDemoMode(false)
           toast.success('QR Code PIX gerado! Escaneie para pagar.')
         }
       } else {
-        toast.error('Erro ao gerar PIX. Tente novamente.')
+        console.error('❌ Erro na resposta do serviço:', pix)
+        toast.error(pix.error || 'Erro ao gerar PIX. Tente novamente.')
       }
     } catch (error) {
-      console.error('Erro ao gerar PIX:', error)
+      console.error('❌ Erro ao gerar PIX:', error)
       toast.error('Erro ao gerar PIX. Tente novamente.')
     } finally {
       setLoading(false)

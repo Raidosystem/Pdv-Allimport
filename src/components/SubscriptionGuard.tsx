@@ -10,7 +10,7 @@ interface SubscriptionGuardProps {
 
 export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const { user, loading: authLoading, isAdmin } = useAuth()
-  const { hasAccess, loading: subscriptionLoading, needsPayment } = useSubscription()
+  const { hasAccess, loading: subscriptionLoading, needsPayment, isInTrial, isActive, isExpired } = useSubscription()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
@@ -42,8 +42,12 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     return <>{children}</>
   }
 
-  // Se não tem acesso ou precisa de pagamento, mostrar tela de pagamento
-  if (!hasAccess || needsPayment) {
+  // Só mostrar tela de pagamento se:
+  // 1. Está em período de teste E expirou
+  // 2. OU não tem acesso E não tem assinatura ativa
+  const shouldShowPayment = (isInTrial && isExpired) || (!hasAccess && !isActive)
+  
+  if (shouldShowPayment || needsPayment) {
     return <PaymentPage onPaymentSuccess={() => window.location.reload()} />
   }
 

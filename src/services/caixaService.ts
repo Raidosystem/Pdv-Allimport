@@ -54,7 +54,7 @@ class CaixaService {
       const { data, error } = await supabase
         .from('caixa')
         .insert({
-          user_id: usuario.id,
+          usuario_id: usuario.id,
           valor_inicial: dados.valor_inicial,
           observacoes: dados.observacoes,
           status: 'aberto'
@@ -86,9 +86,9 @@ class CaixaService {
         .from('caixa')
         .select(`
           *,
-          movimentacoes (*)
+          movimentacoes_caixa (*)
         `)
-        .eq('user_id', usuario.id)
+        .eq('usuario_id', usuario.id)
         .eq('status', 'aberto')
         .order('data_abertura', { ascending: false })
         .limit(1)
@@ -117,7 +117,7 @@ class CaixaService {
       .from('caixa')
       .select(`
         *,
-        movimentacoes (*)
+        movimentacoes_caixa (*)
       `);
 
     // Aplicar filtros
@@ -134,7 +134,7 @@ class CaixaService {
     }
 
     if (filtros.usuario_id) {
-      query = query.eq('user_id', filtros.usuario_id);
+      query = query.eq('usuario_id', filtros.usuario_id);
     }
 
     const { data, error } = await query
@@ -164,7 +164,7 @@ class CaixaService {
         tipo: dados.tipo,
         descricao: dados.descricao,
         valor: dados.valor,
-        user_id: usuario.id
+        usuario_id: usuario.id
       })
       .select()
       .single();
@@ -243,7 +243,7 @@ class CaixaService {
       .from('caixa')
       .select(`
         *,
-        movimentacoes (*)
+        movimentacoes_caixa (*)
       `)
       .eq('id', id)
       .single();
@@ -260,7 +260,7 @@ class CaixaService {
   // ===== FUNÇÕES AUXILIARES =====
   
   private calcularResumoCaixa(caixa: CaixaCompleto): CaixaCompleto {
-    const movimentacoes = caixa.movimentacoes || [];
+    const movimentacoes = caixa.movimentacoes_caixa || [];
 
     const total_entradas = movimentacoes
       .filter((m: MovimentacaoCaixa) => m.tipo === 'entrada')
@@ -275,7 +275,7 @@ class CaixaService {
 
     return {
       ...caixa,
-      movimentacoes,
+      movimentacoes_caixa: movimentacoes,
       total_entradas,
       total_saidas,
       saldo_atual,
@@ -300,7 +300,7 @@ class CaixaService {
       .from('caixa')
       .select(`
         *,
-        movimentacoes (*)
+        movimentacoes_caixa (*)
       `)
       .eq('usuario_id', usuario.user.id)
       .gte('data_abertura', `${hoje}T00:00:00`)
@@ -324,9 +324,9 @@ class CaixaService {
         .from('caixa')
         .select(`
           *,
-          movimentacoes (*)
+          movimentacoes_caixa (*)
         `)
-        .eq('user_id', usuario.id)
+        .eq('usuario_id', usuario.id)
         .order('data_abertura', { ascending: false });
 
       // Aplicar filtros

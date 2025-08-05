@@ -140,7 +140,7 @@ export function CaixaPage() {
         {caixaAberto && caixaAtual && (
           <div className="mb-8">
             <MovimentacoesCaixa
-              movimentacoes={caixaAtual.movimentacoes || []}
+              movimentacoes={caixaAtual.movimentacoes_caixa || []}
               onAdicionarMovimentacao={handleAdicionarMovimentacao}
               loading={loading}
             />
@@ -184,7 +184,7 @@ export function CaixaPage() {
                 Registre entradas e saídas de dinheiro durante o expediente
               </p>
               <div className="text-lg font-bold text-gray-900 mb-2">
-                {caixaAtual ? `${caixaAtual.movimentacoes?.length || 0} registros` : '0 registros'}
+                {caixaAtual ? `${caixaAtual.movimentacoes_caixa?.length || 0} registros` : '0 registros'}
               </div>
             </div>
           </div>

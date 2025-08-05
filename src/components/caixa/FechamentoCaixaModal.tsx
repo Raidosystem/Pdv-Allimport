@@ -162,7 +162,7 @@ export function FechamentoCaixaModal({
 
           <div className="text-sm text-gray-600">
             <p><strong>Aberto em:</strong> {formatarDataHora(caixa.data_abertura)}</p>
-            <p><strong>Movimentações:</strong> {caixa.movimentacoes?.length || 0} registros</p>
+            <p><strong>Movimentações:</strong> {caixa.movimentacoes_caixa?.length || 0} registros</p>
           </div>
         </div>
 

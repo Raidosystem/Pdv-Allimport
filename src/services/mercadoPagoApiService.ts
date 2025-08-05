@@ -130,15 +130,26 @@ class MercadoPagoApiService {
         console.log('🎯 Ambiente produção detectado - usando API do Vercel...');
         try {
           console.log('✅ Fazendo requisição PIX via API Vercel...');
-          const response = await this.makeApiCall('/api/pix', 'POST', data);
+          const response = await this.makeApiCall('/api/pix', 'POST', {
+            amount: data.amount,
+            description: data.description,
+            email: data.userEmail
+          });
+
+          console.log('🔍 Resposta da API PIX:', response);
+
+          if (!response.qr_code_base64 && !response.qr_code) {
+            console.warn('⚠️ API retornou sucesso mas sem QR code - usando fallback demo');
+            throw new Error('QR Code não gerado pela API');
+          }
 
           return {
             success: true,
-            paymentId: response.payment_id,
-            status: response.status,
-            qrCode: response.qr_code,
-            qrCodeBase64: response.qr_code_base64,
-            ticketUrl: response.ticket_url
+            paymentId: response.payment_id || `api_${Date.now()}`,
+            status: response.status || 'pending',
+            qrCode: response.qr_code || '',
+            qrCodeBase64: response.qr_code_base64 || '',
+            ticketUrl: response.ticket_url || ''
           };
         } catch (error) {
           console.error('❌ Erro na API Vercel para PIX:', error);

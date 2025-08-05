@@ -25,8 +25,15 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [checkingPayment, setCheckingPayment] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
   const [isDemoMode, setIsDemoMode] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
+
+  // Reset error when changing payment method
+  const handlePaymentMethodChange = (method: 'pix' | 'card') => {
+    setError(null)
+    setPaymentMethod(method)
+  }
 
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
@@ -85,28 +92,33 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
       console.log('✅ Resposta do serviço PIX:', pix)
 
-      if (pix.success) {
-        setPixData({
+      if (pix && pix.success) {
+        const pixInfo = {
           qr_code: pix.qrCode || '',
           qr_code_base64: pix.qrCodeBase64 || '',
           payment_id: pix.paymentId || ''
-        })
-        setPaymentStatus('waiting')
+        };
+        
+        console.log('📱 Dados do PIX a serem salvos:', pixInfo);
+        
+        setPixData(pixInfo);
+        setPaymentStatus('waiting');
         
         // Verificar se é modo demo
         if (pix.paymentId?.startsWith('demo_')) {
-          setIsDemoMode(true)
-          toast.success('🧪 Modo demonstração: QR Code gerado para teste')
+          setIsDemoMode(true);
+          toast.success('🧪 Modo demonstração: QR Code gerado para teste');
         } else {
-          setIsDemoMode(false)
-          toast.success('QR Code PIX gerado! Escaneie para pagar.')
+          setIsDemoMode(false);
+          toast.success('QR Code PIX gerado! Escaneie para pagar.');
         }
       } else {
-        console.error('❌ Erro na resposta do serviço:', pix)
-        toast.error(pix.error || 'Erro ao gerar PIX. Tente novamente.')
+        console.error('❌ Erro na resposta do serviço:', pix);
+        toast.error(pix?.error || 'Erro ao gerar PIX. Tente novamente.');
       }
     } catch (error) {
       console.error('❌ Erro ao gerar PIX:', error)
+      setError(error instanceof Error ? error.message : 'Erro desconhecido ao gerar PIX')
       toast.error('Erro ao gerar PIX. Tente novamente.')
     } finally {
       setLoading(false)
@@ -177,6 +189,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   }
 
   const isTrialExpired = subscription?.status === 'expired' || daysRemaining === 0
+
+  // Fallback em caso de erro crítico
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-red-600 mb-4">Erro no Sistema de Pagamento</h2>
+              <p className="text-secondary-600 mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()} className="bg-primary-600 hover:bg-primary-700">
+                Tentar Novamente
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
@@ -260,22 +292,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   Acessar sistema
                 </Button>
               </div>
-            ) : pixData ? (
+            ) : pixData && pixData.qr_code_base64 ? (
               /* Exibir QR Code PIX */
               <div className="text-center">
                 <h3 className="font-semibold text-secondary-900 mb-4">
                   Escaneie o QR Code para pagar
                 </h3>
                 
-                {pixData.qr_code_base64 && (
-                  <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
-                    <img
-                      src={`data:image/png;base64,${pixData.qr_code_base64}`}
-                      alt="QR Code PIX"
-                      className="w-48 h-48 mx-auto"
-                    />
-                  </div>
-                )}
+                <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
+                  <img
+                    src={pixData.qr_code_base64.startsWith('data:') ? pixData.qr_code_base64 : `data:image/png;base64,${pixData.qr_code_base64}`}
+                    alt="QR Code PIX"
+                    className="w-48 h-48 mx-auto"
+                    onError={(e) => {
+                      console.error('Erro ao carregar QR Code:', e);
+                      console.log('QR Code Base64:', pixData.qr_code_base64);
+                      setError('Erro ao carregar QR Code. Tente gerar novamente.');
+                    }}
+                    onLoad={() => console.log('QR Code carregado com sucesso')}
+                  />
+                </div>
 
                 <div className="bg-secondary-50 p-4 rounded-lg mb-6">
                   <p className="text-sm text-secondary-600 mb-2">Ou copie o código PIX:</p>
@@ -340,7 +376,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                         ? 'border-primary-500 bg-primary-50'
                         : 'border-secondary-200 hover:border-secondary-300'
                     }`}
-                    onClick={() => setPaymentMethod('pix')}
+                    onClick={() => handlePaymentMethodChange('pix')}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-5 h-5 rounded-full border-2 ${
@@ -366,7 +402,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                         ? 'border-primary-500 bg-primary-50'
                         : 'border-secondary-200 hover:border-secondary-300'
                     }`}
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => handlePaymentMethodChange('card')}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-5 h-5 rounded-full border-2 ${

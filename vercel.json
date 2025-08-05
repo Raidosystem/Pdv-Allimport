@@ -34,12 +34,16 @@
       "destination": "/api/health.js"
     },
     {
-      "source": "/api/payments/pix",
+      "source": "/api/pix",
       "destination": "/api/pix.js"
     },
     {
-      "source": "/api/payments/preference",
+      "source": "/api/preference",
       "destination": "/api/preference.js"
+    },
+    {
+      "source": "/api/payment-status/(.*)",
+      "destination": "/api/payment-status.js?paymentId=$1"
     },
     {
       "source": "/((?!api/).*)",

@@ -103,7 +103,7 @@ class MercadoPagoApiService {
       }
 
       console.log('✅ API disponível! Fazendo requisição PIX real...');
-      const response = await this.makeApiCall('/api/payments/pix', 'POST', data);
+      const response = await this.makeApiCall('/api/pix', 'POST', data);
 
       return {
         success: true,
@@ -146,7 +146,7 @@ class MercadoPagoApiService {
       }
 
       console.log('✅ API disponível! Fazendo requisição real...');
-      const response = await this.makeApiCall('/api/payments/preference', 'POST', {
+      const response = await this.makeApiCall('/api/preference', 'POST', {
         userEmail: data.userEmail,
         userName: data.userName,
         amount: data.amount,
@@ -191,7 +191,7 @@ class MercadoPagoApiService {
         return { status: 'pending', approved: false };
       }
 
-      const response = await this.makeApiCall(`/api/payments/${paymentId}/status`);
+      const response = await this.makeApiCall(`/api/payment-status/${paymentId}`);
       
       return {
         status: response.status || 'unknown',

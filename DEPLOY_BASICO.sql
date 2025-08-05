@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS public.payments (
 -- 3. ATIVAR SEGURANÇA
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
--- 4. POLÍTICA BÁSICA
+-- 4. POLÍTICA BÁSICA (Remover se existir e recriar)
+DROP POLICY IF EXISTS "anyone_can_insert_payments" ON public.payments;
 CREATE POLICY "anyone_can_insert_payments" ON public.payments FOR INSERT WITH CHECK (true);
 
 -- 5. FUNÇÃO PARA ATIVAR ASSINATURA

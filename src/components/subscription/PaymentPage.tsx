@@ -156,10 +156,13 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             }, 2000)
           }, 3000)
         } else {
+          setIsDemoMode(false)
           // Redirecionar para checkout do Mercado Pago
           if (preference.checkoutUrl) {
             window.open(preference.checkoutUrl, '_blank')
-            toast.success('Redirecionando para o checkout...')
+            toast.success('Redirecionando para checkout do Mercado Pago...')
+          } else {
+            toast.error('Erro: URL de checkout não foi gerada')
           }
         }
       } else {

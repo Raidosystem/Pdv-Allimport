@@ -232,33 +232,85 @@ class MercadoPagoApiService {
   async createPaymentPreference(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPaymentPreference com dados:', data);
+      console.log('🔍 Variáveis de ambiente:', {
+        isProduction: this.isProduction,
+        hostname: window.location.hostname,
+        viteToken: import.meta.env.VITE_MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO ENCONTRADO'
+      });
       
-      // Verificar se está no Vercel (forçar produção)
+      // Verificar se está no Vercel (forçar chamada direta ao Mercado Pago)
       const isVercel = window.location.hostname.includes('vercel.app') || 
                        window.location.hostname.includes('pdv-allimport');
       
-      if (isVercel) {
-        console.log('🎯 Ambiente Vercel detectado - fazendo requisição preference real...');
+      if (isVercel || this.isProduction) {
+        console.log('🎯 Ambiente produção detectado - fazendo chamada direta ao Mercado Pago...');
         try {
-          const response = await this.makeApiCall('/api/preference', 'POST', {
-            userEmail: data.userEmail,
-            userName: data.userName,
-            amount: data.amount,
-            planName: data.description || 'Assinatura PDV Allimport'
+          // Fazer chamada direta ao Mercado Pago para criar preferência
+          let mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
+          
+          // Fallback: usar token hardcoded para produção se não encontrar a variável
+          if (!mpAccessToken && isVercel) {
+            mpAccessToken = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+            console.log('⚡ Usando token de produção hardcoded para preference');
+          }
+          
+          if (!mpAccessToken) {
+            throw new Error('Token do Mercado Pago não configurado');
+          }
+
+          const preferenceData = {
+            items: [
+              {
+                title: data.description || 'Assinatura PDV Allimport',
+                unit_price: data.amount,
+                quantity: 1,
+                currency_id: 'BRL'
+              }
+            ],
+            payer: {
+              email: data.userEmail,
+              name: data.userName || data.userEmail.split('@')[0]
+            },
+            external_reference: `checkout_${Date.now()}`,
+            notification_url: `${window.location.origin}/webhook/mp`,
+            back_urls: {
+              success: `${window.location.origin}/payment/success`,
+              failure: `${window.location.origin}/payment/failure`,
+              pending: `${window.location.origin}/payment/pending`
+            },
+            auto_return: 'approved'
+          };
+
+          console.log('📤 Enviando preferência para Mercado Pago:', preferenceData);
+
+          const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${mpAccessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(preferenceData),
           });
+
+          if (!response.ok) {
+            throw new Error(`Mercado Pago Preference API Error: ${response.status}`);
+          }
+
+          const mpResponse = await response.json();
+          console.log('✅ Resposta do Mercado Pago (Preference):', mpResponse);
 
           return {
             success: true,
-            paymentId: response.id,
-            checkoutUrl: response.init_point || response.sandbox_init_point
+            paymentId: mpResponse.id?.toString() || '',
+            checkoutUrl: mpResponse.init_point || mpResponse.sandbox_init_point || ''
           };
         } catch (error) {
-          console.error('❌ Erro na API Vercel:', error);
-          // Em caso de erro na API do Vercel, usar fallback demo
+          console.error('❌ Erro na chamada direta ao Mercado Pago (Preference):', error);
+          // Em caso de erro, usar fallback da API local
         }
       }
       
-      // Verificar se a API está disponível
+      // Verificar se a API está disponível (fallback)
       const apiAvailable = await this.isApiAvailable();
       console.log('📡 API disponível?', apiAvailable);
       

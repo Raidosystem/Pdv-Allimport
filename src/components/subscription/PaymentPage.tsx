@@ -37,11 +37,11 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
-    if (pixData && paymentStatus === 'waiting' && !pixData.payment_id.startsWith('mock-')) {
+    if (pixData && paymentStatus === 'waiting' && !String(pixData.payment_id).startsWith('mock-')) {
       const interval = setInterval(async () => {
         try {
           setCheckingPayment(true)
-          const status = await mercadoPagoService.checkPaymentStatus(pixData.payment_id)
+          const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id))
           
           if (status.approved) {
             setPaymentStatus('success')
@@ -92,12 +92,15 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       })
 
       console.log('✅ Resposta do serviço PIX:', pix)
+      console.log('🔍 PIX Success:', pix?.success)
+      console.log('🔍 PIX QR Code:', pix?.qrCode ? 'PRESENTE' : 'AUSENTE')
+      console.log('🔍 PIX QR Code Base64:', pix?.qrCodeBase64 ? 'PRESENTE' : 'AUSENTE')
 
       if (pix && pix.success) {
         const pixInfo = {
           qr_code: pix.qrCode || '',
           qr_code_base64: pix.qrCodeBase64 || '',
-          payment_id: pix.paymentId || ''
+          payment_id: String(pix.paymentId || '')
         };
         
         console.log('📱 Dados do PIX a serem salvos:', pixInfo);
@@ -108,19 +111,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           pixInfo.qr_code = 'demo_qr_code_' + Date.now();
           pixInfo.qr_code_base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
           pixInfo.payment_id = 'demo_' + Date.now();
+          setIsDemoMode(true);
         }
         
         setPixData(pixInfo);
         setPaymentStatus('waiting');
         
         // Verificar se é modo demo
-        if (pix.paymentId?.startsWith('demo_') || pixInfo.payment_id?.startsWith('demo_')) {
+        if (String(pix.paymentId).startsWith('demo_') || pixInfo.payment_id.startsWith('demo_')) {
           setIsDemoMode(true);
           toast.success('🧪 Modo demonstração: QR Code gerado para teste');
         } else {
           setIsDemoMode(false);
           toast.success('QR Code PIX gerado! Escaneie para pagar.');
         }
+        
+        console.log('✅ Estado após geração do PIX:', {
+          pixData: pixInfo,
+          paymentStatus: 'waiting',
+          isDemoMode: String(pix.paymentId).startsWith('demo_') || pixInfo.payment_id.startsWith('demo_')
+        });
       } else {
         console.error('❌ Erro na resposta do serviço:', pix);
         setError('Erro ao gerar PIX. Tente novamente.');
@@ -133,6 +143,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       toast.error('Erro ao gerar PIX. Tente novamente.')
     } finally {
       setLoading(false)
+      console.log('🏁 Finalizando generatePixPayment - loading:', false);
     }
   }
 

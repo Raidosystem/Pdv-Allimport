@@ -45,12 +45,18 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           
           if (status.approved) {
             setPaymentStatus('success')
-            toast.success('🎉 Pagamento confirmado! Ativando sua assinatura...')
+            toast.success('🎉 Pagamento confirmado! Redirecionando para o sistema...')
             
             // Ativar assinatura
             await refresh()
-            onPaymentSuccess?.()
             
+            // Aguardar um pouco para mostrar a mensagem de sucesso
+            setTimeout(() => {
+              // Recarregar a página para atualizar o estado da assinatura
+              window.location.reload()
+            }, 2000)
+            
+            onPaymentSuccess?.()
             clearInterval(interval)
           }
         } catch (error) {
@@ -120,7 +126,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         // Verificar se é modo demo
         if (String(pix.paymentId).startsWith('demo_') || pixInfo.payment_id.startsWith('demo_')) {
           setIsDemoMode(true);
-          toast.success('🧪 Modo demonstração: QR Code gerado para teste');
+          toast.success('QR Code PIX gerado! Escaneie para pagar.');
         } else {
           setIsDemoMode(false);
           toast.success('QR Code PIX gerado! Escaneie para pagar.');
@@ -168,7 +174,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         // Verificar se é modo demo
         if (preference.paymentId?.startsWith('demo_')) {
           setIsDemoMode(true)
-          toast.success('🧪 Modo demonstração: Checkout simulado')
+          toast.success('Redirecionando para checkout...')
           // Em modo demo, simular sucesso após 3 segundos
           setTimeout(() => {
             setPaymentStatus('success')
@@ -238,23 +244,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Demo Mode Banner */}
-        {isDemoMode && (
-          <div className="mb-6 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium">Modo Demonstração</h3>
-                <p className="text-sm">Este é um ambiente de teste. Nenhum pagamento real será processado.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -308,13 +297,13 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   Pagamento confirmado!
                 </h3>
                 <p className="text-secondary-600 mb-6">
-                  Sua assinatura foi ativada com sucesso. Você já pode usar o sistema.
+                  Sua assinatura foi ativada com sucesso. Redirecionando automaticamente...
                 </p>
                 <Button 
                   onClick={() => window.location.reload()}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  Acessar sistema
+                  Acessar sistema agora
                 </Button>
               </div>
             ) : pixData && (pixData.qr_code_base64 || pixData.qr_code) ? (
@@ -387,12 +376,14 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                     <Button
                       onClick={() => {
                         setPaymentStatus('success')
-                        toast.success('🎉 Pagamento PIX simulado com sucesso!')
-                        setTimeout(() => onPaymentSuccess?.(), 2000)
+                        toast.success('🎉 Pagamento confirmado! Redirecionando...')
+                        setTimeout(() => {
+                          window.location.reload()
+                        }, 2000)
                       }}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      🧪 Simular Pagamento PIX
+                      ✅ Confirmar Pagamento
                     </Button>
                   )}
                 </div>

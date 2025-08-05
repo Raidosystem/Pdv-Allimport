@@ -14,7 +14,7 @@ interface PaymentPageProps {
 
 export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const { user } = useAuth()
-  const { subscription, daysRemaining, refresh } = useSubscription()
+  const { subscription, daysRemaining, refresh, activateAfterPayment } = useSubscription()
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
   const [pixData, setPixData] = useState<{
@@ -45,16 +45,29 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           
           if (status.approved) {
             setPaymentStatus('success')
-            toast.success('🎉 Pagamento confirmado! Redirecionando para o sistema...')
+            toast.success('🎉 Pagamento confirmado! Ativando assinatura...')
             
-            // Ativar assinatura
-            await refresh()
+            // Ativar assinatura após pagamento
+            try {
+              console.log('💳 Ativando assinatura após pagamento PIX:', {
+                paymentId: pixData.payment_id,
+                userEmail: user?.email
+              })
+              
+              if (user?.email) {
+                await activateAfterPayment(String(pixData.payment_id), 'pix')
+                toast.success('✅ Assinatura ativada com sucesso!')
+              }
+            } catch (activationError) {
+              console.error('❌ Erro ao ativar assinatura:', activationError)
+              toast.error('Pagamento confirmado, mas houve erro na ativação. Contate o suporte.')
+            }
             
             // Aguardar um pouco para mostrar a mensagem de sucesso
             setTimeout(() => {
               // Recarregar a página para atualizar o estado da assinatura
               window.location.reload()
-            }, 2000)
+            }, 3000)
             
             onPaymentSuccess?.()
             clearInterval(interval)
@@ -68,7 +81,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
       return () => clearInterval(interval)
     }
-  }, [pixData, paymentStatus, refresh, onPaymentSuccess])
+  }, [pixData, paymentStatus, refresh, onPaymentSuccess, user?.email])
 
   const generatePixPayment = async () => {
     if (!user?.email) {
@@ -176,11 +189,23 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           setIsDemoMode(true)
           toast.success('Redirecionando para checkout...')
           // Em modo demo, simular sucesso após 3 segundos
-          setTimeout(() => {
+          setTimeout(async () => {
             setPaymentStatus('success')
             toast.success('🎉 Pagamento simulado com sucesso!')
+            
+            // Ativar assinatura em modo demo
+            try {
+              if (user?.email) {
+                await activateAfterPayment(preference.paymentId!, 'card')
+                toast.success('✅ Assinatura ativada com sucesso!')
+              }
+            } catch (activationError) {
+              console.error('❌ Erro ao ativar assinatura demo:', activationError)
+            }
+            
             setTimeout(() => {
               onPaymentSuccess?.()
+              window.location.reload()
             }, 2000)
           }, 3000)
         } else {
@@ -189,6 +214,10 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           if (preference.checkoutUrl) {
             window.open(preference.checkoutUrl, '_blank')
             toast.success('Redirecionando para checkout do Mercado Pago...')
+            toast('💡 Após o pagamento, retorne a esta página para ativar sua assinatura', {
+              duration: 5000,
+              icon: 'ℹ️'
+            })
           } else {
             toast.error('Erro: URL de checkout não foi gerada')
           }
@@ -199,6 +228,32 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
     } catch (error) {
       console.error('Erro ao gerar checkout:', error)
       toast.error('Erro ao gerar checkout. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const checkManualPayment = async () => {
+    if (!user?.email) {
+      toast.error('Usuário não encontrado')
+      return
+    }
+
+    try {
+      setLoading(true)
+      toast.success('🔄 Verificando status da assinatura...')
+      
+      // Recarregar dados da assinatura
+      await refresh()
+      
+      // Aguardar um pouco para processar
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+      
+    } catch (error) {
+      console.error('Erro ao verificar pagamento manual:', error)
+      toast.error('Erro ao verificar status. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -477,6 +532,25 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         <div className="text-center mt-6 text-secondary-600 text-sm">
           <p>Pagamento seguro processado pelo Mercado Pago</p>
           <p>Em caso de dúvidas, entre em contato pelo suporte</p>
+          
+          {/* Botão para verificar pagamento manual */}
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-blue-800 font-medium mb-2">
+              💳 Já fez o pagamento?
+            </p>
+            <p className="text-blue-600 text-sm mb-3">
+              Se você já efetuou o pagamento e sua assinatura não foi ativada automaticamente, 
+              clique no botão abaixo para verificar o status.
+            </p>
+            <Button
+              onClick={checkManualPayment}
+              loading={loading}
+              variant="outline"
+              className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+            >
+              🔄 Verificar Status da Assinatura
+            </Button>
+          </div>
         </div>
       </div>
     </div>

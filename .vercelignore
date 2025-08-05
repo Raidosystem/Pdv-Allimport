@@ -1,0 +1,20 @@
+# Ignorar pasta da API no deploy do frontend
+api/
+api/*
+
+# Logs
+*.log
+api.log
+
+# Arquivos de desenvolvimento
+.env.local
+.env.development
+.env.test
+
+# Dependências da API
+api/node_modules/
+api/package-lock.json
+
+# Arquivos temporários
+*.tmp
+*.temp

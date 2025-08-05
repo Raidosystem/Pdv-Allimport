@@ -1,9 +1,9 @@
 {
   "version": 2,
   "framework": "vite",
-  "buildCommand": "npm run build",
+  "buildCommand": "./build.sh",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
+  "installCommand": "npm install --ignore-scripts",
   "devCommand": "npm run dev",
   "headers": [
     {
@@ -30,7 +30,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|backend/).*)",
       "destination": "/index.html"
     }
   ]

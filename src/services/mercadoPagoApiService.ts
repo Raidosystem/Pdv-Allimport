@@ -100,6 +100,11 @@ class MercadoPagoApiService {
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
+      console.log('🔍 Variáveis de ambiente:', {
+        isDev: this.isDevelopment,
+        hostname: window.location.hostname,
+        viteToken: import.meta.env.VITE_MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO ENCONTRADO'
+      });
       
       // Verificar se está no Vercel (forçar chamada direta ao Mercado Pago)
       const isVercel = window.location.hostname.includes('vercel.app') || 
@@ -109,7 +114,13 @@ class MercadoPagoApiService {
         console.log('🎯 Ambiente produção detectado - fazendo chamada direta ao Mercado Pago...');
         try {
           // Fazer chamada direta ao Mercado Pago usando fetch
-          const mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
+          let mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
+          
+          // Fallback: usar token hardcoded para produção se não encontrar a variável
+          if (!mpAccessToken && isVercel) {
+            mpAccessToken = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+            console.log('⚡ Usando token de produção hardcoded');
+          }
           
           if (!mpAccessToken) {
             throw new Error('Token do Mercado Pago não configurado');

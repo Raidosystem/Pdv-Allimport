@@ -4,7 +4,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../modules/auth/AuthContext'
 import { useSubscription } from '../../hooks/useSubscription'
-import { mercadoPagoApiService as mercadoPagoService, type PaymentData } from '../../services/mercadoPagoApiService'
+import { mercadoPagoApiService as mercadoPagoService } from '../../services/mercadoPagoApiService'
 import { PAYMENT_PLANS } from '../../types/subscription'
 import toast from 'react-hot-toast'
 

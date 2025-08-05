@@ -1,7 +1,10 @@
 // API Backend Service para integração com Mercado Pago
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
+const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:3333'
+  : window.location.origin; // Usar o mesmo domínio em produção
 
-console.log('🔧 API_BASE_URL configurada:', API_BASE_URL);
+console.log('🔧 API_BASE_URL configurada:', API_BASE_URL, '(isDevelopment:', isDevelopment, ')');
 
 export interface PaymentData {
   userEmail: string;
@@ -22,6 +25,8 @@ export interface PaymentResponse {
 }
 
 class MercadoPagoApiService {
+  private isDevelopment = import.meta.env.DEV;
+
   private async makeApiCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
     try {
       console.log(`🌐 API Call: ${method} ${API_BASE_URL}${endpoint}`);
@@ -50,30 +55,29 @@ class MercadoPagoApiService {
     try {
       console.log('🔍 Verificando disponibilidade da API:', API_BASE_URL);
       
-      // Fazer requisição com timeout mais longo
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
-      
-      const response = await fetch(`${API_BASE_URL}/api/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+      // Em desenvolvimento, verificar se a API local está rodando
+      if (this.isDevelopment) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        return response.ok;
       }
       
-      const result = await response.json();
-      console.log('✅ API disponível - resposta:', result);
+      // Em produção, assumir que a API está disponível (mesma origem)
+      console.log('✅ API em produção - assumindo disponível');
       return true;
     } catch (error) {
       console.log('❌ API não disponível - erro:', error);
-      return false;
+      return this.isDevelopment ? false : true; // Em produção, tentar mesmo assim
     }
   }
 

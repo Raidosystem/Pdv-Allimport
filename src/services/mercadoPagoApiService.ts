@@ -1,10 +1,20 @@
 // API Backend Service para integração com Mercado Pago
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = import.meta.env.DEV && import.meta.env.VITE_DEV_MODE !== 'false';
+const isProduction = window.location.hostname.includes('vercel.app') || 
+                    window.location.hostname.includes('pdv-allimport') ||
+                    import.meta.env.VITE_DEV_MODE === 'false';
+
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:3333'
   : window.location.origin; // Usar o mesmo domínio em produção
 
-console.log('🔧 API_BASE_URL configurada:', API_BASE_URL, '(isDevelopment:', isDevelopment, ')');
+console.log('🔧 Configuração de ambiente:', {
+  isDevelopment,
+  isProduction,
+  hostname: window.location.hostname,
+  VITE_DEV_MODE: import.meta.env.VITE_DEV_MODE,
+  API_BASE_URL
+});
 
 export interface PaymentData {
   userEmail: string;
@@ -25,7 +35,13 @@ export interface PaymentResponse {
 }
 
 class MercadoPagoApiService {
-  private isDevelopment = import.meta.env.DEV;
+  private isProduction = window.location.hostname.includes('vercel.app') || 
+                        window.location.hostname.includes('pdv-allimport') ||
+                        import.meta.env.VITE_DEV_MODE === 'false';
+
+  private get isDevelopment() {
+    return !this.isProduction;
+  }
 
   private async makeApiCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
     try {

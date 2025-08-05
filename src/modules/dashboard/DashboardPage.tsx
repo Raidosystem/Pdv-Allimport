@@ -12,6 +12,7 @@ import {
   Crown
 } from 'lucide-react'
 import { useAuth } from '../auth'
+import { useSubscription } from '../../hooks/useSubscription'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
@@ -19,6 +20,7 @@ import { SubscriptionBanner } from '../../components/subscription/SubscriptionBa
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
+  const { isActive } = useSubscription()
 
   const handleSignOut = async () => {
     await signOut()
@@ -119,8 +121,8 @@ export function DashboardPage() {
             </div>
             
             <div className="flex items-center space-x-6">
-              {/* Status da Assinatura */}
-              <SubscriptionStatus />
+              {/* Status da Assinatura - só mostrar se não estiver ativa */}
+              {!isActive && <SubscriptionStatus />}
               
               <div className="flex items-center space-x-3 bg-secondary-50 rounded-xl px-4 py-2">
                 <User className="w-6 h-6 text-primary-500" />
@@ -132,15 +134,18 @@ export function DashboardPage() {
                 </div>
               </div>
               
-              <Link to="/assinatura">
-                <Button 
-                  variant="outline" 
-                  className="flex items-center space-x-2 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
-                >
-                  <Crown className="w-5 h-5" />
-                  <span>Assinatura</span>
-                </Button>
-              </Link>
+              {/* Botão Assinatura - só mostrar se não estiver ativa */}
+              {!isActive && (
+                <Link to="/assinatura">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center space-x-2 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
+                  >
+                    <Crown className="w-5 h-5" />
+                    <span>Assinatura</span>
+                  </Button>
+                </Link>
+              )}
               
               <Button 
                 variant="outline" 
@@ -155,8 +160,8 @@ export function DashboardPage() {
         </div>
       </header>
 
-      {/* Banner de Assinatura */}
-      <SubscriptionBanner />
+      {/* Banner de Assinatura - só mostrar se não estiver ativa */}
+      {!isActive && <SubscriptionBanner />}
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">

@@ -55,12 +55,21 @@ class MercadoPagoApiService {
     try {
       console.log('🔍 Verificando disponibilidade da API:', API_BASE_URL);
       
+      // Verificar se está no Vercel (produção)
+      const isVercel = window.location.hostname.includes('vercel.app') || 
+                       window.location.hostname.includes('pdv-allimport');
+      
+      if (isVercel) {
+        console.log('✅ Detectado ambiente Vercel - forçando modo produção');
+        return true;
+      }
+      
       // Em desenvolvimento, verificar se a API local está rodando
       if (this.isDevelopment) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
         
-        const response = await fetch(`${API_BASE_URL}/api/health`, {
+        const response = await fetch(`${API_BASE_URL}/api/test`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -72,12 +81,14 @@ class MercadoPagoApiService {
         return response.ok;
       }
       
-      // Em produção, assumir que a API está disponível (mesma origem)
-      console.log('✅ API em produção - assumindo disponível');
+      // Fallback: assumir disponível em produção
+      console.log('✅ Assumindo API disponível em produção');
       return true;
     } catch (error) {
       console.log('❌ API não disponível - erro:', error);
-      return this.isDevelopment ? false : true; // Em produção, tentar mesmo assim
+      // Se está no Vercel, sempre retornar true
+      const isVercel = window.location.hostname.includes('vercel.app');
+      return isVercel || !this.isDevelopment;
     }
   }
 
@@ -89,6 +100,28 @@ class MercadoPagoApiService {
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
+      
+      // Verificar se está no Vercel (forçar produção)
+      const isVercel = window.location.hostname.includes('vercel.app') || 
+                       window.location.hostname.includes('pdv-allimport');
+      
+      if (isVercel) {
+        console.log('🎯 Ambiente Vercel detectado - fazendo requisição PIX real...');
+        try {
+          const response = await this.makeApiCall('/api/pix', 'POST', data);
+          return {
+            success: true,
+            paymentId: response.payment_id,
+            status: response.status,
+            qrCode: response.qr_code,
+            qrCodeBase64: response.qr_code_base64,
+            ticketUrl: response.ticket_url
+          };
+        } catch (error) {
+          console.error('❌ Erro na API Vercel:', error);
+          // Em caso de erro na API do Vercel, usar fallback demo
+        }
+      }
       
       // Verificar se a API está disponível
       const apiAvailable = await this.isApiAvailable();
@@ -135,6 +168,31 @@ class MercadoPagoApiService {
   async createPaymentPreference(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPaymentPreference com dados:', data);
+      
+      // Verificar se está no Vercel (forçar produção)
+      const isVercel = window.location.hostname.includes('vercel.app') || 
+                       window.location.hostname.includes('pdv-allimport');
+      
+      if (isVercel) {
+        console.log('🎯 Ambiente Vercel detectado - fazendo requisição preference real...');
+        try {
+          const response = await this.makeApiCall('/api/preference', 'POST', {
+            userEmail: data.userEmail,
+            userName: data.userName,
+            amount: data.amount,
+            planName: data.description || 'Assinatura PDV Allimport'
+          });
+
+          return {
+            success: true,
+            paymentId: response.id,
+            checkoutUrl: response.init_point || response.sandbox_init_point
+          };
+        } catch (error) {
+          console.error('❌ Erro na API Vercel:', error);
+          // Em caso de erro na API do Vercel, usar fallback demo
+        }
+      }
       
       // Verificar se a API está disponível
       const apiAvailable = await this.isApiAvailable();

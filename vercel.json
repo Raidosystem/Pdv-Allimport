@@ -30,6 +30,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/test",
+      "destination": "/api/test.js"
+    },
+    {
       "source": "/api/health",
       "destination": "/api/health.js"
     },

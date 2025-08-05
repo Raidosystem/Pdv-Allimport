@@ -137,20 +137,33 @@ class MercadoPagoApiService {
           });
 
           console.log('🔍 Resposta da API PIX:', response);
+          console.log('🔍 QR Code Base64:', response.qr_code_base64 ? 'PRESENTE' : 'AUSENTE');
+          console.log('🔍 QR Code String:', response.qr_code ? 'PRESENTE' : 'AUSENTE');
 
+          // Força fallback demo se não há QR codes válidos
           if (!response.qr_code_base64 && !response.qr_code) {
-            console.warn('⚠️ API retornou sucesso mas sem QR code - usando fallback demo');
-            throw new Error('QR Code não gerado pela API');
+            console.warn('⚠️ API retornou sucesso mas sem QR code - forçando fallback demo');
+            return {
+              success: true,
+              paymentId: `demo_api_${Date.now()}`,
+              status: 'pending',
+              qrCode: this.generateMockQRCode(),
+              qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+              ticketUrl: '#demo-ticket'
+            };
           }
 
-          return {
+          const result = {
             success: true,
-            paymentId: response.payment_id || `api_${Date.now()}`,
+            paymentId: String(response.payment_id || `api_${Date.now()}`),
             status: response.status || 'pending',
             qrCode: response.qr_code || '',
             qrCodeBase64: response.qr_code_base64 || '',
             ticketUrl: response.ticket_url || ''
           };
+          
+          console.log('🎯 Resultado final do PIX:', result);
+          return result;
         } catch (error) {
           console.error('❌ Erro na API Vercel para PIX:', error);
           // Em caso de erro, usar fallback demo
@@ -319,9 +332,11 @@ class MercadoPagoApiService {
 
   async checkPaymentStatus(paymentId: string): Promise<{ status: string; approved: boolean }> {
     try {
-      if (paymentId.startsWith('demo_')) {
+      const paymentIdStr = String(paymentId);
+      
+      if (paymentIdStr.startsWith('demo_')) {
         // Simular aprovação após 30 segundos para demo
-        const createdTime = parseInt(paymentId.split('_')[1]) || parseInt(paymentId.split('_')[2]);
+        const createdTime = parseInt(paymentIdStr.split('_')[1]) || parseInt(paymentIdStr.split('_')[2]);
         const now = Date.now();
         const elapsed = now - createdTime;
         
@@ -338,7 +353,7 @@ class MercadoPagoApiService {
         return { status: 'pending', approved: false };
       }
 
-      const response = await this.makeApiCall(`/api/payment-status/${paymentId}`);
+      const response = await this.makeApiCall(`/api/payment-status/${paymentIdStr}`);
       
       return {
         status: response.status || 'unknown',

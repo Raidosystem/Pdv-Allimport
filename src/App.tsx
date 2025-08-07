@@ -16,6 +16,7 @@ import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPage'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
+import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
@@ -160,6 +161,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <CategoryTestPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/configuracoes" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ConfiguracoesPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

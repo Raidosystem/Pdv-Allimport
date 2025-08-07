@@ -80,7 +80,7 @@ export function DashboardPage() {
       description: 'Gerenciar usuários e configurações',
       icon: Settings,
       color: 'info',
-      path: '/admin',
+      path: '/configuracoes',
       comingSoon: false
     }
   ]

@@ -47,7 +47,9 @@ class CaixaService {
         .single();
 
       if (caixaAberto) {
-        throw new Error('Já existe um caixa aberto para hoje. Feche o caixa atual antes de abrir um novo.');
+        // Ao invés de erro, retornar o caixa existente
+        console.log('✅ Caixa já aberto encontrado:', caixaAberto);
+        return caixaAberto;
       }
 
       // 2. Criar novo caixa

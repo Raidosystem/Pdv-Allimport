@@ -1,72 +1,56 @@
-// Diagnóstico rápido do frontend
-// Adicione este código no console do navegador para diagnosticar
+// Código para fechar caixas abertos via fetch (funciona no console)
+console.log('🔄 Fechando caixas abertos...');
 
-console.log('🔍 DIAGNÓSTICO DE AUTENTICAÇÃO');
-console.log('==============================');
+fetch('https://kmcaaqetxtwkdcczdomw.supabase.co/rest/v1/caixa?status=eq.aberto', {
+  method: 'PATCH',
+  headers: {
+    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  },
+  body: JSON.stringify({
+    status: 'fechado',
+    data_fechamento: new Date().toISOString(),
+    valor_final: 100
+  })
+})
+.then(response => {
+  console.log('Status da resposta:', response.status);
+  if (response.ok) {
+    console.log('✅ Caixas fechados com sucesso!');
+    alert('Caixas fechados! Agora você pode abrir um novo caixa.');
+  } else {
+    console.log('❌ Erro ao fechar caixas');
+  }
+  return response.text();
+})
+.then(data => {
+  console.log('Resposta do servidor:', data);
+})
+.catch(error => {
+  console.error('❌ Erro:', error);
+});
 
-// Verificar se Supabase está disponível
-if (typeof window !== 'undefined' && window.supabase) {
-  console.log('✅ Supabase disponível no frontend');
-  
-  // Verificar usuário atual
-  window.supabase.auth.getUser().then(({ data: { user }, error }) => {
-    if (error) {
-      console.log('❌ Erro ao verificar usuário:', error);
-    } else if (user) {
-      console.log('✅ Usuário logado:', {
-        id: user.id,
-        email: user.email,
-        criado_em: user.created_at
-      });
-      
-      // Testar abertura de caixa
-      console.log('\n🧪 Testando abertura de caixa...');
-      
-      const testeCaixa = {
-        usuario_id: user.id,
-        valor_inicial: 50.00,
-        observacoes: 'Teste via console',
-        status: 'aberto'
-      };
-      
-      window.supabase
-        .from('caixa')
-        .insert(testeCaixa)
-        .then(({ data, error }) => {
-          if (error) {
-            console.log('❌ Erro ao abrir caixa:', error);
-          } else {
-            console.log('✅ Caixa aberto com sucesso:', data);
-          }
-        });
-        
-    } else {
-      console.log('❌ Usuário não está logado');
-    }
-  });
-  
-  // Verificar sessão
-  window.supabase.auth.getSession().then(({ data: { session }, error }) => {
-    if (error) {
-      console.log('❌ Erro na sessão:', error);
-    } else if (session) {
-      console.log('✅ Sessão ativa:', {
-        expires_at: new Date(session.expires_at * 1000),
-        user_id: session.user.id
-      });
-    } else {
-      console.log('❌ Nenhuma sessão ativa');
-    }
-  });
-  
-} else {
-  console.log('❌ Supabase não encontrado no frontend');
-}
-
-console.log('\n💡 INSTRUÇÕES:');
-console.log('1. Copie este código');
-console.log('2. Abra o sistema no navegador: https://pdv-allimport.vercel.app');
-console.log('3. Faça login');
-console.log('4. Abra o console (F12 → Console)');
-console.log('5. Cole e execute este código');
-console.log('6. Veja o resultado do diagnóstico');
+// =====================================================
+// ALTERNATIVA: Se conseguir acessar o Supabase do React
+// =====================================================
+// 
+// Para usar dentro do React (se window.supabase estiver disponível):
+// 
+// if (typeof window !== 'undefined' && window.supabase) {
+//   window.supabase.from('caixa')
+//     .update({ 
+//       status: 'fechado', 
+//       data_fechamento: new Date().toISOString(),
+//       valor_final: 100
+//     })
+//     .eq('status', 'aberto')
+//     .then(result => {
+//       console.log('✅ Caixas fechados:', result);
+//       alert('Caixas fechados! Agora você pode abrir um novo.');
+//     });
+// } else {
+//   console.log('⚠️ Supabase não encontrado, usando fetch...');
+//   // Use o código fetch acima
+// }

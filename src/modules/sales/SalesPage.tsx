@@ -68,30 +68,30 @@ export function SalesPage() {
 
   // Verificar caixa aberto ao carregar
   useEffect(() => {
+    // Só executar a lógica uma vez por montagem do componente
+    if (initialCheckDone) {
+      return
+    }
+
     const checkCashRegister = async () => {
       try {
-        // Não verificar se ainda está carregando
+        // Se ainda está carregando, aguardar
         if (loadingCaixa) {
           return
         }
 
-        // Se já foi feita a verificação inicial, não fazer novamente
-        if (initialCheckDone) {
-          return
-        }
-
-        // Marcar que a verificação inicial foi feita
+        // Marcar que verificação foi feita
         setInitialCheckDone(true)
 
-        // Se não há caixa OU se o caixa está fechado, mostrar modal
-        if (!caixaAtual || caixaAtual.status === 'fechado') {
-          setShowCashModal(true)
+        // Se há um caixa e está aberto, não mostrar modal
+        if (caixaAtual && caixaAtual.status === 'aberto') {
+          setShowCashModal(false)
           return
         }
 
-        // Se caixa está aberto, garantir que modal está fechado
-        if (caixaAtual.status === 'aberto') {
-          setShowCashModal(false)
+        // Se não há caixa ou está fechado, mostrar modal
+        if (!caixaAtual || caixaAtual.status === 'fechado') {
+          setShowCashModal(true)
         }
       } catch (error) {
         console.error('Erro ao verificar caixa:', error)

@@ -28,6 +28,7 @@ export function SalesPage() {
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
   const [showProductModal, setShowProductModal] = useState(false)
+  const [initialCheckDone, setInitialCheckDone] = useState(false)
 
   // Hooks do carrinho e cálculos
   const {
@@ -74,18 +75,24 @@ export function SalesPage() {
           return
         }
 
-        // Só mostrar modal se realmente NÃO há caixa aberto
-        // Se caixaAtual existe e está aberto, não mostrar modal
-        if (!caixaAtual) {
-          // Nenhum caixa encontrado, mostrar modal
+        // Se já foi feita a verificação inicial, não fazer novamente
+        if (initialCheckDone) {
+          return
+        }
+
+        // Marcar que a verificação inicial foi feita
+        setInitialCheckDone(true)
+
+        // Se não há caixa OU se o caixa está fechado, mostrar modal
+        if (!caixaAtual || caixaAtual.status === 'fechado') {
           setShowCashModal(true)
           return
         }
-        
-        if (caixaAtual.status === 'fechado') {
-          setShowCashModal(true)
+
+        // Se caixa está aberto, garantir que modal está fechado
+        if (caixaAtual.status === 'aberto') {
+          setShowCashModal(false)
         }
-        // Se caixaAtual.status === 'aberto', não fazer nada (não mostrar modal)
       } catch (error) {
         console.error('Erro ao verificar caixa:', error)
         toast.error('Erro ao verificar status do caixa')
@@ -93,7 +100,12 @@ export function SalesPage() {
     }
 
     checkCashRegister()
-  }, [caixaAtual, loadingCaixa])
+
+    // Cleanup: resetar o estado quando componente for desmontado
+    return () => {
+      setInitialCheckDone(false)
+    }
+  }, [caixaAtual, loadingCaixa, initialCheckDone])
 
     const handleOpenCashRegister = async (amount: number) => {
     if (!user) return

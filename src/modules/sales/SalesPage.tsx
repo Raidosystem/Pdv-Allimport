@@ -21,7 +21,7 @@ import { formatCurrency } from '../../utils/format'
 
 export function SalesPage() {
   const { user } = useAuth()
-  const { caixaAtual, abrirCaixa } = useCaixa()
+  const { caixaAtual, loading: loadingCaixa, abrirCaixa } = useCaixa()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(false)
@@ -69,10 +69,16 @@ export function SalesPage() {
   useEffect(() => {
     const checkCashRegister = async () => {
       try {
+        // Não verificar se ainda está carregando
+        if (loadingCaixa) {
+          return
+        }
+
         // Só mostrar modal se realmente NÃO há caixa aberto
         // Se caixaAtual existe e está aberto, não mostrar modal
         if (!caixaAtual) {
-          // Ainda está carregando, aguardar
+          // Nenhum caixa encontrado, mostrar modal
+          setShowCashModal(true)
           return
         }
         
@@ -87,7 +93,7 @@ export function SalesPage() {
     }
 
     checkCashRegister()
-  }, [caixaAtual])
+  }, [caixaAtual, loadingCaixa])
 
     const handleOpenCashRegister = async (amount: number) => {
     if (!user) return
@@ -239,18 +245,23 @@ export function SalesPage() {
             <div className="flex items-center space-x-4">
               {/* Status do caixa */}
               <div className={`px-4 py-2 rounded-xl ${
-                caixaAtual?.status === 'aberto'
+                loadingCaixa
+                  ? 'bg-gray-100 text-gray-700 border border-gray-200'
+                  : caixaAtual?.status === 'aberto'
                   ? 'bg-green-100 text-green-700 border border-green-200'
                   : 'bg-red-100 text-red-700 border border-red-200'
               }`}>
                 <div className="flex items-center space-x-2">
-                  {caixaAtual?.status === 'aberto' ? (
+                  {loadingCaixa ? (
+                    <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  ) : caixaAtual?.status === 'aberto' ? (
                     <CheckCircle className="w-5 h-5" />
                   ) : (
                     <AlertCircle className="w-5 h-5" />
                   )}
                   <span className="font-medium">
-                    {caixaAtual?.status === 'aberto' ? 'Caixa Aberto' : 'Caixa Fechado'}
+                    {loadingCaixa ? 'Verificando Caixa...' : 
+                     caixaAtual?.status === 'aberto' ? 'Caixa Aberto' : 'Caixa Fechado'}
                   </span>
                 </div>
               </div>
@@ -277,7 +288,16 @@ export function SalesPage() {
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {!caixaAtual || caixaAtual.status !== 'aberto' ? (
+        {loadingCaixa ? (
+          /* Loading state */
+          <Card className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+            <h2 className="text-2xl font-bold text-secondary-900 mb-2">Verificando Caixa...</h2>
+            <p className="text-secondary-600">
+              Aguarde enquanto verificamos o status do caixa.
+            </p>
+          </Card>
+        ) : (!caixaAtual || caixaAtual.status !== 'aberto') ? (
           /* Aviso de caixa fechado */
           <Card className="p-8 text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />

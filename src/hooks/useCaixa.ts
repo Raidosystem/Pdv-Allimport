@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 export function useCaixa() {
   const [caixaAtual, setCaixaAtual] = useState<CaixaCompleto | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Iniciar como true
   const [error, setError] = useState<string | null>(null);
 
   // ===== CARREGAR CAIXA ATUAL =====

@@ -69,10 +69,17 @@ export function SalesPage() {
   useEffect(() => {
     const checkCashRegister = async () => {
       try {
-        // O hook useCaixa já verifica automaticamente
-        if (!caixaAtual || caixaAtual.status === 'fechado') {
+        // Só mostrar modal se realmente NÃO há caixa aberto
+        // Se caixaAtual existe e está aberto, não mostrar modal
+        if (!caixaAtual) {
+          // Ainda está carregando, aguardar
+          return
+        }
+        
+        if (caixaAtual.status === 'fechado') {
           setShowCashModal(true)
         }
+        // Se caixaAtual.status === 'aberto', não fazer nada (não mostrar modal)
       } catch (error) {
         console.error('Erro ao verificar caixa:', error)
         toast.error('Erro ao verificar status do caixa')
@@ -80,7 +87,7 @@ export function SalesPage() {
     }
 
     checkCashRegister()
-  }, [])
+  }, [caixaAtual])
 
     const handleOpenCashRegister = async (amount: number) => {
     if (!user) return

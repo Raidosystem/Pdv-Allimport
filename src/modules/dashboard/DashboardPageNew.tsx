@@ -194,55 +194,59 @@ export function DashboardPage() {
       {/* Banner de Assinatura - só mostrar se não estiver ativa */}
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
-      {/* Main Content - Layout otimizado para uma tela */}
-      <main className="relative max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-200px)] flex flex-col">
-        {/* Subscription Status */}
+      {/* Main Content - Layout ultra-compacto para caber em qualquer tela */}
+      <main className="relative max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 h-[calc(100vh-64px)] flex flex-col">
+        {/* Subscription Status - mais compacto */}
         {!isAdmin() && (
-          <div className="mb-8">
+          <div className="mb-4 flex-shrink-0">
             <SubscriptionStatus />
             <SubscriptionCountdown />
           </div>
         )}
 
-        {/* Modules Grid - Layout compacto para caber tudo em uma tela */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {availableModules.map((module) => {
-            const Icon = module.icon
-            return (
-              <Card 
-                key={module.name}
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-0 shadow-md"
-              >
-                <Link to={module.path} className="block p-4">
-                  <div className="flex flex-col items-center text-center space-y-3">
-                    <div className={`w-12 h-12 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight">
-                        {module.title}
-                      </h3>
-                      <p className="text-xs text-gray-600 mt-1 leading-tight">
-                        {module.description}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </Card>
-            )
-          })}
+        {/* Modules Grid - Layout ultra-responsivo e compacto */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-6xl">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
+              {availableModules.map((module) => {
+                const Icon = module.icon
+                return (
+                  <Card 
+                    key={module.name}
+                    className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-0 shadow-md aspect-square"
+                  >
+                    <Link to={module.path} className="block p-2 sm:p-3 h-full">
+                      <div className="flex flex-col items-center text-center space-y-1 sm:space-y-2 h-full justify-center">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 ${getColorClasses(module.color)} rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                        </div>
+                        <div className="min-h-0 flex-1 flex flex-col justify-center">
+                          <h3 className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight line-clamp-2">
+                            {module.title}
+                          </h3>
+                          <p className="text-xs text-gray-600 mt-1 leading-tight line-clamp-2 hidden sm:block">
+                            {module.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Empty state: mostrar apenas para funcionário (não admin, não owner) */}
         {availableModules.length === 0 && !isAdmin() && !isOwner() && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Settings className="w-12 h-12 text-gray-400" />
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Settings className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Nenhum módulo disponível
             </h3>
-            <p className="text-gray-600 max-w-md mx-auto">
+            <p className="text-sm text-gray-600 max-w-md mx-auto">
               Entre em contato com o administrador para liberar acesso aos módulos do sistema.
             </p>
           </div>

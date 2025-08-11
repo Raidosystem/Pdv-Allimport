@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV Allimport - Modo Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .offline-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            margin: 2rem;
+        }
+        
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            background: #f59e0b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2rem;
+        }
+        
+        .offline-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .offline-description {
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        .offline-features {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        
+        .offline-features h3 {
+            color: #1f2937;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .offline-features ul {
+            list-style: none;
+        }
+        
+        .offline-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+        
+        .offline-features li::before {
+            content: "✅";
+            margin-right: 0.5rem;
+        }
+        
+        .retry-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        
+        .retry-button:hover {
+            background: #2563eb;
+        }
+        
+        .sync-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: 8px;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+        
+        .connection-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .connection-offline {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .connection-online {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-indicator" id="connectionStatus">
+        📴 Offline
+    </div>
+    
+    <div class="offline-container">
+        <div class="offline-icon">
+            🛒
+        </div>
+        
+        <h1 class="offline-title">PDV Allimport - Modo Offline</h1>
+        
+        <p class="offline-description">
+            Você está offline, mas o sistema continua funcionando! 
+            Suas vendas e dados são salvos localmente e serão sincronizados automaticamente quando a internet voltar.
+        </p>
+        
+        <div class="offline-features">
+            <h3>🚀 Funcionalidades Disponíveis Offline:</h3>
+            <ul>
+                <li>Realizar vendas normalmente</li>
+                <li>Consultar produtos em estoque</li>
+                <li>Visualizar clientes cadastrados</li>
+                <li>Imprimir recibos de venda</li>
+                <li>Acessar relatórios locais</li>
+                <li>Gerenciar caixa do dia</li>
+            </ul>
+        </div>
+        
+        <button class="retry-button" onclick="retryConnection()">
+            🔄 Tentar Conectar
+        </button>
+        
+        <div class="sync-status" id="syncStatus">
+            ⏳ Aguardando conexão para sincronizar dados...
+        </div>
+    </div>
+
+    <script>
+        // Monitorar status de conexão
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('connectionStatus');
+            const syncStatus = document.getElementById('syncStatus');
+            
+            if (navigator.onLine) {
+                indicator.textContent = '🌐 Online';
+                indicator.className = 'connection-indicator connection-online';
+                syncStatus.innerHTML = '✅ Online - Sincronizando dados automaticamente...';
+                
+                // Tentar redirecionar para a aplicação principal
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                indicator.textContent = '📴 Offline';
+                indicator.className = 'connection-indicator connection-offline';
+                syncStatus.innerHTML = '⏳ Offline - Dados serão sincronizados quando a conexão voltar';
+            }
+        }
+        
+        function retryConnection() {
+            const button = document.querySelector('.retry-button');
+            button.textContent = '🔄 Verificando...';
+            button.disabled = true;
+            
+            // Simular verificação de conexão
+            setTimeout(() => {
+                updateConnectionStatus();
+                button.textContent = '🔄 Tentar Conectar';
+                button.disabled = false;
+                
+                if (navigator.onLine) {
+                    window.location.href = '/';
+                }
+            }, 1500);
+        }
+        
+        // Escutar mudanças de conectividade
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Verificar status inicial
+        updateConnectionStatus();
+        
+        // Verificar conexão periodicamente
+        setInterval(updateConnectionStatus, 5000);
+        
+        console.log('📱 PDV Allimport - Página Offline carregada');
+    </script>
+</body>
+</html>

@@ -204,27 +204,27 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Modules Grid - Layout ultra-responsivo e compacto */}
+        {/* Modules Grid - Layout otimizado para tela completa */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-6xl">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
+          <div className="w-full max-w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
               {availableModules.map((module) => {
                 const Icon = module.icon
                 return (
                   <Card 
                     key={module.name}
-                    className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-0 shadow-md aspect-square"
+                    className="group hover:shadow-xl transition-all duration-200 hover:-translate-y-2 cursor-pointer border-0 shadow-lg aspect-square"
                   >
-                    <Link to={module.path} className="block p-2 sm:p-3 h-full">
-                      <div className="flex flex-col items-center text-center space-y-1 sm:space-y-2 h-full justify-center">
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 ${getColorClasses(module.color)} rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
-                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <Link to={module.path} className="block p-4 sm:p-6 h-full">
+                      <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3 h-full justify-center">
+                        <div className={`w-12 h-12 sm:w-16 sm:h-16 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
+                          <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </div>
                         <div className="min-h-0 flex-1 flex flex-col justify-center">
-                          <h3 className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight line-clamp-2">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight line-clamp-2">
                             {module.title}
                           </h3>
-                          <p className="text-xs text-gray-600 mt-1 leading-tight line-clamp-2 hidden sm:block">
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-tight line-clamp-2">
                             {module.description}
                           </p>
                         </div>

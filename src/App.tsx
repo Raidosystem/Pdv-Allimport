@@ -7,7 +7,7 @@ import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './modules/auth/ResetPasswordPage'
 import { AdminPanel } from './components/admin/AdminPanel'
 import { LandingPage } from './modules/landing/LandingPage'
-import { DashboardPage } from './modules/dashboard/DashboardPage.tsx'
+import { DashboardPage } from './modules/dashboard/DashboardPageNew.tsx'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ProductsPage } from './modules/products/ProductsPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
@@ -17,6 +17,14 @@ import { OrdensServicoPage } from './pages/OrdensServicoPage'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
+import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPage'
+import RelatoriosPage from './pages/RelatoriosPage'
+import ResumoDiarioPage from './pages/RelatoriosResumoDiarioPage'
+import RelatoriosPeriodoPage from './pages/RelatoriosPeriodoPage'
+import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
+import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
+import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
+import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
@@ -171,6 +179,88 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <ConfiguracoesPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/configuracoes-empresa" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ConfiguracoesEmpresaPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Rotas de Relatórios */}
+          <Route 
+            path="/relatorios" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/resumo-diario" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ResumoDiarioPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/periodo" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosPeriodoPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/ranking" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosRankingPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/detalhado" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosDetalhadoPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/graficos" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosGraficosPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/exportacoes" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosExportacoesPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

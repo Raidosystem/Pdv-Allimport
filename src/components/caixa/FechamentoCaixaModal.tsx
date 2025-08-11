@@ -12,11 +12,15 @@ import {
 } from 'lucide-react';
 import type { FechamentoCaixaForm, CaixaCompleto } from '../../types/caixa';
 
+// Tipo para o formulário interno
+interface FormData {
+  valor_contado?: string;
+  observacoes?: string;
+}
+
 // Schema de validação
 const fechamentoCaixaSchema = z.object({
-  valor_contado: z.number()
-    .min(0, 'Valor deve ser maior ou igual a zero')
-    .max(999999.99, 'Valor muito alto'),
+  valor_contado: z.string().optional(),
   observacoes: z.string().optional()
 });
 
@@ -43,23 +47,20 @@ export function FechamentoCaixaModal({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-    watch
-  } = useForm<FechamentoCaixaForm>({
+    setValue
+  } = useForm<FormData>({
     resolver: zodResolver(fechamentoCaixaSchema),
     defaultValues: {
-      valor_contado: 0,
+      valor_contado: '',
       observacoes: ''
     }
   });
-
-  const valorContado = watch('valor_contado');
 
   // Função para formatar valor monetário
   const formatarValor = (value: string) => {
     const numbers = value.replace(/\D/g, '');
     const valor = parseFloat(numbers) / 100;
-    setValue('valor_contado', valor);
+    setValue('valor_contado', value); // Manter o valor formatado
     
     // Calcular diferença
     const saldoEsperado = caixa.saldo_atual || 0;
@@ -77,13 +78,34 @@ export function FechamentoCaixaModal({
     setValorInput(formatted);
   };
 
-  const handleFormSubmit = async (dados: FechamentoCaixaForm) => {
-    const sucesso = await onSubmit(dados);
-    if (sucesso) {
-      reset();
-      setValorInput('');
-      setDiferenca(null);
-      onClose();
+  const handleFormSubmit = async (dados: FormData) => {
+    try {
+      // Converter valor de string formatada para número
+      const valorNumerico = parseFloat(valorInput.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      
+      console.log('Debug fechamento caixa:', {
+        valorInput,
+        valorNumerico,
+        dados,
+        caixaId: caixa.id
+      });
+      
+      const dadosCorrigidos: FechamentoCaixaForm = {
+        valor_contado: valorNumerico,
+        observacoes: dados.observacoes || ''
+      };
+      
+      console.log('Dados corrigidos:', dadosCorrigidos);
+      
+      const sucesso = await onSubmit(dadosCorrigidos);
+      if (sucesso) {
+        reset();
+        setValorInput('');
+        setDiferenca(null);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Erro no handleFormSubmit:', error);
     }
   };
 
@@ -117,7 +139,7 @@ export function FechamentoCaixaModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-red-500 text-white p-6 rounded-t-xl">
           <div className="flex items-center gap-3">
@@ -166,7 +188,7 @@ export function FechamentoCaixaModal({
           </div>
         </div>
 
-        {/* Form */}
+        {/* Form Content */}
         <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
           {/* Valor Contado */}
           <div className="mb-6">
@@ -185,13 +207,13 @@ export function FechamentoCaixaModal({
                 className={`
                   w-full pl-10 pr-4 py-3 border rounded-lg text-lg font-medium
                   focus:ring-2 focus:ring-red-500 focus:border-red-500
-                  ${errors.valor_contado ? 'border-red-500' : 'border-gray-300'}
+                  ${!valorInput ? 'border-red-500' : 'border-gray-300'}
                 `}
               />
             </div>
-            {errors.valor_contado && (
+            {!valorInput && (
               <p className="mt-1 text-sm text-red-600">
-                {errors.valor_contado.message}
+                Valor contado é obrigatório
               </p>
             )}
           </div>
@@ -223,7 +245,7 @@ export function FechamentoCaixaModal({
                 </div>
                 <div>
                   <p className="text-gray-600">Contado:</p>
-                  <p className="font-medium">{formatarMoeda(valorContado)}</p>
+                  <p className="font-medium">{valorInput || 'R$ 0,00'}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Diferença:</p>
@@ -305,7 +327,7 @@ export function FechamentoCaixaModal({
             </button>
             <button
               type="submit"
-              disabled={loading || valorContado === 0}
+              disabled={loading || !valorInput || valorInput === 'R$ 0,00'}
               className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (

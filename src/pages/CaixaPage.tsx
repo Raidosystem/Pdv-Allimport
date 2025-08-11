@@ -38,7 +38,16 @@ export function CaixaPage() {
 
   const handleFecharCaixa = async (dados: FechamentoCaixaForm): Promise<boolean> => {
     if (!caixaAtual) return false;
-    return await fecharCaixa(caixaAtual.id, dados);
+    const resultado = await fecharCaixa(caixaAtual.id, dados);
+    if (resultado) {
+      // Forçar fechamento do modal
+      setShowFechamento(false);
+      // Recarregar o estado do caixa para garantir sincronização
+      setTimeout(async () => {
+        await carregarCaixaAtual();
+      }, 200);
+    }
+    return resultado;
   };
 
   const handleAdicionarMovimentacao = async (dados: MovimentacaoForm): Promise<boolean> => {

@@ -29,7 +29,21 @@ import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
 import { PaymentTest } from './components/PaymentTest'
+import { OfflineIndicator } from './components/OfflineIndicator'
 import './App.css'
+
+// Registrar Service Worker para funcionalidade PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('🚀 SW registrado com sucesso:', registration.scope)
+      })
+      .catch((error) => {
+        console.log('❌ Falha no registro do SW:', error)
+      })
+  })
+}
 
 function App() {
   return (
@@ -60,6 +74,10 @@ function App() {
             },
           }}
         />
+        
+        {/* Indicador Offline e PWA */}
+        <OfflineIndicator />
+        
         <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<LandingPage />} />

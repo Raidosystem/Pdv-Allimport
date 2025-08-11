@@ -194,31 +194,18 @@ export function DashboardPage() {
       {/* Banner de Assinatura - só mostrar se não estiver ativa */}
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
-      {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Welcome Section */}
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <ShoppingCart className="w-10 h-10 text-white" />
+      {/* Main Content - Layout otimizado para uma tela */}
+      <main className="relative max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-200px)] flex flex-col">
+        {/* Subscription Status */}
+        {!isAdmin() && (
+          <div className="mb-8">
+            <SubscriptionStatus />
+            <SubscriptionCountdown />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Bem-vindo ao seu PDV
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Sistema completo de ponto de venda com controle de estoque, vendas e muito mais.
-          </p>
-          
-          {/* Subscription Status */}
-          {!isAdmin() && (
-            <div className="mt-6">
-              <SubscriptionStatus />
-              <SubscriptionCountdown />
-            </div>
-          )}
-        </div>
+        )}
 
-        {/* Modules Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Modules Grid - Layout compacto para caber tudo em uma tela */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {availableModules.map((module) => {
             const Icon = module.icon
             return (
@@ -226,16 +213,16 @@ export function DashboardPage() {
                 key={module.name}
                 className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-0 shadow-md"
               >
-                <Link to={module.path} className="block p-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`w-16 h-16 ${getColorClasses(module.color)} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg`}>
-                      <Icon className="w-8 h-8 text-white" />
+                <Link to={module.path} className="block p-4">
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className={`w-12 h-12 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg`}>
+                      <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
+                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight">
                         {module.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-xs text-gray-600 mt-1 leading-tight">
                         {module.description}
                       </p>
                     </div>

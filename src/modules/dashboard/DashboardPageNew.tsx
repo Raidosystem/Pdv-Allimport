@@ -247,30 +247,6 @@ export function DashboardPage() {
             </p>
           </div>
         )}
-
-        {/* Help Section */}
-        <div className="mt-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 text-white">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold mb-4">Precisa de ajuda?</h3>
-            <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-              Nossa equipe está pronta para ajudar você a aproveitar ao máximo seu sistema PDV.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                variant="outline" 
-                className="bg-white text-primary-600 hover:bg-primary-50 border-white"
-              >
-                Central de Ajuda
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-transparent text-white border-white hover:bg-white/10"
-              >
-                Falar com Suporte
-              </Button>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   )

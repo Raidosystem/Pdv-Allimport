@@ -278,6 +278,22 @@ export function ConfiguracoesEmpresaPage() {
                 </div>
               </div>
             </div>
+            
+            {/* Botão Falar com Suporte */}
+            <div className="flex items-center">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+                onClick={() => {
+                  // Aqui você pode adicionar a lógica para abrir chat, WhatsApp, etc.
+                  toast.success('Em breve: Chat de suporte será implementado!')
+                }}
+              >
+                <Shield className="w-4 h-4" />
+                Falar com Suporte
+              </Button>
+            </div>
           </div>
         </div>
       </header>

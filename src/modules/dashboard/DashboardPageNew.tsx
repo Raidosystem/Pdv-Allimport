@@ -82,27 +82,13 @@ export function DashboardPage() {
     }
   ]
 
-  // Verificar se é a conta principal (que comprou o sistema)
-  const isMainAccount = user?.email && (
-    user.email.endsWith('@pdvallimport.com') ||
-    user.email === 'novaradiosystem@outlook.com' ||
-    user.email === 'teste@teste.com'
-  )
-
-  // Obter módulos visíveis baseado nas permissões
+  // Obter módulos visíveis baseado nas permissões do useUserHierarchy
   const visibleModules = getVisibleModules()
   
-  // Se for a conta principal, tem acesso a todos os módulos
-  let availableModules
-  if (isMainAccount) {
-    // Conta principal tem acesso total a todos os módulos
-    availableModules = [...allPossibleModules]
-  } else {
-    // Filtrar módulos que o usuário pode ver baseado nas permissões
-    availableModules = allPossibleModules.filter(module => 
-      visibleModules.some(visible => visible.name === module.name)
-    )
-  }
+  // Mapear módulos visíveis para os módulos disponíveis
+  const availableModules = allPossibleModules.filter(module => 
+    visibleModules.some(visible => visible.name === module.name)
+  )
 
   // Adicionar módulos especiais baseado no tipo de usuário
   if (isAdmin()) {
@@ -116,8 +102,8 @@ export function DashboardPage() {
     })
   }
   
-  // Owner OU conta principal sempre têm acesso às configurações de empresa
-  if (isOwner() || isMainAccount) {
+  // Owner sempre tem acesso às configurações de empresa
+  if (isOwner()) {
     availableModules.push({
       name: 'settings',
       title: 'Configurações da Empresa',
@@ -260,8 +246,8 @@ export function DashboardPage() {
           })}
         </div>
 
-        {/* Empty state: mostrar apenas para funcionário (não admin, não owner, não conta principal) */}
-        {availableModules.length === 0 && !isAdmin() && !isOwner() && !isMainAccount && (
+        {/* Empty state: mostrar apenas para funcionário (não admin, não owner) */}
+        {availableModules.length === 0 && !isAdmin() && !isOwner() && (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
               <Settings className="w-12 h-12 text-gray-400" />

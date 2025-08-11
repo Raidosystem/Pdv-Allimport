@@ -42,8 +42,8 @@ export interface UserProfile {
 
 export function useUserHierarchy() {
   const { user } = useAuth();
-  const [permissions, setPermissions] = useState<UserPermissions>({});
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [permissions] = useState<UserPermissions>({});
+  const [userProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

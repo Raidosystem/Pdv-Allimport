@@ -47,7 +47,7 @@ const RelatoriosPeriodoPage: React.FC = () => {
     tipoVenda: ''
   });
 
-  const [results, setResults] = useState<ResultData>({
+  const [results] = useState<ResultData>({
     totalVendas: 5680.75,
     numeroPedidos: 42,
     ticketMedio: 135.26,

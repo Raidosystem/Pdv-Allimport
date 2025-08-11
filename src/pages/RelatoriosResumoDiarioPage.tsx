@@ -43,7 +43,7 @@ const ResumoDiarioPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DailySummaryData>({
+  const [data] = useState<DailySummaryData>({
     totalVendas: 2340.50,
     numeroPedidos: 28,
     formasPagamento: {

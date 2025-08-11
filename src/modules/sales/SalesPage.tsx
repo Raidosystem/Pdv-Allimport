@@ -7,6 +7,7 @@ import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
 import { useCaixa } from '../../hooks/useCaixa'
+import { usePrintReceipt } from '../../hooks/usePrintReceipt'
 import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/useSales'
 import { ProductSearch } from './components/ProductSearch'
 import { SaleResumo } from './components/SaleResumo'
@@ -14,6 +15,7 @@ import { PagamentoForm } from './components/PagamentoForm'
 import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductModal } from '../../components/product/ProductModal'
+import PrintConfirmationModal from '../../components/PrintConfirmationModal'
 import { salesService } from '../../services/sales'
 import type { Product, Customer } from '../../types/sales'
 import type { Cliente } from '../../types/cliente'
@@ -22,12 +24,15 @@ import { formatCurrency } from '../../utils/format'
 export function SalesPage() {
   const { user } = useAuth()
   const { caixaAtual, loading: loadingCaixa, abrirCaixa } = useCaixa()
+  const { printReceipt } = usePrintReceipt()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(false)
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
   const [showProductModal, setShowProductModal] = useState(false)
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [pendingSaleData, setPendingSaleData] = useState<any>(null)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
 
   // Hooks do carrinho e cálculos
@@ -200,11 +205,9 @@ export function SalesPage() {
 
       toast.success('Venda finalizada com sucesso!')
 
-      // Exibir opções pós-venda
-      const shouldPrint = window.confirm('Venda finalizada! Deseja imprimir o comprovante?')
-      if (shouldPrint) {
-        handlePrintReceipt(sale.id)
-      }
+      // Mostrar modal de confirmação de impressão
+      setPendingSaleData({ sale, saleData })
+      setShowPrintModal(true)
 
     } catch (error) {
       console.error('Erro ao finalizar venda:', error)
@@ -214,11 +217,50 @@ export function SalesPage() {
     }
   }
 
-  // Imprimir comprovante
-  const handlePrintReceipt = (saleId: string) => {
-    // Implementar impressão
-    console.log('Imprimir comprovante:', saleId)
-    toast.success('Comprovante enviado para impressão')
+    // Imprimir comprovante
+  const handlePrintReceipt = (saleId: string, saleData: any) => {
+    try {
+      const receiptData = {
+        sale: {
+          id: saleId,
+          total_amount: saleData.total_amount || totalAmount,
+          discount_amount: saleData.discount_amount || discountAmount,
+          payment_method: saleData.payment_method || 'cash',
+          payment_details: saleData.payment_details,
+          created_at: new Date().toISOString(),
+          items: items.map(item => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+            product: {
+              name: item.product.name,
+              sku: item.product.sku
+            }
+          }))
+        },
+        customer: customer ? {
+          id: customer.id,
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          document: customer.document
+        } : null,
+        storeName: "PDV Allimport",
+        storeInfo: {
+          address: "Rua Exemplo, 123 - Centro",
+          phone: "(11) 99999-9999",
+          cnpj: "00.000.000/0001-00"
+        },
+        cashReceived,
+        changeAmount
+      };
+
+      printReceipt(receiptData);
+    } catch (error) {
+      console.error('Erro ao preparar impressão:', error);
+      toast.error('Erro ao preparar impressão do recibo');
+    }
   }
 
   // Emitir NFE
@@ -393,7 +435,17 @@ export function SalesPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       variant="outline"
-                      onClick={() => handlePrintReceipt('')}
+                      onClick={() => {
+                        if (items.length > 0) {
+                          const mockSaleData = {
+                            total_amount: totalAmount,
+                            discount_amount: discountAmount,
+                            payment_method: 'cash',
+                            payment_details: null
+                          };
+                          handlePrintReceipt('preview_' + Date.now(), mockSaleData);
+                        }
+                      }}
                       disabled={items.length === 0}
                       className="flex items-center justify-center space-x-2"
                     >
@@ -433,6 +485,19 @@ export function SalesPage() {
           setShowProductModal(false)
           toast.success('Produto cadastrado com sucesso!')
         }}
+      />
+
+      {/* Modal de Confirmação de Impressão */}
+      <PrintConfirmationModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onConfirm={() => {
+          if (pendingSaleData) {
+            handlePrintReceipt(pendingSaleData.sale.id, pendingSaleData.saleData)
+          }
+        }}
+        saleTotal={totalAmount}
+        customerName={customer?.name || clienteSelecionado?.nome}
       />
     </div>
   )

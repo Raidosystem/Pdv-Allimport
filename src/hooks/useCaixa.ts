@@ -64,8 +64,13 @@ export function useCaixa() {
       
       await caixaService.fecharCaixa(caixaId, dados);
       
-      // Recarregar caixa atual (será null após fechamento)
-      await carregarCaixaAtual();
+      // Garantir que o estado seja limpo imediatamente
+      setCaixaAtual(null);
+      
+      // Aguardar um pouco para garantir que o banco foi atualizado
+      setTimeout(async () => {
+        await carregarCaixaAtual();
+      }, 500);
       
       toast.success('Caixa fechado com sucesso!');
       return true;

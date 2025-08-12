@@ -406,7 +406,6 @@ export function SalesPage() {
                 onAddPayment={addPayment}
                 onRemovePayment={removePayment}
                 cashReceived={cashReceived}
-                onCashReceivedChange={setCashReceived}
                 changeAmount={changeAmount}
               />
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Package, Plus, Search } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { BackButton } from '../../components/ui/BackButton'
@@ -86,11 +85,6 @@ export function ProductsPage() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Link to="/test-categorias">
-                <Button variant="outline">
-                  🧪 Testar Categorias
-                </Button>
-              </Link>
               <Button
                 onClick={() => setShowProductModal(true)}
                 className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"

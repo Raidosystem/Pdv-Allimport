@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ShoppingCart, Printer, FileText, RotateCcw, CheckCircle, AlertCircle } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ShoppingCart, Printer, FileText, CheckCircle, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { BackButton } from '../../components/ui/BackButton'
@@ -320,21 +319,6 @@ export function SalesPage() {
                 </div>
               </div>
 
-              {/* Ações principais */}
-              <Button
-                onClick={handleNewSale}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <RotateCcw className="w-5 h-5" />
-                <span>Nova Venda (Ctrl+N)</span>
-              </Button>
-              
-              <Link to="/dashboard">
-                <Button variant="outline">
-                  Voltar ao Dashboard
-                </Button>
-              </Link>
             </div>
           </div>
         </div>

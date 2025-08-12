@@ -22,20 +22,6 @@ else
 fi
 
 echo ""
-echo "📚 Testando categorias..."
-RESPONSE_CAT=$(curl -s "https://kmcaaqetxtwkdcczdomw.supabase.co/rest/v1/categorias?select=count" \
-  -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg" \
-  -H "Prefer: count=exact")
-
-if [[ $RESPONSE_CAT == *"permission denied"* ]]; then
-  echo "❌ Ainda com erro de permissão nas categorias"
-elif [[ $RESPONSE_CAT == *"count"* ]]; then
-  echo "✅ Categorias acessíveis! Resposta: $RESPONSE_CAT"
-else
-  echo "⚠️ Resposta inesperada: $RESPONSE_CAT"
-fi
-
-echo ""
 echo "🎯 Próximos passos:"
 echo "1. Se viu ✅, o Supabase está conectado!"
 echo "2. Teste o PDV - os produtos reais devem aparecer"

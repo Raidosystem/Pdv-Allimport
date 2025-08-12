@@ -12,7 +12,6 @@ interface PagamentoFormProps {
   onAddPayment: (payment: PaymentDetails) => void
   onRemovePayment: (index: number) => void
   cashReceived?: number
-  onCashReceivedChange: (amount: number) => void
   changeAmount: number
 }
 
@@ -30,7 +29,6 @@ export function PagamentoForm({
   onAddPayment,
   onRemovePayment,
   cashReceived = 0,
-  onCashReceivedChange,
   changeAmount
 }: PagamentoFormProps) {
   const [selectedMethod, setSelectedMethod] = useState<string>('cash')
@@ -63,11 +61,6 @@ export function PagamentoForm({
     onAddPayment(payment)
     setPaymentAmount('')
     setInstallments(1)
-  }
-
-  const handleQuickPayment = (percentage: number) => {
-    const amount = (remainingAmount * percentage) / 100
-    setPaymentAmount(amount.toFixed(2))
   }
 
   const getMethodConfig = (methodId: string) => {
@@ -165,47 +158,17 @@ export function PagamentoForm({
             </h4>
             
             <div className="space-y-4">
-              {/* Botões de Valor Rápido */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Valores Rápidos:</label>
-                <div className="grid grid-cols-4 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickPayment(25)}
-                    className="text-xs"
-                  >
-                    25%
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickPayment(50)}
-                    className="text-xs"
-                  >
-                    50%
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickPayment(75)}
-                    className="text-xs"
-                  >
-                    75%
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPaymentAmount(remainingAmount.toFixed(2))}
-                    className="text-xs"
-                  >
-                    Total
-                  </Button>
-                </div>
+              {/* Valor Total */}
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPaymentAmount(remainingAmount.toFixed(2))}
+                  className="px-4 py-2"
+                >
+                  Valor Total: {formatCurrency(remainingAmount)}
+                </Button>
               </div>
 
               {/* Campos de Entrada */}
@@ -320,36 +283,17 @@ export function PagamentoForm({
           </div>
         )}
 
-        {/* Pagamento em Dinheiro */}
-        <div className="space-y-4 border-t border-gray-200 pt-6">
-          <h4 className="text-lg font-semibold text-secondary-900 flex items-center space-x-2">
-            <DollarSign className="w-5 h-5 text-green-500" />
-            <span>Dinheiro Recebido:</span>
-          </h4>
-          
-          <Input
-            label="Valor em Dinheiro"
-            type="number"
-            value={cashReceived}
-            onChange={(e) => onCashReceivedChange(parseFloat(e.target.value) || 0)}
-            placeholder="0,00"
-            step="0.01"
-            min="0"
-            className="h-12 text-base"
-            icon={<DollarSign className="w-5 h-5" />}
-          />
-
-          {changeAmount > 0 && (
-            <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border-2 border-green-200 shadow-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-green-700 font-semibold text-lg">Troco a devolver:</span>
-                <span className="text-2xl font-bold text-green-600">
-                  {formatCurrency(changeAmount)}
-                </span>
-              </div>
+        {/* Troco */}
+        {changeAmount > 0 && (
+          <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border-2 border-green-200 shadow-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-green-700 font-semibold text-lg">Troco a devolver:</span>
+              <span className="text-2xl font-bold text-green-600">
+                {formatCurrency(changeAmount)}
+              </span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Resumo Final */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border-2 border-gray-200">

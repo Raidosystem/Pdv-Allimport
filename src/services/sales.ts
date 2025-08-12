@@ -6,34 +6,54 @@ export const productService = {
   async search(params: SaleSearchParams): Promise<Product[]> {
     try {
       let query = supabase
-        .from('products')
+        .from('produtos')
         .select(`
           *,
-          categories (
+          categorias (
             id,
-            name
+            nome
           )
         `)
-        .eq('active', true)
 
       if (params.search) {
-        query = query.or(`name.ilike.%${params.search}%,sku.ilike.%${params.search}%`)
+        query = query.or(`nome.ilike.%${params.search}%,codigo_barras.ilike.%${params.search}%`)
       }
 
       if (params.barcode) {
-        query = query.eq('barcode', params.barcode)
+        query = query.eq('codigo_barras', params.barcode)
       }
 
       if (params.category_id) {
-        query = query.eq('category_id', params.category_id)
+        query = query.eq('categoria_id', params.category_id)
       }
 
-      const { data, error } = await query.order('name').limit(20)
+      const { data, error } = await query.order('nome').limit(20)
 
       if (error) throw error
-      return data || []
+      
+      // Mapear dados da tabela produtos para o formato esperado
+      const mappedData = (data || []).map(produto => ({
+        id: produto.id,
+        name: produto.nome,
+        description: produto.descricao || '',
+        sku: produto.codigo_barras || '',
+        barcode: produto.codigo_barras || '',
+        price: produto.preco || 0,
+        stock_quantity: produto.estoque || 0,
+        min_stock: 5,
+        unit: 'un',
+        active: true,
+        created_at: produto.created_at,
+        updated_at: produto.updated_at,
+        category: produto.categorias ? {
+          id: produto.categorias.id,
+          name: produto.categorias.nome
+        } : null
+      }))
+      
+      return mappedData
     } catch (error) {
-      console.warn('Erro ao conectar com Supabase, usando produtos simulados:', error)
+      console.warn('Erro ao conectar com Supabase (possivelmente RLS), usando produtos simulados:', error)
       
       // Fallback: produtos simulados para teste
       const mockProducts: Product[] = [
@@ -60,6 +80,20 @@ export const productService = {
           price: 25.99,
           stock_quantity: 50,
           min_stock: 5,
+          unit: 'un',
+          active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '3',
+          name: 'Produto Teste 3',
+          description: 'Terceiro produto para teste',
+          sku: 'TEST003',
+          barcode: '555666777',
+          price: 15.75,
+          stock_quantity: 75,
+          min_stock: 10,
           unit: 'un',
           active: true,
           created_at: new Date().toISOString(),

@@ -210,40 +210,40 @@ export function DashboardPage() {
       {/* Banner de Assinatura - só mostrar se não estiver ativa */}
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
-      {/* Main Content - Layout responsivo limpo */}
-      <main className="relative max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)] flex flex-col">
+      {/* Main Content - Layout totalmente responsivo para qualquer tela */}
+      <main className="relative max-w-full mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 3xl:px-16 min-h-[calc(100vh-64px)] flex flex-col">
         {/* Subscription Status */}
         {!isAdmin() && (
-          <div className="mb-6 flex-shrink-0">
+          <div className="mb-4 sm:mb-6 flex-shrink-0">
             <SubscriptionStatus />
             <SubscriptionCountdown />
           </div>
         )}
 
-        {/* Modules Grid - Layout responsivo equilibrado */}
-        <div className="flex-1 flex flex-col space-y-6">
-          {/* Módulos Principais - Cards responsivos e bem dimensionados */}
+        {/* Modules Grid - Sistema responsivo completo para todas as telas */}
+        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 lg:space-y-8">
+          {/* Módulos Principais - Sistema responsivo inteligente */}
           {mainModules.length > 0 && (
             <div className="w-full">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 px-1">📋 Módulos Principais</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <h2 className="responsive-title-main text-gray-800 mb-3 sm:mb-4 lg:mb-6 px-1">📋 Módulos Principais</h2>
+              <div className="responsive-grid-main">
                 {mainModules.map((module) => {
                   const Icon = module.icon
                   return (
                     <Card 
                       key={module.name}
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg h-full"
                     >
-                      <Link to={module.path} className="block p-6 h-full">
-                        <div className="flex flex-col items-center text-center space-y-4 h-full justify-center min-h-[200px]">
-                          <div className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 ${getColorClasses(module.color)} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
-                            <Icon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" />
+                      <Link to={module.path} className="block h-full">
+                        <div className="responsive-card-main flex flex-col items-center text-center space-y-3 sm:space-y-4 lg:space-y-6 h-full justify-center">
+                          <div className={`responsive-icon-main ${getColorClasses(module.color)} rounded-2xl lg:rounded-3xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
+                            <Icon className="w-1/2 h-1/2 text-white" />
                           </div>
                           <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2">
+                            <h3 className="responsive-title-main text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2">
                               {module.title}
                             </h3>
-                            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                            <p className="responsive-text leading-relaxed">
                               {module.description}
                             </p>
                           </div>
@@ -256,28 +256,28 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* Módulos Secundários - Grid responsivo bem organizado */}
+          {/* Módulos Secundários - Grid responsivo que aproveita toda a tela */}
           {secondaryModules.length > 0 && (
-            <div className="w-full">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 px-1">⚙️ Outros Módulos</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+            <div className="w-full flex-1">
+              <h2 className="responsive-title-main text-gray-800 mb-3 sm:mb-4 lg:mb-6 px-1">⚙️ Outros Módulos</h2>
+              <div className="responsive-grid-secondary">
                 {secondaryModules.map((module) => {
                   const Icon = module.icon
                   return (
                     <Card 
                       key={module.name}
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg h-full"
                     >
-                      <Link to={module.path} className="block p-4 h-full">
-                        <div className="flex flex-col items-center text-center space-y-3 h-full justify-center min-h-[160px]">
-                          <div className={`w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
-                            <Icon className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-white" />
+                      <Link to={module.path} className="block h-full">
+                        <div className="responsive-card-secondary flex flex-col items-center text-center space-y-2 sm:space-y-3 lg:space-y-4 h-full justify-center">
+                          <div className={`responsive-icon-secondary ${getColorClasses(module.color)} rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
+                            <Icon className="w-1/2 h-1/2 text-white" />
                           </div>
                           <div className="min-h-0 flex-1 flex flex-col justify-center">
-                            <h3 className="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1 line-clamp-2">
+                            <h3 className="responsive-title-secondary text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1 line-clamp-2">
                               {module.title}
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 leading-tight line-clamp-2 hidden sm:block">
+                            <p className="text-xs sm:text-sm lg:text-base text-gray-600 leading-tight line-clamp-2 hidden sm:block lg:hidden xl:block">
                               {module.description}
                             </p>
                           </div>

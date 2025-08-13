@@ -16,7 +16,6 @@ import { useAuth } from '../auth'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useUserHierarchy } from '../../hooks/useUserHierarchy'
 import { Button } from '../../components/ui/Button'
-import { Card } from '../../components/ui/Card'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
@@ -37,7 +36,7 @@ export function DashboardPage() {
       title: 'Vendas',
       description: 'Realizar vendas e emitir cupons fiscais',
       icon: ShoppingCart,
-      color: 'primary',
+      color: 'primary' as const,
       path: '/vendas'
     },
     {
@@ -45,7 +44,7 @@ export function DashboardPage() {
       title: 'Clientes',
       description: 'Gerenciar cadastro de clientes',
       icon: Users,
-      color: 'secondary',
+      color: 'secondary' as const,
       path: '/clientes'
     },
     {
@@ -53,7 +52,7 @@ export function DashboardPage() {
       title: 'Produtos',
       description: 'Controle de estoque e produtos',
       icon: Package,
-      color: 'success',
+      color: 'success' as const,
       path: '/produtos'
     },
     {
@@ -61,7 +60,7 @@ export function DashboardPage() {
       title: 'Caixa',
       description: 'Controle de caixa e movimento',
       icon: DollarSign,
-      color: 'warning',
+      color: 'warning' as const,
       path: '/caixa'
     },
     {
@@ -69,7 +68,7 @@ export function DashboardPage() {
       title: 'OS - Ordem de Serviço',
       description: 'Gestão de ordens de serviço',
       icon: FileText,
-      color: 'danger',
+      color: 'danger' as const,
       path: '/ordens-servico'
     },
     {
@@ -77,7 +76,7 @@ export function DashboardPage() {
       title: 'Relatórios',
       description: 'Análises e relatórios de vendas',
       icon: BarChart3,
-      color: 'info',
+      color: 'info' as const,
       path: '/relatorios'
     }
   ]
@@ -97,7 +96,7 @@ export function DashboardPage() {
       title: 'Administração',
       description: 'Backup, restore e administração do sistema',
       icon: Shield,
-      color: 'danger',
+      color: 'danger' as const,
       path: '/configuracoes'
     })
   }
@@ -109,7 +108,7 @@ export function DashboardPage() {
       title: 'Configurações da Empresa',
       description: 'Gerenciar funcionários e permissões do sistema',
       icon: Settings,
-      color: 'info',
+      color: 'info' as const,
       path: '/configuracoes-empresa'
     })
   }
@@ -122,18 +121,6 @@ export function DashboardPage() {
   const secondaryModules = availableModules.filter(module => 
     !['sales', 'clients', 'orders'].includes(module.name)
   )
-
-  const getColorClasses = (color: string) => {
-    const colors = {
-      primary: 'bg-primary-500 hover:bg-primary-600',
-      secondary: 'bg-secondary-500 hover:bg-secondary-600',
-      success: 'bg-green-500 hover:bg-green-600',
-      warning: 'bg-yellow-500 hover:bg-yellow-600',
-      danger: 'bg-red-500 hover:bg-red-600',
-      info: 'bg-blue-500 hover:bg-blue-600'
-    }
-    return colors[color as keyof typeof colors] || 'bg-gray-500 hover:bg-gray-600'
-  }
 
   if (loading) {
     return (
@@ -210,80 +197,88 @@ export function DashboardPage() {
       {/* Banner de Assinatura - só mostrar se não estiver ativa */}
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
-      {/* Main Content - Layout totalmente responsivo para qualquer tela */}
-      <main className="relative max-w-full mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 3xl:px-16 min-h-[calc(100vh-64px)] flex flex-col">
+      {/* Main Content - Layout simples baseado no exemplo do usuário */}
+      <main className="relative w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)] flex flex-col">
         {/* Subscription Status */}
         {!isAdmin() && (
-          <div className="mb-4 sm:mb-6 flex-shrink-0">
+          <div className="mb-6 flex-shrink-0">
             <SubscriptionStatus />
             <SubscriptionCountdown />
           </div>
         )}
 
-        {/* Modules Grid - Sistema responsivo completo para todas as telas */}
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Módulos Principais - Sistema responsivo inteligente */}
+        {/* Modules Grid - Layout simples sem títulos */}
+        <div className="flex-1 flex flex-col space-y-8">
+          {/* Módulos Principais - Cards maiores em linha */}
           {mainModules.length > 0 && (
             <div className="w-full">
-              <h2 className="responsive-title-main text-gray-800 mb-3 sm:mb-4 lg:mb-6 px-1">📋 Módulos Principais</h2>
-              <div className="responsive-grid-main">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 sm:gap-6 lg:grid-cols-3 lg:gap-8">
                 {mainModules.map((module) => {
                   const Icon = module.icon
+                  const colorClass = module.color ? 
+                    ({
+                      primary: 'bg-primary-500 hover:bg-primary-600',
+                      secondary: 'bg-secondary-500 hover:bg-secondary-600',
+                      success: 'bg-green-500 hover:bg-green-600',
+                      warning: 'bg-yellow-500 hover:bg-yellow-600',
+                      danger: 'bg-red-500 hover:bg-red-600',
+                      info: 'bg-blue-500 hover:bg-blue-600'
+                    }[module.color] || 'bg-gray-400 hover:bg-gray-500') : 'bg-gray-400 hover:bg-gray-500'
+
                   return (
-                    <Card 
-                      key={module.name}
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg h-full"
-                    >
-                      <Link to={module.path} className="block h-full">
-                        <div className="responsive-card-main flex flex-col items-center text-center space-y-3 sm:space-y-4 lg:space-y-6 h-full justify-center">
-                          <div className={`responsive-icon-main ${getColorClasses(module.color)} rounded-2xl lg:rounded-3xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
-                            <Icon className="w-1/2 h-1/2 text-white" />
-                          </div>
-                          <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="responsive-title-main text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2">
-                              {module.title}
-                            </h3>
-                            <p className="responsive-text leading-relaxed">
-                              {module.description}
-                            </p>
-                          </div>
+                    <Link key={module.name} to={module.path}>
+                      <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 p-6 sm:p-8 lg:p-12 rounded-xl bg-white shadow hover:shadow-lg transition w-full h-64 sm:h-72 lg:h-80">
+                        <div className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 ${colorClass} rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform`}>
+                          <Icon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white" />
                         </div>
-                      </Link>
-                    </Card>
+                        <div className="text-center">
+                          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 lg:mb-3 line-clamp-1">
+                            {module.title}
+                          </h3>
+                          <p className="text-sm sm:text-sm lg:text-base text-gray-600 line-clamp-2">
+                            {module.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
                   )
                 })}
               </div>
             </div>
           )}
 
-          {/* Módulos Secundários - Grid responsivo que aproveita toda a tela */}
+          {/* Módulos Secundários - Cards menores em linha única */}
           {secondaryModules.length > 0 && (
-            <div className="w-full flex-1">
-              <h2 className="responsive-title-main text-gray-800 mb-3 sm:mb-4 lg:mb-6 px-1">⚙️ Outros Módulos</h2>
-              <div className="responsive-grid-secondary">
+            <div className="w-full">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3 sm:gap-4 lg:grid-flow-col lg:auto-cols-fr lg:gap-6 overflow-x-auto">
                 {secondaryModules.map((module) => {
                   const Icon = module.icon
+                  const colorClass = module.color ? 
+                    ({
+                      primary: 'bg-primary-500 hover:bg-primary-600',
+                      secondary: 'bg-secondary-500 hover:bg-secondary-600',
+                      success: 'bg-green-500 hover:bg-green-600',
+                      warning: 'bg-yellow-500 hover:bg-yellow-600',
+                      danger: 'bg-red-500 hover:bg-red-600',
+                      info: 'bg-blue-500 hover:bg-blue-600'
+                    }[module.color] || 'bg-gray-400 hover:bg-gray-500') : 'bg-gray-400 hover:bg-gray-500'
+
                   return (
-                    <Card 
-                      key={module.name}
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg h-full"
-                    >
-                      <Link to={module.path} className="block h-full">
-                        <div className="responsive-card-secondary flex flex-col items-center text-center space-y-2 sm:space-y-3 lg:space-y-4 h-full justify-center">
-                          <div className={`responsive-icon-secondary ${getColorClasses(module.color)} rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
-                            <Icon className="w-1/2 h-1/2 text-white" />
-                          </div>
-                          <div className="min-h-0 flex-1 flex flex-col justify-center">
-                            <h3 className="responsive-title-secondary text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1 line-clamp-2">
-                              {module.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm lg:text-base text-gray-600 leading-tight line-clamp-2 hidden sm:block lg:hidden xl:block">
-                              {module.description}
-                            </p>
-                          </div>
+                    <Link key={module.name} to={module.path}>
+                      <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 rounded-xl bg-white shadow hover:shadow-md transition w-full lg:min-w-[220px] h-40 sm:h-44 lg:h-52">
+                        <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 ${colorClass} rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform`}>
+                          <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
                         </div>
-                      </Link>
-                    </Card>
+                        <div className="text-center">
+                          <h3 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-900 line-clamp-2 leading-tight">
+                            {module.title}
+                          </h3>
+                          <p className="text-xs sm:text-xs lg:text-sm text-gray-600 line-clamp-2 mt-1 lg:mt-2 hidden sm:block">
+                            {module.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
                   )
                 })}
               </div>

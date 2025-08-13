@@ -6,6 +6,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        '3xl': '1680px',
+        '4xl': '1920px',
+        '5xl': '2560px',
+      },
       colors: {
         // Cores primárias PDV Import (laranja, preto, branco)
         primary: {
@@ -89,6 +94,18 @@ module.exports = {
       },
       spacing: {
         '18': '4.5rem',
+        '22': '5.5rem',
+        '26': '6.5rem',
+        '28': '7rem',
+        '30': '7.5rem',
+        '34': '8.5rem',
+        '38': '9.5rem',
+        '42': '10.5rem',
+        '46': '11.5rem',
+        '50': '12.5rem',
+        '52': '13rem',
+        '56': '14rem',
+        '60': '15rem',
         '88': '22rem',
       },
       borderRadius: {

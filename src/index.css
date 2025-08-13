@@ -133,41 +133,41 @@ body {
     line-clamp: 2;
   }
   
-  /* Classes responsivas personalizadas */
+  /* Classes responsivas personalizadas - Sistema completo */
   .responsive-grid-main {
     @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 xl:gap-8;
   }
   
   .responsive-grid-secondary {
-    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6;
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 sm:gap-4 lg:gap-6;
   }
   
   .responsive-card-main {
-    @apply p-4 sm:p-6 lg:p-8 min-h-[160px] sm:min-h-[180px] lg:min-h-[220px];
+    @apply p-4 sm:p-6 lg:p-8 xl:p-10 2xl:p-12 min-h-[160px] sm:min-h-[180px] lg:min-h-[240px] xl:min-h-[300px] 2xl:min-h-[360px];
   }
   
   .responsive-card-secondary {
-    @apply p-3 sm:p-4 lg:p-6 min-h-[120px] sm:min-h-[140px] lg:min-h-[160px];
+    @apply p-3 sm:p-4 lg:p-6 xl:p-8 min-h-[120px] sm:min-h-[140px] lg:min-h-[180px] xl:min-h-[220px];
   }
   
   .responsive-icon-main {
-    @apply w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24;
+    @apply w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 xl:w-36 xl:h-36 2xl:w-44 2xl:h-44;
   }
   
   .responsive-icon-secondary {
-    @apply w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16;
+    @apply w-12 h-12 sm:w-14 sm:h-14 lg:w-18 lg:h-18 xl:w-22 xl:h-22 2xl:w-26 2xl:h-26;
   }
   
   .responsive-title-main {
-    @apply text-lg sm:text-xl lg:text-2xl font-bold;
+    @apply text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-bold;
   }
   
   .responsive-title-secondary {
-    @apply text-xs sm:text-sm lg:text-base font-semibold;
+    @apply text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl font-semibold;
   }
   
   .responsive-text {
-    @apply text-sm sm:text-base text-gray-600;
+    @apply text-sm sm:text-base lg:text-lg xl:text-xl text-gray-600;
   }
   
   /* Breakpoint extra small para dispositivos muito pequenos */

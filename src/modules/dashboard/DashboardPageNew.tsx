@@ -220,30 +220,30 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Modules Grid - Layout responsivo e limpo */}
-        <div className="flex-1 flex flex-col space-y-8">
-          {/* Módulos Principais - Cards responsivos que crescem com a tela */}
+        {/* Modules Grid - Layout otimizado para uma tela completa */}
+        <div className="flex-1 flex flex-col space-y-4 max-h-[calc(100vh-180px)] overflow-hidden">
+          {/* Módulos Principais - Cards compactos e responsivos */}
           {mainModules.length > 0 && (
-            <div className="w-full">
-              <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl 3xl:text-5xl font-semibold text-gray-800 mb-4 sm:mb-6 lg:mb-8 xl:mb-10 2xl:mb-12 3xl:mb-16 px-1">📋 Módulos Principais</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 3xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 3xl:gap-16">
+            <div className="w-full flex-shrink-0">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4 px-1">📋 Módulos Principais</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {mainModules.map((module) => {
                   const Icon = module.icon
                   return (
                     <Card 
                       key={module.name}
-                      className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 cursor-pointer border-0 shadow-lg"
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
                     >
-                      <Link to={module.path} className="block p-6 sm:p-8 lg:p-10 xl:p-12 2xl:p-16 3xl:p-20 h-full">
-                        <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 lg:space-y-8 xl:space-y-10 2xl:space-y-12 3xl:space-y-16 h-full justify-center min-h-[180px] sm:min-h-[220px] lg:min-h-[280px] xl:min-h-[320px] 2xl:min-h-[400px] 3xl:min-h-[500px]">
-                          <div className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 xl:w-40 xl:h-40 2xl:w-46 2xl:h-46 3xl:w-56 3xl:h-56 ${getColorClasses(module.color)} rounded-2xl lg:rounded-3xl xl:rounded-3xl 2xl:rounded-[2rem] 3xl:rounded-[3rem] flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
-                            <Icon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 2xl:w-22 2xl:h-22 3xl:w-28 3xl:h-28 text-white" />
+                      <Link to={module.path} className="block p-4 sm:p-5 lg:p-6 h-full">
+                        <div className="flex flex-col items-center text-center space-y-3 h-full justify-center min-h-[140px] sm:min-h-[160px] lg:min-h-[180px]">
+                          <div className={`w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 xl:w-22 xl:h-22 ${getColorClasses(module.color)} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
+                            <Icon className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 xl:w-11 xl:h-11 text-white" />
                           </div>
                           <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl 3xl:text-6xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2 lg:mb-4 xl:mb-6 2xl:mb-8">
+                            <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1">
                               {module.title}
                             </h3>
-                            <p className="text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl 3xl:text-3xl text-gray-600 leading-relaxed">
+                            <p className="text-xs sm:text-sm lg:text-base text-gray-600 leading-relaxed">
                               {module.description}
                             </p>
                           </div>
@@ -256,11 +256,11 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* Módulos Secundários - Grid responsivo que ocupa mais espaço em telas maiores */}
+          {/* Módulos Secundários - Grid responsivo compacto */}
           {secondaryModules.length > 0 && (
-            <div className="w-full flex-1">
-              <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl 3xl:text-5xl font-semibold text-gray-800 mb-4 sm:mb-6 lg:mb-8 xl:mb-10 2xl:mb-12 px-1">⚙️ Outros Módulos</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-10 gap-4 sm:gap-6 lg:gap-8 xl:gap-10">
+            <div className="w-full flex-1 overflow-hidden">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4 px-1">⚙️ Outros Módulos</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-2 sm:gap-3 lg:gap-4">
                 {secondaryModules.map((module) => {
                   const Icon = module.icon
                   return (
@@ -268,16 +268,16 @@ export function DashboardPage() {
                       key={module.name}
                       className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
                     >
-                      <Link to={module.path} className="block p-4 sm:p-6 lg:p-8 xl:p-10 2xl:p-12 h-full">
-                        <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4 lg:space-y-6 xl:space-y-8 h-full justify-center min-h-[140px] sm:min-h-[160px] lg:min-h-[200px] xl:min-h-[240px] 2xl:min-h-[300px] 3xl:min-h-[360px]">
-                          <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 2xl:w-30 2xl:h-30 3xl:w-38 3xl:h-38 ${getColorClasses(module.color)} rounded-xl lg:rounded-2xl xl:rounded-2xl 2xl:rounded-3xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
-                            <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 2xl:w-16 2xl:h-16 3xl:w-20 3xl:h-20 text-white" />
+                      <Link to={module.path} className="block p-2 sm:p-3 lg:p-4 h-full">
+                        <div className="flex flex-col items-center text-center space-y-2 h-full justify-center min-h-[100px] sm:min-h-[120px] lg:min-h-[140px]">
+                          <div className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg flex-shrink-0`}>
+                            <Icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 text-white" />
                           </div>
                           <div className="min-h-0 flex-1 flex flex-col justify-center">
-                            <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl 3xl:text-3xl font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1 lg:mb-2 xl:mb-3 line-clamp-2">
+                            <h3 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-1 line-clamp-2">
                               {module.title}
                             </h3>
-                            <p className="text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl text-gray-600 leading-tight line-clamp-2 hidden sm:block lg:hidden xl:block">
+                            <p className="text-xs text-gray-600 leading-tight line-clamp-2 hidden lg:block">
                               {module.description}
                             </p>
                           </div>

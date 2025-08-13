@@ -213,30 +213,30 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Modules Grid - Layout hierárquico com módulos principais em destaque */}
-        <div className="flex-1 flex flex-col space-y-6">
-          {/* Módulos Principais - Cards grandes */}
+        {/* Modules Grid - Layout hierárquico com cards maiores e melhor alinhados */}
+        <div className="flex-1 flex flex-col space-y-8">
+          {/* Módulos Principais - Cards grandes ocupando mais espaço */}
           {mainModules.length > 0 && (
             <div className="w-full">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">📋 Módulos Principais</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-6">📋 Módulos Principais</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {mainModules.map((module) => {
                   const Icon = module.icon
                   return (
                     <Card 
                       key={module.name}
-                      className="group hover:shadow-xl transition-all duration-200 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
+                      className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 cursor-pointer border-0 shadow-xl"
                     >
-                      <Link to={module.path} className="block p-6 h-full">
-                        <div className="flex flex-col items-center text-center space-y-4 h-full justify-center min-h-[180px]">
-                          <div className={`w-20 h-20 ${getColorClasses(module.color)} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
-                            <Icon className="w-10 h-10 text-white" />
+                      <Link to={module.path} className="block p-8 h-full">
+                        <div className="flex flex-col items-center text-center space-y-6 h-full justify-center min-h-[220px]">
+                          <div className={`w-24 h-24 ${getColorClasses(module.color)} rounded-3xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-2xl flex-shrink-0`}>
+                            <Icon className="w-12 h-12 text-white" />
                           </div>
                           <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2">
+                            <h3 className="text-2xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-3">
                               {module.title}
                             </h3>
-                            <p className="text-sm text-gray-600 leading-relaxed">
+                            <p className="text-base text-gray-600 leading-relaxed">
                               {module.description}
                             </p>
                           </div>
@@ -249,28 +249,28 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* Módulos Secundários - Cards menores ocupando toda tela */}
+          {/* Módulos Secundários - Cards melhor distribuídos na tela */}
           {secondaryModules.length > 0 && (
             <div className="w-full flex-1">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">⚙️ Outros Módulos</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <h2 className="text-lg font-semibold text-gray-800 mb-6">⚙️ Outros Módulos</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {secondaryModules.map((module) => {
                   const Icon = module.icon
                   return (
                     <Card 
                       key={module.name}
-                      className="group hover:shadow-xl transition-all duration-200 hover:-translate-y-2 cursor-pointer border-0 shadow-lg aspect-square"
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-0 shadow-lg"
                     >
-                      <Link to={module.path} className="block p-4 h-full">
-                        <div className="flex flex-col items-center text-center space-y-2 h-full justify-center">
-                          <div className={`w-12 h-12 ${getColorClasses(module.color)} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
-                            <Icon className="w-6 h-6 text-white" />
+                      <Link to={module.path} className="block p-6 h-full">
+                        <div className="flex flex-col items-center text-center space-y-4 h-full justify-center min-h-[160px]">
+                          <div className={`w-16 h-16 ${getColorClasses(module.color)} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-xl flex-shrink-0`}>
+                            <Icon className="w-8 h-8 text-white" />
                           </div>
                           <div className="min-h-0 flex-1 flex flex-col justify-center">
-                            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight line-clamp-2">
+                            <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors leading-tight mb-2">
                               {module.title}
                             </h3>
-                            <p className="text-xs text-gray-600 mt-1 leading-tight line-clamp-2">
+                            <p className="text-sm text-gray-600 leading-tight">
                               {module.description}
                             </p>
                           </div>

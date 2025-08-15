@@ -65,7 +65,7 @@ export function DashboardPage() {
       icon: BarChart3,
       color: 'info',
       path: '/relatorios',
-      comingSoon: true
+      comingSoon: false
     },
     {
       title: 'OS - Ordem de Serviço',

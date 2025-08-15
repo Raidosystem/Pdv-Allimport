@@ -9,13 +9,21 @@ import {
   User,
   Settings,
   Shield,
-  DollarSign
+  DollarSign,
+  Crown
 } from 'lucide-react'
 import { useAuth } from '../auth'
+import { useSubscription } from '../../hooks/useSubscription'
+import { useUserHierarchy } from '../../hooks/useUserHierarchy'
 import { Button } from '../../components/ui/Button'
+import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
+import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
+import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
+  const { isActive } = useSubscription()
+  const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
 
   const handleSignOut = async () => {
     await signOut()

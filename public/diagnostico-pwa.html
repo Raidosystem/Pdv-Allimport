@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico PWA - PDV Allimport</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #e5e7eb;
+        }
+        .check-item.success {
+            background: #ecfdf5;
+            border-left-color: #10b981;
+        }
+        .check-item.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        .check-item.warning {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+        }
+        .icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .details {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .fix-button {
+            background: #059669;
+        }
+        .fix-button:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico PWA - PDV Allimport</h1>
+        <p>Esta página verifica todos os requisitos para que o Google Chrome mostre a opção "Instalar aplicativo".</p>
+        
+        <button onclick="runDiagnostic()">🔍 Executar Diagnóstico</button>
+        <button onclick="testInstallability()" class="fix-button">🧪 Testar Instalação</button>
+        
+        <div id="results">
+            <!-- Resultados aparecerão aqui -->
+        </div>
+    </div>
+
+    <script>
+        async function runDiagnostic() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>⏳ Executando diagnóstico...</h2>';
+            
+            const checks = [];
+            
+            // 1. HTTPS
+            const isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+            checks.push({
+                name: 'HTTPS / Localhost',
+                status: isHttps ? 'success' : 'error',
+                message: isHttps ? '✅ Site está em HTTPS ou localhost' : '❌ Site precisa estar em HTTPS',
+                details: `Protocol: ${location.protocol}, Host: ${location.hostname}`
+            });
+            
+            // 2. Manifest
+            let manifest = null;
+            try {
+                const manifestLink = document.querySelector('link[rel="manifest"]');
+                if (manifestLink) {
+                    const response = await fetch(manifestLink.href);
+                    manifest = await response.json();
+                    checks.push({
+                        name: 'Web App Manifest',
+                        status: 'success',
+                        message: '✅ Manifest encontrado e válido',
+                        details: `Nome: ${manifest.name}\nInício: ${manifest.start_url}\nDisplay: ${manifest.display}`
+                    });
+                } else {
+                    checks.push({
+                        name: 'Web App Manifest',
+                        status: 'error',
+                        message: '❌ Link do manifest não encontrado no HTML',
+                        details: 'Adicione: <link rel="manifest" href="/manifest.json">'
+                    });
+                }
+            } catch (error) {
+                checks.push({
+                    name: 'Web App Manifest',
+                    status: 'error',
+                    message: '❌ Erro ao carregar manifest.json',
+                    details: error.message
+                });
+            }
+            
+            // 3. Service Worker
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    checks.push({
+                        name: 'Service Worker',
+                        status: registration ? 'success' : 'warning',
+                        message: registration ? '✅ Service Worker registrado' : '⚠️ Service Worker não registrado',
+                        details: registration ? `Scope: ${registration.scope}\nState: ${registration.active?.state || 'unknown'}` : 'Execute: navigator.serviceWorker.register("/sw.js")'
+                    });
+                } catch (error) {
+                    checks.push({
+                        name: 'Service Worker',
+                        status: 'error',
+                        message: '❌ Erro ao verificar Service Worker',
+                        details: error.message
+                    });
+                }
+            } else {
+                checks.push({
+                    name: 'Service Worker',
+                    status: 'error',
+                    message: '❌ Service Worker não suportado',
+                    details: 'Navegador não suporta Service Workers'
+                });
+            }
+            
+            // 4. Ícones
+            if (manifest && manifest.icons) {
+                const hasLargeIcon = manifest.icons.some(icon => 
+                    icon.sizes && parseInt(icon.sizes.split('x')[0]) >= 192
+                );
+                checks.push({
+                    name: 'Ícones PWA',
+                    status: hasLargeIcon ? 'success' : 'error',
+                    message: hasLargeIcon ? '✅ Ícones adequados encontrados' : '❌ Faltam ícones grandes (192x192+)',
+                    details: `Ícones encontrados: ${manifest.icons.length}\nTamanhos: ${manifest.icons.map(i => i.sizes).join(', ')}`
+                });
+                
+                // Verificar se os ícones realmente existem
+                let iconsExist = 0;
+                for (const icon of manifest.icons) {
+                    try {
+                        const response = await fetch(icon.src);
+                        if (response.ok) iconsExist++;
+                    } catch (error) {
+                        // Ícone não existe
+                    }
+                }
+                
+                checks.push({
+                    name: 'Ícones Existentes',
+                    status: iconsExist === manifest.icons.length ? 'success' : 'error',
+                    message: `${iconsExist === manifest.icons.length ? '✅' : '❌'} ${iconsExist}/${manifest.icons.length} ícones encontrados`,
+                    details: `Verifique se todos os arquivos de ícone existem em /public/icons/`
+                });
+            }
+            
+            // 5. Engagement Heuristics
+            const hasUserGesture = document.hasFocus();
+            checks.push({
+                name: 'Interação do Usuário',
+                status: hasUserGesture ? 'success' : 'warning',
+                message: hasUserGesture ? '✅ Site tem foco/interação' : '⚠️ Site precisa de interação do usuário',
+                details: 'Chrome pode exigir que o usuário interaja com a página antes de mostrar opção de instalação'
+            });
+            
+            // 6. Installability Event
+            let canInstall = false;
+            if (window.deferredPrompt) {
+                canInstall = true;
+            }
+            checks.push({
+                name: 'Evento de Instalação',
+                status: canInstall ? 'success' : 'warning',
+                message: canInstall ? '✅ Evento beforeinstallprompt capturado' : '⚠️ Evento de instalação não detectado',
+                details: canInstall ? 'Aplicativo pode ser instalado programaticamente' : 'Chrome ainda não considera o site instalável ou já foi instalado'
+            });
+            
+            // Renderizar resultados
+            let html = '<h2>📊 Resultados do Diagnóstico</h2>';
+            
+            const successCount = checks.filter(c => c.status === 'success').length;
+            const totalCount = checks.length;
+            
+            html += `<div class="check-item ${successCount === totalCount ? 'success' : successCount > totalCount/2 ? 'warning' : 'error'}">
+                <span class="icon">${successCount === totalCount ? '🎉' : '⚠️'}</span>
+                <div>
+                    <strong>Status Geral: ${successCount}/${totalCount} verificações passaram</strong>
+                    <br>${successCount === totalCount ? 'Seu PWA deve funcionar!' : 'Alguns problemas precisam ser corrigidos'}
+                </div>
+            </div>`;
+            
+            checks.forEach(check => {
+                html += `
+                    <div class="check-item ${check.status}">
+                        <span class="icon">${check.status === 'success' ? '✅' : check.status === 'error' ? '❌' : '⚠️'}</span>
+                        <div>
+                            <strong>${check.name}</strong>
+                            <br>${check.message}
+                            ${check.details ? `<div class="details">${check.details}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            results.innerHTML = html;
+        }
+        
+        async function testInstallability() {
+            if ('BeforeInstallPromptEvent' in window) {
+                console.log('🔍 Aguardando evento beforeinstallprompt...');
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('🎉 Evento beforeinstallprompt recebido!');
+                    alert('🎉 Seu PWA está pronto para instalação!\nO Chrome deve mostrar a opção de instalação.');
+                });
+                
+                // Testar se já está instalado
+                if (window.matchMedia('(display-mode: standalone)').matches) {
+                    alert('✅ Aplicativo já está instalado e executando!');
+                } else {
+                    alert('⏳ Aguarde alguns segundos para o Chrome analisar seu PWA...\n\nSe não funcionar, verifique:\n- Se todos os ícones existem\n- Se o Service Worker está funcionando\n- Se você está em HTTPS');
+                }
+            } else {
+                alert('❌ Seu navegador não suporta a API de instalação de PWA');
+            }
+        }
+        
+        // Auto-executar diagnóstico
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostic, 1000);
+        });
+        
+        // Capturar evento de instalação
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('🎉 PWA está pronto para instalação!');
+            window.deferredPrompt = e;
+        });
+    </script>
+</body>
+</html>

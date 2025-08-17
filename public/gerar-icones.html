@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ícones PWA - PDV Allimport</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .icon-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .icon-item {
+            text-align: center;
+        }
+        .icon-item canvas {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .icon-item span {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .instructions {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Gerador de Ícones PWA</h1>
+        <p>Esta ferramenta cria automaticamente todos os ícones necessários para o PWA do PDV Allimport funcionar corretamente no Google Chrome.</p>
+        
+        <div class="instructions">
+            <h3>📋 Instruções:</h3>
+            <ol>
+                <li>Clique em "Gerar Ícones" para criar todos os tamanhos</li>
+                <li>Os ícones serão baixados automaticamente</li>
+                <li>Mova todos os arquivos .png para a pasta <code>public/icons/</code></li>
+                <li>Teste novamente no Chrome</li>
+            </ol>
+        </div>
+
+        <button onclick="generateAllIcons()">🎨 Gerar Todos os Ícones</button>
+        <button onclick="generateCustomIcon()">✏️ Personalizar</button>
+        
+        <div id="preview" class="icon-preview" style="display: none;">
+            <h3>🔍 Pré-visualização:</h3>
+        </div>
+        
+        <div id="success" class="success" style="display: none;">
+            <h3>✅ Ícones Gerados!</h3>
+            <p>Todos os ícones foram baixados. Agora mova-os para a pasta <strong>public/icons/</strong> do seu projeto.</p>
+        </div>
+    </div>
+
+    <script>
+        // Função para criar um ícone com Canvas
+        function createIcon(size, text = 'PDV', bgColor = '#3b82f6', textColor = '#ffffff') {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Fundo gradiente
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, bgColor);
+            gradient.addColorStop(1, '#1d4ed8');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Borda arredondada moderna
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            const radius = size * 0.15;
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Adicionar um círculo de fundo para o texto
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size*0.35, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fill();
+            
+            // Texto principal
+            ctx.fillStyle = textColor;
+            ctx.font = `bold ${size * 0.22}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Sombra no texto
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 2;
+            ctx.shadowOffsetY = 1;
+            
+            ctx.fillText(text, size / 2, size / 2);
+            
+            return canvas;
+        }
+
+        // Função para download
+        function downloadIcon(canvas, filename) {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+
+        // Gerar todos os ícones
+        function generateAllIcons() {
+            const iconSizes = [72, 96, 128, 144, 152, 192, 256, 384, 512];
+            const preview = document.getElementById('preview');
+            const success = document.getElementById('success');
+            
+            preview.innerHTML = '<h3>🔍 Pré-visualização dos Ícones:</h3>';
+            preview.style.display = 'block';
+            
+            let downloadCount = 0;
+            
+            iconSizes.forEach((size, index) => {
+                setTimeout(() => {
+                    const canvas = createIcon(size);
+                    
+                    // Mostrar preview (apenas tamanhos menores para não sobrecarregar)
+                    if (size <= 192) {
+                        const previewCanvas = createIcon(64); // Tamanho fixo para preview
+                        const iconItem = document.createElement('div');
+                        iconItem.className = 'icon-item';
+                        iconItem.innerHTML = `<span>${size}x${size}</span>`;
+                        iconItem.prepend(previewCanvas);
+                        preview.appendChild(iconItem);
+                    }
+                    
+                    // Download
+                    downloadIcon(canvas, `icon-${size}x${size}.png`);
+                    
+                    downloadCount++;
+                    if (downloadCount === iconSizes.length) {
+                        success.style.display = 'block';
+                    }
+                }, index * 500); // Delay para não sobrecarregar o navegador
+            });
+        }
+
+        // Personalizar ícones
+        function generateCustomIcon() {
+            const text = prompt('Digite o texto do ícone (máximo 3 caracteres):', 'PDV') || 'PDV';
+            const bgColor = prompt('Cor de fundo (hex):', '#3b82f6') || '#3b82f6';
+            
+            const canvas = createIcon(192, text.substring(0, 3), bgColor);
+            
+            // Mostrar preview
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '<h3>🔍 Ícone Personalizado:</h3>';
+            preview.appendChild(canvas);
+            preview.style.display = 'block';
+            
+            downloadIcon(canvas, `icon-custom-192x192.png`);
+        }
+
+        // Mostrar instruções iniciais
+        console.log('🎨 Gerador de Ícones PWA carregado!');
+        console.log('👆 Clique no botão "Gerar Todos os Ícones" para começar');
+    </script>
+</body>
+</html>

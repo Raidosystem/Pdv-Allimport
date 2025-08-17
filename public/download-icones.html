@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ícones PWA - Download Rápido</title>
+</head>
+<body>
+    <h1>Baixando ícones automaticamente...</h1>
+    <p>Os ícones estão sendo criados e baixados. Salve-os na pasta public/icons/</p>
+
+    <script>
+        // Criar ícone SVG como base
+        function createIconSVG(size, text = 'PDV') {
+            return `
+                <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="${size}" height="${size}" rx="${size * 0.15}" fill="url(#grad)"/>
+                    <circle cx="${size/2}" cy="${size/2}" r="${size*0.35}" fill="rgba(255,255,255,0.2)"/>
+                    <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="middle" 
+                          fill="white" font-size="${size*0.22}" font-weight="bold" 
+                          font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif">${text}</text>
+                </svg>
+            `;
+        }
+
+        // Converter SVG para PNG
+        function svgToPng(svgString, size, filename) {
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
+        }
+
+        // Criar todos os ícones
+        const sizes = [72, 96, 128, 144, 152, 192, 256, 384, 512];
+        
+        sizes.forEach((size, index) => {
+            setTimeout(() => {
+                const svg = createIconSVG(size);
+                svgToPng(svg, size, `icon-${size}x${size}.png`);
+                console.log(`✅ Criado: icon-${size}x${size}.png`);
+            }, index * 300);
+        });
+        
+        // Criar favicon
+        setTimeout(() => {
+            const svg = createIconSVG(32, 'P');
+            svgToPng(svg, 32, 'favicon.png');
+            console.log('✅ Criado: favicon.png');
+        }, sizes.length * 300);
+        
+        console.log('🎨 Criando ícones PWA...');
+        alert('Os ícones estão sendo baixados automaticamente!\n\n1. Salve todos na pasta: public/icons/\n2. Recarregue seu site\n3. Teste no Chrome novamente');
+    </script>
+</body>
+</html>

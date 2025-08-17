@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { ProductModal } from '../../components/product/ProductModal'
-// import { useAuth } from '../auth'
 import type { Product } from '../../types/product'
 
 export function ProductsPage() {

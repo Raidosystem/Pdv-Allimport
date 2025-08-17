@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PWA - PDV Allimport</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste PWA - PDV Allimport</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testPWA()">🔍 Testar PWA</button>
+    <button onclick="testOffline()">📱 Testar Modo Offline</button>
+    <button onclick="installPWA()" id="installBtn" style="display:none;">📥 Instalar App</button>
+
+    <script>
+        let deferredPrompt;
+        const results = document.getElementById('results');
+
+        // Testar recursos PWA
+        function testPWA() {
+            results.innerHTML = '<h3>🔍 Verificando recursos PWA...</h3>';
+            
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                addResult('✅ Service Worker suportado', 'success');
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    if (registrations.length > 0) {
+                        addResult('✅ Service Worker registrado', 'success');
+                    } else {
+                        addResult('⚠️ Service Worker não registrado', 'warning');
+                    }
+                });
+            } else {
+                addResult('❌ Service Worker não suportado', 'error');
+            }
+
+            // Manifest
+            fetch('/manifest.json')
+                .then(response => response.json())
+                .then(manifest => {
+                    addResult('✅ Manifest encontrado: ' + manifest.name, 'success');
+                })
+                .catch(() => {
+                    addResult('❌ Manifest não encontrado', 'error');
+                });
+
+            // HTTPS
+            if (location.protocol === 'https:' || location.hostname === 'localhost') {
+                addResult('✅ HTTPS ativo (necessário para PWA)', 'success');
+            } else {
+                addResult('❌ HTTPS necessário para PWA', 'error');
+            }
+
+            // Installable
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                addResult('✅ Executando como PWA instalado', 'success');
+            } else {
+                addResult('ℹ️ Executando no navegador', 'warning');
+            }
+        }
+
+        function addResult(message, type) {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        // Testar modo offline
+        function testOffline() {
+            if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+                addResult('✅ Background Sync suportado', 'success');
+            } else {
+                addResult('⚠️ Background Sync limitado', 'warning');
+            }
+
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                navigator.storage.estimate().then(estimate => {
+                    const used = (estimate.usage / 1024 / 1024).toFixed(2);
+                    const quota = (estimate.quota / 1024 / 1024).toFixed(2);
+                    addResult(`📦 Armazenamento: ${used}MB / ${quota}MB`, 'success');
+                });
+            }
+        }
+
+        // Detectar possibilidade de instalação
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'inline-block';
+            addResult('🎉 App pode ser instalado!', 'success');
+        });
+
+        // Instalar PWA
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        addResult('✅ App instalado com sucesso!', 'success');
+                    } else {
+                        addResult('❌ Instalação cancelada', 'warning');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // Detectar quando o app é instalado
+        window.addEventListener('appinstalled', () => {
+            addResult('🎉 App instalado com sucesso!', 'success');
+            document.getElementById('installBtn').style.display = 'none';
+        });
+
+        // Auto-teste ao carregar
+        window.onload = () => {
+            setTimeout(testPWA, 1000);
+        };
+    </script>
+</body>
+</html>

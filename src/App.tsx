@@ -38,28 +38,34 @@ function App() {
   // PWA Install Hook
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [appError, setAppError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('🎯 PWA install prompt captured!');
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallBanner(true);
-    };
+    try {
+      const handleBeforeInstallPrompt = (e: Event) => {
+        console.log('🎯 PWA install prompt captured!');
+        e.preventDefault();
+        setDeferredPrompt(e);
+        setShowInstallBanner(true);
+      };
 
-    const handleAppInstalled = () => {
-      console.log('✅ PWA installed successfully!');
-      setShowInstallBanner(false);
-      setDeferredPrompt(null);
-    };
+      const handleAppInstalled = () => {
+        console.log('✅ PWA installed successfully!');
+        setShowInstallBanner(false);
+        setDeferredPrompt(null);
+      };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener('appinstalled', handleAppInstalled);
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+      };
+    } catch (error) {
+      console.error('PWA setup error:', error);
+      setAppError('Erro na configuração PWA');
+    }
   }, []);
 
   const handlePWAInstall = async () => {
@@ -76,6 +82,23 @@ function App() {
       console.error('PWA install error:', error);
     }
   };
+
+  if (appError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Erro na aplicação</h1>
+          <p className="text-gray-600">{appError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthProvider>

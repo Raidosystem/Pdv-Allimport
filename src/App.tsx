@@ -32,11 +32,81 @@ import { PaymentTest } from './components/PaymentTest'
 import { OfflineIndicator } from './components/OfflineIndicator'
 // import { InstallPWA } from './components/InstallPWA'
 import './App.css'
+import { useState, useEffect } from 'react'
 
 function App() {
+  // PWA Install Hook
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('🎯 PWA install prompt captured!');
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    const handleAppInstalled = () => {
+      console.log('✅ PWA installed successfully!');
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handlePWAInstall = async () => {
+    if (!deferredPrompt) return;
+    
+    try {
+      await (deferredPrompt as any).prompt();
+      const result = await (deferredPrompt as any).userChoice;
+      
+      console.log(`PWA install: ${result.outcome}`);
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    } catch (error) {
+      console.error('PWA install error:', error);
+    }
+  };
+
   return (
     <AuthProvider>
       <Router>
+        {/* PWA Install Banner */}
+        {showInstallBanner && deferredPrompt && (
+          <div className="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+            <div className="flex items-center gap-3">
+              <span role="img" aria-label="mobile">📱</span>
+              <div className="flex-1">
+                <div className="font-bold text-sm">Instalar PDV Allimport</div>
+                <div className="text-xs opacity-90">Acesso rápido + offline</div>
+              </div>
+              <div className="flex gap-1">
+                <button
+                  onClick={handlePWAInstall}
+                  className="bg-white text-green-600 px-3 py-1 rounded text-sm font-bold hover:bg-gray-100 transition-colors"
+                >
+                  Instalar
+                </button>
+                <button
+                  onClick={() => setShowInstallBanner(false)}
+                  className="text-white hover:bg-green-700 px-2 py-1 rounded text-sm transition-colors"
+                  aria-label="Fechar"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -65,7 +135,7 @@ function App() {
         
         {/* Indicador Offline e PWA */}
         <OfflineIndicator />
-        {/* <InstallPWA /> */}
+        {/* PWA Install component now inline above */}
         
         <Routes>
           {/* Rotas públicas */}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Visual - Como Instalar PWA</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .browser-bar { 
+            background: #f1f3f4; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .address-bar { 
+            background: white; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            flex: 1;
+            margin: 0 10px;
+            border: 1px solid #dadce0;
+        }
+        .install-icon { 
+            background: #4285f4; 
+            color: white; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .install-icon:hover {
+            background: #3367d6;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .menu-demo {
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .menu-item {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: #f8f9fa;
+        }
+        .install-highlight {
+            background: #e3f2fd !important;
+            border: 2px solid #2196f3;
+            font-weight: bold;
+        }
+        .browser-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .tab {
+            background: #e8eaed;
+            padding: 8px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 13px;
+        }
+        .tab.active {
+            background: white;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Guia Visual: Como Instalar o PDV Allimport</h1>
+
+    <div class="warning-box">
+        <strong>💡 Importante:</strong> A opção "Instalar aplicativo" só aparece em sites que são PWA (Progressive Web App). O PDV Allimport já está configurado como PWA!
+    </div>
+
+    <h2>🟦 No Google Chrome</h2>
+    
+    <div class="step">
+        <h3>Opção 1: Ícone na Barra de Endereços</h3>
+        <div class="browser-bar">
+            <div class="browser-tabs">
+                <div class="tab active">PDV Allimport</div>
+                <div class="tab">Nova aba +</div>
+            </div>
+        </div>
+        <div class="browser-bar">
+            <span>← → ⟲</span>
+            <div class="address-bar">🔒 https://seu-pdv.vercel.app</div>
+            <div class="install-icon" onclick="showInstallDemo()">📱 Instalar</div>
+            <span>⋮</span>
+        </div>
+        <p><strong>👆 Clique no ícone azul "Instalar" que aparece à direita da barra de endereços</strong></p>
+    </div>
+
+    <div class="step">
+        <h3>Opção 2: Menu do Chrome</h3>
+        <p>1. Clique nos 3 pontos verticais (⋮) no canto superior direito</p>
+        <div class="menu-demo">
+            <div class="menu-item">Nova aba</div>
+            <div class="menu-item">Nova janela anônima</div>
+            <div class="menu-item">Histórico</div>
+            <div class="menu-item">Downloads</div>
+            <hr>
+            <div class="menu-item install-highlight">📱 Instalar PDV Allimport...</div>
+            <hr>
+            <div class="menu-item">Favoritos</div>
+            <div class="menu-item">Configurações</div>
+        </div>
+        <p><strong>👆 Procure pela opção destacada no menu</strong></p>
+    </div>
+
+    <h2>🟢 No Microsoft Edge</h2>
+    
+    <div class="step">
+        <h3>Menu do Edge → Aplicativos</h3>
+        <p>1. Clique nos 3 pontos horizontais (...) no canto superior direito</p>
+        <p>2. Vá em "Aplicativos"</p>
+        <div class="menu-demo">
+            <div class="menu-item">Nova aba</div>
+            <div class="menu-item">Nova janela InPrivate</div>
+            <div class="menu-item">Zoom +</div>
+            <hr>
+            <div class="menu-item install-highlight">🔧 Aplicativos ►</div>
+            <hr>
+            <div class="menu-item">Favoritos</div>
+            <div class="menu-item">Configurações</div>
+        </div>
+        
+        <div class="menu-demo" style="margin-left: 30px;">
+            <div class="menu-item install-highlight">📱 Instalar este site como aplicativo</div>
+            <div class="menu-item">Gerenciar aplicativos</div>
+        </div>
+    </div>
+
+    <h2>🎯 Janela de Instalação</h2>
+    
+    <div class="step">
+        <h3>Após clicar em qualquer opção de instalação:</h3>
+        <div style="background: white; border: 2px solid #4285f4; border-radius: 12px; padding: 30px; text-align: center; margin: 20px 0;">
+            <h3>📱 Instalar aplicativo?</h3>
+            <p><strong>PDV Allimport - Sistema de Ponto de Venda</strong></p>
+            <p>Este site pode ser instalado como um aplicativo. Ele será aberto em sua própria janela e aparecerá em seu menu de aplicativos.</p>
+            <div style="margin-top: 20px;">
+                <button style="background: #4285f4; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin: 0 10px; cursor: pointer; font-size: 16px;" onclick="showSuccess()">Instalar</button>
+                <button style="background: #f8f9fa; color: #5f6368; padding: 10px 20px; border: 1px solid #dadce0; border-radius: 6px; margin: 0 10px; cursor: pointer; font-size: 16px;">Cancelar</button>
+            </div>
+        </div>
+        <p><strong>👆 Clique em "Instalar" para confirmar</strong></p>
+    </div>
+
+    <div class="success-box" id="success-message" style="display: none;">
+        <h3>🎉 Instalação Concluída!</h3>
+        <p><strong>O PDV Allimport foi instalado com sucesso!</strong></p>
+        <p>Agora você pode encontrá-lo em:</p>
+        <ul>
+            <li>📍 <strong>Menu Iniciar</strong> → Procure por "PDV Allimport"</li>
+            <li>🖥️ <strong>Área de trabalho</strong> (se criou atalho)</li>
+            <li>📌 <strong>Barra de tarefas</strong> (clique direito para fixar)</li>
+        </ul>
+    </div>
+
+    <h2>🆘 Não Encontra a Opção?</h2>
+    
+    <div class="warning-box">
+        <h4>Possíveis soluções:</h4>
+        <ul>
+            <li>⏰ <strong>Aguarde alguns segundos</strong> após carregar a página</li>
+            <li>🔄 <strong>Atualize a página</strong> (F5 ou Ctrl+R)</li>
+            <li>🔐 <strong>Faça login no sistema</strong> (pode ser necessário estar logado)</li>
+            <li>🌐 <strong>Verifique o HTTPS</strong> (URL deve começar com https://)</li>
+            <li>🔄 <strong>Teste outro navegador</strong> (Chrome geralmente funciona melhor)</li>
+        </ul>
+    </div>
+
+    <h2>💡 Teste Agora!</h2>
+    
+    <div class="step">
+        <p>Se você está vendo esta página no site do PDV Allimport, <strong>procure agora mesmo o ícone de instalação na barra de endereços!</strong></p>
+        <p>Deve aparecer algo como: <span style="background: #4285f4; color: white; padding: 4px 8px; border-radius: 4px;">📱</span> ou <span style="background: #4285f4; color: white; padding: 4px 8px; border-radius: 4px;">🔽</span></p>
+    </div>
+
+    <script>
+        function showInstallDemo() {
+            alert('🎉 Em um site real, isso abriria a janela de instalação!\n\nProcure por esse ícone na barra de endereços do seu navegador quando estiver no PDV Allimport.');
+        }
+
+        function showSuccess() {
+            document.getElementById('success-message').style.display = 'block';
+            document.querySelector('button[onclick="showSuccess()"]').style.background = '#28a745';
+            document.querySelector('button[onclick="showSuccess()"]').textContent = '✓ Instalado!';
+        }
+
+        // Detectar se está em um PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.insertAdjacentHTML('afterbegin', 
+                '<div class="success-box"><strong>🎉 Você já está usando o PDV como aplicativo instalado!</strong></div>'
+            );
+        }
+    </script>
+</body>
+</html>

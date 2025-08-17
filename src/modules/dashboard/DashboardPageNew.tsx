@@ -134,7 +134,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header - Responsivo e consistente */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,7 +198,7 @@ export function DashboardPage() {
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
       {/* Main Content - Layout simples baseado no exemplo do usuário */}
-      <main className="relative w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)] flex flex-col">
+      <main className="relative w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)] flex flex-col max-h-screen overflow-y-auto">
         {/* Subscription Status */}
         {!isAdmin() && (
           <div className="mb-6 flex-shrink-0">
@@ -208,7 +208,7 @@ export function DashboardPage() {
         )}
 
         {/* Modules Grid - Layout simples sem títulos */}
-        <div className="flex-1 flex flex-col space-y-8">
+        <div className="flex-1 flex flex-col space-y-8 pb-4 min-h-0">
           {/* Módulos Principais - Cards maiores em linha */}
           {mainModules.length > 0 && (
             <div className="w-full">

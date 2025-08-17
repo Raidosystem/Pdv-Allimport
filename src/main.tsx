@@ -2,67 +2,123 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-// Função para criar root de forma mais segura
-const createSafeRoot = (container: Element) => {
-  // Limpar completamente o container
-  while (container.firstChild) {
-    container.removeChild(container.firstChild)
+console.log('🚀 PDV Allimport v2.1.1 - Inicializando...')
+
+// Função ultra-segura para limpar DOM
+const createUltraSafeRoot = (container: Element) => {
+  // Desconectar todos os observadores
+  if (window.MutationObserver) {
+    const observers = (window as any).__reactObservers__ || []
+    observers.forEach((observer: MutationObserver) => observer.disconnect())
   }
   
-  // Criar um novo div como container seguro
-  const safeContainer = document.createElement('div')
-  safeContainer.id = 'react-root'
-  container.appendChild(safeContainer)
+  // Remover todos os event listeners
+  const cloned = container.cloneNode(false) as Element
+  container.parentNode?.replaceChild(cloned, container)
   
-  return createRoot(safeContainer)
+  // Criar container completamente novo
+  const safeContainer = document.createElement('div')
+  safeContainer.id = 'react-app-root'
+  safeContainer.style.cssText = 'width: 100%; height: 100%; min-height: 100vh;'
+  
+  cloned.appendChild(safeContainer)
+  
+  return { root: createRoot(safeContainer), container: safeContainer }
 }
 
-// Aguardar DOM estar pronto com timeout de segurança
-const initApp = () => {
-  console.log('🚀 Iniciando PDV Allimport...')
+// Inicialização ultra-robusta
+const initApp = async () => {
+  console.log('✅ Iniciando PDV com método ultra-seguro...')
   
   const rootElement = document.getElementById('root')
   if (!rootElement) {
-    console.error('❌ Elemento root não encontrado')
+    console.error('❌ Root element não encontrado')
     return
   }
 
-  console.log('✅ Root element encontrado:', rootElement)
-  
   try {
-    // Usar método seguro para criar root
-    const root = createSafeRoot(rootElement)
-    console.log('✅ Root criado com método seguro')
+    // Aguardar frame para garantir DOM estável
+    await new Promise(resolve => requestAnimationFrame(resolve))
     
-    // Render com timeout para evitar conflitos
-    setTimeout(() => {
+    const { root, container } = createUltraSafeRoot(rootElement)
+    
+    console.log('✅ Container ultra-seguro criado')
+    
+    // Aguardar mais um frame antes do render
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    
+    // Render com Promise para capturar erros async
+    await new Promise<void>((resolve, reject) => {
       try {
         root.render(<App />)
-        console.log('✅ App renderizado com sucesso!')
-      } catch (renderError) {
-        console.error('❌ Erro no render:', renderError)
-        showErrorPage(rootElement, renderError instanceof Error ? renderError.message : 'Erro no render')
+        
+        // Verificar se renderizou após timeout
+        setTimeout(() => {
+          if (container.children.length > 0) {
+            console.log('✅ PDV renderizado com sucesso!')
+            resolve()
+          } else {
+            reject(new Error('Render não produziu conteúdo'))
+          }
+        }, 500)
+        
+      } catch (error) {
+        reject(error)
       }
-    }, 100)
+    })
     
   } catch (error) {
-    console.error('❌ Erro ao criar root:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
-    showErrorPage(rootElement, errorMessage)
+    console.error('❌ Erro no ultra-safe render:', error)
+    showEmergencyUI(rootElement, error)
   }
 }
 
-// Função para mostrar página de erro
-const showErrorPage = (container: Element, errorMessage: string) => {
+// UI de emergência quando tudo falha
+const showEmergencyUI = (container: Element, error: any) => {
+  const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido'
+  
   container.innerHTML = `
-    <div style="padding: 2rem; text-align: center; background: #fee2e2; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-      <div style="max-width: 400px;">
-        <h1 style="color: #dc2626; margin-bottom: 1rem;">Erro ao carregar PDV</h1>
-        <p style="color: #7f1d1d; margin-bottom: 1rem;">Não foi possível inicializar o aplicativo.</p>
-        <p style="color: #7f1d1d; margin-bottom: 1rem; font-size: 0.8rem;">Erro: ${errorMessage}</p>
-        <button onclick="window.location.reload()" style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer;">Recarregar</button>
-        <br><br>
-        <p style="color: #6b7280; font-size: 0.7rem;">URL: ${window.location.href}</p>
+    <div style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      padding: 2rem; 
+      text-align: center; 
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    ">
+      <div style="max-width: 500px; background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <h1 style="color: #dc2626; margin-bottom: 1rem; font-size: 1.5rem;">⚠️ PDV Temporariamente Indisponível</h1>
+        <p style="color: #7f1d1d; margin-bottom: 1rem;">O sistema está passando por uma atualização.</p>
+        <p style="color: #6b7280; margin-bottom: 1.5rem; font-size: 0.9rem;">Erro técnico: ${errorMsg}</p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button onclick="window.location.reload()" style="
+            background: #3b82f6; 
+            color: white; 
+            padding: 0.75rem 1.5rem; 
+            border: none; 
+            border-radius: 0.5rem; 
+            cursor: pointer;
+            font-weight: 600;
+          ">🔄 Recarregar</button>
+          
+          <button onclick="window.location.href='https://pdv-allimport.surge.sh'" style="
+            background: #059669; 
+            color: white; 
+            padding: 0.75rem 1.5rem; 
+            border: none; 
+            border-radius: 0.5rem; 
+            cursor: pointer;
+            font-weight: 600;
+          ">🚀 Versão Alternativa</button>
+        </div>
+        
+        <p style="color: #9ca3af; font-size: 0.7rem; margin-top: 1rem;">
+          URL: ${window.location.href}<br>
+          Timestamp: ${new Date().toLocaleString()}
+        </p>
       </div>
     </div>
   `
@@ -70,37 +126,29 @@ const showErrorPage = (container: Element, errorMessage: string) => {
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('✅ Service Worker registrado:', registration.scope)
-      })
-      .catch((error) => {
-        console.log('❌ Erro no Service Worker:', error)
-      })
-  })
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('✅ Service Worker ativo'))
+    .catch(() => console.log('⚠️ Service Worker falhou'))
 }
 
-// Capturar erros globais para prevenir crash
-window.addEventListener('error', (event) => {
-  console.error('🚨 Erro global:', event.error)
-  event.preventDefault() // Prevenir que o erro pare a aplicação
+// Capturar TODOS os erros
+window.addEventListener('error', (e) => {
+  console.error('🚨 Erro capturado:', e.error)
+  e.preventDefault()
 })
 
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('🚨 Promise rejeitada:', event.reason)
-  event.preventDefault() // Prevenir que a promise rejeitada pare a aplicação
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('🚨 Promise rejeitada:', e.reason)
+  e.preventDefault()
 })
 
-// Inicializar de forma mais robusta
-const startApp = () => {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp)
+// Inicialização final
+const bootstrap = () => {
+  if (document.readyState !== 'complete') {
+    window.addEventListener('load', initApp)
   } else {
-    // Pequeno delay para garantir que tudo esteja pronto
-    setTimeout(initApp, 50)
+    setTimeout(initApp, 100)
   }
 }
 
-// Iniciar aplicação
-startApp()
+bootstrap()

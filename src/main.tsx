@@ -1,56 +1,94 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import App from './App.tsx'
 
-// Diagnóstico completo
-console.log('🔍 DIAGNÓSTICO PDV ALLIMPORT')
-console.log('1. React DOM carregado')
+console.log('� Iniciando PDV Allimport...')
 
 // Verificar variáveis de ambiente
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-console.log('2. Variáveis de ambiente:')
-console.log('   VITE_SUPABASE_URL:', supabaseUrl ? '✅ OK' : '❌ FALTA')
-console.log('   VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ OK' : '❌ FALTA')
+console.log('Supabase URL:', supabaseUrl ? '✅' : '❌')
+console.log('Supabase Key:', supabaseAnonKey ? '✅' : '❌')
 
-// Service Worker
+// Registrar Service Worker
 if ('serviceWorker' in navigator) {
-  console.log('3. Service Worker suportado')
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('✅ SW registered: ', registration);
+        console.log('✅ Service Worker registrado:', registration.scope);
       })
-      .catch((registrationError) => {
-        console.log('❌ SW registration failed: ', registrationError);
+      .catch((error) => {
+        console.log('❌ Erro no Service Worker:', error);
       });
   });
-} else {
-  console.log('3. Service Worker NÃO suportado')
 }
 
-// Importar App dinamicamente para detectar erros
-console.log('4. Tentando importar App...')
-
-let App;
 try {
-  // Importação dinâmica para capturar erros
-  const AppModule = await import('./App.tsx')
-  App = AppModule.default
-  console.log('✅ App importado com sucesso')
+  const rootElement = document.getElementById('root')
+  
+  if (!rootElement) {
+    throw new Error('Elemento root não encontrado')
+  }
+
+  console.log('✅ Elemento root encontrado')
+  
+  createRoot(rootElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  )
+  
+  console.log('✅ App renderizado com sucesso!')
 } catch (error) {
-  console.error('❌ Erro ao importar App:', error)
-  document.getElementById('root')!.innerHTML = `
-    <div style="padding: 2rem; text-align: center; background: #fef2f2; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-      <div>
-        <h1 style="color: #dc2626; margin-bottom: 1rem;">❌ Erro ao carregar aplicação</h1>
-        <p style="color: #6b7280;">Erro de importação: ${error instanceof Error ? error.message : 'Erro desconhecido'}</p>
-        <button onclick="window.location.reload()" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; margin-top: 1rem;">Recarregar</button>
+  console.error('🚨 Erro crítico:', error)
+  
+  const rootElement = document.getElementById('root')
+  if (rootElement) {
+    rootElement.innerHTML = `
+      <div style="
+        min-height: 100vh; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        background: #f9fafb;
+        font-family: system-ui, sans-serif;
+        padding: 2rem;
+        text-align: center;
+      ">
+        <div style="
+          background: white;
+          padding: 3rem;
+          border-radius: 1rem;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          max-width: 500px;
+        ">
+          <h1 style="color: #dc2626; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            ⚠️ Erro ao carregar o PDV
+          </h1>
+          <p style="color: #6b7280; margin-bottom: 2rem; line-height: 1.6;">
+            ${error instanceof Error ? error.message : 'Erro desconhecido'}
+          </p>
+          <button 
+            onclick="window.location.reload()" 
+            style="
+              background: #3b82f6; 
+              color: white; 
+              padding: 1rem 2rem; 
+              border: none; 
+              border-radius: 0.5rem; 
+              cursor: pointer;
+              font-size: 1rem;
+              font-weight: 500;
+            "
+          >
+            🔄 Recarregar Sistema
+          </button>
+        </div>
       </div>
-    </div>
-  `
-  throw error
+    `
+  }
 }
 
 try {

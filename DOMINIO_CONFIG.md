@@ -1,7 +1,8 @@
 # 🌐 CONFIGURAÇÃO DOMÍNIO PERSONALIZADO
 
 ## Domínio Comprado
-**Domínio:** pdv-crmvsystem.com
+**Domínio principal:** crmvsystem.com (Vercel)
+**Subdomínio PDV:** pdv-crmvsystem.com
 
 ## URLs Atuais
 - ✅ **Temporário:** https://pdv-allimport.surge.sh (funcionando)

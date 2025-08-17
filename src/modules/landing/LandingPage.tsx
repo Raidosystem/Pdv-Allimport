@@ -201,7 +201,7 @@ export function LandingPage() {
               <span className="text-white font-semibold text-sm xs:text-base sm:text-lg">PDV Import</span>
             </div>
             <p className="text-secondary-400 text-xs xs:text-sm text-center px-2">
-              © 2025 PDV Import. Todos os direitos reservados.
+              © 2025 PDV Import. Todos os direitos reservados. v2.1
             </p>
           </div>
         </div>

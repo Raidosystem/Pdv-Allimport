@@ -16,6 +16,10 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     },
@@ -29,6 +33,10 @@
         {
           "key": "Service-Worker-Allowed",
           "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
         }
       ]
     },
@@ -36,17 +44,42 @@
       "source": "/icons/(.*)",
       "headers": [
         {
+          "key": "Content-Type",
+          "value": "image/png"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*\\.css)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css"
+        },
+        {
           "key": "Cache-Control",
           "value": "public, max-age=31536000"
         }
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/assets/(.*\\.js)",
       "headers": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
         }
       ]
     }
@@ -73,7 +106,7 @@
       "destination": "/api/payment-status.js?paymentId=$1"
     },
     {
-      "source": "/((?!api/|manifest\\.json|sw\\.js|icons/|assets/|.*\\.js$|.*\\.css$|.*\\.png$|.*\\.ico$|.*\\.svg$).*)",
+      "source": "/((?!api/|manifest\\.json|sw\\.js|icons/|assets/).*)",
       "destination": "/index.html"
     }
   ]

@@ -1,10 +1,22 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
 
-// Registrar Service Worker para PWA
+// Diagnóstico completo
+console.log('🔍 DIAGNÓSTICO PDV ALLIMPORT')
+console.log('1. React DOM carregado')
+
+// Verificar variáveis de ambiente
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+console.log('2. Variáveis de ambiente:')
+console.log('   VITE_SUPABASE_URL:', supabaseUrl ? '✅ OK' : '❌ FALTA')
+console.log('   VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ OK' : '❌ FALTA')
+
+// Service Worker
 if ('serviceWorker' in navigator) {
+  console.log('3. Service Worker suportado')
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
@@ -14,16 +26,31 @@ if ('serviceWorker' in navigator) {
         console.log('❌ SW registration failed: ', registrationError);
       });
   });
+} else {
+  console.log('3. Service Worker NÃO suportado')
 }
 
-// Verificar se as variáveis de ambiente estão disponíveis
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Importar App dinamicamente para detectar erros
+console.log('4. Tentando importar App...')
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('🚨 Erro: Variáveis de ambiente do Supabase não encontradas')
-  console.log('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Definida' : '❌ Não definida')
-  console.log('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ Definida' : '❌ Não definida')
+let App;
+try {
+  // Importação dinâmica para capturar erros
+  const AppModule = await import('./App.tsx')
+  App = AppModule.default
+  console.log('✅ App importado com sucesso')
+} catch (error) {
+  console.error('❌ Erro ao importar App:', error)
+  document.getElementById('root')!.innerHTML = `
+    <div style="padding: 2rem; text-align: center; background: #fef2f2; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div>
+        <h1 style="color: #dc2626; margin-bottom: 1rem;">❌ Erro ao carregar aplicação</h1>
+        <p style="color: #6b7280;">Erro de importação: ${error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+        <button onclick="window.location.reload()" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; margin-top: 1rem;">Recarregar</button>
+      </div>
+    </div>
+  `
+  throw error
 }
 
 try {

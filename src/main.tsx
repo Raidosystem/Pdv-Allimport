@@ -35,9 +35,7 @@ try {
   console.log('✅ Elemento root encontrado')
   
   createRoot(rootElement).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
+    <App />
   )
   
   console.log('✅ App renderizado com sucesso!')

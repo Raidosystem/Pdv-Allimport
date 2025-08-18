@@ -5,7 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? '/Pdv-Allimport/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/Pdv-Allimport/' : '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

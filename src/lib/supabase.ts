@@ -1,20 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Configurações hardcoded para garantir funcionamento
-const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+// Configurações SEMPRE hardcoded para garantir funcionamento
+const SUPABASE_URL = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
 
-// Fallback para variáveis de ambiente
-const finalUrl = import.meta.env.VITE_SUPABASE_URL || supabaseUrl
-const finalKey = import.meta.env.VITE_SUPABASE_ANON_KEY || supabaseAnonKey
-
-console.log('🔧 Supabase Config Loaded:', {
-  url: finalUrl,
-  hasKey: !!finalKey,
-  keyLength: finalKey.length
+console.log('🔧 Supabase Config HARDCODED:', {
+  url: SUPABASE_URL,
+  hasKey: !!SUPABASE_ANON_KEY,
+  keyLength: SUPABASE_ANON_KEY.length,
+  envUrl: import.meta.env?.VITE_SUPABASE_URL,
+  envKey: import.meta.env?.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
 })
 
-export const supabase = createClient(finalUrl, finalKey, {
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

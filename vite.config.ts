@@ -5,6 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: process.env.NODE_ENV === 'production' ? '/Pdv-Allimport/' : '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -30,4 +31,9 @@ export default defineConfig({
     port: 4173,
     host: true,
   },
+  // Configuração específica para PWA
+  define: {
+    '__DEV__': JSON.stringify(process.env.NODE_ENV === 'development')
+  },
+  publicDir: 'public',
 })

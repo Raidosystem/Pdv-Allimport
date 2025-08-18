@@ -1,0 +1,11 @@
+# GitHub Pages - MIME Types Configuration
+
+# Ensure JavaScript modules are served with correct MIME type
+*.js text/javascript; charset=utf-8
+*.mjs text/javascript; charset=utf-8
+*.es6 text/javascript; charset=utf-8
+
+# Other static files
+*.css text/css; charset=utf-8
+*.json application/json; charset=utf-8
+*.svg image/svg+xml; charset=utf-8

@@ -1,6 +1,0 @@
-SUPABASE_URL=https://kmcaaqetxtwkdcczdomw.supabase.co
-MP_PUBLIC_KEY=APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022
-MP_CLIENT_ID=3807636986700595
-MP_CLIENT_SECRET=nFckffUiLyT3adZPgagmj8kTEH7Z3po5
-FRONTEND_URL=https://pdv-allimport.vercel.app
-NODE_ENV=production

@@ -2,6 +2,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+// Debug de autenticação
+import './debug-auth.js'
+
 console.log('🚀 PDV Allimport v2.2.3 - PWA Install Direto')
 
 // Aguardar DOM estar completamente pronto

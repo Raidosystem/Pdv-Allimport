@@ -2,13 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// GitHub Pages detection
-const isGitHubPages = process.env.GITHUB_ACTIONS === 'true'
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: isGitHubPages ? '/Pdv-Allimport/' : '/',
+  base: '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

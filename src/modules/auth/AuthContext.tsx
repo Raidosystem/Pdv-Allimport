@@ -58,7 +58,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (data.user && !error) {
       // Verificar se é admin (sempre aprovado)
       const isAdmin = email === 'admin@pdvallimport.com' || 
-                     email === 'novaradiosystem@outlook.com'
+                     email === 'novaradiosystem@outlook.com' ||
+                     email === 'admin@pdv.com'
       
       if (!isAdmin) {
         // Verificar status de aprovação para usuários normais
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
     console.log('=== SIGNUP DEBUG ===')
     console.log('Email:', email)
-    console.log('Is Admin:', email === 'admin@pdvallimport.com' || email === 'novaradiosystem@outlook.com')
+    console.log('Is Admin:', email === 'admin@pdvallimport.com' || email === 'novaradiosystem@outlook.com' || email === 'admin@pdv.com')
     
     // Criar conta sem obrigar confirmação de email
     const { data, error } = await supabase.auth.signUp({
@@ -127,7 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (data.user && !error) {
       // Verificar se é admin (admins são auto-aprovados)
       const isAdmin = email === 'admin@pdvallimport.com' || 
-                     email === 'novaradiosystem@outlook.com'
+                     email === 'novaradiosystem@outlook.com' ||
+                     email === 'admin@pdv.com'
       
       console.log('User created, isAdmin:', isAdmin)
       
@@ -258,6 +260,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = (): boolean => {
     return user?.email === 'admin@pdvallimport.com' || 
            user?.email === 'novaradiosystem@outlook.com' ||
+           user?.email === 'admin@pdv.com' ||
            user?.app_metadata?.role === 'admin'
   }
 

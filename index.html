@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>PDV Allimport v2.1.1 - Sistema de Ponto de Venda</title>
+    <title>PDV Allimport v2.2.3 - Sistema de Ponto de Venda</title>
     
     <!-- PWA Meta Tags -->
     <meta name="description" content="Sistema de ponto de venda completo com PWA" />
@@ -13,11 +13,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="PDV Allimport" />
     
-    <!-- Temporariamente removido manifest para resolver erros 401 -->
-    <!-- <link rel="manifest" href="/manifest.json" /> -->
+    <!-- PWA MANIFEST - REATIVADO! -->
+    <link rel="manifest" href="/manifest.json" />
     
-    <!-- Temporariamente removidos ícones para resolver erros -->
-    <!-- <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
+    <!-- PWA ÍCONES - REATIVADOS! -->
+    <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png" />
     <link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128x128.png" />
     <link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144x144.png" />
@@ -25,7 +25,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
     <link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384x384.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" /> -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
     
     <!-- Windows Metro -->
     <meta name="msapplication-TileColor" content="#3b82f6" />
@@ -40,6 +40,18 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <script>
+      // Registrar Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then(() => {
+          console.log('✅ Service Worker registrado');
+        }).catch(() => {
+          console.log('⚠️ Service Worker falhou');
+        });
+      }
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

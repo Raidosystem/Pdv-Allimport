@@ -35,29 +35,25 @@ export type Database = {
         Row: {
           id: string
           email: string
-          name: string
-          role: 'admin' | 'operator' | 'manager'
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
           email: string
-          name: string
-          role?: 'admin' | 'operator' | 'manager'
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
           email?: string
-          name?: string
-          role?: 'admin' | 'operator' | 'manager'
           created_at?: string
-          updated_at?: string
         }
       }
-      // Outras tabelas serão adicionadas conforme necessário
     }
   }
+}
+
+// Export para uso direto das configurações
+export const supabaseConfig = {
+  url: finalUrl,
+  anonKey: finalKey
 }

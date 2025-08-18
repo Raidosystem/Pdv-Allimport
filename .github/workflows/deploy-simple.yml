@@ -40,6 +40,12 @@ jobs:
           VITE_APP_NAME: "PDV Allimport"
           VITE_APP_URL: https://raidosystem.github.io/Pdv-Allimport
 
+      - name: Fix GitHub Pages paths 🔧
+        run: |
+          cd dist
+          sed -i 's|href="/|href="/Pdv-Allimport/|g' index.html
+          sed -i 's|src="/|src="/Pdv-Allimport/|g' index.html
+
       - name: Setup Pages �
         uses: actions/configure-pages@v4
 

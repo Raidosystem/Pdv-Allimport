@@ -48,6 +48,8 @@ class OrdemServicoService {
   async buscarOrdens(filtros?: FiltrosOS): Promise<OrdemServico[]> {
     const user = await requireAuth()
 
+    console.log('🔍 Buscando ordens no banco - timestamp:', Date.now())
+
     let query = supabase
       .from('ordens_servico')
       .select(`
@@ -86,6 +88,13 @@ class OrdemServicoService {
       console.error('Erro ao buscar ordens:', error)
       throw new Error(`Erro ao buscar ordens de serviço: ${error.message}`)
     }
+
+    console.log('✅ Ordens retornadas do banco:', data?.length || 0)
+    console.log('📊 Status detalhados encontrados:', data?.map(o => ({ 
+      id: o.id.slice(-6), 
+      status: o.status,
+      data_entrega: o.data_entrega 
+    })) || [])
 
     return data || []
   }
@@ -227,6 +236,9 @@ class OrdemServicoService {
   }): Promise<OrdemServico> {
     const user = await requireAuth()
 
+    console.log('🚀 Iniciando processamento de entrega para OS:', id)
+    console.log('📝 Dados para atualização:', dados)
+
     const dadosAtualizacao = {
       status: 'Entregue' as StatusOS,
       data_entrega: dados.data_entrega,
@@ -234,6 +246,8 @@ class OrdemServicoService {
       garantia_meses: dados.garantia_meses || null,
       data_fim_garantia: dados.data_fim_garantia || null
     }
+
+    console.log('💾 Executando UPDATE no Supabase com:', dadosAtualizacao)
 
     const { data, error } = await supabase
       .from('ordens_servico')
@@ -247,9 +261,13 @@ class OrdemServicoService {
       .single()
 
     if (error) {
-      console.error('Erro ao processar entrega:', error)
+      console.error('❌ Erro ao processar entrega no Supabase:', error)
       throw new Error(`Erro ao processar entrega: ${error.message}`)
     }
+
+    console.log('✅ Entrega processada com sucesso no banco!')
+    console.log('📊 Status atual no banco:', data.status)
+    console.log('📅 Data de entrega:', data.data_entrega)
 
     return data
   }

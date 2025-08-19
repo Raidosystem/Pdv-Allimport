@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { 
   ArrowLeft, 
@@ -24,6 +24,7 @@ import { STATUS_COLORS, TIPO_ICONS } from '../types/ordemServico'
 
 export function OrdemServicoDetalhePage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [ordem, setOrdem] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
   const [atualizandoStatus, setAtualizandoStatus] = useState(false)
@@ -58,6 +59,9 @@ export function OrdemServicoDetalhePage() {
       await ordemServicoService.atualizarStatus(id, novoStatus)
       toast.success('Status atualizado com sucesso!')
       carregarOrdem()
+      
+      // Sinalizar que a lista de OS precisa ser recarregada
+      localStorage.setItem('os_list_needs_refresh', 'true')
     } catch (error: any) {
       console.error('Erro ao atualizar status:', error)
       toast.error('Erro ao atualizar status')
@@ -74,8 +78,23 @@ export function OrdemServicoDetalhePage() {
   }) => {
     if (!id) return
     
-    await ordemServicoService.processarEntrega(id, dados)
-    carregarOrdem()
+    try {
+      console.log('🔄 Processando entrega da OS:', id)
+      await ordemServicoService.processarEntrega(id, dados)
+      setModalEntregaAberto(false)
+      
+      // Uma única mensagem de sucesso
+      toast.success('Ordem de serviço entregue!')
+      
+      // Apenas sinalizar refresh simples
+      localStorage.setItem('os_refresh_needed', 'true')
+      
+      console.log('🔄 Redirecionando para listagem...')
+      navigate('/ordens-servico')
+    } catch (error: any) {
+      console.error('Erro ao processar entrega:', error)
+      toast.error('Erro ao encerrar ordem de serviço')
+    }
   }
 
   const formatarData = (data: string) => {
@@ -166,12 +185,15 @@ export function OrdemServicoDetalhePage() {
             Imprimir
           </Button>
           
-          <Link to={`/ordens-servico/${ordem.id}/editar`}>
-            <Button className="gap-2">
-              <Edit className="w-4 h-4" />
-              Editar
-            </Button>
-          </Link>
+          {/* Só permite editar se não estiver Entregue */}
+          {ordem.status !== 'Entregue' && (
+            <Link to={`/ordens-servico/${ordem.id}/editar`}>
+              <Button className="gap-2">
+                <Edit className="w-4 h-4" />
+                Editar
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 

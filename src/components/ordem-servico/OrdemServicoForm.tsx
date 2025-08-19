@@ -4,10 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { 
-  Smartphone, 
-  Laptop, 
-  Gamepad2, 
-  Tablet,
   Settings,
   Calendar,
   DollarSign,
@@ -51,23 +47,25 @@ interface OrdemServicoFormProps {
   onCancel?: () => void
 }
 
-const TIPOS_EQUIPAMENTO: { value: TipoEquipamento; label: string; icon: React.ComponentType }[] = [
-  { value: 'Celular', label: 'Celular', icon: Smartphone },
-  { value: 'Notebook', label: 'Notebook', icon: Laptop },
-  { value: 'Console', label: 'Console', icon: Gamepad2 },
-  { value: 'Tablet', label: 'Tablet', icon: Tablet },
-  { value: 'Outro', label: 'Outro', icon: Settings }
+const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
+  { value: 'Celular', label: 'Celular' },
+  { value: 'Notebook', label: 'Notebook' },
+  { value: 'Console', label: 'Console' },
+  { value: 'Tablet', label: 'Tablet' }
 ]
 
 export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps) {
   const [loading, setLoading] = useState(false)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [checklist, setChecklist] = useState<ChecklistOS>({})
+  const [tipoPersonalizado, setTipoPersonalizado] = useState('')
+  const [mostrarCampoPersonalizado, setMostrarCampoPersonalizado] = useState(false)
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm<FormData>({
     resolver: zodResolver(ordemServicoSchema),
     defaultValues: {
@@ -113,6 +111,9 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       
       toast.success('Ordem de serviço criada com sucesso!')
       
+      // Sinalizar que a lista de OS precisa ser recarregada
+      localStorage.setItem('os_list_needs_refresh', 'true')
+      
       if (onSuccess) {
         onSuccess(ordem as unknown as Record<string, unknown>)
       }
@@ -150,7 +151,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
         {/* Seção: Informações do Aparelho */}
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Smartphone className="w-5 h-5 text-green-600" />
+            <Settings className="w-5 h-5 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-900">Informações do Aparelho</h2>
           </div>
           
@@ -161,18 +162,42 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
               </label>
               <select
                 {...register('tipo')}
+                onChange={(e) => {
+                  const valor = e.target.value as TipoEquipamento
+                  setValue('tipo', valor)
+                  setMostrarCampoPersonalizado(valor === 'Outro')
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {TIPOS_EQUIPAMENTO.map((tipo) => (
+                {TIPOS_EQUIPAMENTO_BASE.map((tipo) => (
                   <option key={tipo.value} value={tipo.value}>
                     {tipo.label}
                   </option>
                 ))}
+                <option value="Outro">Outro (personalizado)</option>
               </select>
               {errors.tipo && (
                 <span className="text-red-500 text-sm">{errors.tipo.message}</span>
               )}
             </div>
+
+            {mostrarCampoPersonalizado && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Especifique o Tipo
+                </label>
+                <input
+                  type="text"
+                  value={tipoPersonalizado}
+                  onChange={(e) => setTipoPersonalizado(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Ex: Smartwatch, Drone, etc."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Tipo personalizado para este equipamento
+                </p>
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

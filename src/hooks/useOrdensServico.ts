@@ -8,18 +8,27 @@ export function useOrdensServico(filtros?: FiltrosOS) {
   const [error, setError] = useState<string | null>(null)
 
   const carregarOrdens = async () => {
+    const timestamp = Date.now()
+    console.log('🔄 [Hook] Carregando ordens de serviço... Timestamp:', timestamp)
     setLoading(true)
     setError(null)
     
     try {
       const dados = await ordemServicoService.buscarOrdens(filtros)
+      console.log('📋 [Hook] Ordens carregadas:', dados.length)
+      console.log('📋 [Hook] Status das ordens:', dados.map(o => ({ 
+        id: o.id.slice(-6), 
+        status: o.status,
+        data_entrega: o.data_entrega
+      })))
       setOrdens(dados)
     } catch (err: unknown) {
-      console.error('Erro ao carregar ordens:', err)
+      console.error('❌ [Hook] Erro ao carregar ordens:', err)
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar ordens de serviço'
       setError(errorMessage)
     } finally {
       setLoading(false)
+      console.log('✅ [Hook] Carregamento finalizado')
     }
   }
 

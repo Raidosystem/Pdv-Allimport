@@ -15,6 +15,7 @@ import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPage'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
+import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
 import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPage'
@@ -259,6 +260,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <OrdemServicoDetalhePage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ordens-servico/:id/editar" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <OrdemServicoEditPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

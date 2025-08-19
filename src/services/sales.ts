@@ -184,40 +184,60 @@ export const productService = {
 
 // Serviços de Clientes
 export const customerService = {
+  // Adapter para converter dados do banco para frontend
+  _adaptClienteToCustomer(cliente: any): Customer {
+    return {
+      id: cliente.id,
+      name: cliente.nome,
+      email: cliente.email,
+      phone: cliente.telefone,
+      document: cliente.cpf_cnpj,
+      active: cliente.ativo,
+      created_at: cliente.criado_em,
+      updated_at: cliente.atualizado_em
+    }
+  },
+
   async search(query: string): Promise<Customer[]> {
     const { data, error } = await supabase
-      .from('customers')
+      .from('clientes')
       .select('*')
-      .eq('active', true)
-      .or(`name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,document.ilike.%${query}%`)
-      .order('name')
+      .eq('ativo', true)
+      .or(`nome.ilike.%${query}%,email.ilike.%${query}%,telefone.ilike.%${query}%,cpf_cnpj.ilike.%${query}%`)
+      .order('nome')
       .limit(10)
 
     if (error) throw error
-    return data || []
+    return (data || []).map(this._adaptClienteToCustomer)
   },
 
   async getById(id: string): Promise<Customer | null> {
     const { data, error } = await supabase
-      .from('customers')
+      .from('clientes')
       .select('*')
       .eq('id', id)
-      .eq('active', true)
+      .eq('ativo', true)
       .single()
 
     if (error) throw error
-    return data
+    return data ? this._adaptClienteToCustomer(data) : null
   },
 
   async create(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>): Promise<Customer> {
     const { data, error } = await supabase
-      .from('customers')
-      .insert(customer)
+      .from('clientes')
+      .insert({
+        nome: customer.name,
+        email: customer.email,
+        telefone: customer.phone,
+        cpf_cnpj: customer.document,
+        ativo: true
+      })
       .select()
       .single()
 
     if (error) throw error
-    return data
+    return this._adaptClienteToCustomer(data)
   }
 }
 

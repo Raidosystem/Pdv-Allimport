@@ -43,15 +43,14 @@ export function DiagnosticPage() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard">
-                <Button 
-                  variant="outline" 
-                  className="flex items-center space-x-2 border-gray-200 text-gray-600 hover:bg-gray-50"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  <span>Dashboard</span>
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => window.history.back()}
+                variant="outline" 
+                className="flex items-center space-x-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Voltar</span>
+              </Button>
               
               <Link to="/login">
                 <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">

@@ -1,0 +1,151 @@
+-- 🚀 ADICIONAR TODAS AS COLUNAS POSSÍVEIS
+-- Script completo para resolver TODOS os erros de colunas faltantes
+
+-- CLIENTES - Todas as colunas possíveis
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS birth_date DATE;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS document TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS state TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS zip_code TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'Brasil';
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS gender TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS profession TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS phone2 TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS whatsapp TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS instagram TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS facebook TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS observations TEXT;
+
+-- CATEGORIAS - Todas as colunas possíveis  
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS color TEXT;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS icon TEXT;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES categories(id);
+
+-- PRODUTOS - Todas as colunas possíveis
+ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS min_stock INTEGER DEFAULT 0;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS max_stock INTEGER DEFAULT 999999;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS brand TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS model TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS unit TEXT DEFAULT 'un';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS weight DECIMAL(8,3);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS warranty_months INTEGER DEFAULT 0;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS supplier TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS ncm TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS ean TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS internal_code TEXT;
+
+-- ORDENS DE SERVIÇO - Todas as colunas possíveis
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS brand TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS model TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS serial_number TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS observation TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Normal';
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS estimated_date DATE;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS completed_date DATE;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS labor_cost DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS parts_cost DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS diagnosis TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS solution TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS warranty_days INTEGER DEFAULT 0;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS technician TEXT;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS entry_date DATE DEFAULT CURRENT_DATE;
+ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS delivery_date DATE;
+
+-- VENDAS - Todas as colunas possíveis
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS subtotal DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS discount DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS discount_percent DECIMAL(5,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS tax DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS tax_percent DECIMAL(5,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'Dinheiro';
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS cashier_id UUID;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS cash_received DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS change_amount DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS invoice_number TEXT;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS cancelled BOOLEAN DEFAULT FALSE;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS cancelled_reason TEXT;
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+
+-- ESTABELECIMENTOS - Todas as colunas possíveis
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS cnpj TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS ie TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS state TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS zip_code TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'Brasil';
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS website TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS owner_name TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS bank_account TEXT;
+ALTER TABLE establishments ADD COLUMN IF NOT EXISTS pix_key TEXT;
+
+-- CRIAR TABELA SALE_ITEMS (se não existir)
+CREATE TABLE IF NOT EXISTS sale_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    sale_id UUID REFERENCES sales(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    unit_price DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    discount DECIMAL(10,2) DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- CRIAR TABELA SERVICE_PARTS (se não existir) 
+CREATE TABLE IF NOT EXISTS service_parts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    service_order_id UUID REFERENCES service_orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0,
+    total DECIMAL(10,2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- DESABILITAR RLS EM TODAS AS TABELAS
+ALTER TABLE clients DISABLE ROW LEVEL SECURITY;
+ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
+ALTER TABLE service_orders DISABLE ROW LEVEL SECURITY;
+ALTER TABLE establishments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sales DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sale_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE service_parts DISABLE ROW LEVEL SECURITY;
+
+-- VERIFICAR ESTRUTURA FINAL
+SELECT 
+    table_name,
+    COUNT(*) as total_columns
+FROM information_schema.columns 
+WHERE table_schema = 'public' 
+    AND table_name IN ('clients', 'products', 'categories', 'service_orders', 'establishments', 'sales', 'sale_items', 'service_parts')
+GROUP BY table_name
+ORDER BY table_name;
+
+-- MOSTRAR TODAS AS COLUNAS DE CLIENTS PARA VERIFICAR
+SELECT 
+    column_name,
+    data_type
+FROM information_schema.columns 
+WHERE table_schema = 'public' 
+    AND table_name = 'clients'
+ORDER BY ordinal_position;
+
+-- ✅ TODAS AS COLUNAS POSSÍVEIS ADICIONADAS!
+-- Agora a importação deve funcionar sem erros PGRST204

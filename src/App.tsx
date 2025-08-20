@@ -18,7 +18,10 @@ import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
 import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
-import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPage'
+import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPageNew'
+import ImportBackupPage from './pages/ImportBackupPage'
+import ImportacaoPrivadaPage from './pages/ImportacaoPrivadaPage'
+import ImportacaoAutomaticaPage from './pages/ImportacaoAutomaticaPage'
 import RelatoriosPage from './pages/RelatoriosPage'
 import ResumoDiarioPage from './pages/RelatoriosResumoDiarioPage'
 import RelatoriosPeriodoPage from './pages/RelatoriosPeriodoPage'
@@ -293,6 +296,30 @@ function App() {
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/import-backup" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ImportBackupPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/import-privado" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ImportacaoPrivadaPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/import-automatico" 
+            element={<ImportacaoAutomaticaPage />} 
           />
           <Route 
             path="/configuracoes-empresa" 

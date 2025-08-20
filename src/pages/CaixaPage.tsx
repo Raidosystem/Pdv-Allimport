@@ -64,8 +64,8 @@ export function CaixaPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <BackButton customAction={() => window.location.href = '/dashboard'}>
-                Dashboard
+              <BackButton customAction={() => window.history.back()}>
+                Voltar
               </BackButton>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">

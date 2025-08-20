@@ -1,8 +1,13 @@
-import React, { useEffect } from 'react';
-import { Download, Upload, Database, RefreshCw, Calendar, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Download, Upload, Database, RefreshCw, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useBackup } from '../hooks/useBackup';
+import { BackupTransformer } from '../utils/backupTransformer';
+import BackupDebugger from './BackupDebugger';
 
 export default function BackupManager() {
+  const [transformReport, setTransformReport] = useState<string>('');
+  const [showReport, setShowReport] = useState(false);
+  
   const {
     backups,
     loading,
@@ -17,11 +22,73 @@ export default function BackupManager() {
     formatDate,
   } = useBackup();
 
-  // Função para lidar com upload de arquivo
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Função para lidar com upload de arquivo UNIVERSAL
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      importFromJSON(file);
+    if (!file) return;
+
+    try {
+      setShowReport(false);
+      setTransformReport('');
+      
+      // Ler arquivo
+      const fileContent = await file.text();
+      let jsonData;
+      
+      try {
+        jsonData = JSON.parse(fileContent);
+      } catch (error) {
+        alert('❌ Arquivo JSON inválido. Verifique o formato do arquivo.');
+        return;
+      }
+      
+      // Verificar se é um backup válido
+      if (!BackupTransformer.isValidBackup(jsonData)) {
+        alert('❌ O arquivo não contém dados de backup válidos.');
+        return;
+      }
+      
+      // Detectar sistema e confirmar transformação
+      const systemType = BackupTransformer.detectBackupSystem(jsonData);
+      const arrays = BackupTransformer.findDataArrays(jsonData);
+      const totalItems = Object.values(arrays).reduce((sum: number, arr: any[]) => sum + arr.length, 0);
+      
+      const confirmMessage = `
+🔍 BACKUP DETECTADO:
+
+📱 Sistema: ${systemType}
+📊 Total de itens: ${totalItems}
+📁 Arrays encontrados: ${Object.keys(arrays).join(', ')}
+
+🔄 Este backup será automaticamente transformado para o formato PDV Allimport.
+
+Deseja continuar com a importação?`;
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      // Transformar backup
+      const transformedBackup = await BackupTransformer.transformBackup(jsonData, 'usuario@sistema.com');
+      
+      // Gerar relatório
+      const report = BackupTransformer.generateTransformReport(jsonData, transformedBackup);
+      setTransformReport(report);
+      setShowReport(true);
+      
+      // Converter para arquivo e importar
+      const transformedJson = JSON.stringify(transformedBackup, null, 2);
+      const blob = new Blob([transformedJson], { type: 'application/json' });
+      const transformedFile = new File([blob], `backup-transformado-${Date.now()}.json`, {
+        type: 'application/json'
+      });
+      
+      // Importar usando o sistema existente
+      await importFromJSON(transformedFile);
+      
+    } catch (error) {
+      console.error('Erro ao processar backup:', error);
+      alert('❌ Erro ao processar o arquivo de backup. Verifique o console para mais detalhes.');
     }
   };
 
@@ -96,16 +163,27 @@ export default function BackupManager() {
           </button>
         </div>
 
-        {/* Importar JSON */}
+        {/* Importar JSON UNIVERSAL */}
         <div className="bg-white p-6 rounded-lg border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <Upload className="h-6 w-6 text-orange-600" />
-            <h3 className="text-lg font-semibold">Importar JSON</h3>
+            <Upload className="h-6 w-6 text-purple-600" />
+            <h3 className="text-lg font-semibold">Importar Qualquer Backup</h3>
           </div>
-          <p className="text-gray-600 mb-4">Restaurar dados de um arquivo JSON</p>
-          <label className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 cursor-pointer">
+          <p className="text-gray-600 mb-4">
+            🔄 Sistema inteligente que aceita <strong>qualquer backup JSON</strong> e transforma automaticamente
+          </p>
+          <div className="bg-purple-50 rounded-lg p-3 mb-4">
+            <div className="text-sm text-purple-700">
+              <strong>✨ Suporte a:</strong>
+              <br />• AllImport, POS, PDV e outros sistemas
+              <br />• Detecção automática de estrutura
+              <br />• Mapeamento inteligente de campos
+              <br />• Conversão automática de dados
+            </div>
+          </div>
+          <label className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 cursor-pointer">
             <Upload className="h-4 w-4" />
-            {importing ? 'Importando...' : 'Selecionar Arquivo'}
+            {importing ? 'Processando...' : 'Selecionar Backup JSON'}
             <input
               type="file"
               accept=".json,application/json"
@@ -116,6 +194,31 @@ export default function BackupManager() {
           </label>
         </div>
       </div>
+
+      {/* Relatório de Transformação */}
+      {showReport && transformReport && (
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              <h3 className="text-lg font-semibold text-green-800">Transformação Realizada com Sucesso!</h3>
+            </div>
+          </div>
+          <div className="p-6">
+            <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap">
+              {transformReport}
+            </pre>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowReport(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Fechar Relatório
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Aviso */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -183,6 +286,9 @@ export default function BackupManager() {
           )}
         </div>
       </div>
+
+      {/* Debug do Sistema */}
+      <BackupDebugger />
     </div>
   );
 }

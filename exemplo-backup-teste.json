@@ -1,0 +1,82 @@
+{
+  "sistema_exemplo": "Backup de Teste",
+  "data_backup": "2025-08-19",
+  "produtos": [
+    {
+      "nome": "Smartphone Samsung Galaxy",
+      "valor": 899.99,
+      "codigo": "SM-G998",
+      "tipo": "Eletrônicos",
+      "quantidade": 15
+    },
+    {
+      "description": "Notebook Dell Inspiron",
+      "price": 2499.00,
+      "sku": "DELL-INS15",
+      "category": "Informática", 
+      "stock": 8
+    },
+    {
+      "produto": "Mouse Wireless Logitech",
+      "preco": 89.90,
+      "cod_barras": "LOG-M705",
+      "grupo": "Periféricos",
+      "estoque": 50
+    }
+  ],
+  "clientes": [
+    {
+      "nome": "João da Silva",
+      "email": "joao@email.com",
+      "telefone": "(11) 99999-9999",
+      "cpf": "123.456.789-00",
+      "endereco": "Rua das Flores, 123"
+    },
+    {
+      "client_name": "Maria Santos",
+      "mail": "maria@empresa.com", 
+      "phone": "(11) 88888-8888",
+      "document": "987.654.321-00",
+      "address": "Av. Paulista, 456"
+    }
+  ],
+  "categorias": [
+    {
+      "nome": "Eletrônicos",
+      "cor": "#FF6B6B"
+    },
+    {
+      "category": "Informática",
+      "color": "#4ECDC4"
+    },
+    {
+      "tipo": "Periféricos",
+      "background": "#45B7D1"
+    }
+  ],
+  "vendas": [
+    {
+      "data": "2025-08-18",
+      "total": 989.99,
+      "cliente": "João da Silva",
+      "itens": [
+        {
+          "produto": "Smartphone Samsung Galaxy",
+          "quantidade": 1,
+          "valor_unitario": 899.99
+        },
+        {
+          "produto": "Mouse Wireless Logitech", 
+          "quantidade": 1,
+          "valor_unitario": 89.90
+        }
+      ]
+    }
+  ],
+  "configuracoes": {
+    "nome_loja": "Tech Store Exemplo",
+    "cnpj": "12.345.678/0001-90",
+    "endereco": "Rua do Comércio, 789",
+    "telefone": "(11) 3333-3333"
+  }
+}

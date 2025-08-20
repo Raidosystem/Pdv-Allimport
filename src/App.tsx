@@ -29,6 +29,8 @@ import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
 import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
+import GerenciarFuncionarios from './pages/GerenciarFuncionarios'
+import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
@@ -172,6 +174,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<AdminPanel />} />
+          
+          {/* Página de Debug Supabase */}
+          <Route path="/debug-supabase" element={<DebugSupabase />} />
           
           {/* Página de Teste de Pagamento */}
           <Route path="/payment-test" element={<PaymentTest />} />
@@ -327,6 +332,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <ConfiguracoesEmpresaPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/funcionarios" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <GerenciarFuncionarios />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

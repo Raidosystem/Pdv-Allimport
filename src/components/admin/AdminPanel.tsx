@@ -25,6 +25,10 @@ interface AdminUser {
   company_name?: string
   approved_by?: string
   approved_at?: string
+  // Campos hierárquicos
+  user_role?: 'owner' | 'employee'
+  parent_user_id?: string
+  created_by?: string
 }
 
 export function AdminPanel() {
@@ -71,7 +75,7 @@ export function AdminPanel() {
         return
       }
       
-      // Carregar usuários da tabela user_approvals
+      // Carregar usuários da tabela user_approvals com hierarquia
       const { data: approvals, error } = await supabase
         .from('user_approvals')
         .select(`
@@ -82,7 +86,10 @@ export function AdminPanel() {
           status,
           approved_by,
           approved_at,
-          created_at
+          created_at,
+          user_role,
+          parent_user_id,
+          created_by
         `)
         .order('created_at', { ascending: false })
       
@@ -113,7 +120,10 @@ export function AdminPanel() {
         full_name: approval.full_name,
         company_name: approval.company_name,
         approved_by: approval.approved_by,
-        approved_at: approval.approved_at
+        approved_at: approval.approved_at,
+        user_role: approval.user_role,
+        parent_user_id: approval.parent_user_id,
+        created_by: approval.created_by
       })) || []
       
       setUsers(adminUsers)
@@ -210,12 +220,14 @@ export function AdminPanel() {
       setCreating(true)
       
       // Usar signup normal em vez de admin.createUser
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: newUserEmail,
         password: newUserPassword,
         options: {
           data: {
-            full_name: 'Usuário Criado pelo Admin'
+            full_name: 'Funcionário Criado pelo Admin',
+            created_by_admin: true, // Marcar que foi criado pelo admin
+            role: 'employee'
           }
         }
       })
@@ -225,7 +237,34 @@ export function AdminPanel() {
         return
       }
 
-      toast.success(`Usuário ${newUserEmail} criado com sucesso!`)
+      // Se o usuário foi criado com sucesso, aprová-lo automaticamente
+      if (data.user) {
+        try {
+          // Aguardar um pouco para o trigger criar o registro
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // Aprovar automaticamente usuários criados pelo admin
+          const { error: approvalError } = await supabase
+            .from('user_approvals')
+            .update({
+              status: 'approved',
+              approved_by: user?.id,
+              approved_at: new Date().toISOString()
+            })
+            .eq('user_id', data.user.id)
+          
+          if (approvalError) {
+            console.error('Erro ao aprovar automaticamente:', approvalError)
+            toast.success(`Usuário ${newUserEmail} criado! Precisa ser aprovado manualmente.`)
+          } else {
+            toast.success(`✅ Funcionário ${newUserEmail} criado e aprovado automaticamente!`)
+          }
+        } catch (approvalErr) {
+          console.error('Erro no processo de aprovação automática:', approvalErr)
+          toast.success(`Usuário ${newUserEmail} criado! Precisa ser aprovado manualmente.`)
+        }
+      }
+
       setNewUserEmail('')
       setNewUserPassword('')
       loadUsers() // Recarregar lista
@@ -467,13 +506,37 @@ export function AdminPanel() {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
           <Card className="p-6">
             <div className="flex items-center">
               <Users className="w-8 h-8 text-blue-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total de Usuários</p>
                 <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center">
+              <Crown className="w-8 h-8 text-purple-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Proprietários</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(u => u.user_role === 'owner' || !u.user_role).length}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center">
+              <Users className="w-8 h-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Funcionários</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(u => u.user_role === 'employee').length}
+                </p>
               </div>
             </div>
           </Card>
@@ -626,6 +689,7 @@ export function AdminPanel() {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Criado em</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Último login</th>
@@ -637,7 +701,27 @@ export function AdminPanel() {
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="font-medium text-gray-900">{user.email}</div>
-                        <div className="text-xs text-gray-500">ID: {user.id.slice(0, 8)}...</div>
+                        <div className="text-xs text-gray-500">
+                          ID: {user.id.slice(0, 8)}...
+                          {user.full_name && <span className="ml-2">• {user.full_name}</span>}
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                            user.user_role === 'employee'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {user.user_role === 'employee' ? '👤 Funcionário' : '🏢 Proprietário'}
+                          </span>
+                          {user.parent_user_id && (
+                            <div className="text-xs text-gray-500">
+                              Vinculado ao proprietário
+                            </div>
+                          )}
+                        </div>
                       </td>
                       
                       <td className="py-3 px-4">

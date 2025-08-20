@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ data: unknown; error: AuthError | null }>
   signUp: (email: string, password: string, metadata?: Record<string, unknown>) => Promise<{ data: unknown; error: AuthError | null }>
+  signUpEmployee: (email: string, password: string, metadata: Record<string, unknown>) => Promise<{ data: unknown; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
   resendConfirmation: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
@@ -205,6 +206,89 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { data, error }
   }
 
+  const signUpEmployee = async (email: string, password: string, metadata: Record<string, unknown>) => {
+    console.log('=== EMPLOYEE SIGNUP DEBUG ===')
+    console.log('Email:', email)
+    console.log('Parent user:', user?.id)
+    
+    // Verificar se o usuário atual é um owner
+    if (!user) {
+      return { 
+        data: null, 
+        error: { 
+          message: 'Você precisa estar logado para criar funcionários',
+          name: 'NOT_LOGGED_IN'
+        } as any
+      }
+    }
+
+    // Criar conta do funcionário com metadata especial
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          ...metadata,
+          role: 'employee',
+          parent_user_id: user.id // ID do usuário principal (owner)
+        }
+      }
+    })
+
+    console.log('Employee signup result:', { data, error })
+
+    if (data.user && !error) {
+      console.log('Employee created successfully, inserting into user_approvals...')
+      
+      // Inserir manualmente na user_approvals (workaround para trigger problem)
+      try {
+        const { error: insertError } = await supabase
+          .from('user_approvals')
+          .insert({
+            user_id: data.user.id,
+            email: email,
+            full_name: metadata.full_name as string || 'Funcionário',
+            company_name: 'Assistencia All-import',
+            status: 'approved',
+            user_role: 'employee',
+            parent_user_id: user.id,
+            created_by: user.id,
+            approved_at: new Date().toISOString(),
+            approved_by: user.id
+          })
+        
+        if (insertError) {
+          console.error('❌ Erro ao inserir na user_approvals:', insertError)
+          // Mesmo com erro na inserção, o usuário foi criado no auth
+          return { 
+            data: {
+              user: data.user,
+              session: null
+            }, 
+            error: { 
+              message: 'Usuário criado mas houve erro ao configurar permissões',
+              name: 'PARTIAL_SUCCESS'
+            } as any
+          }
+        } else {
+          console.log('✅ Funcionário inserido na user_approvals com sucesso')
+        }
+      } catch (insertErr) {
+        console.error('❌ Erro na inserção manual:', insertErr)
+      }
+      
+      return { 
+        data: {
+          user: data.user,
+          session: null // Funcionários não fazem login automático
+        }, 
+        error: null 
+      }
+    }
+
+    return { data, error }
+  }
+
   const signOut = async () => {
     // Limpar dados de teste do localStorage
     localStorage.removeItem('test-user')
@@ -270,6 +354,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading,
     signIn,
     signUp,
+    signUpEmployee,
     signOut,
     resendConfirmation,
     resetPassword,

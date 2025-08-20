@@ -34,6 +34,7 @@ export interface FuncionarioPermissoes {
   clientes: boolean;
   caixa: boolean;
   ordens_servico: boolean;
+  funcionarios: boolean;
   relatorios: boolean;
   configuracoes: boolean;
   backup: boolean;
@@ -75,6 +76,7 @@ export const permissoesDefault: FuncionarioPermissoes = {
   clientes: true,
   caixa: false,
   ordens_servico: true,
+  funcionarios: false,
   relatorios: false,
   configuracoes: false,
   backup: false,

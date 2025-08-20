@@ -149,33 +149,45 @@ export function useEmpresa() {
     }
   };
 
-  // Criar funcionário
+  // Criar funcionário com sistema hierárquico
   const createFuncionario = async (funcionarioData: Partial<Funcionario>, loginData: { usuario: string; senha: string }) => {
     if (!empresa) return { success: false, error: 'Empresa não encontrada' };
 
     try {
-      // Criar funcionário
-      const { data: funcionario, error: funcionarioError } = await supabase
+      // Usar o novo sistema hierárquico do Supabase Auth
+      // Precisamos acessar o contexto auth do componente pai
+      console.log('Criando funcionário com sistema hierárquico...');
+      
+      // Por enquanto, criar usando auth tradicional até implementar a integração completa
+      const { data, error } = await supabase.auth.signUp({
+        email: funcionarioData.email!,
+        password: loginData.senha,
+        options: {
+          data: {
+            full_name: funcionarioData.nome,
+            company_name: empresa.nome,
+            role: 'employee',
+            parent_user_id: user?.id
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Criar registro adicional na tabela funcionarios (para compatibilidade)
+      const { error: funcionarioError } = await supabase
         .from('funcionarios')
         .insert({
           ...funcionarioData,
-          empresa_id: empresa.id
-        })
-        .select()
-        .single();
-
-      if (funcionarioError) throw funcionarioError;
-
-      // Criar login do funcionário
-      const { error: loginError } = await supabase
-        .from('login_funcionarios')
-        .insert({
-          funcionario_id: funcionario.id,
-          usuario: loginData.usuario,
-          senha: loginData.senha // Em produção, fazer hash da senha
+          empresa_id: empresa.id,
+          user_id: data.user?.id // Vincular ao usuário do Supabase Auth
         });
 
-      if (loginError) throw loginError;
+      if (funcionarioError) {
+        console.warn('Erro ao criar registro de funcionário (compatibilidade):', funcionarioError);
+      }
 
       await fetchFuncionarios();
       return { success: true };

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { 
   Plus, 
-  Search, 
   Eye, 
   Edit, 
   Printer,
@@ -16,6 +15,7 @@ import { ordemServicoService } from '../services/ordemServicoService'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
 import { StatusCardsOS } from '../components/ordem-servico/StatusCardsOS'
 import { useOrdensServico } from '../hooks/useOrdensServico'
+import { useEmpresa } from '../hooks/useEmpresa'
 import type { 
   FiltrosOS, 
   StatusOS, 
@@ -46,6 +46,7 @@ export function OrdensServicoPage() {
   const [atualizandoStatus, setAtualizandoStatus] = useState<string | null>(null)
 
   const { ordens, loading, recarregar } = useOrdensServico(filtros)
+  const { empresa } = useEmpresa()
 
   // Sistema simples de refresh após encerramento
   useEffect(() => {
@@ -93,8 +94,12 @@ export function OrdensServicoPage() {
     const layoutA4 = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; font-size: 12px;">
         <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px;">
-          <h1 style="margin: 0; font-size: 24px;">ORDEM DE SERVIÇO</h1>
-          <h2 style="margin: 5px 0; font-size: 18px; color: #666;">#{ordem.id.slice(-6).toUpperCase()}</h2>
+          ${empresa?.logo_url ? `<img src="${empresa.logo_url}" alt="Logo" style="max-height: 60px; margin-bottom: 10px;" />` : ''}
+          <h1 style="margin: 0; font-size: 20px; color: #333;">${empresa?.nome || 'SISTEMA PDV'}</h1>
+          ${empresa?.endereco ? `<p style="margin: 5px 0; font-size: 12px;">${empresa.endereco}</p>` : ''}
+          ${empresa?.telefone ? `<p style="margin: 5px 0; font-size: 12px;">Tel: ${empresa.telefone}</p>` : ''}
+          ${empresa?.email ? `<p style="margin: 5px 0; font-size: 12px;">Email: ${empresa.email}</p>` : ''}
+          <h2 style="margin: 15px 0 0 0; font-size: 18px;">ORDEM DE SERVIÇO #{ordem.id.slice(-6).toUpperCase()}</h2>
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
@@ -165,8 +170,11 @@ export function OrdensServicoPage() {
     const layout80mm = `
       <div style="font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 5mm; font-size: 10px; line-height: 1.2;">
         <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 8px;">
-          <div style="font-size: 16px; font-weight: bold;">ORDEM DE SERVICO</div>
-          <div style="font-size: 14px; margin-top: 2px;">#{ordem.id.slice(-6).toUpperCase()}</div>
+          ${empresa?.nome ? `<div style="font-size: 12px; font-weight: bold;">${empresa.nome}</div>` : ''}
+          ${empresa?.endereco ? `<div style="font-size: 9px; margin: 1px 0;">${empresa.endereco}</div>` : ''}
+          ${empresa?.telefone ? `<div style="font-size: 9px;">Tel: ${empresa.telefone}</div>` : ''}
+          <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">ORDEM DE SERVICO</div>
+          <div style="font-size: 12px; margin-top: 2px;">#{ordem.id.slice(-6).toUpperCase()}</div>
         </div>
         
         <div style="margin-bottom: 8px;">
@@ -224,8 +232,10 @@ export function OrdensServicoPage() {
     const layout58mm = `
       <div style="font-family: 'Courier New', monospace; width: 58mm; margin: 0 auto; padding: 3mm; font-size: 9px; line-height: 1.1;">
         <div style="text-align: center; margin-bottom: 8px;">
-          <div style="font-size: 14px; font-weight: bold;">O.S.</div>
-          <div style="font-size: 12px;">#{ordem.id.slice(-6).toUpperCase()}</div>
+          ${empresa?.nome ? `<div style="font-size: 11px; font-weight: bold;">${empresa.nome.substring(0, 20)}</div>` : ''}
+          ${empresa?.telefone ? `<div style="font-size: 8px;">Tel: ${empresa.telefone}</div>` : ''}
+          <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">O.S.</div>
+          <div style="font-size: 10px;">#{ordem.id.slice(-6).toUpperCase()}</div>
         </div>
         
         <div style="border-top: 1px dashed #333; padding-top: 5px; margin-bottom: 6px;">
@@ -365,8 +375,8 @@ export function OrdensServicoPage() {
       {/* Header Compacto */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <BackButton customAction={() => window.location.href = '/dashboard'}>
-            Dashboard
+          <BackButton customAction={() => window.history.back()}>
+            Voltar
           </BackButton>
           <h1 className="text-xl font-bold text-gray-900">Ordens de Serviço</h1>
         </div>
@@ -405,13 +415,13 @@ export function OrdensServicoPage() {
                 Buscar
               </label>
               <div className="relative">
-                <Search className="w-3 h-3 text-gray-400 absolute left-2 top-2.5" />
+                {/* Ícone do filtro escondido */}
                 <input
                   type="text"
                   placeholder="Cliente, marca..."
                   value={filtros.busca || ''}
                   onChange={(e) => aplicarFiltros({ busca: e.target.value })}
-                  className="w-full pl-7 pr-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full pl-3 pr-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>

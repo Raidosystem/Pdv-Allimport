@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   FileText, 
@@ -30,7 +29,6 @@ interface VendaDetalhada {
 }
 
 const RelatoriosDetalhadoPage: React.FC = () => {
-  const navigate = useNavigate();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     dataInicial: format(new Date(), 'yyyy-MM-dd'),
@@ -136,11 +134,11 @@ const RelatoriosDetalhadoPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={() => navigate('/relatorios')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
-              Voltar aos Relatórios
+              Voltar
             </button>
           </div>
           

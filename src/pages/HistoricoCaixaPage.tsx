@@ -10,7 +10,6 @@ import {
   FileText,
   ArrowLeft
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { formatCurrency, formatDate, formatDateTime } from '../utils/format';
@@ -185,13 +184,13 @@ export function HistoricoCaixaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link 
-                to="/caixa" 
-                className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-colors"
+              <button 
+                onClick={() => window.history.back()}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Caixa</span>
-              </Link>
+                <span>Voltar</span>
+              </button>
               <div className="h-8 border-l border-gray-300"></div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">

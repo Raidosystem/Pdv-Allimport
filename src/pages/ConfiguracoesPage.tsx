@@ -14,7 +14,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import BackupManager from '../components/BackupManager'
 
-type ConfigSection = 'dashboard' | 'backup' | 'security' | 'profile' | 'notifications' | 'appearance'
+type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance'
 
 export function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState<ConfigSection>('dashboard')
@@ -26,6 +26,13 @@ export function ConfiguracoesPage() {
       description: 'Gerencie backups dos seus dados',
       icon: Database,
       color: 'bg-blue-500'
+    },
+    {
+      id: 'import' as ConfigSection,
+      title: 'Importar Backup',
+      description: 'Importar dados de backup anterior',
+      icon: Database,
+      color: 'bg-green-600'
     },
     {
       id: 'security' as ConfigSection,
@@ -61,6 +68,26 @@ export function ConfiguracoesPage() {
     switch (activeSection) {
       case 'backup':
         return <BackupManager />
+      
+      case 'import':
+        return (
+          <Card className="p-6">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <Database className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold">Importar Backup Allimport</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Importe dados de backup do sistema anterior incluindo clientes, produtos, vendas e ordens de serviço.
+              </p>
+              <Link to="/import-backup">
+                <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3">
+                  Ir para Importação
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )
       
       case 'security':
         return (

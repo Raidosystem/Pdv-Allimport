@@ -102,7 +102,8 @@ export function DashboardPage() {
   }
   
   // Owner sempre tem acesso às configurações de empresa
-  if (isOwner()) {
+  // Garantir que usuários autenticados sempre vejam configurações da empresa
+  if (user?.email) {
     availableModules.push({
       name: 'settings',
       title: 'Configurações da Empresa',

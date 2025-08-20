@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Trophy, 
@@ -43,7 +42,6 @@ interface ServicoRanking {
 }
 
 const RelatoriosRankingPage: React.FC = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'produtos' | 'clientes' | 'servicos'>('produtos');
 
   const produtosMaisVendidos: ProdutoRanking[] = [
@@ -198,11 +196,11 @@ const RelatoriosRankingPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={() => navigate('/relatorios')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
-              Voltar aos Relatórios
+              Voltar
             </button>
           </div>
           

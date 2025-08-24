@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Package, Plus, Search } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
-import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { ProductModal } from '../../components/product/ProductModal'
@@ -64,41 +63,29 @@ export function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <BackButton customAction={() => window.location.href = '/dashboard'}>
-                Dashboard
-              </BackButton>
-              <div className="h-8 border-l border-gray-300"></div>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Produtos</h1>
-                  <p className="text-sm text-gray-600">Controle de estoque e produtos</p>
-                </div>
-              </div>
+      {/* Conteúdo Principal */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {/* Barra de ações */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-white" />
             </div>
-            
-            <div className="flex items-center space-x-3">
-              <Button
-                onClick={() => setShowProductModal(true)}
-                className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Produto
-              </Button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Produtos</h1>
+              <p className="text-sm text-gray-600">Controle de estoque e produtos</p>
             </div>
           </div>
+          
+          <Button
+            onClick={() => setShowProductModal(true)}
+            className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Produto
+          </Button>
         </div>
-      </header>
-
-      {/* Conteúdo Principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         {/* Barra de Busca */}
         <Card className="p-6 mb-8">
           <div className="relative">

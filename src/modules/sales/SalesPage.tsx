@@ -452,6 +452,8 @@ export function SalesPage() {
         onSuccess={() => {
           setShowProductModal(false)
           toast.success('Produto cadastrado com sucesso!')
+          // Força atualização da busca de produtos
+          window.dispatchEvent(new CustomEvent('productAdded'))
         }}
       />
 

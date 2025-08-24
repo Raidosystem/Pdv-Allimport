@@ -20,9 +20,28 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
   const [loading, setLoading] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [productJustAdded, setProductJustAdded] = useState(false)
   
   const searchInputRef = useRef<HTMLInputElement>(null)
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+  // Escutar evento de produto adicionado para limpar cache
+  useEffect(() => {
+    const handleProductAdded = () => {
+      // Força nova busca se houver termo de busca ativo
+      if (searchTerm.trim()) {
+        setProducts([])
+        setLoading(true)
+      }
+      
+      // Mostrar feedback visual
+      setProductJustAdded(true)
+      setTimeout(() => setProductJustAdded(false), 3000)
+    }
+
+    window.addEventListener('productAdded', handleProductAdded)
+    return () => window.removeEventListener('productAdded', handleProductAdded)
+  }, [searchTerm])
 
   // Buscar produtos quando termo de busca mudar
   useEffect(() => {
@@ -117,6 +136,20 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
           </div>
           <div className="w-14"></div>
         </div>
+
+        {/* Feedback de produto adicionado */}
+        {productJustAdded && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              <span className="text-green-800 font-medium">
+                Produto cadastrado com sucesso! Já está disponível para busca.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Busca Unificada */}
         <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-lg">

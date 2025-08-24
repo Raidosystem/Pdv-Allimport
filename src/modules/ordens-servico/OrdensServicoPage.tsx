@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Wrench, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { OrdemServicoForm } from '../../components/ordem-servico/OrdemServicoForm'
-import { StatusCardsOS } from '../../components/ordem-servico/StatusCardsOS'
+// import { StatusCardsOS } from '../../components/ordem-servico/StatusCardsOS'
 import { useOrdemServico } from '../../hooks/useOrdemServico'
 import type { OrdemServico } from '../../types/ordemServico'
 
@@ -13,18 +13,18 @@ export function OrdensServicoPage() {
     ordensServico,
     loading,
     carregarOS,
-    criarOS,
-    atualizarOS,
-    deletarOS
+    // criarOS,
+    // atualizarOS,
+    // deletarOS
   } = useOrdemServico()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [osEditando, setOsEditando] = useState<OrdemServico | null>(null)
 
   // Estatísticas das OS
-  const osAbertas = ordensServico.filter(os => os.status === 'Aberta').length
-  const osAndamento = ordensServico.filter(os => os.status === 'Em Andamento').length
-  const osFinalizadas = ordensServico.filter(os => os.status === 'Finalizada').length
+  const osAbertas = ordensServico.filter(os => os.status === 'Em análise').length
+  const osAndamento = ordensServico.filter(os => os.status === 'Em conserto').length
+  const osFinalizadas = ordensServico.filter(os => os.status === 'Pronto').length
   const osEntregues = ordensServico.filter(os => os.status === 'Entregue').length
 
   const handleNovaOS = () => {
@@ -91,7 +91,7 @@ export function OrdensServicoPage() {
           </div>
 
           <OrdemServicoForm
-            ordemServico={osEditando || undefined}
+            // ordemServico={osEditando || undefined}
             onSuccess={handleSalvarOS}
             onCancel={handleCancelar}
           />
@@ -177,7 +177,7 @@ export function OrdensServicoPage() {
         </div>
 
         {/* Cards de Status */}
-        <StatusCardsOS ordensServico={ordensServico} loading={loading} />
+        {/* <StatusCardsOS ordensServico={ordensServico} loading={loading} /> */}
 
         {/* Lista simplificada por enquanto */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border">
@@ -206,16 +206,16 @@ export function OrdensServicoPage() {
                         <Wrench className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">OS #{os.numero || os.id.slice(0, 8)}</p>
-                        <p className="text-sm text-gray-600">{os.cliente_nome} - {os.equipamento}</p>
+                        <p className="font-medium text-gray-900">OS #{os.id.slice(0, 8)}</p>
+                        <p className="text-sm text-gray-600">{os.cliente_id} - {os.defeito_relatado || 'Sem descrição'}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-3">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        os.status === 'Aberta' ? 'bg-yellow-100 text-yellow-800' :
-                        os.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800' :
-                        os.status === 'Finalizada' ? 'bg-green-100 text-green-800' :
+                        os.status === 'Em análise' ? 'bg-yellow-100 text-yellow-800' :
+                        os.status === 'Em conserto' ? 'bg-blue-100 text-blue-800' :
+                        os.status === 'Pronto' ? 'bg-green-100 text-green-800' :
                         'bg-purple-100 text-purple-800'
                       }`}>
                         {os.status}

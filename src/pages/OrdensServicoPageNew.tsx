@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, Wrench, Clock, CheckCircle } from 'lucide-react'
 import { useOrdemServico } from '../hooks/useOrdemServico'
+import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
 import type { OrdemServico, StatusOS } from '../types/ordemServico'
 import { STATUS_COLORS, TIPO_ICONS } from '../types/ordemServico'
 
@@ -10,14 +11,11 @@ export function OrdensServicoPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusOS | ''>('')
-  const [ordemEditando, setOrdemEditando] = useState<OrdemServico | null>(null)
 
   const {
     ordensServico,
     loading,
     error,
-    criarOS,
-    atualizarOS,
     deletarOS
   } = useOrdemServico()
 
@@ -41,25 +39,6 @@ export function OrdensServicoPage() {
     entregues: ordensServico.filter((os: OrdemServico) => os.status === 'Entregue').length
   }
 
-  const handleSubmitOS = async (data: any) => {
-    try {
-      if (ordemEditando) {
-        await atualizarOS(ordemEditando.id, data)
-        setOrdemEditando(null)
-      } else {
-        await criarOS(data)
-      }
-      setViewMode('list')
-    } catch (error) {
-      console.error('Erro ao salvar OS:', error)
-    }
-  }
-
-  const handleEdit = (ordem: OrdemServico) => {
-    setOrdemEditando(ordem)
-    setViewMode('form')
-  }
-
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta OS?')) {
       try {
@@ -71,8 +50,15 @@ export function OrdensServicoPage() {
   }
 
   const handleNewOS = () => {
-    setOrdemEditando(null)
     setViewMode('form')
+  }
+
+  const handleFormSuccess = () => {
+    setViewMode('list')
+  }
+
+  const handleFormCancel = () => {
+    setViewMode('list')
   }
 
   const formatCurrency = (value: number | undefined) => {
@@ -113,175 +99,6 @@ export function OrdensServicoPage() {
     </div>
   )
 
-  // Formulário simplificado
-  const OSForm = () => {
-    const [formData, setFormData] = useState({
-      cliente_nome: ordemEditando?.cliente?.nome || '',
-      cliente_telefone: ordemEditando?.cliente?.telefone || '',
-      tipo: ordemEditando?.tipo || 'Celular',
-      marca: ordemEditando?.marca || '',
-      modelo: ordemEditando?.modelo || '',
-      defeito_relatado: ordemEditando?.defeito_relatado || '',
-      observacoes: ordemEditando?.observacoes || '',
-      valor_orcamento: ordemEditando?.valor_orcamento || 0
-    })
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault()
-      handleSubmitOS(formData)
-    }
-
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {ordemEditando ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
-          </h2>
-          <button
-            onClick={() => setViewMode('list')}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome do Cliente *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.cliente_nome}
-                onChange={(e) => setFormData(prev => ({ ...prev, cliente_nome: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefone
-              </label>
-              <input
-                type="tel"
-                value={formData.cliente_telefone}
-                onChange={(e) => setFormData(prev => ({ ...prev, cliente_telefone: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tipo de Equipamento *
-              </label>
-              <select
-                required
-                value={formData.tipo}
-                onChange={(e) => setFormData(prev => ({ ...prev, tipo: e.target.value as any }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="Celular">📱 Celular</option>
-                <option value="Notebook">💻 Notebook</option>
-                <option value="Console">🎮 Console</option>
-                <option value="Tablet">📱 Tablet</option>
-                <option value="Outro">🔧 Outro</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Marca *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.marca}
-                onChange={(e) => setFormData(prev => ({ ...prev, marca: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Modelo *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.modelo}
-                onChange={(e) => setFormData(prev => ({ ...prev, modelo: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Valor do Orçamento
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.valor_orcamento}
-                onChange={(e) => setFormData(prev => ({ ...prev, valor_orcamento: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Defeito Relatado *
-            </label>
-            <textarea
-              required
-              rows={3}
-              value={formData.defeito_relatado}
-              onChange={(e) => setFormData(prev => ({ ...prev, defeito_relatado: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Observações
-            </label>
-            <textarea
-              rows={3}
-              value={formData.observacoes}
-              onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              {ordemEditando ? 'Atualizar' : 'Criar'} OS
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -298,7 +115,10 @@ export function OrdensServicoPage() {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-4xl mx-auto">
-          <OSForm />
+          <OrdemServicoForm
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
         </div>
       </div>
     )
@@ -464,7 +284,7 @@ export function OrdensServicoPage() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleEdit(ordem)}
+                            onClick={() => console.log('Editar OS:', ordem.id)}
                             className="p-1 text-blue-600 hover:text-blue-800"
                             title="Editar"
                           >

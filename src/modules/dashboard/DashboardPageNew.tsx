@@ -1,4 +1,11 @@
 import { Link } from 'react-router-dom'
+import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
+import { CaixaPage } from '../../pages/CaixaPageNew'
+import { ProdutosPage } from '../../pages/ProdutosPageNew'
+import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
+import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
+import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
+import { useState, useEffect } from 'react'
 import { 
   ShoppingCart, 
   Users, 
@@ -10,7 +17,20 @@ import {
   Settings,
   Shield,
   DollarSign,
-  Crown
+  Crown,
+  Calendar,
+  Eye,
+  Plus,
+  Clock,
+  TrendingUp,
+  CreditCard,
+  Receipt,
+  UserPlus,
+  Search,
+  History,
+  CheckCircle,
+  AlertCircle,
+  Archive
 } from 'lucide-react'
 import { useAuth } from '../auth'
 import { useSubscription } from '../../hooks/useSubscription'
@@ -19,109 +39,167 @@ import { Button } from '../../components/ui/Button'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
+import { SalesPage } from '../sales/SalesPage'
+import { ClientesPage } from '../clientes/ClientesPage'
+
+// Definir interfaces para tipagem correta
+interface MenuOption {
+  title: string
+  path: string
+  icon: React.ComponentType<any>
+  description: string
+}
+
+interface MenuModule {
+  name: string
+  title: string
+  icon: React.ComponentType<any>
+  color: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'
+  priority?: boolean
+  directLink?: string // Para menus que vão direto para uma página
+  options?: MenuOption[] // Para menus que mostram subopções
+}
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
   const { isActive } = useSubscription()
   const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
+  const [activeMenu, setActiveMenu] = useState<string | null>(null)
+
+  // Debug do activeMenu (simplificado)
+  useEffect(() => {
+    console.log('� Menu ativo:', activeMenu)
+  }, [activeMenu])
 
   const handleSignOut = async () => {
     await signOut()
   }
 
-  // Definir todos os módulos possíveis
-  const allPossibleModules = [
+  // Definir todos os módulos com suas opções/submenus
+  const allMenuModules: MenuModule[] = [
     {
       name: 'sales',
       title: 'Vendas',
-      description: 'Realizar vendas e emitir cupons fiscais',
       icon: ShoppingCart,
       color: 'primary' as const,
-      path: '/vendas'
+      priority: true, // Menu destacado
+      options: [
+        { title: 'Nova Venda', path: '/vendas', icon: Plus, description: 'Realizar nova venda' },
+        { title: 'Histórico de Vendas', path: '/vendas/historico', icon: History, description: 'Ver vendas realizadas' },
+        { title: 'Cupons Fiscais', path: '/vendas/cupons', icon: Receipt, description: 'Reimprimir cupons' },
+        { title: 'Vendas do Dia', path: '/relatorios/vendas', icon: Calendar, description: 'Relatório diário' }
+      ]
     },
     {
       name: 'clients',
       title: 'Clientes',
-      description: 'Gerenciar cadastro de clientes',
       icon: Users,
       color: 'secondary' as const,
-      path: '/clientes'
+      priority: true, // Menu destacado
+      options: [
+        { title: 'Novo Cliente', path: '/clientes/novo', icon: UserPlus, description: 'Cadastrar novo cliente' },
+        { title: 'Lista de Clientes', path: '/clientes', icon: Search, description: 'Ver todos os clientes' },
+        { title: 'Histórico de Compras', path: '/clientes/historico', icon: History, description: 'Consultar vendas por cliente' },
+        { title: 'Relatório Clientes', path: '/relatorios/clientes', icon: BarChart3, description: 'Análises de clientes' }
+      ]
     },
     {
-      name: 'products',
-      title: 'Produtos',
-      description: 'Controle de estoque e produtos',
-      icon: Package,
-      color: 'success' as const,
-      path: '/produtos'
+      name: 'orders',
+      title: 'OS - Ordens de Serviço',
+      icon: FileText,
+      color: 'danger' as const,
+      priority: true, // Menu destacado
+      options: [
+        { title: 'Nova OS', path: '/ordens-servico/nova', icon: Plus, description: 'Criar nova ordem de serviço' },
+        { title: 'Lista de OS', path: '/ordens-servico', icon: Eye, description: 'Ver todas as ordens' },
+        { title: 'OS em Andamento', path: '/ordens-servico?status=andamento', icon: Clock, description: 'Acompanhar serviços em execução' },
+        { title: 'OS Finalizadas', path: '/ordens-servico?status=finalizada', icon: CheckCircle, description: 'Ver serviços concluídos' }
+      ]
     },
     {
       name: 'cashier',
       title: 'Caixa',
-      description: 'Controle de caixa e movimento',
       icon: DollarSign,
       color: 'warning' as const,
-      path: '/caixa'
+      priority: true, // Menu destacado
+      options: [
+        { title: 'Abrir Caixa', path: '/caixa', icon: CreditCard, description: 'Iniciar movimento do caixa' },
+        { title: 'Fechar Caixa', path: '/caixa/fechar', icon: CheckCircle, description: 'Finalizar movimento diário' },
+        { title: 'Histórico', path: '/historico-caixa', icon: History, description: 'Consultar movimentos anteriores' },
+        { title: 'Relatórios', path: '/relatorios', icon: BarChart3, description: 'Análises financeiras' }
+      ]
     },
     {
-      name: 'orders',
-      title: 'OS - Ordem de Serviço',
-      description: 'Gestão de ordens de serviço',
-      icon: FileText,
-      color: 'danger' as const,
-      path: '/ordens-servico'
+      name: 'products',
+      title: 'Produtos',
+      icon: Package,
+      color: 'success' as const,
+      priority: true,
+      options: [
+        { title: 'Cadastro', path: '/produtos', icon: Plus, description: 'Gerenciar produtos' },
+        { title: 'Estoque', path: '/produtos/estoque', icon: Archive, description: 'Controle de estoque' },
+        { title: 'Categorias', path: '/produtos/categorias', icon: Settings, description: 'Organizar categorias' }
+      ]
     },
     {
       name: 'reports',
       title: 'Relatórios',
-      description: 'Análises e relatórios de vendas',
       icon: BarChart3,
       color: 'info' as const,
-      path: '/relatorios'
+      priority: true,
+      options: [
+        { title: 'Vendas do Dia', path: '/relatorios', icon: Calendar, description: 'Resumo diário' },
+        { title: 'Período', path: '/relatorios/periodo', icon: TrendingUp, description: 'Análise por período' },
+        { title: 'Ranking', path: '/relatorios/ranking', icon: Crown, description: 'Produtos mais vendidos' }
+      ]
     }
   ]
 
-  // Obter módulos visíveis baseado nas permissões do useUserHierarchy
+  // Obter módulos visíveis baseado nas permissões
   const visibleModules = getVisibleModules()
-  
-  // Mapear módulos visíveis para os módulos disponíveis
-  const availableModules = allPossibleModules.filter(module => 
-    visibleModules.some(visible => visible.name === module.name)
+  const availableMenus = allMenuModules.filter(menu => 
+    visibleModules.some(visible => visible.name === menu.name)
   )
 
-  // Adicionar módulos especiais baseado no tipo de usuário
+  // Adicionar módulos especiais
+  const specialModules: MenuModule[] = []
   if (isAdmin()) {
-    availableModules.push({
+    specialModules.push({
       name: 'admin',
       title: 'Administração',
-      description: 'Backup, restore e administração do sistema',
       icon: Shield,
       color: 'danger' as const,
-      path: '/configuracoes'
+      priority: true,
+      options: [
+        { title: 'Backup', path: '/configuracoes', icon: Archive, description: 'Backup do sistema' },
+        { title: 'Usuários', path: '/admin/usuarios', icon: Users, description: 'Gerenciar usuários' }
+      ]
     })
   }
   
-  // Owner sempre tem acesso às configurações de empresa
-  // Garantir que usuários autenticados sempre vejam configurações da empresa
   if (user?.email) {
-    availableModules.push({
+    specialModules.push({
       name: 'settings',
-      title: 'Configurações da Empresa',
-      description: 'Gerenciar funcionários e permissões do sistema',
+      title: 'Configurações',
       icon: Settings,
       color: 'info' as const,
-      path: '/configuracoes-empresa'
+      priority: true,
+      options: [
+        { title: 'Empresa', path: '/configuracoes-empresa', icon: Settings, description: 'Configurar empresa' },
+        { title: 'Funcionários', path: '/funcionarios', icon: Users, description: 'Gerenciar equipe' }
+      ]
     })
   }
 
-  // Separar módulos principais dos secundários
-  const mainModules = availableModules.filter(module => 
-    ['sales', 'clients', 'orders'].includes(module.name)
-  )
-  
-  const secondaryModules = availableModules.filter(module => 
-    !['sales', 'clients', 'orders'].includes(module.name)
-  )
+  const allMenus = [...availableMenus, ...specialModules]
+
+  // Abrir automaticamente o primeiro menu prioritário quando carrega
+  useEffect(() => {
+    const firstPriorityMenu = allMenus.find(menu => menu.priority)
+    if (firstPriorityMenu && !activeMenu) {
+      setActiveMenu(firstPriorityMenu.name)
+    }
+  }, [allMenus, activeMenu])
 
   if (loading) {
     return (
@@ -135,8 +213,138 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* Header - Responsivo e consistente */}
+    <div className="min-h-screen bg-gray-50">
+      {/* CSS customizado para excelente responsividade mobile */}
+      <style>
+        {`
+          /* Ocultar scrollbar mas manter funcionalidade */
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          
+          /* Mobile First - Extra pequeno (até 480px) */
+          @media (max-width: 480px) {
+            .dashboard-menu-container {
+              padding-left: 4px !important;
+              padding-right: 4px !important;
+            }
+            .dashboard-content {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+              padding-top: 12px !important;
+            }
+            .mobile-menu-button {
+              min-width: 65px !important;
+              height: 48px !important;
+              padding: 6px !important;
+            }
+            .mobile-menu-icon {
+              width: 16px !important;
+              height: 16px !important;
+              margin-bottom: 2px !important;
+            }
+            .mobile-menu-text {
+              font-size: 10px !important;
+              line-height: 1.2 !important;
+              font-weight: 600 !important;
+            }
+          }
+          
+          /* Mobile padrão (481px - 640px) */
+          @media (min-width: 481px) and (max-width: 640px) {
+            .dashboard-menu-container {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+            }
+            .dashboard-content {
+              padding-left: 12px !important;
+              padding-right: 12px !important;
+              padding-top: 16px !important;
+            }
+            .mobile-menu-button {
+              min-width: 75px !important;
+              height: 52px !important;
+              padding: 8px !important;
+            }
+            .mobile-menu-icon {
+              width: 18px !important;
+              height: 18px !important;
+              margin-bottom: 3px !important;
+            }
+            .mobile-menu-text {
+              font-size: 11px !important;
+              line-height: 1.2 !important;
+              font-weight: 600 !important;
+            }
+          }
+          
+          /* Tablet (641px - 1024px) */
+          @media (min-width: 641px) and (max-width: 1024px) {
+            .dashboard-menu-container {
+              padding-left: 16px;
+              padding-right: 16px;
+            }
+            .dashboard-content {
+              padding-left: 24px;
+              padding-right: 24px;
+            }
+          }
+          
+          /* Desktop (1025px+) */
+          @media (min-width: 1025px) {
+            .dashboard-menu-container {
+              padding-left: 32px;
+              padding-right: 32px;
+            }
+            .dashboard-content {
+              padding-left: 32px;
+              padding-right: 32px;
+            }
+          }
+          
+          /* Utilitários */
+          .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          
+          .animate-in {
+            animation: fadeInUp 0.3s ease-out forwards;
+          }
+          
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          /* Melhorar touch targets para mobile */
+          @media (max-width: 640px) {
+            .mobile-touch-target {
+              min-height: 44px;
+              min-width: 44px;
+            }
+          }
+          
+          /* Scroll suave em mobile */
+          .smooth-scroll {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+          }
+        `}
+      </style>
+      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -195,103 +403,249 @@ export function DashboardPage() {
         </div>
       </header>
 
-      {/* Banner de Assinatura - só mostrar se não estiver ativa */}
+      {/* Banner de Assinatura */}
       {!isActive && !isAdmin() && <SubscriptionBanner />}
 
-      {/* Main Content - Layout simples baseado no exemplo do usuário */}
-      <main className="relative w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)] flex flex-col max-h-screen overflow-y-auto">
+      {/* Menu Principal Horizontal - Otimizado para Mobile */}
+      <div className="bg-white border-b shadow-sm relative z-20">
+        <div className="max-w-7xl mx-auto dashboard-menu-container">
+          {/* Scroll horizontal otimizado para mobile */}
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto py-2 sm:py-3 lg:py-4 scrollbar-hide smooth-scroll" 
+               style={{ pointerEvents: 'auto' }}>
+            
+            {/* Menus Prioritários - Otimizados para mobile */}
+            {allMenus.filter(menu => menu.priority).map((menu) => {
+              const Icon = menu.icon
+              const isActive = activeMenu === menu.name
+              const colorClasses = {
+                primary: isActive ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600',
+                secondary: isActive ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600',
+                success: isActive ? 'bg-green-100 border-green-300 text-green-700' : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-600',
+                warning: isActive ? 'bg-yellow-100 border-yellow-300 text-yellow-700' : 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600',
+                danger: isActive ? 'bg-red-100 border-red-300 text-red-700' : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600',
+                info: isActive ? 'bg-cyan-100 border-cyan-300 text-cyan-700' : 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-600'
+              }[menu.color] || 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600'
+
+              return (
+                <button
+                  key={menu.name}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('🎯 Menu clicado:', menu.name)
+                    setActiveMenu(menu.name)
+                  }}
+                  style={{ 
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 10,
+                    cursor: 'pointer'
+                  }}
+                  className={`
+                    mobile-menu-button mobile-touch-target
+                    flex flex-col items-center justify-center
+                    p-2 sm:p-3 lg:p-4 
+                    rounded-lg border-2 
+                    transition-all duration-200 
+                    min-w-[80px] sm:min-w-[100px] lg:min-w-[140px]
+                    h-14 sm:h-16 lg:h-20
+                    cursor-pointer 
+                    hover:scale-105 active:scale-95
+                    flex-shrink-0
+                    ${colorClasses}
+                  `}
+                >
+                  <Icon className="mobile-menu-icon w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mb-1 sm:mb-2" />
+                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-sm font-semibold text-center leading-tight">
+                    {menu.title}
+                  </span>
+                </button>
+              )
+            })}
+            
+            {/* Separador visual - Responsivo */}
+            {allMenus.filter(menu => menu.priority).length > 0 && allMenus.filter(menu => !menu.priority).length > 0 && (
+              <div className="flex items-center px-1 sm:px-2">
+                <div className="w-px h-10 sm:h-12 lg:h-16 bg-gray-300"></div>
+              </div>
+            )}
+            
+            {/* Menus Normais - Otimizados para mobile */}
+            {allMenus.filter(menu => !menu.priority).map((menu) => {
+              const Icon = menu.icon
+              const isActive = activeMenu === menu.name
+              const colorClasses = {
+                primary: isActive ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600',
+                secondary: isActive ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600',
+                success: isActive ? 'bg-green-100 border-green-300 text-green-700' : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-600',
+                warning: isActive ? 'bg-yellow-100 border-yellow-300 text-yellow-700' : 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600',
+                danger: isActive ? 'bg-red-100 border-red-300 text-red-700' : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600',
+                info: isActive ? 'bg-cyan-100 border-cyan-300 text-cyan-700' : 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-600'
+              }[menu.color] || 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600'
+
+              return (
+                <button
+                  key={menu.name}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('🎯 Menu secundário clicado:', menu.name)
+                    setActiveMenu(menu.name)
+                  }}
+                  style={{ 
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 10,
+                    cursor: 'pointer'
+                  }}
+                  className={`
+                    mobile-menu-button mobile-touch-target
+                    flex flex-col items-center justify-center
+                    p-2 sm:p-3 lg:p-3 
+                    rounded-lg border-2 
+                    transition-all duration-200 
+                    min-w-[70px] sm:min-w-[90px] lg:min-w-[100px]
+                    h-12 sm:h-14 lg:h-16
+                    cursor-pointer 
+                    hover:scale-105 active:scale-95
+                    flex-shrink-0
+                    ${colorClasses}
+                  `}
+                >
+                  <Icon className="mobile-menu-icon w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mb-1" />
+                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-sm font-medium text-center leading-tight">
+                    {menu.title}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo Principal - Responsivo */}
+      <main className="max-w-7xl mx-auto dashboard-content py-4 sm:py-6 lg:py-8">
         {/* Subscription Status */}
         {!isAdmin() && (
-          <div className="mb-6 flex-shrink-0">
+          <div className="mb-4 sm:mb-6">
             <SubscriptionStatus />
             <SubscriptionCountdown />
           </div>
         )}
 
-        {/* Modules Grid - Layout simples sem títulos */}
-        <div className="flex-1 flex flex-col space-y-8 pb-4 min-h-0">
-          {/* Módulos Principais - Cards maiores em linha */}
-          {mainModules.length > 0 && (
-            <div className="w-full">
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 sm:gap-6 lg:grid-cols-3 lg:gap-8">
-                {mainModules.map((module) => {
-                  const Icon = module.icon
-                  const colorClass = module.color ? 
-                    ({
-                      primary: 'bg-primary-500 hover:bg-primary-600',
-                      secondary: 'bg-secondary-500 hover:bg-secondary-600',
-                      success: 'bg-green-500 hover:bg-green-600',
-                      warning: 'bg-yellow-500 hover:bg-yellow-600',
-                      danger: 'bg-red-500 hover:bg-red-600',
-                      info: 'bg-blue-500 hover:bg-blue-600'
-                    }[module.color] || 'bg-gray-400 hover:bg-gray-500') : 'bg-gray-400 hover:bg-gray-500'
-
-                  return (
-                    <Link key={module.name} to={module.path}>
-                      <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 p-6 sm:p-8 lg:p-12 rounded-xl bg-white shadow hover:shadow-lg transition w-full h-64 sm:h-72 lg:h-80">
-                        <div className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 ${colorClass} rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform`}>
-                          <Icon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white" />
-                        </div>
-                        <div className="text-center">
-                          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 lg:mb-3 line-clamp-1">
-                            {module.title}
-                          </h3>
-                          <p className="text-sm sm:text-sm lg:text-base text-gray-600 line-clamp-2">
-                            {module.description}
-                          </p>
-                        </div>
+        {/* Conteúdo Principal - Página embarcada ou Submenu */}
+        {activeMenu && (
+          <div className="mb-8 animate-in fade-in duration-300">
+            {allMenus
+              .filter(menu => menu.name === activeMenu)
+              .map(menu => {
+                // Para menus prioritários, mostrar a página diretamente
+                if (menu.priority) {
+                  const pageContent = {
+                    sales: <SalesPage key="sales-page" />,
+                    clients: <ClientesPage key="clients-page" />,
+                    orders: <OrdensServicoPage key="orders-page" />,
+                    cashier: <CaixaPage key="cashier-page" />,
+                    products: <ProdutosPage key="products-page" />,
+                    reports: <RelatoriosPage key="reports-page" />,
+                    admin: <AdministracaoPage key="admin-page" />,
+                    settings: <ConfiguracoesPage key="settings-page" />
+                  }[menu.name]
+                  
+                  return <div key={`page-${menu.name}`}>{pageContent}</div>
+                }
+                
+                // Para menus secundários, mostrar as opções
+                return (
+                  <div key={menu.name} className="bg-white rounded-lg shadow-sm border p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                        <menu.icon className="w-6 h-6 mr-2" />
+                        {menu.title}
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                          ATIVO
+                        </span>
+                      </h2>
+                      <div className="text-right">
+                        <span className="text-sm text-gray-500">
+                          {menu.options?.length || 0} opções disponíveis
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Clique em uma opção para acessar
+                        </p>
                       </div>
-                    </Link>
-                  )
-                })}
-              </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {menu.options?.map((option, index) => (
+                        <Link
+                          key={option.path}
+                          to={option.path}
+                          className="flex items-start p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-lg bg-white hover:bg-blue-50 transition-all duration-200 group animate-in slide-in-from-bottom duration-300 transform hover:scale-102"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <div className="flex-shrink-0 mr-4">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                              <option.icon className="w-6 h-6 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 group-hover:text-blue-900 mb-1 transition-colors">
+                              {option.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 group-hover:text-blue-700 transition-colors leading-relaxed">
+                              {option.description}
+                            </p>
+                            <div className="mt-2 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                              Clique para acessar →
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })
+            }
+          </div>
+        )}
+
+        {/* Mensagem quando nenhum menu está ativo */}
+        {!activeMenu && (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-
-          {/* Módulos Secundários - Cards menores em linha única */}
-          {secondaryModules.length > 0 && (
-            <div className="w-full">
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3 sm:gap-4 lg:grid-flow-col lg:auto-cols-fr lg:gap-6 overflow-x-auto">
-                {secondaryModules.map((module) => {
-                  const Icon = module.icon
-                  const colorClass = module.color ? 
-                    ({
-                      primary: 'bg-primary-500 hover:bg-primary-600',
-                      secondary: 'bg-secondary-500 hover:bg-secondary-600',
-                      success: 'bg-green-500 hover:bg-green-600',
-                      warning: 'bg-yellow-500 hover:bg-yellow-600',
-                      danger: 'bg-red-500 hover:bg-red-600',
-                      info: 'bg-blue-500 hover:bg-blue-600'
-                    }[module.color] || 'bg-gray-400 hover:bg-gray-500') : 'bg-gray-400 hover:bg-gray-500'
-
-                  return (
-                    <Link key={module.name} to={module.path}>
-                      <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 rounded-xl bg-white shadow hover:shadow-md transition w-full lg:min-w-[220px] h-40 sm:h-44 lg:h-52">
-                        <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 ${colorClass} rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform`}>
-                          <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
-                        </div>
-                        <div className="text-center">
-                          <h3 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-900 line-clamp-2 leading-tight">
-                            {module.title}
-                          </h3>
-                          <p className="text-xs sm:text-xs lg:text-sm text-gray-600 line-clamp-2 mt-1 lg:mt-2 hidden sm:block">
-                            {module.description}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Bem-vindo ao PDV Allimport
+            </h3>
+            <p className="text-gray-600 max-w-md mx-auto mb-8">
+              Clique em um dos menus acima para ver as opções disponíveis e começar a usar o sistema.
+            </p>
+            
+            {/* Atalhos rápidos para os menus principais */}
+            <div className="flex justify-center space-x-4 flex-wrap gap-2">
+              {allMenus.filter(menu => menu.priority).map((menu) => {
+                const Icon = menu.icon
+                return (
+                  <button
+                    key={menu.name}
+                    onClick={() => setActiveMenu(menu.name)}
+                    className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                  >
+                    <Icon className="w-5 h-5 mr-2 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">{menu.title}</span>
+                  </button>
+                )
+              })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Empty state: mostrar apenas para funcionário (não admin, não owner) */}
-        {availableModules.length === 0 && !isAdmin() && !isOwner() && (
-          <div className="text-center py-8">
+        {/* Empty state para usuários sem permissões */}
+        {allMenus.length === 0 && !isAdmin() && !isOwner() && (
+          <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Settings className="w-8 h-8 text-gray-400" />
+              <AlertCircle className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Nenhum módulo disponível

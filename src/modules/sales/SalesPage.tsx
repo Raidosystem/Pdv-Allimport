@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { ShoppingCart, Printer, FileText, CheckCircle, AlertCircle } from 'lucide-react'
+import { Printer, FileText, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
-import { BackButton } from '../../components/ui/BackButton'
 import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
 import { useCaixa } from '../../hooks/useCaixa'
@@ -70,44 +69,14 @@ export function SalesPage() {
   // Verificar se pode finalizar a venda
   const canFinalizeSale = items.length > 0 && totalPaid >= totalAmount && caixaAtual?.status === 'aberto'
 
-  // Verificar caixa aberto ao carregar
+  // Verificar caixa aberto ao carregar (simplificado)
   useEffect(() => {
-    // Só executar a lógica uma vez por montagem do componente
-    if (initialCheckDone) {
-      return
-    }
-
-    const checkCashRegister = async () => {
-      try {
-        // Se ainda está carregando, aguardar
-        if (loadingCaixa) {
-          return
-        }
-
-        // Marcar que verificação foi feita
-        setInitialCheckDone(true)
-
-        // Se há um caixa e está aberto, não mostrar modal
-        if (caixaAtual && caixaAtual.status === 'aberto') {
-          setShowCashModal(false)
-          return
-        }
-
-        // Se não há caixa ou está fechado, mostrar modal
-        if (!caixaAtual || caixaAtual.status === 'fechado') {
-          setShowCashModal(true)
-        }
-      } catch (error) {
-        console.error('Erro ao verificar caixa:', error)
-        toast.error('Erro ao verificar status do caixa')
+    // Verificar apenas uma vez quando os dados do caixa estão prontos
+    if (!loadingCaixa && !initialCheckDone) {
+      if (!caixaAtual || caixaAtual.status !== 'aberto') {
+        setShowCashModal(true)
       }
-    }
-
-    checkCashRegister()
-
-    // Cleanup: resetar o estado quando componente for desmontado
-    return () => {
-      setInitialCheckDone(false)
+      setInitialCheckDone(true)
     }
   }, [caixaAtual, loadingCaixa, initialCheckDone])
 
@@ -270,85 +239,101 @@ export function SalesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+      {/* CSS customizado para melhor experiência mobile */}
+      <style>
+        {`
+          @media (max-width: 640px) {
+            .mobile-padding {
+              padding-left: 12px !important;
+              padding-right: 12px !important;
+              padding-top: 16px !important;
+            }
+            .mobile-card {
+              padding: 16px !important;
+            }
+            .mobile-grid {
+              grid-template-columns: 1fr !important;
+              gap: 16px !important;
+            }
+            .mobile-header {
+              font-size: 20px !important;
+            }
+            .mobile-subheader {
+              font-size: 14px !important;
+            }
+            .mobile-button {
+              width: 100% !important;
+              min-height: 44px !important;
+              padding: 12px 16px !important;
+              font-size: 14px !important;
+            }
+          }
+          @media (max-width: 480px) {
+            .mobile-padding {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+              padding-top: 12px !important;
+            }
+            .mobile-card {
+              padding: 12px !important;
+            }
+            .mobile-header {
+              font-size: 18px !important;
+            }
+            .mobile-subheader {
+              font-size: 12px !important;
+            }
+          }
+        `}
+      </style>
+      
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-400 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Header */}
-      <header className="relative bg-white/90 backdrop-blur-sm shadow-lg border-b border-secondary-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <BackButton customAction={() => window.location.href = '/dashboard'}>
-                Dashboard
-              </BackButton>
-              <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <ShoppingCart className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
-                  <p className="text-primary-600 font-medium">Sistema de Vendas</p>
-                </div>
-              </div>
+      {/* Main Content - Responsivo */}
+      <main className="relative max-w-7xl mx-auto mobile-padding py-4 px-4 sm:px-6 lg:px-8">
+        {/* Status do caixa - apenas se fechado - Mobile responsivo */}
+        {!loadingCaixa && caixaAtual?.status !== 'aberto' && (
+          <div className="mb-4 mobile-card p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-red-700">
+              <AlertCircle className="w-5 h-5" />
+              <span className="font-medium">Caixa Fechado</span>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Status do caixa */}
-              <div className={`px-4 py-2 rounded-xl ${
-                loadingCaixa
-                  ? 'bg-gray-100 text-gray-700 border border-gray-200'
-                  : caixaAtual?.status === 'aberto'
-                  ? 'bg-green-100 text-green-700 border border-green-200'
-                  : 'bg-red-100 text-red-700 border border-red-200'
-              }`}>
-                <div className="flex items-center space-x-2">
-                  {loadingCaixa ? (
-                    <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                  ) : caixaAtual?.status === 'aberto' ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5" />
-                  )}
-                  <span className="font-medium">
-                    {loadingCaixa ? 'Verificando Caixa...' : 
-                     caixaAtual?.status === 'aberto' ? 'Caixa Aberto' : 'Caixa Fechado'}
-                  </span>
-                </div>
-              </div>
-
-            </div>
+            <Button 
+              onClick={() => setShowCashModal(true)}
+              className="mobile-button mt-3 bg-primary-600 hover:bg-primary-700"
+            >
+              Abrir Caixa
+            </Button>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        )}
+        
         {loadingCaixa ? (
-          /* Loading state */
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-            <h2 className="text-2xl font-bold text-secondary-900 mb-2">Verificando Caixa...</h2>
-            <p className="text-secondary-600">
+          /* Loading state - Mobile responsivo */
+          <Card className="mobile-card p-6 sm:p-8 text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+            <h2 className="mobile-header text-xl sm:text-2xl font-bold text-secondary-900 mb-2">Verificando Caixa...</h2>
+            <p className="mobile-subheader text-sm sm:text-base text-secondary-600">
               Aguarde enquanto verificamos o status do caixa.
             </p>
           </Card>
         ) : (!caixaAtual || caixaAtual.status !== 'aberto') ? (
-          /* Aviso de caixa fechado */
-          <Card className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h2 className="text-2xl font-bold text-secondary-900 mb-2">Caixa Fechado</h2>
-            <p className="text-secondary-600 mb-6">
+          /* Aviso de caixa fechado - Mobile responsivo */
+          <Card className="mobile-card p-6 sm:p-8 text-center">
+            <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-red-500" />
+            <h2 className="mobile-header text-xl sm:text-2xl font-bold text-secondary-900 mb-2">Caixa Fechado</h2>
+            <p className="mobile-subheader text-sm sm:text-base text-secondary-600 mb-4 sm:mb-6">
               Para realizar vendas, é necessário abrir um caixa primeiro.
             </p>
-            <Button>
+            <Button className="mobile-button">
               Abrir Caixa
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="mobile-grid grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Coluna esquerda - Busca e Cliente */}
             <div className="space-y-6">
               <ProductSearch 

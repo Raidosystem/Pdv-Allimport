@@ -3,8 +3,9 @@ import { Users, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
+import { ClienteModal } from '../../components/cliente/ClienteModal'
 import { useClientes } from '../../hooks/useClientes'
-import type { Cliente } from '../../types/cliente'
+import type { Cliente, ClienteFilters } from '../../types/cliente'
 
 type ViewMode = 'list' | 'form' | 'view'
 
@@ -12,9 +13,15 @@ export function ClientesPage() {
   const {
     clientes,
     loading,
-    carregarClientes,
-    deletarCliente,
-    alternarStatus
+    totalClientes,
+    searchTerm,
+    setSearchTerm,
+    filtros,
+    setFiltros,
+    handleCreateCliente,
+    handleUpdateCliente,
+    handleDeleteCliente,
+    handleToggleAtivo
   } = useClientes()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
@@ -23,6 +30,7 @@ export function ClientesPage() {
 
   // Estatísticas dos clientes
   const clientesAtivos = clientes.filter(c => c.ativo).length
+  const clientesInativos = clientes.filter(c => !c.ativo).length
   const pessoasFisicas = clientes.filter(c => c.tipo === 'Física').length
   const pessoasJuridicas = clientes.filter(c => c.tipo === 'Jurídica').length
 
@@ -41,44 +49,20 @@ export function ClientesPage() {
     setViewMode('view')
   }
 
-  const handleSalvarCliente = async (_clienteResult: Cliente) => {
+  const handleSalvarCliente = async (clienteData: Omit<Cliente, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      await carregarClientes() // Recarregar lista
+      if (clienteEditando) {
+        await handleUpdateCliente(clienteEditando.id, clienteData)
+      } else {
+        await handleCreateCliente(clienteData)
+      }
       setViewMode('list')
-      setClienteEditando(null)
     } catch (error) {
       console.error('Erro ao salvar cliente:', error)
     }
   }
 
-  const handleCancelar = () => {
-    setViewMode('list')
-    setClienteEditando(null)
-    setClienteVisualizando(null)
-  }
-
-  const handleDeleteCliente = async (id: string) => {
-    const cliente = clientes.find(c => c.id === id)
-    if (!cliente) return
-    
-    if (window.confirm(`Deseja realmente excluir o cliente "${cliente.nome}"?`)) {
-      try {
-        await deletarCliente(id)
-      } catch (error) {
-        console.error('Erro ao excluir cliente:', error)
-      }
-    }
-  }
-
-  const handleToggleStatus = async (id: string, ativo: boolean) => {
-    try {
-      await alternarStatus(id, ativo)
-    } catch (error) {
-      console.error('Erro ao alterar status:', error)
-    }
-  }
-
-  if (loading && clientes.length === 0) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -109,7 +93,7 @@ export function ClientesPage() {
             </div>
             
             <Button
-              onClick={handleCancelar}
+              onClick={() => setViewMode('list')}
               variant="outline"
             >
               Voltar para Lista
@@ -117,20 +101,28 @@ export function ClientesPage() {
           </div>
 
           <ClienteFormulario
-            cliente={clienteEditando || undefined}
-            onSuccess={handleSalvarCliente}
-            onCancel={handleCancelar}
+            cliente={clienteEditando}
+            onSave={handleSalvarCliente}
+            onCancel={() => setViewMode('list')}
           />
         </main>
       </div>
     )
   }
 
-  if (viewMode === 'view' && clienteVisualizando) {
-    // Por enquanto, vamos editar ao invés de visualizar
-    setViewMode('form')
-    setClienteEditando(clienteVisualizando)
-    setClienteVisualizando(null)
+  if (viewMode === 'view') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ClienteModal
+            isOpen={true}
+            onClose={() => setViewMode('list')}
+            cliente={clienteVisualizando}
+            onEdit={handleEditarCliente}
+          />
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -159,7 +151,7 @@ export function ClientesPage() {
         </div>
         
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -167,7 +159,7 @@ export function ClientesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{clientes.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{totalClientes}</p>
               </div>
             </div>
           </div>
@@ -180,6 +172,18 @@ export function ClientesPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Ativos</p>
                 <p className="text-2xl font-bold text-gray-900">{clientesAtivos}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Inativos</p>
+                <p className="text-2xl font-bold text-gray-900">{clientesInativos}</p>
               </div>
             </div>
           </div>
@@ -213,11 +217,14 @@ export function ClientesPage() {
         <ClienteTable
           clientes={clientes}
           loading={loading}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filtros={filtros}
+          onFiltrosChange={setFiltros}
           onEdit={handleEditarCliente}
           onView={handleVisualizarCliente}
           onDelete={handleDeleteCliente}
-          onToggleStatus={handleToggleStatus}
-          onFiltersChange={() => {}}
+          onToggleAtivo={handleToggleAtivo}
         />
       </main>
     </div>

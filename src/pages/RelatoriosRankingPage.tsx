@@ -44,95 +44,11 @@ interface ServicoRanking {
 const RelatoriosRankingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'produtos' | 'clientes' | 'servicos'>('produtos');
 
-  const produtosMaisVendidos: ProdutoRanking[] = [
-    {
-      id: '1',
-      nome: 'Smartphone Samsung Galaxy A54',
-      categoria: 'Celulares',
-      quantidadeVendida: 45,
-      totalVendas: 22500.00,
-      lucro: 4500.00,
-      posicao: 1
-    },
-    {
-      id: '2',
-      nome: 'Fone Bluetooth JBL',
-      categoria: 'Acessórios',
-      quantidadeVendida: 38,
-      totalVendas: 3800.00,
-      lucro: 1140.00,
-      posicao: 2
-    },
-    {
-      id: '3',
-      nome: 'Carregador Turbo USB-C',
-      categoria: 'Acessórios',
-      quantidadeVendida: 67,
-      totalVendas: 2010.00,
-      lucro: 804.00,
-      posicao: 3
-    }
-  ];
+  const produtosMaisVendidos: ProdutoRanking[] = [];
 
-  const clientesTopCompras: ClienteRanking[] = [
-    {
-      id: '1',
-      nome: 'Maria Silva Santos',
-      email: 'maria.silva@email.com',
-      totalCompras: 5420.00,
-      numeroCompras: 12,
-      ticketMedio: 451.67,
-      posicao: 1
-    },
-    {
-      id: '2',
-      nome: 'João Carlos Oliveira',
-      email: 'joao.carlos@email.com',
-      totalCompras: 3890.50,
-      numeroCompras: 8,
-      ticketMedio: 486.31,
-      posicao: 2
-    },
-    {
-      id: '3',
-      nome: 'Ana Paula Costa',
-      email: 'ana.paula@email.com',
-      totalCompras: 2750.00,
-      numeroCompras: 15,
-      ticketMedio: 183.33,
-      posicao: 3
-    }
-  ];
+  const clientesTopCompras: ClienteRanking[] = [];
 
-  const servicosMaisSolicitados: ServicoRanking[] = [
-    {
-      id: '1',
-      nome: 'Troca de Tela de Celular',
-      categoria: 'Reparo de Tela',
-      numeroOs: 34,
-      valorMedio: 120.00,
-      totalFaturado: 4080.00,
-      posicao: 1
-    },
-    {
-      id: '2',
-      nome: 'Troca de Bateria',
-      categoria: 'Reparo de Bateria',
-      numeroOs: 28,
-      valorMedio: 80.00,
-      totalFaturado: 2240.00,
-      posicao: 2
-    },
-    {
-      id: '3',
-      nome: 'Formatação de Sistema',
-      categoria: 'Software',
-      numeroOs: 22,
-      valorMedio: 50.00,
-      totalFaturado: 1100.00,
-      posicao: 3
-    }
-  ];
+  const servicosMaisSolicitados: ServicoRanking[] = [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

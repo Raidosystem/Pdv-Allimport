@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../modules/auth/AuthContext';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 export interface UserPermissions {
   [moduleName: string]: {
@@ -183,8 +184,47 @@ export function useUserHierarchy() {
 
   // Obter funcionários
   const getEmployees = async (): Promise<Employee[]> => {
-    console.log('getEmployees - retornando lista vazia por enquanto');
-    return [];
+    try {
+      console.log('Buscando funcionários do Supabase...');
+      
+      const { data: funcionarios, error } = await supabase
+        .from('funcionarios')
+        .select(`
+          *,
+          login_funcionarios (
+            usuario,
+            ativo,
+            ultimo_acesso
+          )
+        `)
+        .order('criado_em', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar funcionários:', error);
+        toast.error('Erro ao carregar funcionários');
+        return [];
+      }
+
+      // Mapear dados para o formato esperado
+      const employeesFormatted: Employee[] = (funcionarios || []).map((func: any) => ({
+        id: func.id,
+        name: func.nome,
+        email: func.email || '',
+        position: func.cargo || 'Funcionário',
+        is_active: func.ativo,
+        user_id: func.user_id,
+        created_at: func.criado_em,
+        permissions: [] // Permissions serão carregadas separadamente se necessário
+      }));
+
+      console.log(`✅ Carregados ${employeesFormatted.length} funcionários`);
+      return employeesFormatted;
+      
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error);
+      toast.error('Erro ao carregar funcionários');
+      return [];
+    }
   };
 
   // Criar funcionário
@@ -217,50 +257,80 @@ export function useUserHierarchy() {
 
   // Obter módulos do sistema
   const getSystemModules = async () => {
-    return [
-      {
-        id: '1',
-        name: 'sales',
-        display_name: 'Vendas',
-        description: 'Realizar vendas e emitir cupons fiscais',
-        is_active: true
-      },
-      {
-        id: '2',
-        name: 'clients',
-        display_name: 'Clientes',
-        description: 'Gerenciar cadastro de clientes',
-        is_active: true
-      },
-      {
-        id: '3',
-        name: 'products',
-        display_name: 'Produtos',
-        description: 'Controle de estoque e produtos',
-        is_active: true
-      },
-      {
-        id: '4',
-        name: 'cashier',
-        display_name: 'Caixa',
-        description: 'Controle de caixa e movimento',
-        is_active: true
-      },
-      {
-        id: '5',
-        name: 'orders',
-        display_name: 'OS - Ordem de Serviço',
-        description: 'Gestão de ordens de serviço',
-        is_active: true
-      },
-      {
-        id: '6',
-        name: 'reports',
-        display_name: 'Relatórios',
-        description: 'Análises e relatórios de vendas',
-        is_active: true
+    try {
+      // Primeiro tenta buscar módulos da tabela, se existir
+      const { data: modulosDB, error: modulosError } = await supabase
+        .from('modulos_sistema')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      // Se a tabela existe e tem dados, usa ela
+      if (!modulosError && modulosDB && modulosDB.length > 0) {
+        console.log('✅ Módulos carregados da tabela modulos_sistema');
+        return modulosDB;
       }
-    ];
+
+      // Caso contrário, retorna módulos padrão do sistema
+      console.log('📋 Usando módulos padrão do sistema');
+      return [
+        {
+          id: 'sales',
+          name: 'sales',
+          display_name: 'Vendas',
+          description: 'Realizar vendas e emitir cupons fiscais',
+          is_active: true
+        },
+        {
+          id: 'clients',
+          name: 'clients',
+          display_name: 'Clientes',
+          description: 'Gerenciar cadastro de clientes',
+          is_active: true
+        },
+        {
+          id: 'products',
+          name: 'products',
+          display_name: 'Produtos',
+          description: 'Controle de estoque e produtos',
+          is_active: true
+        },
+        {
+          id: 'cashier',
+          name: 'cashier',
+          display_name: 'Caixa',
+          description: 'Controle de caixa e movimento',
+          is_active: true
+        },
+        {
+          id: 'orders',
+          name: 'orders',
+          display_name: 'OS - Ordem de Serviço',
+          description: 'Gestão de ordens de serviço',
+          is_active: true
+        },
+        {
+          id: 'reports',
+          name: 'reports',
+          display_name: 'Relatórios',
+          description: 'Análises e relatórios de vendas',
+          is_active: true
+        }
+      ];
+      
+    } catch (error) {
+      console.error('Erro ao buscar módulos:', error);
+      // Em caso de erro, retorna módulos básicos
+      return [
+        {
+          id: 'sales',
+          name: 'sales', 
+          display_name: 'Vendas',
+          description: 'Sistema de vendas',
+          is_active: true
+        }
+      ];
+    }
   };
 
   return {

@@ -51,97 +51,10 @@ export function AdministracaoPage() {
   // const [showUserForm, setShowUserForm] = useState(false)
   // const [loading, setLoading] = useState(false)
 
-  // Mock data para administração
-  const usuariosMock: Usuario[] = [
-    {
-      id: '1',
-      nome: 'João Silva',
-      email: 'joao.silva@allimport.com',
-      cargo: 'Administrador',
-      nivel: 'admin',
-      status: 'ativo',
-      ultimo_acesso: '2024-01-20T14:30:00',
-      criado_em: '2023-06-15T09:00:00'
-    },
-    {
-      id: '2',
-      nome: 'Ana Costa',
-      email: 'ana.costa@allimport.com',
-      cargo: 'Gerente de Vendas',
-      nivel: 'gerente',
-      status: 'ativo',
-      ultimo_acesso: '2024-01-20T16:45:00',
-      criado_em: '2023-08-10T10:30:00'
-    },
-    {
-      id: '3',
-      nome: 'Carlos Oliveira',
-      email: 'carlos.oliveira@allimport.com',
-      cargo: 'Vendedor',
-      nivel: 'vendedor',
-      status: 'ativo',
-      ultimo_acesso: '2024-01-19T18:20:00',
-      criado_em: '2023-09-05T11:15:00'
-    },
-    {
-      id: '4',
-      nome: 'Maria Santos',
-      email: 'maria.santos@allimport.com',
-      cargo: 'Operador de Caixa',
-      nivel: 'operador',
-      status: 'inativo',
-      ultimo_acesso: '2024-01-15T12:00:00',
-      criado_em: '2023-10-20T14:45:00'
-    },
-    {
-      id: '5',
-      nome: 'Pedro Lima',
-      email: 'pedro.lima@allimport.com',
-      cargo: 'Vendedor',
-      nivel: 'vendedor',
-      status: 'bloqueado',
-      ultimo_acesso: '2024-01-10T09:30:00',
-      criado_em: '2023-11-12T16:20:00'
-    }
-  ]
+  // Dados de administração - carregados do Supabase
+  const usuariosMock: Usuario[] = []
 
-  const permissoesMock: Permissao[] = [
-    {
-      id: '1',
-      modulo: 'Vendas',
-      acao: 'Criar Venda',
-      descricao: 'Permite criar novas vendas no sistema',
-      nivel_minimo: 'vendedor'
-    },
-    {
-      id: '2',
-      modulo: 'Vendas',
-      acao: 'Cancelar Venda',
-      descricao: 'Permite cancelar vendas existentes',
-      nivel_minimo: 'gerente'
-    },
-    {
-      id: '3',
-      modulo: 'Produtos',
-      acao: 'Cadastrar Produto',
-      descricao: 'Permite adicionar novos produtos',
-      nivel_minimo: 'gerente'
-    },
-    {
-      id: '4',
-      modulo: 'Relatórios',
-      acao: 'Visualizar Relatórios',
-      descricao: 'Acesso aos relatórios do sistema',
-      nivel_minimo: 'vendedor'
-    },
-    {
-      id: '5',
-      modulo: 'Administração',
-      acao: 'Gerenciar Usuários',
-      descricao: 'Permite gerenciar usuários do sistema',
-      nivel_minimo: 'admin'
-    }
-  ]
+  const permissoesMock: Permissao[] = []
 
   const configuracoesSystema: ConfiguracaoSistema[] = [
     {

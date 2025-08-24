@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>PDV Allimport</title>
+    <script>
+        // Redirect para a página inicial se for uma rota do SPA
+        var path = window.location.pathname;
+        if (path !== '/' && path.indexOf('/Pdv-Allimport') === -1) {
+            window.location.replace('/Pdv-Allimport/#' + path);
+        } else if (path.indexOf('/Pdv-Allimport') !== -1 && path !== '/Pdv-Allimport/') {
+            var newPath = path.replace('/Pdv-Allimport', '');
+            window.location.replace('/Pdv-Allimport/#' + newPath);
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        // Fallback loading
+        setTimeout(function() {
+            window.location.href = '/Pdv-Allimport/';
+        }, 2000);
+    </script>
+</body>
+</html>

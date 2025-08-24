@@ -119,16 +119,16 @@ export const productService = {
   async getById(id: string): Promise<Product | null> {
     try {
       const { data, error } = await supabase
-        .from('products')
+        .from('produtos')
         .select(`
           *,
-          categories (
+          categorias (
             id,
-            name
+            nome
           )
         `)
         .eq('id', id)
-        .eq('active', true)
+        .eq('ativo', true)
         .single()
 
       if (error) throw error
@@ -174,8 +174,8 @@ export const productService = {
 
   async updateStock(productId: string, newQuantity: number): Promise<void> {
     const { error } = await supabase
-      .from('products')
-      .update({ stock_quantity: newQuantity })
+      .from('produtos')
+      .update({ estoque_atual: newQuantity })
       .eq('id', productId)
 
     if (error) throw error
@@ -246,9 +246,9 @@ export const cashRegisterService = {
   async getOpenRegister(): Promise<CashRegister | null> {
     try {
       const { data, error } = await supabase
-        .from('cash_registers')
+        .from('caixa')
         .select('*')
-        .eq('status', 'open')
+        .eq('status', 'aberto')
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
@@ -276,11 +276,11 @@ export const cashRegisterService = {
   async openRegister(openingAmount: number, userId: string): Promise<CashRegister> {
     try {
       const { data, error } = await supabase
-        .from('cash_registers')
+        .from('caixa')
         .insert({
-          opened_by: userId,
-          opening_amount: openingAmount,
-          status: 'open'
+          user_id: userId,
+          saldo_inicial: openingAmount,
+          status: 'aberto'
         })
         .select()
         .single()
@@ -293,14 +293,15 @@ export const cashRegisterService = {
       // Fallback: retornar dados simulados
       const mockCashRegister: CashRegister = {
         id: `mock-cash-register-${Date.now()}`,
-        opened_by: userId,
-        opening_amount: openingAmount,
-        total_sales: 0,
-        status: 'open',
-        opened_at: new Date().toISOString(),
-        closed_at: undefined,
-        closed_by: undefined,
-        closing_amount: undefined
+        user_id: userId,
+        saldo_inicial: openingAmount,
+        saldo_final: 0,
+        status: 'aberto',
+        data_abertura: new Date().toISOString(),
+        data_fechamento: undefined,
+        observacoes: undefined,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
       
       // Salvar no localStorage para persistir
@@ -312,12 +313,12 @@ export const cashRegisterService = {
 
   async closeRegister(registerId: string, closingAmount: number, userId: string): Promise<void> {
     const { error } = await supabase
-      .from('cash_registers')
+      .from('caixa')
       .update({
-        closed_by: userId,
-        closing_amount: closingAmount,
-        closed_at: new Date().toISOString(),
-        status: 'closed'
+        user_id: userId,
+        saldo_final: closingAmount,
+        data_fechamento: new Date().toISOString(),
+        status: 'fechado'
       })
       .eq('id', registerId)
 
@@ -346,7 +347,7 @@ export const salesService = {
     try {
       // Tentar inserir no Supabase
       const { data: saleData, error: saleError } = await supabase
-        .from('sales')
+        .from('vendas')
         .insert({
           customer_id: sale.customer_id,
           cash_register_id: sale.cash_register_id,
@@ -373,7 +374,7 @@ export const salesService = {
       }))
 
       const { error: itemsError } = await supabase
-        .from('sale_items')
+        .from('itens_venda')
         .insert(saleItems)
 
       if (itemsError) throw itemsError
@@ -429,13 +430,13 @@ export const salesService = {
 
   async getById(id: string): Promise<Sale | null> {
     const { data, error } = await supabase
-      .from('sales')
+      .from('vendas')
       .select(`
         *,
-        customer:customers(*),
-        sale_items(
+        customer:clientes(*),
+        itens_venda(
           *,
-          product:products(*)
+          product:produtos(*)
         )
       `)
       .eq('id', id)
@@ -449,13 +450,13 @@ export const salesService = {
     const today = new Date().toISOString().split('T')[0]
     
     const { data, error } = await supabase
-      .from('sales')
+      .from('vendas')
       .select(`
         *,
-        customer:customers(*),
-        sale_items(
+        customer:clientes(*),
+        itens_venda(
           *,
-          product:products(*)
+          product:produtos(*)
         )
       `)
       .gte('created_at', `${today}T00:00:00.000Z`)
@@ -471,10 +472,10 @@ export const salesService = {
 export const categoryService = {
   async getAll() {
     const { data, error } = await supabase
-      .from('categories')
+      .from('categorias')
       .select('*')
-      .eq('active', true)
-      .order('name')
+      .eq('ativo', true)
+      .order('nome')
 
     if (error) throw error
     return data || []

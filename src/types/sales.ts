@@ -40,14 +40,15 @@ export interface Customer {
 
 export interface CashRegister {
   id: string
-  opened_by: string
-  closed_by?: string
-  opening_amount: number
-  closing_amount?: number
-  total_sales: number
-  opened_at: string
-  closed_at?: string
-  status: 'open' | 'closed'
+  user_id: string
+  data_abertura: string
+  data_fechamento?: string
+  saldo_inicial: number
+  saldo_final?: number
+  status: 'aberto' | 'fechado'
+  observacoes?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface Sale {

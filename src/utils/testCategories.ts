@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 
-// Teste de conectividade e estrutura da tabela categories
+// Teste de conectividade e estrutura da tabela categorias
 export async function testCategoryOperations() {
   console.log('🔍 Testando operações de categoria...')
   
@@ -8,7 +8,7 @@ export async function testCategoryOperations() {
     // 1. Testar se conseguimos conectar e ler categorias
     console.log('📖 Testando leitura de categorias...')
     const { data: categories, error: readError } = await supabase
-      .from('categories')
+      .from('categorias')
       .select('*')
       .limit(5)
     
@@ -24,8 +24,8 @@ export async function testCategoryOperations() {
     const testCategoryName = `Teste-${Date.now()}`
     
     const { data: newCategory, error: createError } = await supabase
-      .from('categories')
-      .insert([{ name: testCategoryName }])
+      .from('categorias')
+      .insert([{ nome: testCategoryName }])
       .select()
       .single()
     
@@ -39,18 +39,18 @@ export async function testCategoryOperations() {
     // 3. Testar exclusão da categoria teste
     console.log('🗑️ Limpando categoria teste...')
     const { error: deleteError } = await supabase
-      .from('categories')
+      .from('categorias')
       .delete()
       .eq('id', newCategory.id)
-    
+
     if (deleteError) {
       console.error('⚠️ Erro ao limpar categoria teste:', deleteError)
     } else {
       console.log('✅ Categoria teste removida com sucesso')
     }
-    
+
     return { success: true, categories, newCategory }
-    
+
   } catch (error) {
     console.error('💥 Erro geral no teste:', error)
     return { success: false, error }
@@ -62,16 +62,16 @@ export async function checkCategoryTableStructure() {
   try {
     // Tentar inserir uma categoria com dados mínimos para ver quais campos são obrigatórios
     const { data, error } = await supabase
-      .from('categories')
-      .insert([{ name: 'Test Structure' }])
+      .from('categorias')
+      .insert([{ nome: 'Test Structure' }])
       .select()
     
     if (error) {
-      console.error('Estrutura da tabela categories:', error)
+      console.error('Estrutura da tabela categorias:', error)
       
       // Verificar se a tabela existe
       if (error.message?.includes('does not exist')) {
-        console.error('❌ A tabela "categories" não existe no banco de dados')
+        console.error('❌ A tabela "categorias" não existe no banco de dados')
         return { tableExists: false, error }
       }
       
@@ -86,10 +86,10 @@ export async function checkCategoryTableStructure() {
     
     // Limpar o registro teste
     if (data && data.length > 0) {
-      await supabase.from('categories').delete().eq('id', data[0].id)
+      await supabase.from('categorias').delete().eq('id', data[0].id)
     }
     
-    console.log('✅ Estrutura da tabela categories está correta')
+    console.log('✅ Estrutura da tabela categorias está correta')
     return { tableExists: true, structure: data }
     
   } catch (error) {

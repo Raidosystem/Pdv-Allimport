@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Settings, Users, Shield, Database, Key, Mail, Bell, Server, Activity, Lock, User, Plus, Edit, Trash2, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Save } from 'lucide-react'
+import { Settings, Users, Shield, Database, Server, Activity, Lock, Plus, Edit, Trash2, CheckCircle, XCircle, AlertTriangle, Save } from 'lucide-react'
 
 type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'seguranca'
 
@@ -45,10 +45,11 @@ interface LogSistema {
 
 export function AdministracaoPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedUser, setSelectedUser] = useState<Usuario | null>(null)
-  const [showUserForm, setShowUserForm] = useState(false)
-  const [loading, setLoading] = useState(false)
+  // Estados comentados para evitar warnings - podem ser implementados futuramente
+  // const [searchTerm, setSearchTerm] = useState('')
+  // const [selectedUser, setSelectedUser] = useState<Usuario | null>(null)
+  // const [showUserForm, setShowUserForm] = useState(false)
+  // const [loading, setLoading] = useState(false)
 
   // Mock data para administração
   const usuariosMock: Usuario[] = [
@@ -258,21 +259,21 @@ export function AdministracaoPage() {
     return new Date(date).toLocaleDateString('pt-BR')
   }
 
-  const handleSaveConfig = async (config: ConfiguracaoSistema, novoValor: string) => {
-    setLoading(true)
+  const handleSaveConfig = async (config: ConfiguracaoSistema, _novoValor: string) => {
+    // setLoading(true)
     // Simular salvamento
     setTimeout(() => {
       alert(`Configuração "${config.descricao}" salva com sucesso!`)
-      setLoading(false)
+      // setLoading(false)
     }, 1000)
   }
 
-  const handleToggleUserStatus = (userId: string) => {
+  const handleToggleUserStatus = (_userId: string) => {
     // Simular mudança de status
     alert(`Status do usuário alterado com sucesso!`)
   }
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = (_userId: string) => {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       alert('Usuário excluído com sucesso!')
     }
@@ -446,7 +447,7 @@ export function AdministracaoPage() {
           <p className="text-gray-600 mt-1">Gerencie usuários e suas permissões</p>
         </div>
         <button
-          onClick={() => setShowUserForm(true)}
+          onClick={() => console.log('Novo usuário')}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -522,7 +523,7 @@ export function AdministracaoPage() {
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => setSelectedUser(usuario)}
+                        onClick={() => console.log('Usuário selecionado:', usuario.nome)}
                         className="p-1 text-blue-600 hover:text-blue-800"
                         title="Editar"
                       >

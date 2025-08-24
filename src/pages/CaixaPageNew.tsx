@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle } from 'lucide-react'
 import { useCaixa } from '../hooks/useCaixa'
-import type { AberturaCaixaForm, FechamentoCaixaForm, MovimentacaoForm } from '../types/caixa'
+import type { AberturaCaixaForm } from '../types/caixa'
 
 type ViewMode = 'dashboard' | 'movimentacoes' | 'historico'
 

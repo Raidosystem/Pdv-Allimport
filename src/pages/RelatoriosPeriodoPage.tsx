@@ -48,41 +48,13 @@ const RelatoriosPeriodoPage: React.FC = () => {
   });
 
   const [results] = useState<ResultData>({
-    totalVendas: 5680.75,
-    numeroPedidos: 42,
-    ticketMedio: 135.26,
-    vendas: [
-      {
-        id: '1',
-        data: '2025-01-15 14:30',
-        cliente: 'Maria Santos',
-        total: 250.00,
-        formaPagamento: 'PIX',
-        funcionario: 'João Silva',
-        tipo: 'Com Cliente'
-      },
-      {
-        id: '2',
-        data: '2025-01-15 15:45',
-        cliente: 'Venda Avulsa',
-        total: 89.90,
-        formaPagamento: 'Cartão',
-        funcionario: 'Maria Costa',
-        tipo: 'Avulsa'
-      },
-      {
-        id: '3',
-        data: '2025-01-15 16:20',
-        cliente: 'Carlos Oliveira',
-        total: 450.50,
-        formaPagamento: 'Dinheiro',
-        funcionario: 'João Silva',
-        tipo: 'Com Cliente'
-      }
-    ]
+    totalVendas: 0,
+    numeroPedidos: 0,
+    ticketMedio: 0,
+    vendas: []
   });
 
-  const funcionarios = ['João Silva', 'Maria Costa', 'Ana Santos', 'Pedro Oliveira'];
+  const funcionarios: string[] = []; // Carregados do Supabase
   const formasPagamento = ['PIX', 'Cartão', 'Dinheiro'];
   const tiposVenda = ['Com Cliente', 'Avulsa'];
 

@@ -56,33 +56,21 @@ export function RelatoriosPage() {
 
   const clientesMock: RelatorioCliente[] = []
 
-  // Dados para gráficos
-  const vendasDiarias = [
-    { dia: '15/01', vendas: 8, valor: 1250.80 },
-    { dia: '16/01', vendas: 12, valor: 2340.50 },
-    { dia: '17/01', vendas: 6, valor: 890.30 },
-    { dia: '18/01', vendas: 15, valor: 3420.90 },
-    { dia: '19/01', vendas: 10, valor: 1980.70 },
-    { dia: '20/01', vendas: 18, valor: 4230.20 }
-  ]
+  // Dados para gráficos - carregados do Supabase
+  const vendasDiarias: any[] = []
 
-  const categoriaVendas = [
-    { name: 'Smartphones', value: 45, color: '#0088FE' },
-    { name: 'Acessórios', value: 30, color: '#00C49F' },
-    { name: 'Áudio', value: 15, color: '#FFBB28' },
-    { name: 'Capinhas', value: 10, color: '#FF8042' }
-  ]
+  const categoriaVendas: any[] = []
 
-  // Estatísticas gerais
+  // Estatísticas gerais - carregadas do Supabase
   const stats = {
-    vendas_hoje: 12,
-    valor_hoje: 2450.80,
-    vendas_mes: 87,
-    valor_mes: 15420.50,
+    vendas_hoje: 0,
+    valor_hoje: 0,
+    vendas_mes: 0,
+    valor_mes: 0,
     produtos_baixo_estoque: estoqueMock.filter(p => p.status === 'baixo').length,
     produtos_sem_estoque: estoqueMock.filter(p => p.status === 'zerado').length,
     clientes_ativos: clientesMock.filter(c => c.status === 'ativo').length,
-    ticket_medio: 177.48
+    ticket_medio: 0
   }
 
   const formatCurrency = (value: number) => {

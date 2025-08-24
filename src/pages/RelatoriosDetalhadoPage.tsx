@@ -38,50 +38,7 @@ const RelatoriosDetalhadoPage: React.FC = () => {
     funcionario: ''
   });
 
-  const vendasDetalhadas: VendaDetalhada[] = [
-    {
-      id: '1',
-      data: '2025-01-15 14:30:25',
-      cliente: 'Maria Silva Santos',
-      tipo: 'Venda',
-      total: 450.00,
-      formaPagamento: 'PIX',
-      funcionario: 'João Silva',
-      status: 'Finalizada',
-      itens: [
-        { produto: 'Smartphone Samsung A54', quantidade: 1, preco: 350.00, total: 350.00 },
-        { produto: 'Película de Vidro', quantidade: 1, preco: 25.00, total: 25.00 },
-        { produto: 'Carregador USB-C', quantidade: 1, preco: 75.00, total: 75.00 }
-      ]
-    },
-    {
-      id: '2',
-      data: '2025-01-15 15:45:10',
-      cliente: 'Carlos Oliveira',
-      tipo: 'OS',
-      total: 120.00,
-      formaPagamento: 'Cartão',
-      funcionario: 'Maria Costa',
-      status: 'Concluída',
-      itens: [
-        { produto: 'Troca de Tela iPhone 12', quantidade: 1, preco: 120.00, total: 120.00 }
-      ]
-    },
-    {
-      id: '3',
-      data: '2025-01-15 16:20:45',
-      cliente: 'Ana Paula Costa',
-      tipo: 'Venda',
-      total: 189.90,
-      formaPagamento: 'Dinheiro',
-      funcionario: 'João Silva',
-      status: 'Finalizada',
-      itens: [
-        { produto: 'Fone Bluetooth JBL', quantidade: 1, preco: 149.90, total: 149.90 },
-        { produto: 'Cabo USB Lightning', quantidade: 1, preco: 40.00, total: 40.00 }
-      ]
-    }
-  ];
+  const vendasDetalhadas: VendaDetalhada[] = [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -235,8 +192,7 @@ const RelatoriosDetalhadoPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Todos</option>
-                <option value="João Silva">João Silva</option>
-                <option value="Maria Costa">Maria Costa</option>
+                {/* Funcionários carregados do Supabase */}
               </select>
             </div>
           </div>

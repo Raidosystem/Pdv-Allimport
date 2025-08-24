@@ -27,6 +27,7 @@ export class ClienteService {
     const { data, error } = await query
 
     if (error) {
+      console.error('Erro ao buscar clientes no Supabase:', error)
       throw new Error(`Erro ao buscar clientes: ${error.message}`)
     }
 

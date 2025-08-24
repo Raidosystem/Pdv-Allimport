@@ -99,6 +99,8 @@ export function ClienteSelector({
       } catch (error) {
         console.error('Erro ao buscar clientes:', error)
         setClientesEncontrados([])
+        // Mostrar toast de erro para o usuário
+        toast.error('Erro ao buscar clientes. Tente novamente.')
       } finally {
         setLoadingBusca(false)
       }

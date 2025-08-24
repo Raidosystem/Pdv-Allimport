@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import type { OrdemServico, StatusOS, TipoEquipamento } from '../types/ordemServico'
+import { supabase } from '../lib/supabase'
 
 // Interface simplificada para o hook
 interface OrdemServicoInput {
@@ -20,111 +21,60 @@ export function useOrdemServico() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Carregar ordens de serviço (mock data por enquanto)
+  // Carregar ordens de serviço do Supabase
   const carregarOS = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // Mock data - em produção seria uma chamada real ao Supabase
-      const mockData: OrdemServico[] = [
-        {
-          id: '1',
-          cliente_id: '1',
-          data_entrada: '2024-01-15',
-          status: 'Em análise',
-          tipo: 'Celular',
-          marca: 'Samsung',
-          modelo: 'Galaxy S23',
-          defeito_relatado: 'Tela trincada',
-          valor_orcamento: 250.00,
-          checklist: { tela_quebrada: true, liga: true },
-          usuario_id: '1',
-          criado_em: new Date().toISOString(),
-          atualizado_em: new Date().toISOString(),
-          cliente: {
-            id: '1',
-            nome: 'João Silva',
-            telefone: '(11) 99999-9999',
-            email: 'joao@email.com',
-            cpf_cnpj: '123.456.789-00',
-            endereco: 'Rua A, 123',
-            cidade: 'São Paulo',
-            estado: 'SP',
-            cep: '01000-000',
-            tipo: 'Física',
-            ativo: true,
-            criado_em: new Date().toISOString(),
-            atualizado_em: new Date().toISOString()
-          }
-        },
-        {
-          id: '2',
-          cliente_id: '2', 
-          data_entrada: '2024-01-16',
-          status: 'Em conserto',
-          tipo: 'Notebook',
-          marca: 'Dell',
-          modelo: 'Inspiron 15',
-          defeito_relatado: 'Não liga',
-          valor_orcamento: 180.00,
-          checklist: { liga: false },
-          usuario_id: '1',
-          criado_em: new Date().toISOString(),
-          atualizado_em: new Date().toISOString(),
-          cliente: {
-            id: '2',
-            nome: 'Maria Santos',
-            telefone: '(11) 88888-8888',
-            email: 'maria@email.com',
-            cpf_cnpj: '987.654.321-00',
-            endereco: 'Rua B, 456',
-            cidade: 'São Paulo',
-            estado: 'SP',
-            cep: '02000-000',
-            tipo: 'Física',
-            ativo: true,
-            criado_em: new Date().toISOString(),
-            atualizado_em: new Date().toISOString()
-          }
-        },
-        {
-          id: '3',
-          cliente_id: '3',
-          data_entrada: '2024-01-17',
-          status: 'Pronto',
-          tipo: 'Console',
-          marca: 'Sony',
-          modelo: 'PlayStation 5',
-          defeito_relatado: 'Erro de leitura de disco',
-          valor_orcamento: 320.00,
-          checklist: { liga: true },
-          usuario_id: '1',
-          criado_em: new Date().toISOString(),
-          atualizado_em: new Date().toISOString(),
-          cliente: {
-            id: '3',
-            nome: 'Carlos Oliveira',
-            telefone: '(11) 77777-7777',
-            email: 'carlos@email.com',
-            cpf_cnpj: '456.789.123-00',
-            endereco: 'Rua C, 789',
-            cidade: 'São Paulo',
-            estado: 'SP',
-            cep: '03000-000',
-            tipo: 'Física',
-            ativo: true,
-            criado_em: new Date().toISOString(),
-            atualizado_em: new Date().toISOString()
-          }
-        }
-      ]
+      // Buscar dados reais do Supabase
+      const { data: ordensServico, error: osError } = await supabase
+        .from('ordens_servico')
+        .select(`
+          *,
+          clientes (
+            id,
+            nome,
+            telefone,
+            email,
+            cpf_cnpj,
+            endereco,
+            cidade,
+            estado,
+            cep
+          )
+        `)
+        .order('criado_em', { ascending: false })
       
-      setOrdensServico(mockData)
+      if (osError) {
+        throw new Error(`Erro ao buscar ordens de serviço: ${osError.message}`)
+      }
+      
+      // Mapear dados para o formato esperado
+      const ordensFormatadas: OrdemServico[] = (ordensServico || []).map((os: any) => ({
+        ...os,
+        cliente: os.clientes ? {
+          ...os.clientes,
+          tipo: 'Física',
+          ativo: true,
+          criado_em: new Date().toISOString(),
+          atualizado_em: new Date().toISOString()
+        } : undefined
+      }))
+      
+      setOrdensServico(ordensFormatadas)
+      
+      if (ordensFormatadas.length === 0) {
+        console.log('✅ Nenhuma ordem de serviço encontrada - sistema limpo!')
+      }
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
       setError(errorMessage)
-      toast.error(errorMessage)
+      console.error('Erro ao carregar ordens de serviço:', errorMessage)
+      
+      // Em caso de erro, mostrar lista vazia ao invés de dados simulados
+      setOrdensServico([])
     } finally {
       setLoading(false)
     }

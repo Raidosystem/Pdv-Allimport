@@ -42,24 +42,21 @@ const ResumoDiarioPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [data] = useState<DailySummaryData>({
-    totalVendas: 2340.50,
-    numeroPedidos: 28,
+    totalVendas: 0,
+    numeroPedidos: 0,
     formasPagamento: {
-      pix: 1250.30,
-      cartao: 890.20,
-      dinheiro: 200.00
+      pix: 0,
+      cartao: 0,
+      dinheiro: 0
     },
-    vendasComCliente: 1890.50,
-    vendasAvulsas: 450.00,
-    vendasPorFuncionario: [
-      { funcionario: 'Maria Silva', vendas: 15, total: 1200.50 },
-      { funcionario: 'João Santos', vendas: 13, total: 1140.00 }
-    ],
-    osFechadas: 8,
+    vendasComCliente: 0,
+    vendasAvulsas: 0,
+    vendasPorFuncionario: [],
+    osFechadas: 0,
     movimentoCaixa: {
-      entradas: 2340.50,
-      saidas: 150.00,
-      saldo: 2190.50
+      entradas: 0,
+      saidas: 0,
+      saldo: 0
     }
   });
 

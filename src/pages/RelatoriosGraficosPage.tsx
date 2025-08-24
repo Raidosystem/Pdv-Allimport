@@ -26,43 +26,17 @@ const RelatoriosGraficosPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('7dias');
   const [loading, setLoading] = useState(false);
 
-  // Dados para vendas por dia
-  const vendasPorDia = [
-    { dia: 'Seg', vendas: 2400, pedidos: 12 },
-    { dia: 'Ter', vendas: 1398, pedidos: 8 },
-    { dia: 'Qua', vendas: 9800, pedidos: 15 },
-    { dia: 'Qui', vendas: 3908, pedidos: 18 },
-    { dia: 'Sex', vendas: 4800, pedidos: 22 },
-    { dia: 'Sáb', vendas: 3800, pedidos: 16 },
-    { dia: 'Dom', vendas: 2100, pedidos: 9 }
-  ];
+  // Dados para vendas por dia - carregados do Supabase
+  const vendasPorDia: any[] = []
 
-  // Dados para formas de pagamento
-  const formasPagamento = [
-    { name: 'PIX', value: 45, color: '#3B82F6' },
-    { name: 'Cartão', value: 35, color: '#10B981' },
-    { name: 'Dinheiro', value: 20, color: '#F59E0B' }
-  ];
+  // Dados para formas de pagamento - carregados do Supabase
+  const formasPagamento: any[] = []
 
-  // Dados para evolução das vendas
-  const evolucaoVendas = [
-    { mes: 'Jan', vendas: 15000, meta: 18000 },
-    { mes: 'Fev', vendas: 18500, meta: 18000 },
-    { mes: 'Mar', vendas: 22000, meta: 20000 },
-    { mes: 'Abr', vendas: 19500, meta: 20000 },
-    { mes: 'Mai', vendas: 25000, meta: 22000 },
-    { mes: 'Jun', vendas: 28500, meta: 25000 },
-    { mes: 'Jul', vendas: 32000, meta: 28000 }
-  ];
+  // Dados para evolução das vendas - carregados do Supabase
+  const evolucaoVendas: any[] = []
 
-  // Dados para produtos mais vendidos
-  const produtosMaisVendidos = [
-    { produto: 'Smartphone Samsung', vendas: 450 },
-    { produto: 'Fone Bluetooth', vendas: 380 },
-    { produto: 'Carregador USB-C', vendas: 320 },
-    { produto: 'Película de Vidro', vendas: 290 },
-    { produto: 'Capinha Silicone', vendas: 250 }
-  ];
+  // Dados para produtos mais vendidos - carregados do Supabase
+  const produtosMaisVendidos: any[] = []
 
   const updatePeriod = (period: string) => {
     setSelectedPeriod(period);

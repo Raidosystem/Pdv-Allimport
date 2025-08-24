@@ -580,7 +580,7 @@ export function DashboardPage() {
                         <Link
                           key={option.path}
                           to={option.path}
-                          className="flex items-start p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-lg bg-white hover:bg-blue-50 transition-all duration-200 group animate-in slide-in-from-bottom duration-300 transform hover:scale-102"
+                          className="flex items-start p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-lg bg-white hover:bg-blue-50 transition-all duration-300 group animate-in slide-in-from-bottom transform hover:scale-102"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <div className="flex-shrink-0 mr-4">

@@ -22,7 +22,7 @@ export function CaixaPage() {
     adicionarMovimentacao
   } = useCaixa()
 
-  // Mock data para demonstração
+  // Mock data para demonstração - interface rápida
   const movimentacoes = caixaAtivo?.movimentacoes_caixa || []
   const caixas = caixaAtivo ? [caixaAtivo] : []
 
@@ -33,14 +33,14 @@ export function CaixaPage() {
     return matchesSearch && matchesTipo
   })
 
-  // Estatísticas
+  // Estatísticas - mostrar valores mesmo durante carregamento
   const stats = {
     caixaAberto: caixaAtivo ? true : false,
     valorInicial: caixaAtivo?.valor_inicial || 0,
     totalEntradas: caixaAtivo?.total_entradas || 0,
     totalSaidas: caixaAtivo?.total_saidas || 0,
     saldoAtual: caixaAtivo?.saldo_atual || 0,
-    totalMovimentacoes: caixaAtivo?.total_movimentacoes || 0
+    totalMovimentacoes: movimentacoes.length || 0
   }
 
   const formatCurrency = (value: number) => {
@@ -575,7 +575,7 @@ export function CaixaPage() {
 
             {/* Tabela de Movimentações */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              {loading ? (
+              {loading && movimentacoes.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4" />
                   <p className="text-gray-600">Carregando movimentações...</p>
@@ -658,7 +658,7 @@ export function CaixaPage() {
               <h3 className="text-lg font-semibold text-gray-900">Histórico de Caixas</h3>
             </div>
             
-            {loading ? (
+            {loading && caixas.length === 0 ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4" />
                 <p className="text-gray-600">Carregando histórico...</p>

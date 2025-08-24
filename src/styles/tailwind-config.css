@@ -1,0 +1,222 @@
+/* =============================================================================
+   CSS Configuration for PDV Allimport - Tailwind CSS Support
+   ============================================================================= */
+
+/* 
+  Este arquivo configura o suporte completo ao Tailwind CSS no projeto.
+  As diretivas @tailwind são processadas pelo PostCSS durante o build.
+*/
+
+/* Fontes personalizadas do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Diretivas principais do Tailwind CSS */
+@tailwind base;
+@tailwind components; 
+@tailwind utilities;
+
+/* =============================================================================
+   Variáveis CSS Customizadas para PDV Allimport
+   ============================================================================= */
+
+:root {
+  /* Fonte principal */
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  /* Tema claro por padrão para ambiente comercial */
+  color-scheme: light;
+  color: #0f172a;
+  background-color: #ffffff;
+
+  /* Otimizações de rendering */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  /* Variáveis de cores do PDV */
+  --color-primary: #f97316;
+  --color-secondary: #111827;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+}
+
+/* =============================================================================
+   Estilos Base do Sistema PDV
+   ============================================================================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8fafc;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* =============================================================================
+   Componentes Customizados com @apply
+   ============================================================================= */
+
+@layer components {
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent;
+  }
+}
+
+/* =============================================================================
+   Utilitários Customizados
+   ============================================================================= */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+}
+
+/* =============================================================================
+   Animações Customizadas
+   ============================================================================= */
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateX(-100%); 
+  }
+  to { 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0,-30px,0);
+  }
+  70% {
+    transform: translate3d(0,-15px,0);
+  }
+  90% {
+    transform: translate3d(0,-4px,0);
+  }
+}
+
+/* =============================================================================
+   Responsividade e Media Queries
+   ============================================================================= */
+
+/* Mobile First - Extra Small devices */
+@media (max-width: 475px) {
+  :root {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 0.5rem;
+  }
+}
+
+/* Small devices */
+@media (min-width: 476px) and (max-width: 640px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+/* Medium devices */
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* Large devices and up */
+@media (min-width: 1025px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* =============================================================================
+   Impressão - Otimizações para PDV
+   ============================================================================= */
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background: white !important;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}

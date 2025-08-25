@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Campo Preço</title>
+</head>
+<body>
+    <h3>Teste de Input de Preço</h3>
+    <input type="text" id="preco" placeholder="Digite o preço (ex: 25,50)" />
+    <p id="resultado"></p>
+
+    <script>
+        function formatPriceInput(value) {
+            // Remove todos os caracteres não numéricos exceto vírgula e ponto
+            let cleanValue = value.replace(/[^\d.,]/g, '')
+            
+            // Substitui vírgula por ponto para padronizar
+            cleanValue = cleanValue.replace(',', '.')
+            
+            // Se há mais de um ponto, mantém apenas o último
+            const parts = cleanValue.split('.')
+            if (parts.length > 2) {
+                cleanValue = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1]
+            }
+            
+            // Limita a 2 casas decimais
+            if (cleanValue.includes('.')) {
+                const [integerPart, decimalPart] = cleanValue.split('.')
+                cleanValue = integerPart + '.' + decimalPart.substring(0, 2)
+            }
+            
+            return cleanValue
+        }
+
+        document.getElementById('preco').addEventListener('input', function(e) {
+            const rawValue = e.target.value
+            const formatted = formatPriceInput(rawValue)
+            const numericValue = parseFloat(formatted) || 0
+            
+            document.getElementById('resultado').innerHTML = `
+                <strong>Valor digitado:</strong> ${rawValue}<br>
+                <strong>Valor formatado:</strong> ${formatted}<br>
+                <strong>Valor numérico:</strong> ${numericValue}
+            `
+            
+            // Atualiza o campo com o valor formatado
+            e.target.value = formatted
+        })
+    </script>
+</body>
+</html>

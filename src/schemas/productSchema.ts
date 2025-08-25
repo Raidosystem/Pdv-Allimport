@@ -16,13 +16,40 @@ export const productSchema = z.object({
   categoria: z.string()
     .min(1, 'Categoria é obrigatória'),
   
-  preco_venda: z.number()
-    .min(0.01, 'Preço de venda deve ser maior que zero')
-    .max(999999.99, 'Preço de venda muito alto'),
+  preco_venda: z.union([
+    z.number(),
+    z.string().transform((val, ctx) => {
+      const num = parseFloat(val.replace(',', '.'))
+      if (isNaN(num)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Preço de venda deve ser um número válido'
+        })
+        return z.NEVER
+      }
+      return num
+    })
+  ])
+    .refine(val => val > 0.01, 'Preço de venda deve ser maior que zero')
+    .refine(val => val <= 999999.99, 'Preço de venda muito alto'),
   
-  preco_custo: z.number()
-    .min(0, 'Preço de custo não pode ser negativo')
-    .max(999999.99, 'Preço de custo muito alto')
+  preco_custo: z.union([
+    z.number(),
+    z.string().transform((val, ctx) => {
+      if (val === '' || val === '0') return 0
+      const num = parseFloat(val.replace(',', '.'))
+      if (isNaN(num)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Preço de custo deve ser um número válido'
+        })
+        return z.NEVER
+      }
+      return num
+    })
+  ])
+    .refine(val => val >= 0, 'Preço de custo não pode ser negativo')
+    .refine(val => val <= 999999.99, 'Preço de custo muito alto')
     .optional(),
   
   estoque: z.number()
@@ -46,3 +73,9 @@ export const productSchema = z.object({
 })
 
 export type ProductFormSchema = z.infer<typeof productSchema>
+
+// Tipo para o formulário com campos de preço como string
+export type ProductFormInput = Omit<ProductFormSchema, 'preco_venda' | 'preco_custo'> & {
+  preco_venda: string | number
+  preco_custo: string | number
+}

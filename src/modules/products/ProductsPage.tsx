@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
-import { ProductModal } from '../../components/product/ProductModal'
+import { ProductFormModal } from '../../components/product/ProductFormModal'
 import type { Product } from '../../types/product'
 
 export function ProductsPage() {
@@ -13,6 +13,14 @@ export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Debug logging
+  console.log('🏪 [PRODUTOS] ProductsPage - showProductModal:', showProductModal)
+  
+  // TESTE FORÇADO - remover depois
+  useEffect(() => {
+    console.log('🧪 [PRODUTOS] Estado do modal mudou:', showProductModal)
+  }, [showProductModal])
 
   // Dados de exemplo para teste
   const exampleProducts: Product[] = [
@@ -47,22 +55,31 @@ export function ProductsPage() {
       setProducts(exampleProducts)
       setLoading(false)
     }, 1000)
-  }, [])
+    
+    console.log('🖥️ [PRODUTOS] useEffect - showProductModal:', showProductModal)
+  }, [showProductModal])
 
   // Fechar modal
   const handleCloseModal = () => {
+    console.log('🔄 Fechando modal de produto')
     setShowProductModal(false)
     setEditingProduct(null)
   }
 
   // Sucesso no modal
   const handleModalSuccess = () => {
+    console.log('✅ Modal de produto - sucesso!')
     handleCloseModal()
     toast.success(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!')
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* TESTE DE VISIBILIDADE */}
+      <div style={{backgroundColor: 'red', color: 'white', padding: '20px', fontSize: '24px', textAlign: 'center'}}>
+        🚨 PÁGINA PRODUTOS CARREGOU - TESTE DE VISIBILIDADE 🚨
+      </div>
+      
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Barra de ações */}
@@ -78,11 +95,27 @@ export function ProductsPage() {
           </div>
           
           <Button
-            onClick={() => setShowProductModal(true)}
+            onClick={() => {
+              console.log('🚀 [PRODUTOS] Botão Novo Produto clicado!')
+              console.log('🚀 [PRODUTOS] showProductModal ANTES:', showProductModal)
+              setShowProductModal(true)
+              console.log('🚀 [PRODUTOS] showProductModal DEPOIS: true')
+            }}
             className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Novo Produto
+          </Button>
+          
+          {/* BOTÃO DE TESTE - REMOVER DEPOIS */}
+          <Button
+            onClick={() => {
+              console.log('🧪 [TESTE] Forçando modal = true')
+              setShowProductModal(true)
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white ml-2"
+          >
+            TESTE Modal
           </Button>
         </div>
         
@@ -263,7 +296,7 @@ export function ProductsPage() {
       </main>
 
       {/* Modal de Produto */}
-      <ProductModal
+      <ProductFormModal
         isOpen={showProductModal}
         onClose={handleCloseModal}
         onSuccess={handleModalSuccess}

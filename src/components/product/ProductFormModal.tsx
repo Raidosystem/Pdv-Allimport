@@ -2,15 +2,17 @@ import { X } from 'lucide-react'
 import { Button } from '../ui/Button'
 import ProductForm from './ProductForm'
 
-interface ProductModalProps {
+// ProductFormModal component for creating/editing products
+
+interface ProductFormModalProps {
   isOpen: boolean
   onClose: () => void
-  productId?: string
   onSuccess?: () => void
+  productId?: string
 }
 
-export function ProductModal({ isOpen, onClose, productId, onSuccess }: ProductModalProps) {
-  console.log('🆕 ProductModal NOVO renderizado - isOpen:', isOpen, 'productId:', productId, 'timestamp:', new Date().toISOString())
+export function ProductFormModal({ isOpen, onClose, onSuccess, productId }: ProductFormModalProps) {
+  console.log('🔥 ProductFormModal renderizado - isOpen:', isOpen, 'productId:', productId)
   
   if (!isOpen) return null
 

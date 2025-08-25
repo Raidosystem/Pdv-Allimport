@@ -1,19 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Save, RotateCcw, Barcode as BarcodeIcon, Hash, Package } from 'lucide-react'
-
+import { z } from 'zod'
+import { toast } from 'react-hot-toast'
 import { Button } from '../ui/Button'
-import { BackButton } from '../ui/BackButton'
 import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
-import { ImageUpload } from '../ui/ImageUpload'
+import { PriceInput } from '../ui/PriceInput'
+import { useProducts } from '../../hooks/useProducts'
 import { CategorySelector } from './CategorySelector'
 
-import { productSchema } from '../../schemas/productSchema'
-import { useProducts } from '../../hooks/useProducts'
-import { UNIDADES_MEDIDA } from '../../types/product'
-import type { ProductFormSchema } from '../../schemas/productSchema'
+const ProductFormSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório'),
+  codigo: z.string().min(1, 'Código é obrigatório'),
+  categoria: z.string().min(1, 'Categoria é obrigatória'),
+  unidade: z.string().min(1, 'Unidade é obrigatória'),
+  preco_venda: z.number().min(0, 'Preço de venda deve ser maior que zero'),
+  preco_custo: z.number().min(0, 'Preço de custo deve ser maior ou igual a zero'),
+  estoque: z.number().min(0, 'Estoque deve ser maior ou igual a zero'),
+  ativo: z.boolean()
+})
+
+type ProductFormData = z.infer<typeof ProductFormSchema>
 
 interface ProductFormProps {
   productId?: string
@@ -21,402 +29,244 @@ interface ProductFormProps {
   onCancel?: () => void
 }
 
-export function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
-  const [selectedImage, setSelectedImage] = useState<File | string | null>(null)
-  const [isCodeManual, setIsCodeManual] = useState(false)
-  
-  const {
-    loading,
-    categories,
-    generateCode,
-    fetchCategories,
-    createCategory,
-    saveProduct,
-    getProduct,
-    checkCodeExists
-  } = useProducts()
+function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
+  const [loading, setLoading] = useState(false)
+  const { categories, fetchCategories, createCategory, saveProduct } = useProducts()
 
   const {
-    register,
-    handleSubmit,
     control,
-    setValue,
-    reset,
+    handleSubmit,
     formState: { errors, isSubmitting }
-  } = useForm<ProductFormSchema>({
-    resolver: zodResolver(productSchema),
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(ProductFormSchema),
     defaultValues: {
       nome: '',
       codigo: '',
-      codigo_barras: '',
       categoria: '',
+      unidade: 'UN',
       preco_venda: 0,
       preco_custo: 0,
       estoque: 0,
-      unidade: 'UN',
-      descricao: '',
-      fornecedor: '',
       ativo: true
     }
   })
 
-  // Carregar dados iniciais
   useEffect(() => {
     fetchCategories()
-    
-    if (productId) {
-      loadProduct()
-    } else {
-      generateNewCode()
-    }
-  }, [productId])
+  }, [fetchCategories])
 
-  const loadProduct = async () => {
-    if (!productId) return
-    
-    const product = await getProduct(productId)
-    if (product) {
-      reset({
-        nome: product.nome,
-        codigo: product.codigo,
-        codigo_barras: product.codigo_barras || '',
-        categoria: product.categoria,
-        preco_venda: product.preco_venda,
-        preco_custo: product.preco_custo || 0,
-        estoque: product.estoque,
-        unidade: product.unidade,
-        descricao: product.descricao || '',
-        fornecedor: product.fornecedor || '',
-        ativo: product.ativo
-      })
+  const getErrorMessage = (error: any): string => {
+    if (!error) return ''
+    if (typeof error === 'string') return error
+    if (error.message) return error.message
+    return 'Erro de validação'
+  }
+
+  const handleSubmitForm = async (data: ProductFormData) => {
+    if (loading) return
+
+    setLoading(true)
+    try {
+      await saveProduct(data, productId)
+      toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')
       
-      if (product.imagem_url) {
-        setSelectedImage(product.imagem_url as string)
+      if (onSuccess) {
+        onSuccess()
       }
-      setIsCodeManual(true)
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error)
+      toast.error('Erro ao salvar produto')
+    } finally {
+      setLoading(false)
     }
-  }
-
-  const generateNewCode = async () => {
-    if (!isCodeManual) {
-      const newCode = await generateCode()
-      setValue('codigo', newCode)
-    }
-  }
-
-  const validateCode = async (code: string) => {
-    if (!code) return true
-    const exists = await checkCodeExists(code, productId)
-    return !exists || 'Este código já está em uso'
-  }
-
-  const formatCurrency = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    const amount = parseFloat(numbers) / 100
-    return amount.toFixed(2)
-  }
-
-  const handlePriceChange = (field: 'preco_venda' | 'preco_custo') => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const formatted = formatCurrency(e.target.value)
-    setValue(field, parseFloat(formatted))
-  }
-
-  const onSubmit = async (data: ProductFormSchema) => {
-    const formData = {
-      ...data,
-      imagem: selectedImage instanceof File ? selectedImage : undefined
-    }
-
-    const success = await saveProduct(formData, productId)
-    if (success) {
-      if (!productId) {
-        // Reset form for new product
-        reset()
-        setSelectedImage(null)
-        setIsCodeManual(false)
-        await generateNewCode()
-      }
-      onSuccess?.()
-    }
-  }
-
-  const handleReset = () => {
-    reset()
-    setSelectedImage(null)
-    setIsCodeManual(false)
-    generateNewCode()
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-6 bg-white shadow-xl">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {productId ? 'Editar Produto' : 'Cadastrar Produto'}
-              </h2>
-              <p className="text-gray-600">
-                {productId ? 'Atualize as informações do produto' : 'Preencha os dados do novo produto'}
-              </p>
-            </div>
-          </div>
-          <BackButton />
+    <div className="max-w-4xl mx-auto p-6">
+      <Card className="p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {productId ? 'Editar Produto' : 'Novo Produto'}
+          </h2>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Coluna Principal */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Informações Básicas */}
-              <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Package className="w-5 h-5 mr-2 text-orange-500" />
-                  Informações Básicas
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome do Produto *
-                    </label>
-                    <Input
-                      {...register('nome')}
-                      placeholder="Ex: Smartphone Samsung Galaxy"
-                      error={errors.nome?.message}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código Interno *
-                    </label>
-                    <div className="flex space-x-2">
-                      <Input
-                        {...register('codigo', { validate: validateCode })}
-                        placeholder="PDV123456"
-                        error={errors.codigo?.message}
-                        className="flex-1"
-                        onChange={(e) => {
-                          setIsCodeManual(true)
-                          register('codigo').onChange(e)
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={generateNewCode}
-                        disabled={isSubmitting}
-                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                      >
-                        <Hash className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código de Barras
-                    </label>
-                    <Input
-                      {...register('codigo_barras')}
-                      placeholder="7891234567890"
-                      error={errors.codigo_barras?.message}
-                      icon={<BarcodeIcon className="w-4 h-4" />}
-                    />
-                  </div>
-                </div>
-
-                <Controller
-                  name="categoria"
-                  control={control}
-                  render={({ field }) => (
-                    <CategorySelector
-                      categories={categories}
-                      value={field.value}
-                      onChange={field.onChange}
-                      onCreateCategory={createCategory}
-                      error={errors.categoria?.message}
-                      disabled={isSubmitting}
-                    />
-                  )}
+        <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome do Produto *
+            </label>
+            <Controller
+              name="nome"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  value={value}
+                  onChange={onChange}
+                  placeholder="Nome do produto"
+                  error={getErrorMessage(errors.nome)}
                 />
+              )}
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Descrição
-                  </label>
-                  <textarea
-                    {...register('descricao')}
-                    placeholder="Descrição detalhada do produto..."
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Código *
+            </label>
+            <Controller
+              name="codigo"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  value={value}
+                  onChange={onChange}
+                  placeholder="Código interno"
+                  error={getErrorMessage(errors.codigo)}
+                />
+              )}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Categoria *
+            </label>
+            <Controller
+              name="categoria"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <CategorySelector
+                  value={value}
+                  onChange={onChange}
+                  categories={categories}
+                  onCreateCategory={createCategory}
+                  error={getErrorMessage(errors.categoria)}
+                />
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preço de Venda *
+              </label>
+              <Controller
+                name="preco_venda"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <PriceInput
+                    value={value || 0}
+                    onChange={onChange}
+                    placeholder="0,00"
+                    error={getErrorMessage(errors.preco_venda)}
                   />
-                  {errors.descricao && (
-                    <p className="text-sm text-red-600 mt-1">{errors.descricao.message}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Preços e Estoque */}
-              <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Preços e Estoque
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Preço de Venda *
-                    </label>
-                    <Input
-                      type="text"
-                      {...register('preco_venda', { valueAsNumber: true })}
-                      onChange={handlePriceChange('preco_venda')}
-                      placeholder="0,00"
-                      error={errors.preco_venda?.message}
-                      className="text-right"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Preço de Custo
-                    </label>
-                    <Input
-                      type="text"
-                      {...register('preco_custo', { valueAsNumber: true })}
-                      onChange={handlePriceChange('preco_custo')}
-                      placeholder="0,00"
-                      error={errors.preco_custo?.message}
-                      className="text-right"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Estoque Atual *
-                    </label>
-                    <Input
-                      type="number"
-                      {...register('estoque', { valueAsNumber: true })}
-                      placeholder="0"
-                      error={errors.estoque?.message}
-                      className="text-right"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Unidade de Medida *
-                    </label>
-                    <select
-                      {...register('unidade')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    >
-                      {UNIDADES_MEDIDA.map((unidade) => (
-                        <option key={unidade.value} value={unidade.value}>
-                          {unidade.label} ({unidade.value})
-                        </option>
-                      ))}
-                    </select>
-                    {errors.unidade && (
-                      <p className="text-sm text-red-600 mt-1">{errors.unidade.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Fornecedor
-                    </label>
-                    <Input
-                      {...register('fornecedor')}
-                      placeholder="Nome do fornecedor"
-                      error={errors.fornecedor?.message}
-                    />
-                  </div>
-                </div>
-              </div>
+                )}
+              />
             </div>
 
-            {/* Coluna Lateral */}
-            <div className="space-y-6">
-              {/* Upload de Imagem */}
-              <ImageUpload
-                value={selectedImage || undefined}
-                onChange={setSelectedImage}
-                disabled={isSubmitting}
-              />
-
-              {/* Status */}
-              <div className="bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Status do Produto
-                </h3>
-                
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    {...register('ativo')}
-                    id="ativo"
-                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preço de Custo
+              </label>
+              <Controller
+                name="preco_custo"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <PriceInput
+                    value={value || 0}
+                    onChange={onChange}
+                    placeholder="0,00"
+                    error={getErrorMessage(errors.preco_custo)}
                   />
-                  <label htmlFor="ativo" className="text-sm font-medium text-gray-700">
-                    Produto ativo para venda
-                  </label>
-                </div>
-              </div>
+                )}
+              />
             </div>
           </div>
 
-          {/* Botões de Ação */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-            <div className="flex space-x-3">
-              {onCancel && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Estoque
+            </label>
+            <Controller
+              name="estoque"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  type="number"
+                  value={value}
+                  onChange={(e) => onChange(Number(e.target.value) || 0)}
+                  placeholder="0"
+                  error={getErrorMessage(errors.estoque)}
+                />
               )}
-              
-              {!productId && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Limpar
-                </Button>
-              )}
-            </div>
+            />
+          </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Unidade *
+            </label>
+            <Controller
+              name="unidade"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <select
+                  value={value}
+                  onChange={onChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="UN">Unidade (UN)</option>
+                  <option value="KG">Quilograma (KG)</option>
+                  <option value="L">Litro (L)</option>
+                  <option value="CX">Caixa (CX)</option>
+                </select>
+              )}
+            />
+          </div>
+
+          <div>
+            <Controller
+              name="ativo"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={onChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Produto ativo</span>
+                </label>
+              )}
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading || isSubmitting}
+            >
+              Cancelar
+            </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || loading}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-8"
+              disabled={loading || isSubmitting}
+              className="min-w-[120px]"
             >
-              <Save className="w-4 h-4 mr-2" />
-              {isSubmitting ? 'Salvando...' : productId ? 'Atualizar' : 'Cadastrar'}
+              {loading || isSubmitting
+                ? (productId ? 'Salvando...' : 'Cadastrando...')
+                : (productId ? 'Salvar' : 'Cadastrar')
+              }
             </Button>
           </div>
         </form>
-      </div>
-    </Card>
+      </Card>
+    </div>
   )
 }
+
+export default ProductForm

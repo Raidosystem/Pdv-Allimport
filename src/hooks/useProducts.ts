@@ -56,29 +56,88 @@ export function useProducts() {
     return `PDV${timestamp}${random}`
   }
 
+  // Verificar se o bucket existe e criar se necessário
+  const ensureBucketExists = async (): Promise<boolean> => {
+    try {
+      const { data: buckets, error } = await supabase.storage.listBuckets()
+      
+      if (error) {
+        console.error('Erro ao listar buckets:', error)
+        return false
+      }
+
+      const bucketExists = buckets?.some(bucket => bucket.id === 'product-images')
+      
+      if (!bucketExists) {
+        console.log('Bucket product-images não existe, criando...')
+        const { error: createError } = await supabase.storage.createBucket('product-images', {
+          public: true,
+          fileSizeLimit: 5242880 // 5MB
+        })
+        
+        if (createError) {
+          console.error('Erro ao criar bucket:', createError)
+          toast.error('Erro ao configurar storage de imagens')
+          return false
+        }
+        
+        console.log('Bucket product-images criado com sucesso')
+      }
+      
+      return true
+    } catch (error) {
+      console.error('Erro ao verificar bucket:', error)
+      return false
+    }
+  }
+
   // Upload de imagem para Supabase Storage
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
+      // Verificar se o bucket existe antes de fazer upload
+      const bucketReady = await ensureBucketExists()
+      if (!bucketReady) {
+        toast.error('Storage não configurado. Entre em contato com o administrador.')
+        return null
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}.${fileExt}`
       const filePath = `products/${fileName}`
 
-      const { error } = await supabase.storage
+      console.log('Iniciando upload da imagem:', fileName)
+      console.log('Tamanho do arquivo:', file.size, 'bytes')
+
+      const { error, data } = await supabase.storage
         .from('product-images')
         .upload(filePath, file)
 
       if (error) {
         console.error('Erro no upload:', error)
+        
+        // Tentar salvar sem imagem como fallback
+        if (error.message.includes('bucket') || error.message.includes('not found')) {
+          toast.error('Storage de imagens não configurado. Produto será salvo sem imagem.')
+          return null
+        } else {
+          toast.error(`Erro no upload: ${error.message}`)
+        }
+        
         return null
       }
 
-      const { data } = supabase.storage
+      console.log('Upload realizado com sucesso:', data)
+
+      const { data: urlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath)
 
-      return data.publicUrl
+      console.log('URL pública gerada:', urlData.publicUrl)
+      toast.success('Imagem enviada com sucesso!')
+      return urlData.publicUrl
     } catch (error) {
       console.error('Erro no upload da imagem:', error)
+      toast.error('Erro inesperado no upload da imagem')
       return null
     }
   }
@@ -174,10 +233,14 @@ export function useProducts() {
 
       // Upload da imagem se fornecida
       if (productData.imagem) {
+        console.log('Tentando fazer upload da imagem...')
         imageUrl = await uploadImage(productData.imagem)
+        
+        // Se falhou o upload da imagem, continua salvando o produto sem imagem
         if (!imageUrl) {
-          toast.error('Erro no upload da imagem')
-          return false
+          console.log('Upload falhou, salvando produto sem imagem')
+          toast.error('Produto será salvo sem imagem devido a erro no upload')
+          // Continue salvando sem imagem ao invés de retornar false
         }
       }
 

@@ -12,7 +12,7 @@ import { SaleResumo } from './components/SaleResumo'
 import { PagamentoForm } from './components/PagamentoForm'
 import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
-import { ProductModal } from '../../components/product/ProductModal'
+import { ProductFormModal } from '../../components/product/ProductFormModal'
 import PrintConfirmationModal from '../../components/PrintConfirmationModal'
 import { salesService } from '../../services/sales'
 import type { Product, Customer } from '../../types/sales'
@@ -28,7 +28,7 @@ export function SalesPage() {
   const [loading, setLoading] = useState(false)
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
-  const [showProductModal, setShowProductModal] = useState(false)
+  const [showProductFormModal, setShowProductFormModal] = useState(false)
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [pendingSaleData, setPendingSaleData] = useState<any>(null)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
@@ -96,6 +96,11 @@ export function SalesPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Função para abrir modal de cadastro de produtos
+  const handleCreateProduct = () => {
+    setShowProductFormModal(true)
   }
 
   // Atalhos de teclado
@@ -339,7 +344,7 @@ export function SalesPage() {
               <ProductSearch 
                 onProductSelect={handleProductSelect}
                 onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
-                onCreateProduct={() => setShowProductModal(true)}
+                onCreateProduct={handleCreateProduct}
               />
               <ClienteSelector 
                 clienteSelecionado={clienteSelecionado}
@@ -446,11 +451,10 @@ export function SalesPage() {
       />
 
       {/* Modal de Cadastro de Produto */}
-      <ProductModal
-        isOpen={showProductModal}
-        onClose={() => setShowProductModal(false)}
+      <ProductFormModal
+        isOpen={showProductFormModal}
+        onClose={() => setShowProductFormModal(false)}
         onSuccess={() => {
-          setShowProductModal(false)
           toast.success('Produto cadastrado com sucesso!')
           // Força atualização da busca de produtos
           window.dispatchEvent(new CustomEvent('productAdded'))

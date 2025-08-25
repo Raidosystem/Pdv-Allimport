@@ -1,5 +1,5 @@
 import { Toaster } from 'react-hot-toast'
-import { ProductForm } from '../components/product/ProductForm'
+import ProductForm from '../components/product/ProductForm'
 
 export function ProductPage() {
   const handleSuccess = () => {

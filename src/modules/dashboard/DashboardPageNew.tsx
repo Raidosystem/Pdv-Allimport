@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
 import { CaixaPage } from '../../pages/CaixaPageNew'
-import { ProdutosPage } from '../../pages/ProdutosPageNew'
 import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
 import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
 import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
@@ -9,7 +8,6 @@ import { useState, useEffect } from 'react'
 import { 
   ShoppingCart, 
   Users, 
-  Package, 
   BarChart3, 
   FileText,
   LogOut,
@@ -30,7 +28,8 @@ import {
   History,
   CheckCircle,
   AlertCircle,
-  Archive
+  Archive,
+  Package
 } from 'lucide-react'
 import { useAuth } from '../auth'
 import { useSubscription } from '../../hooks/useSubscription'
@@ -104,6 +103,19 @@ export function DashboardPage() {
       ]
     },
     {
+      name: 'products',
+      title: 'Produtos',
+      icon: Package,
+      color: 'info' as const,
+      priority: true, // Menu destacado
+      options: [
+        { title: 'Novo Produto', path: '/produtos/novo', icon: Plus, description: 'Cadastrar novo produto' },
+        { title: 'Lista de Produtos', path: '/produtos', icon: Search, description: 'Ver todos os produtos' },
+        { title: 'Controle de Estoque', path: '/produtos/estoque', icon: Archive, description: 'Gerenciar estoque' },
+        { title: 'Relatório Produtos', path: '/relatorios/produtos', icon: BarChart3, description: 'Análises de produtos' }
+      ]
+    },
+    {
       name: 'orders',
       title: 'OS - Ordens de Serviço',
       icon: FileText,
@@ -127,18 +139,6 @@ export function DashboardPage() {
         { title: 'Fechar Caixa', path: '/caixa/fechar', icon: CheckCircle, description: 'Finalizar movimento diário' },
         { title: 'Histórico', path: '/historico-caixa', icon: History, description: 'Consultar movimentos anteriores' },
         { title: 'Relatórios', path: '/relatorios', icon: BarChart3, description: 'Análises financeiras' }
-      ]
-    },
-    {
-      name: 'products',
-      title: 'Produtos',
-      icon: Package,
-      color: 'success' as const,
-      priority: true,
-      options: [
-        { title: 'Cadastro', path: '/produtos', icon: Plus, description: 'Gerenciar produtos' },
-        { title: 'Estoque', path: '/produtos/estoque', icon: Archive, description: 'Controle de estoque' },
-        { title: 'Categorias', path: '/produtos/categorias', icon: Settings, description: 'Organizar categorias' }
       ]
     },
     {
@@ -546,7 +546,6 @@ export function DashboardPage() {
                     clients: <ClientesPage key="clients-page" />,
                     orders: <OrdensServicoPage key="orders-page" />,
                     cashier: <CaixaPage key="cashier-page" />,
-                    products: <ProdutosPage key="products-page" />,
                     reports: <RelatoriosPage key="reports-page" />,
                     admin: <AdministracaoPage key="admin-page" />,
                     settings: <ConfiguracoesPage key="settings-page" />

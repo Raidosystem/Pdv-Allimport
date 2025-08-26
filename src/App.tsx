@@ -9,14 +9,13 @@ import { AdminPanel } from './components/admin/AdminPanel'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPageNew'
 import { SalesPage } from './modules/sales/SalesPage'
-import { ProductsPage } from './modules/products/ProductsPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
+import ProductsPage from './modules/products/ProductsPage'
 import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPage'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
-import { CategoryTestPage } from './modules/products/CategoryTestPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
 import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPageNew'
 import ImportBackupPage from './pages/ImportBackupPage'
@@ -213,21 +212,21 @@ function App() {
             } 
           />
           <Route 
-            path="/produtos" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionGuard>
-                  <ProductsPage />
-                </SubscriptionGuard>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/clientes" 
             element={
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <ClientesPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/produtos" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ProductsPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 
@@ -278,16 +277,6 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <OrdemServicoEditPage />
-                </SubscriptionGuard>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/test-categorias" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionGuard>
-                  <CategoryTestPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

@@ -11,77 +11,76 @@ interface PriceInputProps {
 }
 
 export function PriceInput({ value = 0, onChange, placeholder = "0,00", error, className, disabled }: PriceInputProps) {
-  const [displayValue, setDisplayValue] = useState<string>('0,00')
+  const [displayValue, setDisplayValue] = useState<string>('')
 
-  console.log('🎯 PriceInput - Valor recebido:', value, typeof value, 'timestamp:', new Date().toISOString())
-
-  // Função de formatação brasileira
-  const formatBrazilianPrice = (inputValue: string | number): string => {
-    console.log('💰 PriceInput formatBrazilianPrice - entrada:', inputValue, typeof inputValue)
+  // Formatação brasileira simples - BASEADA NO FORMULÁRIO QUE FUNCIONA
+  const formatPrice = (inputValue: string) => {
+    // Remove tudo que não é número
+    const numbers = inputValue.replace(/\D/g, '')
+    if (!numbers) return ''
     
-    // Se receber um número, converte para centavos e formata
-    if (typeof inputValue === 'number') {
-      const centavos = Math.round(inputValue * 100)
-      const numbers = centavos.toString().padStart(3, '0') // Garante pelo menos 3 dígitos
-      console.log('🔢 Número convertido para centavos:', numbers)
-      
-      if (numbers.length === 1) return `0,0${numbers}`
-      if (numbers.length === 2) return `0,${numbers}`
-      
-      const reaisStr = numbers.slice(0, -2)
-      const centavosStr = numbers.slice(-2)
-      const reaisFormatted = reaisStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-      return `${reaisFormatted},${centavosStr}`
-    }
+    // Converte para centavos e depois para reais
+    const cents = parseInt(numbers)
+    const reais = cents / 100
     
-    // Se receber string, processa normalmente
-    const stringValue = inputValue?.toString() || '0'
-    const numbers = stringValue.replace(/\D/g, '')
-    
-    if (!numbers || numbers === '0') return '0,00'
-    
-    // Remove zeros à esquerda mas preserva zeros válidos
-    let cleanedNumbers = numbers
-    if (/^0+/.test(numbers) && numbers.length > 1) {
-      cleanedNumbers = numbers.replace(/^0+/, '') || '0'
-    }
-    
-    if (cleanedNumbers === '0' || /^0+$/.test(cleanedNumbers)) return '0,00'
-    
-    if (cleanedNumbers.length === 1) return `0,0${cleanedNumbers}`
-    if (cleanedNumbers.length === 2) return `0,${cleanedNumbers}`
-    
-    const reaisStr = cleanedNumbers.slice(0, -2)
-    const centavosStr = cleanedNumbers.slice(-2)
-    const reaisFormatted = reaisStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-    
-    const result = `${reaisFormatted},${centavosStr}`
-    console.log('✅ PriceInput resultado final:', result)
-    return result
+    return reais.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
   }
 
-  // Atualiza o valor exibido quando o valor prop muda
+  // Atualiza display quando prop value muda
   useEffect(() => {
-    const formatted = formatBrazilianPrice(value)
-    console.log('🔄 PriceInput useEffect - formatado:', formatted)
-    setDisplayValue(formatted)
+    if (value > 0) {
+      const formatted = (value).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+      setDisplayValue(formatted)
+    } else if (displayValue === '') {
+      // Mantém vazio se está vazio
+      setDisplayValue('')
+    }
   }, [value])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value
-    console.log('📝 PriceInput onChange - input:', inputValue)
+    const input = e.target.value
     
-    const formatted = formatBrazilianPrice(inputValue)
-    console.log('📝 PriceInput onChange - formatado:', formatted)
-    
+    // Se apagou tudo, deixa vazio
+    if (input === '') {
+      setDisplayValue('')
+      onChange(0)
+      return
+    }
+
+    // Formatar usando a função que funciona
+    const formatted = formatPrice(input)
     setDisplayValue(formatted)
     
-    // Converte para número
-    const forCalculation = formatted.replace(/\./g, '').replace(',', '.')
-    const numericValue = parseFloat(forCalculation) || 0
-    
-    console.log('📊 PriceInput onChange - numérico:', numericValue)
-    onChange(numericValue)
+    // Converte de volta para número
+    if (formatted === '') {
+      onChange(0)
+    } else {
+      const numericValue = parseFloat(formatted.replace(/\./g, '').replace(',', '.')) || 0
+      onChange(numericValue)
+    }
+  }
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Se está com valor 0 ou similar, limpa o campo
+    if (displayValue === '0,00' || value === 0) {
+      setDisplayValue('')
+    }
+    // Seleciona tudo para fácil substituição
+    e.target.select()
+  }
+
+  const handleBlur = () => {
+    // Se saiu vazio, coloca 0,00 apenas no blur
+    if (displayValue === '') {
+      setDisplayValue('0,00')
+      onChange(0)
+    }
   }
 
   return (
@@ -89,12 +88,19 @@ export function PriceInput({ value = 0, onChange, placeholder = "0,00", error, c
       type="text"
       value={displayValue}
       onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       placeholder={placeholder}
       error={error}
       className={`text-right ${className || ''}`}
       disabled={disabled}
-      // Remove setas de número no Firefox
-      style={{ MozAppearance: 'textfield' }}
+      inputMode="numeric"
+      // Remove setas de número em todos os navegadores
+      style={{ 
+        MozAppearance: 'textfield',
+        WebkitAppearance: 'none',
+        appearance: 'none'
+      }}
     />
   )
 }

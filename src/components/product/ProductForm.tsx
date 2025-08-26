@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,7 +6,6 @@ import { toast } from 'react-hot-toast'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
-import { PriceInput } from '../ui/PriceInput'
 import { useProducts } from '../../hooks/useProducts'
 import { CategorySelector } from './CategorySelector'
 
@@ -69,6 +68,10 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     try {
       await saveProduct(data, productId)
       toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')
+      
+      // Dispara eventos para sincronização entre seções
+      window.dispatchEvent(new CustomEvent('productAdded'))
+      window.dispatchEvent(new CustomEvent('productUpdated'))
       
       if (onSuccess) {
         onSuccess()
@@ -154,14 +157,82 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               <Controller
                 name="preco_venda"
                 control={control}
-                render={({ field: { onChange, value } }) => (
-                  <PriceInput
-                    value={value || 0}
-                    onChange={onChange}
-                    placeholder="0,00"
-                    error={getErrorMessage(errors.preco_venda)}
-                  />
-                )}
+                render={({ field: { onChange, value } }) => {
+                  const [displayValue, setDisplayValue] = useState('0,00')
+
+                  // Formatação brasileira simples - MESMA LÓGICA QUE FUNCIONA
+                  const formatPrice = (inputValue: string) => {
+                    const numbers = inputValue.replace(/\D/g, '')
+                    if (!numbers) return ''
+                    
+                    const cents = parseInt(numbers)
+                    const reais = cents / 100
+                    
+                    return reais.toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })
+                  }
+
+                  // Atualiza display quando valor muda
+                  useEffect(() => {
+                    if (value > 0) {
+                      const formatted = value.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })
+                      setDisplayValue(formatted)
+                    }
+                  }, [value])
+
+                  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const input = e.target.value
+                    
+                    if (input === '') {
+                      setDisplayValue('')
+                      onChange(0)
+                      return
+                    }
+
+                    const formatted = formatPrice(input)
+                    setDisplayValue(formatted)
+                    
+                    if (formatted === '') {
+                      onChange(0)
+                    } else {
+                      const numericValue = parseFloat(formatted.replace(/\./g, '').replace(',', '.')) || 0
+                      onChange(numericValue)
+                    }
+                  }
+
+                  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (displayValue === '0,00' || value === 0) {
+                      setDisplayValue('')
+                    }
+                    e.target.select()
+                  }
+
+                  const handleBlur = () => {
+                    if (displayValue === '') {
+                      setDisplayValue('0,00')
+                      onChange(0)
+                    }
+                  }
+
+                  return (
+                    <Input
+                      type="text"
+                      value={displayValue}
+                      onChange={handleChange}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      placeholder="0,00"
+                      error={getErrorMessage(errors.preco_venda)}
+                      className="text-right"
+                      inputMode="numeric"
+                    />
+                  )
+                }}
               />
             </div>
 
@@ -172,14 +243,82 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               <Controller
                 name="preco_custo"
                 control={control}
-                render={({ field: { onChange, value } }) => (
-                  <PriceInput
-                    value={value || 0}
-                    onChange={onChange}
-                    placeholder="0,00"
-                    error={getErrorMessage(errors.preco_custo)}
-                  />
-                )}
+                render={({ field: { onChange, value } }) => {
+                  const [displayValue, setDisplayValue] = useState('0,00')
+
+                  // Formatação brasileira simples - MESMA LÓGICA QUE FUNCIONA
+                  const formatPrice = (inputValue: string) => {
+                    const numbers = inputValue.replace(/\D/g, '')
+                    if (!numbers) return ''
+                    
+                    const cents = parseInt(numbers)
+                    const reais = cents / 100
+                    
+                    return reais.toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })
+                  }
+
+                  // Atualiza display quando valor muda
+                  useEffect(() => {
+                    if (value > 0) {
+                      const formatted = value.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })
+                      setDisplayValue(formatted)
+                    }
+                  }, [value])
+
+                  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const input = e.target.value
+                    
+                    if (input === '') {
+                      setDisplayValue('')
+                      onChange(0)
+                      return
+                    }
+
+                    const formatted = formatPrice(input)
+                    setDisplayValue(formatted)
+                    
+                    if (formatted === '') {
+                      onChange(0)
+                    } else {
+                      const numericValue = parseFloat(formatted.replace(/\./g, '').replace(',', '.')) || 0
+                      onChange(numericValue)
+                    }
+                  }
+
+                  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (displayValue === '0,00' || value === 0) {
+                      setDisplayValue('')
+                    }
+                    e.target.select()
+                  }
+
+                  const handleBlur = () => {
+                    if (displayValue === '') {
+                      setDisplayValue('0,00')
+                      onChange(0)
+                    }
+                  }
+
+                  return (
+                    <Input
+                      type="text"
+                      value={displayValue}
+                      onChange={handleChange}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      placeholder="0,00"
+                      error={getErrorMessage(errors.preco_custo)}
+                      className="text-right"
+                      inputMode="numeric"
+                    />
+                  )
+                }}
               />
             </div>
           </div>
@@ -191,15 +330,66 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
             <Controller
               name="estoque"
               control={control}
-              render={({ field: { onChange, value } }) => (
-                <Input
-                  type="number"
-                  value={value}
-                  onChange={(e) => onChange(Number(e.target.value) || 0)}
-                  placeholder="0"
-                  error={getErrorMessage(errors.estoque)}
-                />
-              )}
+              render={({ field: { onChange, value } }) => {
+                const [displayValue, setDisplayValue] = useState('0')
+
+                // Atualiza display quando valor muda
+                useEffect(() => {
+                  if (value > 0) {
+                    setDisplayValue(value.toString())
+                  }
+                }, [value])
+
+                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                  const input = e.target.value
+                  
+                  if (input === '') {
+                    setDisplayValue('0')
+                    onChange(0)
+                    return
+                  }
+
+                  // Remove caracteres não numéricos
+                  const numbers = input.replace(/\D/g, '')
+                  if (numbers === '') {
+                    setDisplayValue('0')
+                    onChange(0)
+                    return
+                  }
+
+                  const numericValue = parseInt(numbers) || 0
+                  setDisplayValue(numericValue.toString())
+                  onChange(numericValue)
+                }
+
+                const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+                  if (displayValue === '0' || value === 0) {
+                    setDisplayValue('')
+                  }
+                  e.target.select()
+                }
+
+                const handleBlur = () => {
+                  if (displayValue === '') {
+                    setDisplayValue('0')
+                    onChange(0)
+                  }
+                }
+
+                return (
+                  <Input
+                    type="text"
+                    value={displayValue}
+                    onChange={handleChange}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="0"
+                    error={getErrorMessage(errors.estoque)}
+                    className="text-right"
+                    inputMode="numeric"
+                  />
+                )
+              }}
             />
           </div>
 

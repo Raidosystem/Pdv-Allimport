@@ -5,6 +5,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove setas dos inputs number em todos os navegadores */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Força remoção de setas em todos os inputs de preço */
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Estilos base para o PDV */
 :root {
   font-family: 'Inter', system-ui, sans-serif;

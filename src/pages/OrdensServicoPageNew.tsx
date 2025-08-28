@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Filter, Edit, Trash2, Wrench, Clock, CheckCircle } from 'lucide-react'
 import { useOrdemServico } from '../hooks/useOrdemServico'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
@@ -8,6 +9,7 @@ import { STATUS_COLORS, TIPO_ICONS } from '../types/ordemServico'
 type ViewMode = 'list' | 'form'
 
 export function OrdensServicoPage() {
+  const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusOS | ''>('')
@@ -284,7 +286,13 @@ export function OrdensServicoPage() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => console.log('Editar OS:', ordem.id)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('✏️ BOTÃO EDITAR OS CLICADO:', ordem.id);
+                              console.log('Navegando para:', `/ordens-servico/${ordem.id}/editar`);
+                              navigate(`/ordens-servico/${ordem.id}/editar`);
+                            }}
                             className="p-1 text-blue-600 hover:text-blue-800"
                             title="Editar"
                           >

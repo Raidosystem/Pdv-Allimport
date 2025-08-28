@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
 import { CaixaPage } from '../../pages/CaixaPageNew'
 import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
@@ -65,7 +65,6 @@ export function DashboardPage() {
   const { isActive } = useSubscription()
   const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
-  const navigate = useNavigate()
 
   // Debug do activeMenu (simplificado)
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
 import { CaixaPage } from '../../pages/CaixaPageNew'
 import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
@@ -40,6 +40,7 @@ import { SubscriptionCountdown } from '../../components/subscription/Subscriptio
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
 import { SalesPage } from '../sales/SalesPage'
 import { ClientesPage } from '../clientes/ClientesPage'
+import { ProductsPage } from '../../pages/ProductsPage'
 
 // Definir interfaces para tipagem correta
 interface MenuOption {
@@ -64,6 +65,7 @@ export function DashboardPage() {
   const { isActive } = useSubscription()
   const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   // Debug do activeMenu (simplificado)
   useEffect(() => {
@@ -433,6 +435,8 @@ export function DashboardPage() {
                     e.preventDefault()
                     e.stopPropagation()
                     console.log('🎯 Menu clicado:', menu.name)
+                    
+                    // Todos os menus agora funcionam da mesma forma
                     setActiveMenu(menu.name)
                   }}
                   style={{ 
@@ -544,6 +548,7 @@ export function DashboardPage() {
                   const pageContent = {
                     sales: <SalesPage key="sales-page" />,
                     clients: <ClientesPage key="clients-page" />,
+                    products: <ProductsPage key="products-page" />,
                     orders: <OrdensServicoPage key="orders-page" />,
                     cashier: <CaixaPage key="cashier-page" />,
                     reports: <RelatoriosPage key="reports-page" />,

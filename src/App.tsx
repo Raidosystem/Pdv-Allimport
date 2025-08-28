@@ -10,7 +10,8 @@ import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPageNew'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
-import { ProductsPage } from './modules/products/ProductsPage'
+import { ProductsPage } from './pages/ProductsPage'
+import { TestePage } from './pages/TestePage'
 import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPage'
@@ -223,13 +224,11 @@ function App() {
           />
           <Route 
             path="/produtos" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionGuard>
-                  <ProductsPage />
-                </SubscriptionGuard>
-              </ProtectedRoute>
-            } 
+            element={<ProductsPage />} 
+          />
+          <Route 
+            path="/teste" 
+            element={<TestePage />} 
           />
           <Route 
             path="/caixa" 

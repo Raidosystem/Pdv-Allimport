@@ -74,6 +74,9 @@ export function OrdemServicoEditPage() {
   const [tipoPersonalizado, setTipoPersonalizado] = useState('')
   const [mostrarCampoPersonalizado, setMostrarCampoPersonalizado] = useState(false)
 
+  // Debug log
+  console.log('📝 OrdemServicoEditPage carregada com ID:', id)
+
   const {
     register,
     handleSubmit,
@@ -404,7 +407,7 @@ export function OrdemServicoEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 Previsão de Entrega
               </label>
@@ -416,7 +419,7 @@ export function OrdemServicoEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
                 <DollarSign className="w-4 h-4" />
                 Valor Orçamento
               </label>
@@ -431,7 +434,7 @@ export function OrdemServicoEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
                 <DollarSign className="w-4 h-4" />
                 Valor Final
               </label>

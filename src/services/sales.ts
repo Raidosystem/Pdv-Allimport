@@ -1,175 +1,306 @@
+import { supabase } from '../lib/supabase'
 import type { Product, Customer, Sale, CashRegister, SaleSearchParams } from '../types/sales'
+import { EMBEDDED_PRODUCTS, searchEmbeddedProducts } from '../data/products'
 
-// Cache para produtos carregados do backup
-let ALL_PRODUCTS: Product[] = []
-let PRODUCTS_LOADED = false
-
-// Produtos mock como fallback
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Smartphone Samsung Galaxy A54',
-    description: 'Smartphone Android com 128GB de armazenamento',
-    sku: 'SAMSUNG-A54-128',
-    barcode: '7891234567890',
-    price: 899.99,
-    stock_quantity: 25,
-    min_stock: 5,
-    unit: 'un',
-    active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2', 
-    name: 'Fone Bluetooth JBL Tune 510BT',
-    description: 'Fone de ouvido sem fio com cancelamento de ruído',
-    sku: 'JBL-510BT',
-    barcode: '7891234567891',
-    price: 199.99,
-    stock_quantity: 50,
-    min_stock: 10,
-    unit: 'un',
-    active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    name: 'Carregador USB-C 65W',
-    description: 'Carregador rápido universal USB-C',
-    sku: 'CARREGADOR-65W',
-    barcode: '7891234567892',
-    price: 89.90,
-    stock_quantity: 100,
-    min_stock: 20,
-    unit: 'un',
-    active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '4',
-    name: 'Película de Vidro iPhone 14',
-    description: 'Película protetora de vidro temperado',
-    sku: 'PELICULA-IP14',
-    barcode: '7891234567893',
-    price: 29.90,
-    stock_quantity: 200,
-    min_stock: 50,
-    unit: 'un',
-    active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '5',
-    name: 'Cabo Lightning 1m',
-    description: 'Cabo de dados e carregamento Lightning original',
-    sku: 'CABO-LIGHT-1M',
-    barcode: '7891234567894',
-    price: 49.90,
-    stock_quantity: 75,
-    min_stock: 15,
-    unit: 'un',
-    active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
-
-// Função para carregar produtos do backup
-const loadProductsFromBackup = async (): Promise<Product[]> => {
-  if (PRODUCTS_LOADED) {
-    return ALL_PRODUCTS;
-  }
-  
-  try {
-    console.log('📦 Carregando produtos do backup...');
-    const response = await fetch('/backup-products.json');
-    const backupData = await response.json();
-    
-    // Converter formato do backup para formato esperado
-    const backupProducts = backupData.data.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      description: item.name, // usar nome como descrição se não houver
-      sku: item.barcode || `SKU-${item.id.slice(-8)}`,
-      barcode: item.barcode || '',
-      price: item.sale_price || 0,
-      stock_quantity: item.current_stock || 0,
-      min_stock: item.minimum_stock || 0,
-      unit: item.unit_measure || 'un',
-      active: item.active !== false,
-      created_at: item.created_at || new Date().toISOString(),
-      updated_at: item.updated_at || new Date().toISOString()
-    }));
-    
-    // Combinar produtos do backup com mocks
-    ALL_PRODUCTS = [...MOCK_PRODUCTS, ...backupProducts];
-    PRODUCTS_LOADED = true;
-    
-    console.log(`✅ ${backupProducts.length} produtos carregados do backup + ${MOCK_PRODUCTS.length} mocks = ${ALL_PRODUCTS.length} total`);
-    return ALL_PRODUCTS;
-    
-  } catch (error) {
-    console.error('❌ Erro ao carregar backup:', error);
-    ALL_PRODUCTS = MOCK_PRODUCTS;
-    PRODUCTS_LOADED = true;
-    console.log(`⚠️ Usando apenas ${MOCK_PRODUCTS.length} produtos mock`);
-    return ALL_PRODUCTS;
-  }
-};
-
+// Serviços de Produtos
 export const productService = {
   async search(params: SaleSearchParams): Promise<Product[]> {
-    console.log('🔍 ProductService funcionando!', params);
+    console.log('🔍 ProductService.search chamado com:', params);
     
-    // Carregar produtos se ainda não foram carregados
-    const allProducts = await loadProductsFromBackup();
-    let filtered = allProducts.filter(p => p.active !== false); // Apenas produtos ativos
+    // Usa produtos embutidos diretamente (garantia de funcionamento)
+    console.log('📦 Usando produtos embutidos');
     
-    if (params.search) {
-      const searchLower = params.search.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchLower) ||
-        (product.sku && product.sku.toLowerCase().includes(searchLower)) ||
-        (product.barcode && product.barcode.toLowerCase().includes(searchLower))
-      );
+    const embeddedResults = searchEmbeddedProducts(params.search);
+    
+    // Adapta formato dos produtos embutidos para o frontend
+    const adaptedProducts: Product[] = embeddedResults.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: `${product.category} - ${product.name}`,
+      sku: product.sku,
+      barcode: product.barcode,
+      price: product.price,
+      stock_quantity: product.stock,
+      min_stock: 1,
+      unit: 'un',
+      active: product.active,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+    
+    // Filtra por código de barras se especificado
+    if (params.barcode) {
+      const filtered = adaptedProducts.filter(p => p.barcode === params.barcode);
+      console.log(`🔍 Filtrado por código de barras ${params.barcode}:`, filtered.length, 'produtos');
+      return filtered;
     }
     
-    console.log('✅ Retornando', filtered.length, 'produtos de', allProducts.length, 'total');
-    return filtered;
+    console.log('✅ Retornando', adaptedProducts.length, 'produtos embutidos');
+    return adaptedProducts;
   },
 
   async getById(id: string): Promise<Product | null> {
-    const allProducts = await loadProductsFromBackup();
-    return allProducts.find(p => p.id === id) || null;
+    console.log('🔍 Buscando produto por ID:', id);
+    
+    const product = EMBEDDED_PRODUCTS.find(p => p.id === id);
+    
+    if (!product) {
+      console.log('❌ Produto não encontrado');
+      return null;
+    }
+    
+    const adaptedProduct: Product = {
+      id: product.id,
+      name: product.name,
+      description: `${product.category} - ${product.name}`,
+      sku: product.sku,
+      barcode: product.barcode,
+      price: product.price,
+      stock_quantity: product.stock,
+      min_stock: 1,
+      unit: 'un',
+      active: product.active,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    console.log('✅ Produto encontrado:', adaptedProduct.name);
+    return adaptedProduct;
   }
 };
 
+// Serviços de Clientes
 export const customerService = {
-  async search(searchTerm?: string): Promise<Customer[]> { 
-    console.log('🔍 CustomerService search:', searchTerm);
-    return []; 
+  async search(query?: string): Promise<Customer[]> {
+    console.log('🔍 CustomerService.search chamado com:', query);
+    
+    try {
+      let supabaseQuery = supabase
+        .from('clientes')
+        .select('*');
+      
+      if (query) {
+        supabaseQuery = supabaseQuery.or(`nome.ilike.%${query}%,email.ilike.%${query}%,telefone.ilike.%${query}%`);
+      }
+      
+      const { data, error } = await supabaseQuery.limit(20);
+      
+      if (error) throw error;
+      
+      console.log('✅ Clientes encontrados:', data?.length || 0);
+      
+      const adaptedCustomers: Customer[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.nome,
+        email: item.email || '',
+        phone: item.telefone || '',
+        document: item.documento || '',
+        address: item.endereco || '',
+        created_at: item.criado_em,
+        updated_at: item.atualizado_em
+      }));
+      
+      return adaptedCustomers;
+      
+    } catch (error) {
+      console.warn('⚠️ Erro ao buscar clientes:', error);
+      
+      // Clientes simulados para fallback
+      const mockCustomers: Customer[] = [
+        {
+          id: '1',
+          name: 'Cliente Padrão',
+          email: 'cliente@exemplo.com',
+          phone: '(11) 99999-9999',
+          document: '000.000.000-00',
+          address: 'Rua Exemplo, 123',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      let filtered = mockCustomers;
+      
+      if (query) {
+        const queryLower = query.toLowerCase();
+        filtered = mockCustomers.filter(customer =>
+          customer.name.toLowerCase().includes(queryLower) ||
+          customer.email.toLowerCase().includes(queryLower) ||
+          customer.phone.includes(query)
+        );
+      }
+      
+      return filtered;
+    }
   },
-  async create(customer: any): Promise<Customer> {
-    console.log('📝 CustomerService create:', customer);
-    throw new Error('Not implemented');
+
+  async getById(id: string): Promise<Customer | null> {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      
+      const adaptedCustomer: Customer = {
+        id: data.id,
+        name: data.nome,
+        email: data.email || '',
+        phone: data.telefone || '',
+        document: data.documento || '',
+        address: data.endereco || '',
+        created_at: data.criado_em,
+        updated_at: data.atualizado_em
+      };
+      
+      return adaptedCustomer;
+      
+    } catch (error) {
+      console.error('Erro ao buscar cliente por ID:', error);
+      return null;
+    }
   }
 };
 
-export const salesService = {
-  async create(saleData: any): Promise<Sale> {
-    console.log('💰 SalesService create:', saleData);
-    throw new Error('Not implemented');
+// Serviços de Vendas
+export const saleService = {
+  async create(sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>): Promise<Sale> {
+    try {
+      const { data, error } = await supabase
+        .from('vendas')
+        .insert({
+          cliente_id: sale.customer_id,
+          total: sale.total,
+          desconto: sale.discount || 0,
+          status: sale.status,
+          metodo_pagamento: sale.payment_method,
+          observacoes: sale.notes || ''
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Inserir itens da venda
+      for (const item of sale.items) {
+        await supabase
+          .from('vendas_itens')
+          .insert({
+            venda_id: data.id,
+            produto_id: item.product_id,
+            quantidade: item.quantity,
+            preco_unitario: item.unit_price,
+            subtotal: item.subtotal
+          });
+      }
+      
+      const adaptedSale: Sale = {
+        id: data.id,
+        customer_id: data.cliente_id,
+        total: data.total,
+        discount: data.desconto || 0,
+        status: data.status,
+        payment_method: data.metodo_pagamento,
+        notes: data.observacoes || '',
+        items: sale.items,
+        created_at: data.criado_em,
+        updated_at: data.atualizado_em
+      };
+      
+      return adaptedSale;
+      
+    } catch (error) {
+      console.error('Erro ao criar venda:', error);
+      throw error;
+    }
   }
 };
 
-export const categoryService = {
-  async getAll() { return []; }
-};
-
+// Serviços de Caixa
 export const cashRegisterService = {
-  async getOpenRegister(): Promise<CashRegister | null> { return null; }
+  async getStatus(): Promise<CashRegister | null> {
+    try {
+      const { data, error } = await supabase
+        .from('caixa')
+        .select('*')
+        .eq('status', 'aberto')
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Nenhum caixa aberto encontrado
+          return null;
+        }
+        throw error;
+      }
+      
+      const adaptedCashRegister: CashRegister = {
+        id: data.id,
+        opening_balance: data.valor_abertura,
+        current_balance: data.valor_atual,
+        status: data.status,
+        opened_at: data.aberto_em,
+        closed_at: data.fechado_em
+      };
+      
+      return adaptedCashRegister;
+      
+    } catch (error) {
+      console.error('Erro ao verificar status do caixa:', error);
+      return null;
+    }
+  },
+
+  async open(openingBalance: number): Promise<CashRegister> {
+    try {
+      const { data, error } = await supabase
+        .from('caixa')
+        .insert({
+          valor_abertura: openingBalance,
+          valor_atual: openingBalance,
+          status: 'aberto',
+          aberto_em: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      const adaptedCashRegister: CashRegister = {
+        id: data.id,
+        opening_balance: data.valor_abertura,
+        current_balance: data.valor_atual,
+        status: data.status,
+        opened_at: data.aberto_em,
+        closed_at: data.fechado_em
+      };
+      
+      return adaptedCashRegister;
+      
+    } catch (error) {
+      console.error('Erro ao abrir caixa:', error);
+      throw error;
+    }
+  },
+
+  async close(closingBalance: number): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('caixa')
+        .update({
+          valor_atual: closingBalance,
+          status: 'fechado',
+          fechado_em: new Date().toISOString()
+        })
+        .eq('status', 'aberto');
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('Erro ao fechar caixa:', error);
+      throw error;
+    }
+  }
 };

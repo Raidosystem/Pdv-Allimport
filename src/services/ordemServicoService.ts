@@ -206,15 +206,19 @@ class OrdemServicoService {
 
   // Atualizar apenas o status
   async atualizarStatus(id: string, novoStatus: StatusOS): Promise<void> {
+    console.log('🔧 OrdemServicoService.atualizarStatus chamado:', { id, novoStatus });
     const user = await requireAuth()
+    console.log('👤 Usuário autenticado:', user.id);
 
     const dadosAtualizacao: any = { status: novoStatus }
     
     // Se for "Entregue", marcar data de entrega
     if (novoStatus === 'Entregue') {
       dadosAtualizacao.data_entrega = new Date().toISOString()
+      console.log('📅 Status "Entregue" - adicionando data_entrega');
     }
 
+    console.log('💾 Executando update no Supabase:', dadosAtualizacao);
     const { error } = await supabase
       .from('ordens_servico')
       .update(dadosAtualizacao)
@@ -222,9 +226,11 @@ class OrdemServicoService {
       .eq('usuario_id', user.id)
 
     if (error) {
-      console.error('Erro ao atualizar status:', error)
+      console.error('❌ Erro no Supabase ao atualizar status:', error)
       throw new Error(`Erro ao atualizar status: ${error.message}`)
     }
+    
+    console.log('✅ Status atualizado com sucesso no banco!');
   }
 
   // Processar entrega com garantia

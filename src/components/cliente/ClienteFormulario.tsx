@@ -263,7 +263,7 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                   {...register('nome')}
                   type="text"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="João Silva"
+                  placeholder="Nome completo"
                 />
               </div>
               {errors.nome && (

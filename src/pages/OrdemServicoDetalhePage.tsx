@@ -217,6 +217,14 @@ export function OrdemServicoDetalhePage() {
                 <Printer className="w-4 h-4" />
                 Imprimir OS
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/ordens-servico')}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Voltar à Lista
+              </Button>
             </div>
           ) : ordem.status === 'Pronto' ? (
             <div className="flex gap-3">
@@ -228,25 +236,47 @@ export function OrdemServicoDetalhePage() {
                 <CheckCircle className="w-4 h-4" />
                 Encerrar OS
               </Button>
+              <Button onClick={imprimirOS} variant="outline" className="gap-2">
+                <Printer className="w-4 h-4" />
+                Imprimir
+              </Button>
             </div>
           ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Alterar Status
-              </label>
-              <select
-                value={ordem.status}
-                onChange={(e) => atualizarStatus(e.target.value as StatusOS)}
-                disabled={atualizandoStatus}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Em análise">Em análise</option>
-                <option value="Aguardando aprovação">Aguardando aprovação</option>
-                <option value="Aguardando peças">Aguardando peças</option>
-                <option value="Em conserto">Em conserto</option>
-                <option value="Pronto">Pronto</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Alterar Status
+                </label>
+                <select
+                  value={ordem.status}
+                  onChange={(e) => atualizarStatus(e.target.value as StatusOS)}
+                  disabled={atualizandoStatus}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Em análise">Em análise</option>
+                  <option value="Aguardando aprovação">Aguardando aprovação</option>
+                  <option value="Aguardando peças">Aguardando peças</option>
+                  <option value="Em conserto">Em conserto</option>
+                  <option value="Pronto">Pronto</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={imprimirOS} variant="outline" className="gap-2">
+                  <Printer className="w-4 h-4" />
+                  Imprimir
+                </Button>
+                {(ordem.status === 'Em conserto' || ordem.status === 'Aguardando peças') && (
+                  <Button 
+                    onClick={() => atualizarStatus('Pronto')}
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    disabled={atualizandoStatus}
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Finalizar Serviço
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>

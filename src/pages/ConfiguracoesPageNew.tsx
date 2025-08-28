@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, Download, RefreshCw, Check, X, AlertTriangle } from 'lucide-react'
+import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle } from 'lucide-react'
 
 type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao'
 
@@ -72,15 +72,15 @@ export function ConfiguracoesPage() {
 
   // Mock data para configurações
   const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>({
-    nome: 'Allimport Technology',
-    razao_social: 'Allimport Technology Ltda',
-    cnpj: '12.345.678/0001-90',
-    endereco: 'Rua das Tecnologias, 123',
-    cidade: 'São Paulo, SP',
-    cep: '01234-567',
-    telefone: '(11) 99999-9999',
-    email: 'contato@allimport.com.br',
-    site: 'www.allimport.com.br',
+    nome: 'Minha Empresa',
+    razao_social: 'Minha Empresa Ltda',
+    cnpj: '',
+    endereco: '',
+    cidade: '',
+    cep: '',
+    telefone: '',
+    email: '',
+    site: '',
     logo: undefined
   })
 
@@ -135,13 +135,13 @@ export function ConfiguracoesPage() {
 
   // Estatísticas do dashboard
   const stats = {
-    configuracoes_ativas: 15,
-    integracao_status: 'Conectado',
-    ultimo_backup: '2024-01-20T02:00:00',
-    espaco_utilizado: 2.4, // GB
-    tempo_funcionamento: '15 dias, 8 horas',
-    usuarios_conectados: 3,
-    notificacoes_pendentes: 2,
+    configuracoes_ativas: 0,
+    integracao_status: 'Desconectado',
+    ultimo_backup: new Date().toISOString(),
+    espaco_utilizado: 0.0, // GB
+    tempo_funcionamento: '0 dias, 0 horas',
+    usuarios_conectados: 0,
+    notificacoes_pendentes: 0,
     status_sistema: 'Normal'
   }
 
@@ -153,30 +153,6 @@ export function ConfiguracoesPage() {
       setUnsavedChanges(false)
       alert(`Configurações de ${categoria} salvas com sucesso!`)
     }, 1500)
-  }
-
-  const handleTestConnection = async (tipo: string) => {
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      alert(`Teste de conexão ${tipo} realizado com sucesso!`)
-    }, 2000)
-  }
-
-  const handleExportConfig = () => {
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      alert('Configurações exportadas com sucesso!')
-    }, 1000)
-  }
-
-  const handleImportConfig = () => {
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      alert('Configurações importadas com sucesso!')
-    }, 1000)
   }
 
   const formatFileSize = (size: number) => {
@@ -298,50 +274,6 @@ export function ConfiguracoesPage() {
         />
       </div>
 
-      {/* Ações rápidas */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Ações Rápidas</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button
-            onClick={() => handleExportConfig()}
-            disabled={loading}
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Download className="h-8 w-8 text-blue-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900">Exportar Configurações</span>
-            <span className="text-xs text-gray-500 mt-1">Backup das configurações</span>
-          </button>
-
-          <button
-            onClick={() => handleImportConfig()}
-            disabled={loading}
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Upload className="h-8 w-8 text-green-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900">Importar Configurações</span>
-            <span className="text-xs text-gray-500 mt-1">Restaurar backup</span>
-          </button>
-
-          <button
-            onClick={() => handleTestConnection('Sistema')}
-            disabled={loading}
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Wifi className="h-8 w-8 text-purple-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900">Testar Conexões</span>
-            <span className="text-xs text-gray-500 mt-1">Verificar integrações</span>
-          </button>
-
-          <button
-            onClick={() => window.location.reload()}
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <RefreshCw className="h-8 w-8 text-orange-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900">Recarregar Sistema</span>
-            <span className="text-xs text-gray-500 mt-1">Aplicar alterações</span>
-          </button>
-        </div>
-      </div>
     </div>
   )
 

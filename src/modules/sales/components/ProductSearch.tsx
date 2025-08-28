@@ -4,7 +4,7 @@ import { Input } from '../../../components/ui/Input'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { useDebounce } from '../../../hooks/useSales'
-import { productService } from '../../../services/sales'
+import { productService } from '../../../services/salesNew'
 import type { Product } from '../../../types/sales'
 import { formatCurrency } from '../../../utils/format'
 

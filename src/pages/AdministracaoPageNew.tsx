@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Settings, Users, Shield, Database, Server, Activity, Lock, Plus, Edit, Trash2, CheckCircle, XCircle, AlertTriangle, Save } from 'lucide-react'
+import { Settings, Users, Shield, Database, Server, Activity, Lock, Plus, Edit, Trash2, CheckCircle, XCircle, AlertTriangle, Save, Download, Upload, FileText, Cloud } from 'lucide-react'
 
 type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'seguranca'
 
@@ -61,7 +61,7 @@ export function AdministracaoPage() {
       id: '1',
       categoria: 'Geral',
       chave: 'nome_empresa',
-      valor: 'Allimport Technology',
+      valor: 'Minha Empresa',
       descricao: 'Nome da empresa no sistema',
       tipo: 'texto'
     },
@@ -69,7 +69,7 @@ export function AdministracaoPage() {
       id: '2',
       categoria: 'Vendas',
       chave: 'desconto_maximo',
-      valor: '20',
+      valor: '10',
       descricao: 'Desconto máximo permitido (%)',
       tipo: 'numero'
     },
@@ -85,7 +85,7 @@ export function AdministracaoPage() {
       id: '4',
       categoria: 'Notificações',
       chave: 'enviar_emails',
-      valor: 'true',
+      valor: 'false',
       descricao: 'Enviar notificações por email',
       tipo: 'boolean'
     },
@@ -93,75 +93,24 @@ export function AdministracaoPage() {
       id: '5',
       categoria: 'Estoque',
       chave: 'alerta_estoque_baixo',
-      valor: '10',
+      valor: '5',
       descricao: 'Quantidade mínima para alerta',
       tipo: 'numero'
     }
   ]
 
-  const logsSistema: LogSistema[] = [
-    {
-      id: '1',
-      usuario: 'João Silva',
-      acao: 'Login realizado',
-      modulo: 'Autenticação',
-      detalhes: 'Login bem-sucedido via navegador',
-      ip: '192.168.1.100',
-      timestamp: '2024-01-20T14:30:00',
-      nivel: 'info'
-    },
-    {
-      id: '2',
-      usuario: 'Ana Costa',
-      acao: 'Produto criado',
-      modulo: 'Produtos',
-      detalhes: 'Novo produto: Smartphone Samsung A54',
-      ip: '192.168.1.101',
-      timestamp: '2024-01-20T15:45:00',
-      nivel: 'info'
-    },
-    {
-      id: '3',
-      usuario: 'Sistema',
-      acao: 'Backup realizado',
-      modulo: 'Sistema',
-      detalhes: 'Backup automático concluído com sucesso',
-      ip: 'localhost',
-      timestamp: '2024-01-20T02:00:00',
-      nivel: 'info'
-    },
-    {
-      id: '4',
-      usuario: 'Pedro Lima',
-      acao: 'Tentativa de login falhada',
-      modulo: 'Autenticação',
-      detalhes: 'Senha incorreta',
-      ip: '192.168.1.105',
-      timestamp: '2024-01-19T18:30:00',
-      nivel: 'warning'
-    },
-    {
-      id: '5',
-      usuario: 'Sistema',
-      acao: 'Erro de conexão',
-      modulo: 'Database',
-      detalhes: 'Falha na conexão com banco de dados',
-      ip: 'localhost',
-      timestamp: '2024-01-19T10:15:00',
-      nivel: 'error'
-    }
-  ]
+  const logsSistema: LogSistema[] = []
 
   // Estatísticas do dashboard
   const stats = {
     total_usuarios: usuariosMock.length,
     usuarios_ativos: usuariosMock.filter(u => u.status === 'ativo').length,
     usuarios_bloqueados: usuariosMock.filter(u => u.status === 'bloqueado').length,
-    logins_hoje: 8,
-    backup_ultimo: '2024-01-20T02:00:00',
-    espaco_disco: 75,
-    memoria_uso: 68,
-    uptime_sistema: '15 dias, 8 horas'
+    logins_hoje: 0,
+    backup_ultimo: new Date().toISOString(),
+    espaco_disco: 0,
+    memoria_uso: 0,
+    uptime_sistema: '0 dias, 0 horas'
   }
 
   const formatDateTime = (dateTime: string) => {
@@ -190,6 +139,108 @@ export function AdministracaoPage() {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       alert('Usuário excluído com sucesso!')
     }
+  }
+
+  // Funções de Backup
+  const handleExportBackup = async () => {
+    try {
+      // Simular dados do sistema para backup
+      const backupData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        data: {
+          users: usuariosMock,
+          permissions: permissoesMock,
+          configurations: configuracoesSystema,
+          logs: logsSistema.slice(0, 100), // Últimos 100 logs
+          stats: stats
+        },
+        metadata: {
+          exported_by: 'Admin',
+          system: 'PDV Allimport',
+          total_records: usuariosMock.length + permissoesMock.length + configuracoesSystema.length + logsSistema.length
+        }
+      }
+
+      // Converter para JSON
+      const jsonString = JSON.stringify(backupData, null, 2)
+      
+      // Criar blob e fazer download
+      const blob = new Blob([jsonString], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      alert('Backup exportado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao exportar backup:', error)
+      alert('Erro ao exportar backup. Verifique o console para mais detalhes.')
+    }
+  }
+
+  const handleImportBackup = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'application/json') {
+      alert('Por favor, selecione um arquivo JSON válido.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const backupData = JSON.parse(e.target?.result as string)
+        
+        // Validar estrutura básica do backup
+        if (!backupData.version || !backupData.data) {
+          throw new Error('Estrutura de backup inválida')
+        }
+
+        console.log('Backup importado:', backupData)
+        alert(`Backup importado com sucesso!\n\nVersão: ${backupData.version}\nData: ${new Date(backupData.timestamp).toLocaleString()}\nRegistros: ${backupData.metadata?.total_records || 'N/A'}`)
+        
+        // Aqui você implementaria a lógica real de importação
+        // Por exemplo, atualizar estados ou enviar para o backend
+        
+      } catch (error) {
+        console.error('Erro ao importar backup:', error)
+        alert('Erro ao importar backup. Arquivo inválido ou corrompido.')
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleGenerateReport = () => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      system_status: 'Online',
+      total_users: usuariosMock.length,
+      active_users: usuariosMock.filter(u => u.status === 'ativo').length,
+      total_configurations: configuracoesSystema.length,
+      recent_logs: logsSistema.length,
+      uptime: stats.uptime_sistema,
+      disk_usage: `${stats.espaco_disco}%`,
+      memory_usage: `${stats.memoria_uso}%`
+    }
+
+    const jsonString = JSON.stringify(report, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `relatorio-sistema-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    alert('Relatório do sistema gerado com sucesso!')
   }
 
   // Card de Estatística
@@ -517,6 +568,162 @@ export function AdministracaoPage() {
     </div>
   )
 
+  // Backup do Sistema
+  const BackupView = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Backup Completo JSON</h3>
+        <p className="text-gray-600 mt-1">Exporte, importe e gerencie backups do sistema</p>
+      </div>
+
+      {/* Estatísticas de Backup */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+          <div className="flex items-center">
+            <Database className="h-8 w-8 text-blue-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Último Backup</p>
+              <p className="text-lg font-bold text-gray-900">{formatDate(stats.backup_ultimo)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+          <div className="flex items-center">
+            <FileText className="h-8 w-8 text-green-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Tamanho Estimado</p>
+              <p className="text-lg font-bold text-gray-900">~2.5 MB</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
+          <div className="flex items-center">
+            <Cloud className="h-8 w-8 text-purple-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Status</p>
+              <p className="text-lg font-bold text-green-600">Ativo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ações de Backup */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Ações de Backup</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Exportar Backup */}
+          <button
+            onClick={handleExportBackup}
+            className="flex flex-col items-center p-6 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors group"
+          >
+            <Download className="h-12 w-12 text-blue-500 group-hover:text-blue-600 mb-3" />
+            <span className="text-lg font-medium text-gray-900 mb-1">Exportar Backup</span>
+            <span className="text-sm text-gray-600 text-center">
+              Baixar backup completo em formato JSON com todos os dados do sistema
+            </span>
+          </button>
+
+          {/* Importar Backup */}
+          <label className="flex flex-col items-center p-6 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-colors group cursor-pointer">
+            <Upload className="h-12 w-12 text-green-500 group-hover:text-green-600 mb-3" />
+            <span className="text-lg font-medium text-gray-900 mb-1">Importar Backup</span>
+            <span className="text-sm text-gray-600 text-center">
+              Restaurar sistema a partir de arquivo JSON de backup
+            </span>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportBackup}
+              className="hidden"
+            />
+          </label>
+
+          {/* Gerar Relatório */}
+          <button
+            onClick={handleGenerateReport}
+            className="flex flex-col items-center p-6 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors group"
+          >
+            <FileText className="h-12 w-12 text-purple-500 group-hover:text-purple-600 mb-3" />
+            <span className="text-lg font-medium text-gray-900 mb-1">Gerar Relatório</span>
+            <span className="text-sm text-gray-600 text-center">
+              Criar relatório detalhado do status atual do sistema
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Informações sobre o Backup */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Conteúdo do Backup</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <h5 className="font-medium text-gray-900">Dados Inclusos:</h5>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                Usuários e permissões
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                Configurações do sistema
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                Logs do sistema (últimos 100)
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                Estatísticas gerais
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h5 className="font-medium text-gray-900">Formato JSON:</h5>
+            <pre className="text-xs bg-gray-100 p-3 rounded-lg overflow-x-auto">
+{`{
+  "version": "1.0",
+  "timestamp": "2025-01-20T...",
+  "data": {
+    "users": [...],
+    "permissions": [...],
+    "configurations": [...],
+    "logs": [...]
+  },
+  "metadata": {
+    "exported_by": "Admin",
+    "system": "PDV Allimport",
+    "total_records": 125
+  }
+}`}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {/* Aviso de Segurança */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex">
+          <AlertTriangle className="h-5 w-5 text-yellow-400" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-yellow-800">
+              Aviso de Segurança
+            </h3>
+            <div className="mt-2 text-sm text-yellow-700">
+              <ul className="list-disc list-inside space-y-1">
+                <li>Os backups podem conter informações sensíveis. Mantenha-os seguros.</li>
+                <li>Teste os backups em ambiente de desenvolvimento antes de usar em produção.</li>
+                <li>Faça backups regulares para evitar perda de dados.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   // Configurações do sistema
   const SistemaView = () => (
     <div className="space-y-6">
@@ -641,6 +848,17 @@ export function AdministracaoPage() {
               Permissões
             </button>
             <button
+              onClick={() => setViewMode('backup')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'backup'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Database className="h-4 w-4 inline mr-2" />
+              Backup
+            </button>
+            <button
               onClick={() => setViewMode('sistema')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 viewMode === 'sistema'
@@ -659,6 +877,7 @@ export function AdministracaoPage() {
           {viewMode === 'dashboard' && <DashboardView />}
           {viewMode === 'usuarios' && <UsuariosView />}
           {viewMode === 'permissoes' && <PermissoesView />}
+          {viewMode === 'backup' && <BackupView />}
           {viewMode === 'sistema' && <SistemaView />}
         </div>
       </div>

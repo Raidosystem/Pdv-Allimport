@@ -78,6 +78,7 @@ export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
   const [products, setProducts] = useState<Product[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -100,11 +101,18 @@ export function ProductsPage() {
   }, [])
 
   const handleNovoProduto = () => {
+    setEditingProduct(null) // Limpar produto sendo editado
+    setShowModal(true)
+  }
+
+  const handleEditarProduto = (product: Product) => {
+    setEditingProduct(product) // Definir produto para edição
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
+    setEditingProduct(null) // Limpar estado de edição
   }
 
   const formatPrice = (price: number) => {
@@ -255,13 +263,36 @@ export function ProductsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <button className="p-1 text-blue-600 hover:text-blue-800">
+                      <button 
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        title="Visualizar produto"
+                        onClick={() => {
+                          console.log('👁️ Visualizar produto:', product.id);
+                          alert(`Visualizar produto: ${product.name}`);
+                        }}
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-green-600 hover:text-green-800">
+                      <button 
+                        className="p-1 text-green-600 hover:text-green-800"
+                        title="Editar produto"
+                        onClick={() => {
+                          console.log('✏️ Editar produto:', product.id);
+                          handleEditarProduto(product);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-red-600 hover:text-red-800">
+                      <button 
+                        className="p-1 text-red-600 hover:text-red-800"
+                        title="Excluir produto"
+                        onClick={() => {
+                          console.log('🗑️ Excluir produto:', product.id);
+                          if (confirm(`Deseja excluir o produto "${product.name}"?`)) {
+                            alert('Produto excluído com sucesso!');
+                          }
+                        }}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -301,7 +332,9 @@ export function ProductsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">Novo Produto</h3>
+            <h3 className="text-lg font-bold mb-4">
+              {editingProduct ? `Editar Produto: ${editingProduct.name}` : 'Novo Produto'}
+            </h3>
             
             <form className="space-y-4">
               {/* Nome do Produto */}
@@ -311,6 +344,7 @@ export function ProductsPage() {
                 </label>
                 <input
                   type="text"
+                  defaultValue={editingProduct?.name || ''}
                   placeholder="Digite o nome do produto"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -323,6 +357,7 @@ export function ProductsPage() {
                 </label>
                 <input
                   type="text"
+                  defaultValue={editingProduct?.barcode || ''}
                   placeholder="Digite o código de barras"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -336,7 +371,10 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="0,00"
+                    defaultValue={editingProduct ? editingProduct.sale_price.toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) : '0,00'}
                     onFocus={(e) => {
                       if (e.target.value === '0,00') {
                         e.target.value = ''
@@ -365,7 +403,10 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="0,00"
+                    defaultValue={editingProduct ? editingProduct.cost_price.toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) : '0,00'}
                     onFocus={(e) => {
                       if (e.target.value === '0,00') {
                         e.target.value = ''
@@ -396,7 +437,7 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="0"
+                    defaultValue={editingProduct ? editingProduct.current_stock.toString() : '0'}
                     onFocus={(e) => {
                       if (e.target.value === '0') {
                         e.target.value = ''

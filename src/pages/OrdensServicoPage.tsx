@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { 
   Plus, 
@@ -41,9 +41,13 @@ const TIPO_OPTIONS: TipoEquipamento[] = [
 ]
 
 export function OrdensServicoPage() {
+  console.log('🔧 OrdensServicoPage renderizando...');
+  const navigate = useNavigate()
   const [filtros, setFiltros] = useState<FiltrosOS>({})
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [atualizandoStatus, setAtualizandoStatus] = useState<string | null>(null)
+
+  console.log('Estado atual mostrarFormulario:', mostrarFormulario);
 
   const { ordens, loading, recarregar } = useOrdensServico(filtros)
   const { empresa } = useEmpresa()
@@ -67,16 +71,20 @@ export function OrdensServicoPage() {
 
   // Atualizar status da ordem
   const atualizarStatus = async (id: string, novoStatus: StatusOS) => {
+    console.log('🔄 TENTANDO ATUALIZAR STATUS:', { id, novoStatus, atualizandoStatus });
     setAtualizandoStatus(id)
     try {
+      console.log('📡 Chamando ordemServicoService.atualizarStatus...');
       await ordemServicoService.atualizarStatus(id, novoStatus)
+      console.log('✅ Status atualizado com sucesso!');
       toast.success('Status atualizado com sucesso!')
       recarregar()
     } catch (error: any) {
-      console.error('Erro ao atualizar status:', error)
+      console.error('❌ Erro ao atualizar status:', error)
       toast.error('Erro ao atualizar status')
     } finally {
       setAtualizandoStatus(null)
+      console.log('🏁 atualizandoStatus resetado');
     }
   }
 
@@ -358,13 +366,18 @@ export function OrdensServicoPage() {
   }
 
   if (mostrarFormulario) {
+    console.log('🔥 RENDERIZANDO FORMULÁRIO DE OS!');
     return (
       <OrdemServicoForm
         onSuccess={() => {
+          console.log('✅ OS criada com sucesso!');
           setMostrarFormulario(false)
           recarregar()
         }}
-        onCancel={() => setMostrarFormulario(false)}
+        onCancel={() => {
+          console.log('❌ Cancelando criação de OS');
+          setMostrarFormulario(false);
+        }}
       />
     )
   }
@@ -398,8 +411,16 @@ export function OrdensServicoPage() {
           
           <Button
             size="sm"
-            onClick={() => setMostrarFormulario(true)}
-            className="gap-1"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🚀 BOTÃO NOVA OS CLICADO!');
+              console.log('Estado atual mostrarFormulario:', mostrarFormulario);
+              setMostrarFormulario(true);
+              console.log('mostrarFormulario definido para true');
+            }}
+            className="gap-1 z-10 relative"
+            style={{ pointerEvents: 'auto' }}
           >
             <Plus className="w-3 h-3" />
             Nova OS
@@ -522,7 +543,7 @@ export function OrdensServicoPage() {
                 </thead>
                 <tbody>
                   {ordens.map((ordem) => (
-                    <tr key={ordem.id} className="hover:bg-gray-50 border-b">
+                    <tr key={ordem.id} className="hover:bg-gray-50 border-b cursor-pointer" onClick={() => navigate(`/ordem-servico/${ordem.id}`)}>
                       <td className="p-2">
                         <div className="text-xs font-medium text-gray-900">
                           #{ordem.id.slice(-6).toUpperCase()}
@@ -556,9 +577,17 @@ export function OrdensServicoPage() {
                         ) : (
                           <select
                             value={ordem.status}
-                            onChange={(e) => atualizarStatus(ordem.id, e.target.value as StatusOS)}
+                            onChange={(e) => {
+                              console.log('📝 SELECT STATUS MUDOU:', { 
+                                ordemId: ordem.id, 
+                                statusAntigo: ordem.status, 
+                                novoStatus: e.target.value 
+                              });
+                              atualizarStatus(ordem.id, e.target.value as StatusOS);
+                            }}
                             disabled={atualizandoStatus === ordem.id}
                             className="text-xs px-1 py-1 border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            style={{ pointerEvents: 'auto', zIndex: 10 }}
                           >
                             {STATUS_OPTIONS.filter(status => status !== 'Entregue').map(status => (
                               <option key={status} value={status}>{status}</option>
@@ -583,28 +612,54 @@ export function OrdensServicoPage() {
                       </td>
                       
                       <td className="p-2">
-                        <div className="flex gap-1 justify-center">
+                        <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => imprimirOrdem(ordem)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              imprimirOrdem(ordem);
+                            }}
                             className="h-6 w-6 p-0"
+                            title="Imprimir OS"
                           >
                             <Printer className="w-3 h-3" />
                           </Button>
                           
-                          <Link to={`/ordem-servico/${ordem.id}`}>
-                            <Button size="sm" variant="outline" className="h-6 w-6 p-0">
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                          </Link>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-6 w-6 p-0 z-10 relative"
+                            title="Visualizar OS"
+                            style={{ pointerEvents: 'auto' }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('👁️ BOTÃO VISUALIZAR OS CLICADO:', ordem.id);
+                              console.log('Navegando para:', `/ordens-servico/${ordem.id}`);
+                              navigate(`/ordens-servico/${ordem.id}`);
+                            }}
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
                           
                           {ordem.status !== 'Entregue' && (
-                            <Link to={`/ordem-servico/${ordem.id}/editar`}>
-                              <Button size="sm" variant="outline" className="h-6 w-6 p-0">
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                            </Link>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-6 w-6 p-0 z-10 relative"
+                              title="Editar OS"
+                              style={{ pointerEvents: 'auto' }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('✏️ BOTÃO EDITAR OS CLICADO:', ordem.id);
+                                console.log('Navegando para:', `/ordens-servico/${ordem.id}/editar`);
+                                navigate(`/ordens-servico/${ordem.id}/editar`);
+                              }}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -616,16 +671,6 @@ export function OrdensServicoPage() {
           )}
         </Card>
       </div>
-      
-      {/* Formulário Modal */}
-      {mostrarFormulario && (
-        <OrdemServicoForm 
-          onSuccess={() => {
-            setMostrarFormulario(false)
-            recarregar()
-          }}
-        />
-      )}
     </div>
   )
 }

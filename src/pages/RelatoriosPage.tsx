@@ -32,7 +32,7 @@ const RelatoriosPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total de Vendas</p>
-              <p className="text-2xl font-bold text-blue-600">R$ 2.450,00</p>
+              <p className="text-2xl font-bold text-blue-600">R$ 0,00</p>
             </div>
             <DollarSign className="w-8 h-8 text-blue-500" />
           </div>
@@ -42,7 +42,7 @@ const RelatoriosPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Número de Pedidos</p>
-              <p className="text-2xl font-bold text-green-600">18</p>
+              <p className="text-2xl font-bold text-green-600">0</p>
             </div>
             <FileText className="w-8 h-8 text-green-500" />
           </div>
@@ -52,7 +52,7 @@ const RelatoriosPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">OS Fechadas</p>
-              <p className="text-2xl font-bold text-purple-600">5</p>
+              <p className="text-2xl font-bold text-purple-600">0</p>
             </div>
             <FileX className="w-8 h-8 text-purple-500" />
           </div>
@@ -62,7 +62,7 @@ const RelatoriosPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total em Caixa</p>
-              <p className="text-2xl font-bold text-yellow-600">R$ 3.120,00</p>
+              <p className="text-2xl font-bold text-yellow-600">R$ 0,00</p>
             </div>
             <DollarSign className="w-8 h-8 text-yellow-500" />
           </div>
@@ -73,17 +73,8 @@ const RelatoriosPage: React.FC = () => {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Formas de Pagamento</h3>
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>PIX</span>
-              <span className="font-medium">R$ 1.200,00 (49%)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Cartão</span>
-              <span className="font-medium">R$ 800,00 (33%)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Dinheiro</span>
-              <span className="font-medium">R$ 450,00 (18%)</span>
+            <div className="text-center text-gray-500 py-4">
+              Nenhum dado disponível
             </div>
           </div>
         </div>
@@ -91,13 +82,8 @@ const RelatoriosPage: React.FC = () => {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Vendas por Funcionário</h3>
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>João Silva</span>
-              <span className="font-medium">R$ 1.500,00 (8 vendas)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Maria Santos</span>
-              <span className="font-medium">R$ 950,00 (10 vendas)</span>
+            <div className="text-center text-gray-500 py-4">
+              Nenhum dado disponível
             </div>
           </div>
         </div>
@@ -131,8 +117,6 @@ const RelatoriosPage: React.FC = () => {
           <label className="block text-sm font-medium mb-2">Funcionário</label>
           <select className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">Todos</option>
-            <option value="joao">João Silva</option>
-            <option value="maria">Maria Santos</option>
           </select>
         </div>
       </div>
@@ -272,25 +256,8 @@ const RelatoriosPage: React.FC = () => {
           </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 p-2">08/08/2025</td>
-              <td className="border border-gray-300 p-2">Carlos Silva</td>
-              <td className="border border-gray-300 p-2">Venda</td>
-              <td className="border border-gray-300 p-2">R$ 450,00</td>
-              <td className="border border-gray-300 p-2">PIX</td>
-              <td className="border border-gray-300 p-2">João Silva</td>
-              <td className="border border-gray-300 p-2">
-                <button className="text-blue-500 hover:text-blue-700">Ver Detalhes</button>
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">08/08/2025</td>
-              <td className="border border-gray-300 p-2">Ana Santos</td>
-              <td className="border border-gray-300 p-2">OS</td>
-              <td className="border border-gray-300 p-2">R$ 120,00</td>
-              <td className="border border-gray-300 p-2">Cartão</td>
-              <td className="border border-gray-300 p-2">Maria Santos</td>
-              <td className="border border-gray-300 p-2">
-                <button className="text-blue-500 hover:text-blue-700">Ver Detalhes</button>
+              <td colSpan={7} className="border border-gray-300 p-4 text-center text-gray-500">
+                Nenhum dado disponível
               </td>
             </tr>
           </tbody>

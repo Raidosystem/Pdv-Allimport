@@ -3,16 +3,18 @@
 -- Data do backup: 2025-08-25
 -- Gerado automaticamente em: 2025-08-28T15:50:41.708Z
 
--- Primeiro, garantir categoria padrão
-INSERT INTO public.categorias (id, nome, descricao, ativo, criado_em, atualizado_em) 
+-- Primeiro, garantir categoria padrão (usando estrutura correta)
+INSERT INTO public.categorias (id, nome, descricao, criado_em, atualizado_em) 
 VALUES (
   'cat-default',
   'Produtos Gerais', 
   'Categoria padrão para produtos importados',
-  true,
   NOW(),
   NOW()
-) ON CONFLICT (id) DO NOTHING;
+) ON CONFLICT (id) DO UPDATE SET
+  nome = EXCLUDED.nome,
+  descricao = EXCLUDED.descricao,
+  atualizado_em = NOW();
 
 -- Inserir TODOS os produtos do backup
 INSERT INTO public.produtos (
@@ -26,7 +28,6 @@ INSERT INTO public.produtos (
   estoque_minimo,
   unidade,
   categoria_id,
-  ativo,
   criado_em,
   atualizado_em
 ) VALUES

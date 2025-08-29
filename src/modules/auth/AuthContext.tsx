@@ -3,6 +3,11 @@ import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
 import { SubscriptionService } from '../../services/subscriptionService'
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean)
+
 interface AuthContextType {
   user: User | null
   session: Session | null
@@ -58,10 +63,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Se login bem-sucedido, verificar se usuário está aprovado
     if (data.user && !error) {
       // Verificar se é admin (sempre aprovado)
-      const isAdmin = email === 'admin@pdvallimport.com' || 
-                     email === 'novaradiosystem@outlook.com' ||
-                     email === 'admin@pdv.com'
-      
+      const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
+
       if (!isAdmin) {
         // Verificar status de aprovação para usuários normais
         const { data: approvalData, error: approvalError } = await supabase
@@ -111,7 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
     console.log('=== SIGNUP DEBUG ===')
     console.log('Email:', email)
-    console.log('Is Admin:', email === 'admin@pdvallimport.com' || email === 'novaradiosystem@outlook.com' || email === 'admin@pdv.com')
+    console.log('Is Admin:', ADMIN_EMAILS.includes(email.toLowerCase()))
     
     // Criar conta sem obrigar confirmação de email
     const { data, error } = await supabase.auth.signUp({
@@ -128,9 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Se a conta foi criada com sucesso
     if (data.user && !error) {
       // Verificar se é admin (admins são auto-aprovados)
-      const isAdmin = email === 'admin@pdvallimport.com' || 
-                     email === 'novaradiosystem@outlook.com' ||
-                     email === 'admin@pdv.com'
+      const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
       
       console.log('User created, isAdmin:', isAdmin)
       
@@ -342,9 +343,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const isAdmin = (): boolean => {
-    return user?.email === 'admin@pdvallimport.com' || 
-           user?.email === 'novaradiosystem@outlook.com' ||
-           user?.email === 'admin@pdv.com' ||
+    return ADMIN_EMAILS.includes(user?.email?.toLowerCase() || '') ||
            user?.app_metadata?.role === 'admin'
   }
 

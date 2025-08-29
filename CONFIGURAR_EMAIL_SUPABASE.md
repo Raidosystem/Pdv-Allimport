@@ -11,7 +11,7 @@ Os emails de cadastro e recuperação de senha não estão chegando porque as co
 3. **Sign In / Providers** → Enable signups (se necessário)
 
 ### 1️⃣ ACESSE O DASHBOARD
-Abra: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
+Abra: https://supabase.com/dashboard/project/your-project-ref/auth/settings
 
 ### 2️⃣ CONFIGURAR SITE URL
 **Localização:** Authentication > URL Configuration

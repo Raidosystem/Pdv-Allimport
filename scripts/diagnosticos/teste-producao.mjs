@@ -8,8 +8,8 @@
 import https from 'https';
 
 const DOMAIN = 'pdv.crmvsystem.com';
-const SUPABASE_URL = 'https://kmcaaqetxtwkdcczdomw.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg';
+const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT.supabase.co';
+const ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'
 
 console.log('🔍 TESTE DO DOMÍNIO EM PRODUÇÃO');
 console.log(`🌐 URL: https://${DOMAIN}/`);
@@ -26,7 +26,7 @@ function verificarHTML() {
         
         // Verificar se contém referências ao Supabase
         const patterns = [
-          { name: 'Supabase URL', regex: /kmcaaqetxtwkdcczdomw/gi },
+          { name: 'Supabase URL', regex: /your-project-ref/gi },
           { name: 'Variáveis ENV', regex: /VITE_SUPABASE/gi },
           { name: 'React App', regex: /react/gi },
           { name: 'Scripts JS', regex: /\.js/gi }

@@ -3,7 +3,7 @@
 -- Description: Document URL configuration for Supabase Auth
 
 -- IMPORTANT: These settings must be configured manually in Supabase Dashboard
--- Go to: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
+-- Go to: https://supabase.com/dashboard/project/your-project-ref/auth/settings
 
 -- Create a function to check auth configuration
 CREATE OR REPLACE FUNCTION check_auth_config()

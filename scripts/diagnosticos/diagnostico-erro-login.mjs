@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 async function diagnosticarErroLogin() {
     console.log('🔍 DIAGNÓSTICO ESPECÍFICO DO ERRO DE LOGIN\n');
     
-    const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+    const supabaseUrl = 'https://YOUR_SUPABASE_PROJECT.supabase.co'
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'
     
     try {
         console.log('1. Testando credenciais conhecidas...');
@@ -47,7 +47,7 @@ async function diagnosticarErroLogin() {
             console.log('\n2. Criando novo usuário de emergência...');
             
             // Usar service role para criar usuário
-            const supabaseAdmin = createClient(supabaseUrl, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzkyNTcwOSwiZXhwIjoyMDY5NTAxNzA5fQ.J4gAQcV_rJiw1xAvXgo8kyiPvDIZN3HtKyuBR-i5jL4', {
+            const supabaseAdmin = createClient(supabaseUrl, 'YOUR_SUPABASE_ANON_KEY'
                 auth: { autoRefreshToken: false, persistSession: false }
             });
             
@@ -81,7 +81,7 @@ async function diagnosticarErroLogin() {
         console.log('\n3. Verificando configuração RLS...');
         
         // Verificar se RLS está bloqueando
-        const supabaseAdmin = createClient(supabaseUrl, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzkyNTcwOSwiZXhwIjoyMDY5NTAxNzA5fQ.J4gAQcV_rJiw1xAvXgo8kyiPvDIZN3HtKyuBR-i5jL4', {
+        const supabaseAdmin = createClient(supabaseUrl, 'YOUR_SUPABASE_ANON_KEY'
             auth: { autoRefreshToken: false, persistSession: false }
         });
         

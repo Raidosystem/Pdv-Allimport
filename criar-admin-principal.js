@@ -1,8 +1,8 @@
 // Criar usuário administrador principal no Supabase
 console.log('🔧 Criando usuário administrador principal...')
 
-const SUPABASE_URL = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT.supabase.co'
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'
 
 // Credenciais do administrador principal
 const adminEmail = 'novaradiosystem@outlook.com'

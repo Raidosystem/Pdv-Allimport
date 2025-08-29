@@ -1,6 +1,6 @@
 -- SQL PARA SUPABASE - MÓDULO CAIXA PDV ALLIMPORT
 -- Cole APENAS este conteúdo no SQL Editor do Supabase
--- https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/sql
+-- https://supabase.com/dashboard/project/your-project-ref/sql
 
 -- Verificar se as tabelas já existem
 SELECT 'Verificando tabela caixa...' as status;

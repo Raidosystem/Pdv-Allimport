@@ -65,11 +65,11 @@ export default function AuthConfigTest() {
   };
 
   const openSupabaseDashboard = () => {
-    window.open('https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings', '_blank');
+    window.open('https://supabase.com/dashboard/project/your-project-ref/auth/settings', '_blank');
   };
 
   const openAuthSettings = () => {
-    window.open('https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/url-configuration', '_blank');
+    window.open('https://supabase.com/dashboard/project/your-project-ref/auth/url-configuration', '_blank');
   };
 
   useEffect(() => {

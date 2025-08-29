@@ -1,8 +1,15 @@
 // Teste básico de conexão com Supabase
+import 'dotenv/config'
+
 console.log('🔍 Testando conexão com Supabase...')
 
-const SUPABASE_URL = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('⚠️ Defina SUPABASE_URL e SUPABASE_ANON_KEY nas variáveis de ambiente')
+  process.exit(1)
+}
 
 // 1. Teste básico - verificar se URL responde
 console.log('1️⃣ Testando URL básica...')
@@ -64,8 +71,8 @@ setTimeout(() => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      email: 'admin@pdv.com',
-      password: 'admin123'
+      email: 'test@example.com',
+      password: 'test-password'
     })
   })
   .then(response => {

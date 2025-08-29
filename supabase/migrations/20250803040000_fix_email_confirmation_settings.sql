@@ -6,7 +6,7 @@
 -- IMPORTANTE: CONFIGURAÇÕES MANUAIS NO DASHBOARD
 -- ==========================================
 
--- Acesse: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
+-- Acesse: https://supabase.com/dashboard/project/your-project-ref/auth/settings
 
 -- 1. SITE URL:
 --    https://pdv-allimport.vercel.app

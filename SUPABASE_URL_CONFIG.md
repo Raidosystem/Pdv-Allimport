@@ -6,7 +6,7 @@ Os emails de confirmação estão redirecionando para `localhost:3000` porque as
 ## 📝 SOLUÇÃO PASSO A PASSO
 
 ### 1. Acesse o Painel do Supabase
-🔗 **Link direto:** https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
+🔗 **Link direto:** https://supabase.com/dashboard/project/your-project-ref/auth/settings
 
 ### 2. Configure Site URL
 Na seção **"Site URL"**, altere de:

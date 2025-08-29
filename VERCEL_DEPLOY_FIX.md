@@ -25,14 +25,14 @@ MP_ACCESS_TOKEN=APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2
 MP_PUBLIC_KEY=APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022
 
 # Supabase
-SUPABASE_URL=https://kmcaaqetxtwkdcczdomw.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg
+SUPABASE_URL=https://YOUR_SUPABASE_PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
 # Frontend
 VITE_MP_PUBLIC_KEY=APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022
 VITE_MP_ACCESS_TOKEN=APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193
-VITE_SUPABASE_URL=https://kmcaaqetxtwkdcczdomw.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg
+VITE_SUPABASE_URL=https://YOUR_SUPABASE_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 VITE_API_URL=https://pdv-allimport.vercel.app
 VITE_APP_NAME=PDV Allimport
 VITE_APP_VERSION=1.0.0
@@ -43,7 +43,7 @@ NODE_ENV=production
 
 ### 2. **Execute SQL no Supabase:**
 - **Arquivo:** `DEPLOY_SEGURO.sql`
-- **URL:** https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/sql
+- **URL:** https://supabase.com/dashboard/project/your-project-ref/sql
 - **Ação:** Copiar → Colar → RUN
 
 ## 🧪 **Como testar:**

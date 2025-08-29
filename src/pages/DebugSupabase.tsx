@@ -21,13 +21,18 @@ export default function DebugSupabase() {
       
       // Teste 2: Criar cliente diretamente aqui
       addLog('� CRIANDO CLIENTE SUPABASE DIRETAMENTE:');
-      const url = import.meta.env.VITE_SUPABASE_URL || 'https://kmcaaqetxtwkdcczdomw.supabase.co';
-      const key = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg';
-      
+      const url = import.meta.env.VITE_SUPABASE_URL;
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      if (!url || !key) {
+        addLog('Credenciais do Supabase não configuradas');
+        return;
+      }
+
       addLog(`URL: ${url}`);
       addLog(`KEY: ${key ? 'PRESENTE (length: ' + key.length + ')' : 'AUSENTE'}`);
       addLog('');
-      
+
       const testClient = createClient(url, key);
       addLog(`Cliente criado: ${!!testClient}`);
       addLog('');

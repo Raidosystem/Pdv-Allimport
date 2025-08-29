@@ -1,5 +1,5 @@
-const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg';
+const supabaseUrl = 'https://YOUR_SUPABASE_PROJECT.supabase.co';
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'
 
 async function verificarDados() {
   console.log('=== VERIFICAÇÃO COMPLETA DOS DADOS ===\n');

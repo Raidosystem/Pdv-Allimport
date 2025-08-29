@@ -3,8 +3,8 @@ const { createClient } = require('@supabase/supabase-js');
 
 async function testarFetchEmployees() {
   const supabase = createClient(
-    'https://kmcaaqetxtwkdcczdomw.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzkyNTcwOSwiZXhwIjoyMDY5NTAxNzA5fQ.J4gAQcV_rJiw1xAvXgo8kyiPvDIZN3HtKyuBR-i5jL4',
+    'https://YOUR_SUPABASE_PROJECT.supabase.co',
+    'YOUR_SUPABASE_ANON_KEY'
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
   

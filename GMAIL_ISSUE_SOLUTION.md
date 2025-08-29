@@ -48,7 +48,7 @@ Use temporariamente:
 
 ## 🎯 Links Úteis
 - **Signup PDV**: https://pdv-allimport.vercel.app/signup
-- **Dashboard Supabase**: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings
+- **Dashboard Supabase**: https://supabase.com/dashboard/project/your-project-ref/auth/settings
 - **SendGrid**: https://sendgrid.com
 - **Mailgun**: https://mailgun.com
 

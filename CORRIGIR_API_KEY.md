@@ -14,7 +14,7 @@ Status: 401 Unauthorized
 
 ### 1️⃣ BUSCAR ANON_KEY CORRETA:
 
-Acesse: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/settings/api
+Acesse: https://supabase.com/dashboard/project/your-project-ref/settings/api
 
 **Copie exatamente:**
 - **anon / public key** (NÃO a service_role)
@@ -47,8 +47,8 @@ Você verá:
 
 ## 📋 CHAVES ATUAIS CONHECIDAS:
 
-- **URL**: `https://kmcaaqetxtwkdcczdomw.supabase.co` ✅
-- **Service Role**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzkyNTcwOSwiZXhwIjoyMDY5NTAxNzA5fQ.J4gAQcV_rJiw1xAvXgo8kyiPvDIZN3HtKyuBR-i5jL4` ✅
+- **URL**: `https://YOUR_SUPABASE_PROJECT.supabase.co` ✅
+- **Service Role**: `YOUR_SUPABASE_ANON_KEY
 - **Anon Key**: ❌ PRECISA BUSCAR NO DASHBOARD
 
 ---

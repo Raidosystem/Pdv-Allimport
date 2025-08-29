@@ -70,7 +70,7 @@ async function fixChecklistColumn() {
         if (sqlError) {
           console.error('❌ Erro ao executar SQL para criar coluna:', sqlError.message)
           console.log('\n📋 INSTRUÇÕES MANUAIS:')
-          console.log('1. Acesse https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw')
+          console.log('1. Acesse https://supabase.com/dashboard/project/your-project-ref')
           console.log('2. Vá para SQL Editor')
           console.log('3. Execute o seguinte comando:')
           console.log('\nALTER TABLE public.ordens_servico ADD COLUMN IF NOT EXISTS checklist JSONB DEFAULT \'{}\';')

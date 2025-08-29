@@ -30,12 +30,12 @@ async function testarLoginDireto() {
         // 2. Tentar fazer uma requisição para o endpoint de login
         console.log('\n2. Testando endpoint de autenticação...');
         
-        const authTest = await fetch('https://kmcaaqetxtwkdcczdomw.supabase.co/auth/v1/token?grant_type=password', {
+        const authTest = await fetch('https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/token?grant_type=password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
+                'apikey': 'YOUR_SUPABASE_ANON_KEY'
+                'Authorization': 'Bearer YOUR_SUPABASE_ANON_KEY
                 'Origin': 'https://pdv.crmvsystem.com'
             },
             body: JSON.stringify({

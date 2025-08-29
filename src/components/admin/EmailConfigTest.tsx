@@ -91,7 +91,7 @@ export default function EmailConfigTest() {
   };
 
   const openSupabaseDashboard = () => {
-    window.open('https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings', '_blank');
+    window.open('https://supabase.com/dashboard/project/your-project-ref/auth/settings', '_blank');
   };
 
   return (

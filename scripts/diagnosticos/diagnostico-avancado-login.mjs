@@ -18,8 +18,8 @@ async function diagnosticoAvancadoLogin() {
         const html = await siteResponse.text();
         
         // Procurar por configurações específicas
-        const hasSupabaseUrl = html.includes('kmcaaqetxtwkdcczdomw.supabase.co');
-        const hasSupabaseKey = html.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
+        const hasSupabaseUrl = html.includes('your-project-ref.supabase.co');
+        const hasSupabaseKey = html.includes('YOUR_SUPABASE_ANON_KEY'
         const hasAuthModule = html.includes('AuthContext') || html.includes('signIn');
         
         console.log(`   - URL Supabase no HTML: ${hasSupabaseUrl ? '✅' : '❌'}`);
@@ -31,12 +31,12 @@ async function diagnosticoAvancadoLogin() {
         console.log('\n2. Simulando processo de login...');
         
         // Simular requisição que o frontend faria
-        const loginResponse = await fetch('https://kmcaaqetxtwkdcczdomw.supabase.co/auth/v1/token?grant_type=password', {
+        const loginResponse = await fetch('https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/token?grant_type=password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg',
+                'apikey': 'YOUR_SUPABASE_ANON_KEY'
+                'Authorization': 'Bearer YOUR_SUPABASE_ANON_KEY
                 'Origin': 'https://pdv.crmvsystem.com'
             },
             body: JSON.stringify({

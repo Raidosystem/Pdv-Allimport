@@ -1,18 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Configurações hardcoded para garantir funcionamento
-const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+// Load configuration from environment variables
+const finalUrl = import.meta.env.VITE_SUPABASE_URL || ''
+const finalKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Fallback para variáveis de ambiente
-const finalUrl = import.meta.env.VITE_SUPABASE_URL || supabaseUrl
-const finalKey = import.meta.env.VITE_SUPABASE_ANON_KEY || supabaseAnonKey
-
-console.log('🔧 Supabase Config Loaded:', {
-  url: finalUrl,
-  hasKey: !!finalKey,
-  keyLength: finalKey.length
-})
+if (!finalUrl || !finalKey) {
+  console.warn('⚠️ Missing Supabase environment variables')
+}
 
 export const supabase = createClient(finalUrl, finalKey, {
   auth: {

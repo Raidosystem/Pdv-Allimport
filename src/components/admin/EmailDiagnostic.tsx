@@ -127,7 +127,7 @@ export function EmailDiagnostic() {
         <div className="mt-4 p-4 bg-blue-50 rounded-lg">
           <div className="font-semibold text-blue-800 mb-2">📋 Instruções:</div>
           <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700">
-            <li>Acesse: <a href="https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw/auth/settings" className="underline" target="_blank" rel="noopener noreferrer">Dashboard do Supabase</a></li>
+            <li>Acesse: <a href="https://supabase.com/dashboard/project/your-project-ref/auth/settings" className="underline" target="_blank" rel="noopener noreferrer">Dashboard do Supabase</a></li>
             <li>Configure todas as opções conforme o arquivo CONFIGURAR_EMAIL_SUPABASE.md</li>
             <li>Volte aqui e teste os emails</li>
           </ol>

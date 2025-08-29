@@ -1,20 +1,28 @@
 // Teste final do login após correções
 import { createClient } from '@supabase/supabase-js'
+import 'dotenv/config'
 
-const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjU3MDksImV4cCI6MjA2OTUwMTcwOX0.gFcUOoNPESqp2PALV5CYhMceTQ4HVuf-noGn94Fzbwg'
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+const testEmail = process.env.TEST_USER_EMAIL
+const testPassword = process.env.TEST_USER_PASSWORD
+
+if (!supabaseUrl || !supabaseAnonKey || !testEmail || !testPassword) {
+    console.log('⚠️ Defina SUPABASE_URL, SUPABASE_ANON_KEY, TEST_USER_EMAIL e TEST_USER_PASSWORD nas variáveis de ambiente')
+    process.exit(1)
+}
 
 async function testeLoginFinal() {
     console.log('🎯 TESTE FINAL DO LOGIN APÓS CORREÇÕES\n');
     
     try {
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        
-        console.log('1. Testando login com admin@pdv.com...');
-        
+
+        console.log(`1. Testando login com ${testEmail}...`);
+
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: 'admin@pdv.com',
-            password: 'admin123'
+            email: testEmail,
+            password: testPassword
         });
         
         if (loginError) {
@@ -61,13 +69,13 @@ async function testeLoginFinal() {
         }
         
         console.log('\n📋 RESULTADO FINAL:');
-        
+
         if (!loginError) {
             console.log('🎉 PROBLEMA RESOLVIDO!');
             console.log('');
-            console.log('🔑 CREDENCIAIS FUNCIONAIS:');
-            console.log('   📧 Email: admin@pdv.com');
-            console.log('   🔒 Senha: admin123');
+            console.log('🔑 CREDENCIAIS UTILIZADAS:');
+            console.log(`   📧 Email: ${testEmail}`);
+            console.log('   🔒 Senha: (oculta)');
             console.log('');
             console.log('🌐 SITES PARA TESTE:');
             console.log('   Principal: https://pdv.crmvsystem.com/');

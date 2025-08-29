@@ -1,8 +1,8 @@
 // Script para ativar usuário administrativamente no Supabase
 console.log('🔧 Ativando usuário administrativamente...')
 
-const SUPABASE_URL = 'https://kmcaaqetxtwkdcczdomw.supabase.co'
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzkyNTcwOSwiZXhwIjoyMDY5NTAxNzA5fQ.nJN4QXLXR5uRH4LKZhfANJ8gW8Jjnt0FUqKQx-jgC3w'
+const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT.supabase.co'
+const SUPABASE_SERVICE_KEY = 'YOUR_SUPABASE_ANON_KEY'
 
 // Ativar usuário diretamente via API de admin
 async function ativarUsuario() {

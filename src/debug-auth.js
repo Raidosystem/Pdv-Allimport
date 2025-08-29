@@ -24,10 +24,18 @@ async function debugAuth() {
     console.log('4️⃣ Testando autenticação...')
     
     // Teste de login com o email principal correto
-    console.log('Tentando login com novaradiosystem@outlook.com...')
+    const email = import.meta.env.VITE_TEST_USER_EMAIL
+    const password = import.meta.env.VITE_TEST_USER_PASSWORD
+
+    if (!email || !password) {
+      console.log('⚠️ Defina VITE_TEST_USER_EMAIL e VITE_TEST_USER_PASSWORD para testar o login')
+      return
+    }
+
+    console.log(`Tentando login com ${email}...`)
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'novaradiosystem@outlook.com',
-      password: 'admin123'
+      email,
+      password
     })
     
     if (error) {

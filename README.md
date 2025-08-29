@@ -15,9 +15,14 @@ Sistema completo de **Ponto de Venda** desenvolvido em **React + TypeScript** co
 - **Backup Surge**: [https://pdv-producao.surge.sh/](https://pdv-producao.surge.sh/)
 - **Backup Final**: [https://pdv-final.surge.sh/](https://pdv-final.surge.sh/)
 
-### 🔐 **Credenciais de Teste**
-- **Email**: `admin@pdv.com`
-- **Senha**: `admin123`
+### 🔐 **Usuário de Teste**
+Defina `TEST_USER_EMAIL` e `TEST_USER_PASSWORD` em um arquivo `.env` e execute:
+
+```bash
+node scripts/create-test-user.mjs
+```
+
+O script criará o usuário de teste no Supabase utilizando as variáveis configuradas.
 
 ## 📱 **Instalação PWA**
 

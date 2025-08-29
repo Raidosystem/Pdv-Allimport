@@ -135,6 +135,7 @@ npm run build
 ```
 
 ### Variáveis de Ambiente
+As credenciais do Supabase são lidas do arquivo `.env` e **são obrigatórias** para que a aplicação funcione:
 ```env
 VITE_SUPABASE_URL=sua_url_supabase
 VITE_SUPABASE_ANON_KEY=sua_chave_publica

@@ -1,0 +1,76 @@
+    // Fazer logout do Supabase também (caso tenha uma sessão real)
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  }
+
+  const resendConfirmation = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${baseUrl}/confirm-email`
+      }
+    })
+    return { data, error }
+  }
+
+  const resetPassword = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${baseUrl}/reset-password`
+    })
+    return { data, error }
+  }
+
+  const checkAccess = async (): Promise<boolean> => {
+    if (!user?.email) return false
+    
+    // Admins sempre têm acesso
+    if (isAdmin()) return true
+    
+    try {
+      return await SubscriptionService.hasAccess(user.email)
+    } catch (error) {
+      console.error('Erro ao verificar acesso:', error)
+      return false
+    }
+  }
+
+  const isAdmin = (): boolean => {
+    return user?.email === 'admin@pdvallimport.com' || 
+           user?.email === 'novaradiosystem@outlook.com' ||
+           user?.email === 'admin@pdv.com' ||
+           user?.app_metadata?.role === 'admin'
+  }
+
+  const value: AuthContextType = {
+    user,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signUpEmployee,
+    signOut,
+    resendConfirmation,
+    resetPassword,
+    checkAccess,
+    isAdmin,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+
+export default AuthContext

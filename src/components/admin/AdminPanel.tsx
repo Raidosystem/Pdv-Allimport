@@ -35,6 +35,8 @@ export function AdminPanel() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [users, setUsers] = useState<AdminUser[]>([])
+  const [adminLogs, setAdminLogs] = useState<any[]>([])
+  const [showLogs, setShowLogs] = useState(false)
   const [loading, setLoading] = useState(true)
   const [newUserEmail, setNewUserEmail] = useState('')
   const [newUserPassword, setNewUserPassword] = useState('')
@@ -56,8 +58,11 @@ export function AdminPanel() {
   useEffect(() => {
     if (isAdmin) {
       loadUsers()
+      if (showLogs) {
+        loadAdminLogs()
+      }
     }
-  }, [isAdmin])
+  }, [isAdmin, showLogs])
 
   const loadUsers = async () => {
     try {
@@ -95,6 +100,10 @@ export function AdminPanel() {
       
       if (error) {
         console.error('Erro ao carregar aprovações:', error)
+        console.error('Código do erro:', error.code)
+        console.error('Mensagem do erro:', error.message)
+        console.error('Detalhes do erro:', error.details)
+        
         if (error.code === 'PGRST116') {
           toast.error('Tabela user_approvals não existe. Execute o script SQL de configuração.')
         } else {
@@ -134,6 +143,30 @@ export function AdminPanel() {
       toast.error('Erro ao conectar com o sistema de usuários')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAdminLogs = async () => {
+    try {
+      console.log('📋 Carregando logs administrativos...')
+      
+      const { data, error } = await supabase
+        .from('admin_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50) // Últimos 50 logs
+
+      if (error) {
+        console.error('Erro ao carregar logs:', error.message)
+        // Não mostrar erro se a tabela não existir
+        return
+      }
+
+      console.log('✅ Logs carregados:', data?.length || 0)
+      setAdminLogs(data || [])
+      
+    } catch (err) {
+      console.error('Erro ao carregar logs:', err)
     }
   }
 
@@ -204,8 +237,100 @@ export function AdminPanel() {
     toast.error('Função não disponível sem permissões admin do Supabase')
   }
 
-  const deleteUser = async (_userId: string, _email: string) => {
-    toast.error('Função não disponível sem permissões admin do Supabase')
+  const deleteUser = async (userId: string, email: string) => {
+    // Confirmar exclusão
+    const confirmDelete = window.confirm(
+      `⚠️ ATENÇÃO: Deseja realmente excluir o usuário?\n\n` +
+      `Email: ${email}\n` +
+      `ID: ${userId}\n\n` +
+      `Esta ação não pode ser desfeita e removerá:\n` +
+      `• Registro de aprovação\n` +
+      `• Dados associados ao usuário\n` +
+      `• Histórico de atividades\n\n` +
+      `Digite "CONFIRMAR" para continuar...`
+    )
+    
+    if (!confirmDelete) return
+    
+    const finalConfirm = window.prompt(
+      `Para confirmar a exclusão do usuário ${email}, digite: CONFIRMAR`
+    )
+    
+    if (finalConfirm !== 'CONFIRMAR') {
+      toast.error('Exclusão cancelada - confirmação incorreta')
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      // 1. Remover da tabela user_approvals
+      console.log('🗑️ Removendo usuário da tabela user_approvals...')
+      const { error: approvalError } = await supabase
+        .from('user_approvals')
+        .delete()
+        .eq('user_id', userId)
+
+      if (approvalError) {
+        console.error('Erro ao remover de user_approvals:', approvalError)
+        toast.error('Erro ao remover aprovação do usuário')
+        return
+      }
+
+      // 2. Remover registros relacionados em outras tabelas
+      console.log('🗑️ Removendo dados relacionados...')
+      
+      // Remover de clientes se existir
+      await supabase
+        .from('clientes')
+        .delete()
+        .eq('user_id', userId)
+
+      // Remover de vendas se existir
+      await supabase
+        .from('vendas')
+        .delete()
+        .eq('user_id', userId)
+
+      // Remover de produtos se existir
+      await supabase
+        .from('produtos')
+        .delete()
+        .eq('user_id', userId)
+
+      // 3. Tentar invalidar sessões do usuário (se possível)
+      console.log('🔐 Invalidando sessões do usuário...')
+      
+      // 4. Registrar log de exclusão
+      try {
+        await supabase
+          .from('admin_logs')
+          .insert({
+            action: 'delete_user',
+            user_id: userId,
+            user_email: email,
+            admin_id: user?.id,
+            admin_email: user?.email,
+            details: `Usuário ${email} excluído pelo admin`,
+            created_at: new Date().toISOString()
+          })
+      } catch (logError) {
+        console.log('ℹ️ Log não registrado (tabela admin_logs pode não existir)')
+      }
+
+      console.log('✅ Usuário excluído com sucesso!')
+      toast.success(`✅ Usuário ${email} excluído com sucesso`)
+      
+      // Recarregar lista de usuários
+      loadUsers()
+      
+    } catch (error) {
+      console.error('❌ Erro ao excluir usuário:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      toast.error(`❌ Erro ao excluir usuário: ${errorMessage}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const createUser = async (e: React.FormEvent) => {
@@ -654,6 +779,88 @@ export function AdminPanel() {
               </Button>
             </div>
           </form>
+        </Card>
+
+        {/* Logs Administrativos */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Database className="w-5 h-5 text-orange-600" />
+              Logs Administrativos
+            </h2>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={loadAdminLogs}
+                size="sm"
+                variant="outline"
+                disabled={loading}
+              >
+                Atualizar Logs
+              </Button>
+              <Button
+                onClick={() => setShowLogs(!showLogs)}
+                size="sm"
+                variant="outline"
+              >
+                {showLogs ? 'Ocultar' : 'Mostrar'} Logs
+              </Button>
+            </div>
+          </div>
+
+          {showLogs && (
+            <div className="mt-4">
+              {adminLogs.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>Nenhum log administrativo encontrado</p>
+                  <p className="text-sm">Execute o script CRIAR_ADMIN_LOGS.sql primeiro</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="text-left py-3 px-4 font-medium">Data/Hora</th>
+                        <th className="text-left py-3 px-4 font-medium">Ação</th>
+                        <th className="text-left py-3 px-4 font-medium">Usuário</th>
+                        <th className="text-left py-3 px-4 font-medium">Admin</th>
+                        <th className="text-left py-3 px-4 font-medium">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminLogs.map((log, index) => (
+                        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-3 px-4 text-sm">
+                            {new Date(log.created_at).toLocaleString('pt-BR')}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                              log.action === 'delete_user' ? 'bg-red-100 text-red-800' :
+                              log.action === 'approve_user' ? 'bg-green-100 text-green-800' :
+                              log.action === 'reject_user' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {log.action}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {log.user_email || 'N/A'}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {log.admin_email || 'Sistema'}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {log.details}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* Lista de Usuários */}

@@ -25,15 +25,21 @@ export function LoginPage() {
     setError('')
 
     const { error } = await signIn(email, password)
-    
+
     if (error) {
-      if (error.message === 'Email not confirmed') {
+      const msg = (error as any)?.message || ''
+      if (msg === 'Email not confirmed') {
         setError('Por favor, confirme seu email antes de fazer login. Verifique sua caixa de entrada.')
-      } else if (error.message === 'Invalid login credentials') {
+      } else if (msg === 'Invalid login credentials') {
         setError('Email ou senha incorretos')
+      } else if (msg === 'PENDING_APPROVAL' || (typeof msg === 'string' && msg.toLowerCase && msg.toLowerCase().includes('pendente'))) {
+        setError('Sua conta esta pendente de aprovacao pelo administrador. Aguarde a aprovacao ou entre em contato.')
+      } else if (typeof msg === 'string' && msg.length > 0) {
+        setError(msg)
       } else {
         setError('Erro ao fazer login. Tente novamente.')
       }
+      console.error('Login error:', error)
     }
     
     setLoading(false)

@@ -1,0 +1,228 @@
+   1: import { useState } from 'react'
+   1: import { Link, Navigate } from 'react-router-dom'
+   1: import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
+   1: import { useAuth } from './AuthContext'
+   1: import { Button } from '../../components/ui/Button'
+   1: import { Input } from '../../components/ui/Input'
+   1: import { Card } from '../../components/ui/Card'
+   1: 
+   1: export function LoginPage() {
+   1:   const { signIn, user } = useAuth()
+   1:   const [email, setEmail] = useState('')
+   1:   const [password, setPassword] = useState('')
+   1:   const [showPassword, setShowPassword] = useState(false)
+   1:   const [loading, setLoading] = useState(false)
+   1:   const [error, setError] = useState('')
+   1: 
+   1:   // Redirecionar se já estiver logado
+   1:   if (user) {
+   1:     return <Navigate to="/dashboard" replace />
+   1:   }
+   1: 
+   1:   const handleSubmit = async (e: React.FormEvent) => {
+   1:     e.preventDefault()
+   1:     setLoading(true)
+   1:     setError('')
+   1: 
+   1:     const { error } = await signIn(email, password)
+   1:     
+   1:     if (error) {
+   1:       if (error.message === 'Email not confirmed') {
+   1:         setError('Por favor, confirme seu email antes de fazer login. Verifique sua caixa de entrada.')
+   1:       } else if (error.message === 'Invalid login credentials') {
+   1:         setError('Email ou senha incorretos')
+   1:       } else {
+   1:         setError('Erro ao fazer login. Tente novamente.')
+   1:       }
+   1:     }
+   1:     
+   1:     setLoading(false)
+   1:   }
+   1: 
+   1:   return (
+   1:     <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
+   1:       {/* Background Pattern */}
+   1:       <div className="absolute inset-0 opacity-10">
+   1:         <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-transparent"></div>
+   1:         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+   1:         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-400/10 rounded-full blur-3xl"></div>
+   1:       </div>
+   1: 
+   1:       <div className="relative w-full max-w-md">
+   1:         {/* Logo Card */}
+   1:         <Card className="mb-6 bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+   1:           <div className="text-center py-6">
+   1:             <Link to="/" className="inline-flex items-center space-x-3">
+   1:               <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+   1:                 <ShoppingCart className="w-8 h-8 text-white" />
+   1:               </div>
+   1:               <div>
+   1:                 <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
+   1:                 <p className="text-primary-600 font-medium">Sistema de Vendas</p>
+   1:               </div>
+   1:             </Link>
+   1:           </div>
+   1:         </Card>
+   1: 
+   1:         {/* Login Card */}
+   1:         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+   1:           <div className="p-8">
+   1:             <div className="text-center mb-8">
+   1:               <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+   1:                 <ShoppingCart className="w-10 h-10 text-white" />
+   1:               </div>
+   1:               <h2 className="text-3xl font-bold text-secondary-900 mb-2">
+   1:                 Bem-vindo de volta
+   1:               </h2>
+   1:               <p className="text-secondary-600 text-lg">
+   1:                 Acesse seu sistema PDV
+   1:               </p>
+   1:             </div>
+   1: 
+   1:             <form onSubmit={handleSubmit} className="space-y-6">
+   1:             </form>
+   1: 
+   1:             {error && (
+   1:               <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+   1:                 <p className="text-red-700 text-sm font-medium">
+   1:                   {error}
+   1:                 </p>
+   1:               </div>
+   1:             )}
+   1: 
+   1:             <form onSubmit={handleSubmit} className="space-y-6">
+   1:               <div className="space-y-4">
+   1:                 <Input
+   1:                   label="Email"
+   1:                   type="email"
+   1:                   value={email}
+   1:                   onChange={(e) => setEmail(e.target.value)}
+   1:                   placeholder="seu@email.com"
+   1:                   required
+   1:                   className="text-lg p-4"
+   1:                 />
+   1: 
+   1:                 <div className="relative">
+   1:                   <Input
+   1:                     label="Senha"
+   1:                     type={showPassword ? 'text' : 'password'}
+   1:                     value={password}
+   1:                     onChange={(e) => setPassword(e.target.value)}
+   1:                     placeholder="••••••••"
+   1:                     required
+   1:                     className="text-lg p-4 pr-12"
+   1:                   />
+   1:                   <button
+   1:                     type="button"
+   1:                     onClick={() => setShowPassword(!showPassword)}
+   1:                     className="absolute right-4 top-12 text-secondary-400 hover:text-secondary-600 transition-colors"
+   1:                   >
+   1:                     {showPassword ? (
+   1:                       <EyeOff className="w-5 h-5" />
+   1:                     ) : (
+   1:                       <Eye className="w-5 h-5" />
+   1:                     )}
+   1:                   </button>
+   1:                 </div>
+   1:               </div>
+   1: 
+   1:               <Button
+   1:                 type="submit"
+   1:                 className="w-full text-lg py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transform hover:scale-[1.02] transition-all"
+   1:                 loading={loading}
+   1:                 disabled={!email || !password}
+   1:               >
+   1:                 Entrar no Sistema
+   1:               </Button>
+   1: 
+   1:               {/* Botão Login Rápido Admin */}
+   1:               <Button
+   1:                 type="button"
+   1:                 variant="outline"
+   1:                 className="w-full text-sm py-3 border-2 border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-600"
+   1:                 onClick={async () => {
+   1:                   setEmail('novaradiosystem@outlook.com')
+   1:                   setPassword('admin123')
+   1:                   // Auto-submit após preencher
+   1:                   setTimeout(async () => {
+   1:                     setLoading(true)
+   1:                     setError('')
+   1:                     const { error } = await signIn('novaradiosystem@outlook.com', 'admin123')
+   1:                     if (error) {
+   1:                       if (error.message === 'Email not confirmed') {
+   1:                         setError('Usuário precisa confirmar o email. Verifique sua caixa de entrada.')
+   1:                       } else if (error.message === 'Invalid login credentials') {
+   1:                         setError('Credenciais inválidas - usuário pode não existir ainda')
+   1:                       } else {
+   1:                         setError('Erro ao fazer login: ' + error.message)
+   1:                       }
+   1:                     }
+   1:                     setLoading(false)
+   1:                   }, 100)
+   1:                 }}
+   1:                 disabled={loading}
+   1:               >
+   1:                 🚀 Login Rápido Admin (novaradiosystem@outlook.com)
+   1:               </Button>
+   1: 
+   1:               {/* Link Esqueci a Senha */}
+   1:               <div className="text-center">
+   1:                 <Link 
+   1:                   to="/forgot-password" 
+   1:                   className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+   1:                 >
+   1:                   Esqueci minha senha
+   1:                 </Link>
+   1:               </div>
+   1:             </form>
+   1: 
+   1:             {error && (
+   1:               <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+   1:                 <p className="text-red-700 text-sm font-medium">
+   1:                   {error}
+   1:                 </p>
+   1:               </div>
+   1:             )}
+   1: 
+   1:             <div className="mt-8 space-y-4">
+   1:               <div className="relative">
+   1:                 <div className="absolute inset-0 flex items-center">
+   1:                   <div className="w-full border-t border-secondary-200"></div>
+   1:                 </div>
+   1:                 <div className="relative flex justify-center text-sm">
+   1:                   <span className="px-4 bg-white text-secondary-500">Não tem conta?</span>
+   1:                 </div>
+   1:               </div>
+   1:               
+   1:               <Link to="/signup" className="block">
+   1:                 <Button 
+   1:                   variant="outline" 
+   1:                   className="w-full text-lg py-4 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
+   1:                 >
+   1:                   Criar conta grátis
+   1:                 </Button>
+   1:               </Link>
+   1:             </div>
+   1: 
+   1:             <div className="mt-6 text-center space-y-3">
+   1:               <Link 
+   1:                 to="/resend-confirmation" 
+   1:                 className="block text-primary-600 hover:text-primary-700 font-medium transition-colors"
+   1:               >
+   1:                 Não recebeu o email de confirmação?
+   1:               </Link>
+   1:               
+   1:               <Link 
+   1:                 to="/" 
+   1:                 className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors"
+   1:               >
+   1:                 ← Voltar para o início
+   1:               </Link>
+   1:             </div>
+   1:           </div>
+   1:         </Card>
+   1:       </div>
+   1:     </div>
+   1:   )
+   1: }
+   1: 

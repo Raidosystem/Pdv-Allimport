@@ -193,28 +193,39 @@ export class ReportsService {
   async getClientsReport(): Promise<ClientsReport> {
     const userId = await this.getCurrentUser()
     
-    const { data: clientes_vendas } = await supabase
+    // Buscar todos os clientes do usuário
+    const { data: clientes_data, error: clientes_error } = await supabase
       .from('clientes')
-      .select(`
-        id, nome, email, telefone, created_at,
-        sales(total, data_venda)
-      `)
+      .select('id, nome, email, telefone, created_at')
       .eq('user_id', userId)
+      .order('nome', { ascending: true })
 
-    const clientes = clientes_vendas?.map(cliente => {
-      const vendas = cliente.sales || []
-      const total_compras = vendas.length
-      const valor_total = vendas.reduce((acc: number, v: any) => acc + v.total, 0)
-      const ultima_compra = vendas.length > 0 ? 
-        new Date(Math.max(...vendas.map((v: any) => new Date(v.data_venda).getTime()))).toISOString() : 
+    if (clientes_error) throw clientes_error
+
+    // Buscar todas as vendas com cliente_id
+    const { data: vendas_data, error: vendas_error } = await supabase
+      .from('sales')
+      .select('cliente_id, total, data_venda')
+      .eq('user_id', userId)
+      .not('cliente_id', 'is', null)
+
+    if (vendas_error) throw vendas_error
+
+    // Processar dados dos clientes com suas vendas
+    const clientes = clientes_data?.map(cliente => {
+      const vendas_cliente = vendas_data?.filter(v => v.cliente_id === cliente.id) || []
+      const total_compras = vendas_cliente.length
+      const valor_total = vendas_cliente.reduce((acc, v) => acc + v.total, 0)
+      const ultima_compra = vendas_cliente.length > 0 ? 
+        new Date(Math.max(...vendas_cliente.map(v => new Date(v.data_venda).getTime()))).toISOString() : 
         ''
       const ticket_medio = total_compras > 0 ? valor_total / total_compras : 0
 
       return {
         id: cliente.id,
         nome: cliente.nome,
-        email: cliente.email,
-        telefone: cliente.telefone,
+        email: cliente.email || '',
+        telefone: cliente.telefone || '',
         total_compras,
         valor_total,
         ultima_compra,
@@ -225,8 +236,9 @@ export class ReportsService {
     const total_clientes = clientes.length
     const clientes_ativos = clientes.filter(c => c.total_compras > 0).length
     const clientes_inativos = total_clientes - clientes_ativos
-    const ticket_medio_geral = clientes.length > 0 ? 
-      clientes.reduce((acc, c) => acc + c.valor_total, 0) / clientes.filter(c => c.total_compras > 0).length : 0
+    const clientes_com_compras = clientes.filter(c => c.total_compras > 0)
+    const ticket_medio_geral = clientes_com_compras.length > 0 ? 
+      clientes_com_compras.reduce((acc, c) => acc + c.valor_total, 0) / clientes_com_compras.length : 0
 
     return {
       clientes,
@@ -244,6 +256,7 @@ export class ReportsService {
     const userId = await this.getCurrentUser()
     const hoje = new Date().toISOString().split('T')[0]
     const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const mes_atual = new Date().toISOString().slice(0, 7) // YYYY-MM
     
     // Vendas hoje
     const { data: vendas_hoje } = await supabase
@@ -260,9 +273,30 @@ export class ReportsService {
       .gte('data_venda', ontem)
       .lte('data_venda', ontem + ' 23:59:59')
 
+    // Vendas do mês atual
+    const { data: vendas_mes } = await supabase
+      .from('sales')
+      .select('total')
+      .eq('user_id', userId)
+      .gte('data_venda', mes_atual + '-01')
+      .lte('data_venda', mes_atual + '-31')
+
     const valor_hoje = vendas_hoje?.reduce((acc, v) => acc + v.total, 0) || 0
     const valor_ontem = vendas_ontem?.reduce((acc, v) => acc + v.total, 0) || 0
+    const valor_mes = vendas_mes?.reduce((acc, v) => acc + v.total, 0) || 0
     const crescimento_hoje = valor_ontem > 0 ? ((valor_hoje - valor_ontem) / valor_ontem) * 100 : 0
+
+    // Clientes ativos (com pelo menos uma compra nos últimos 90 dias)
+    const noventa_dias_atras = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]
+    const { data: clientes_com_vendas } = await supabase
+      .from('sales')
+      .select('cliente_id')
+      .eq('user_id', userId)
+      .gte('data_venda', noventa_dias_atras)
+      .not('cliente_id', 'is', null)
+
+    const clientes_ativos_set = new Set(clientes_com_vendas?.map(v => v.cliente_id) || [])
+    const clientes_ativos = clientes_ativos_set.size
 
     // Produtos com estoque baixo
     const { count: produtos_estoque_baixo } = await supabase
@@ -271,6 +305,32 @@ export class ReportsService {
       .eq('user_id', userId)
       .filter('estoque', 'lte', 'estoque_minimo')
       .eq('ativo', true)
+
+    // Top produtos (mais vendidos nos últimos 30 dias)
+    const trinta_dias_atras = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+    const { data: top_produtos_data } = await supabase
+      .from('sale_items')
+      .select(`
+        produto_nome,
+        quantidade,
+        sales!inner(user_id, data_venda)
+      `)
+      .eq('sales.user_id', userId)
+      .gte('sales.data_venda', trinta_dias_atras)
+
+    // Agrupar produtos por nome e somar quantidades
+    const produtos_agrupados = (top_produtos_data || []).reduce((acc: any, item: any) => {
+      const nome = item.produto_nome
+      if (!acc[nome]) {
+        acc[nome] = { nome, quantidade: 0, valor: 0 }
+      }
+      acc[nome].quantidade += item.quantidade
+      return acc
+    }, {})
+
+    const top_produtos = Object.values(produtos_agrupados)
+      .sort((a: any, b: any) => b.quantidade - a.quantidade)
+      .slice(0, 5) as { nome: string; quantidade: number; valor: number }[]
 
     // Vendas últimos 7 dias
     const sete_dias_atras = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
@@ -294,18 +354,18 @@ export class ReportsService {
         crescimento: crescimento_hoje
       },
       vendas_mes: {
-        quantidade: 0, // TODO: Implementar
-        valor: 0, // TODO: Implementar
-        crescimento: 0 // TODO: Implementar
+        quantidade: vendas_mes?.length || 0,
+        valor: valor_mes,
+        crescimento: 0 // TODO: Comparar com mês anterior
       },
       produtos_estoque_baixo: produtos_estoque_baixo || 0,
-      clientes_ativos: 0, // TODO: Implementar
+      clientes_ativos,
       receita_vs_meta: {
-        atual: valor_hoje,
-        meta: 1000, // TODO: Tornar configurável
-        percentual: (valor_hoje / 1000) * 100
+        atual: valor_mes,
+        meta: 10000, // TODO: Tornar configurável
+        percentual: (valor_mes / 10000) * 100
       },
-      top_produtos: [], // TODO: Implementar
+      top_produtos,
       vendas_ultimos_7_dias
     }
   }

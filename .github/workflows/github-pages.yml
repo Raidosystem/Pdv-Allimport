@@ -1,9 +1,13 @@
-name: Deploy to GitHub Pages - Fixed
+name: Deploy to GitHub Pages (DISABLED - Using Vercel)
 
 on:
-  push:
-    branches: [ main ]
+  # Desabilitado - usando Vercel como deploy principal
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy to GitHub Pages'
+        required: false
+        default: 'false'
 
 permissions:
   contents: read

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './modules/auth'
+import { useDomainConfig } from './hooks/useDomainConfig'
 import { LoginPage } from './modules/auth/LoginPage'
 import { SignupPage } from './modules/auth/SignupPage'
 import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
@@ -41,12 +42,17 @@ import './App.css'
 import { useState, useEffect } from 'react'
 
 function App() {
+  // Configurar domínio personalizado
+  const domainConfig = useDomainConfig()
+  
   // PWA Install Hook
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [appError, setAppError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('[App] Domínio configurado:', domainConfig.currentOrigin)
+    
     try {
       const handleBeforeInstallPrompt = (e: Event) => {
         console.log('🎯 PWA install prompt captured!');

@@ -16,7 +16,6 @@ export function OrdensServicoPage() {
   const [statusFilter, setStatusFilter] = useState<StatusOS | ''>('')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [importingBackup, setImportingBackup] = useState(false)
-  const [isCleaningOS, setIsCleaningOS] = useState(false)
   const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [showAllOrders, setShowAllOrders] = useState(false)
@@ -59,48 +58,6 @@ export function OrdensServicoPage() {
     handleCloseEditModal()
     // Recarregar dados ou atualizar estado local
     window.location.reload()
-  }
-
-  // Função para limpar todas as ordens de serviço
-  const limparTodasOS = async () => {
-    if (!currentUser?.email || currentUser.email !== 'assistenciaallimport10@gmail.com') {
-      toast.error('Acesso restrito para assistenciaallimport10@gmail.com')
-      return
-    }
-
-    const confirmar = confirm('⚠️ ATENÇÃO: Isso vai DELETAR TODAS as ordens de serviço! Tem certeza?')
-    if (!confirmar) return
-
-    const confirmar2 = confirm('🚨 ÚLTIMA CHANCE: Todas as ordens serão PERMANENTEMENTE excluídas. Continuar?')
-    if (!confirmar2) return
-
-    setIsCleaningOS(true)
-    toast.loading('Limpando todas as ordens de serviço...')
-
-    try {
-      // Deletar todas as ordens do usuário atual
-      const { error } = await supabase
-        .from('ordens_servico')
-        .delete()
-        .eq('usuario_id', currentUser.id)
-
-      if (error) {
-        console.error('Erro ao limpar ordens:', error)
-        throw error
-      }
-
-      toast.dismiss()
-      toast.success('✅ Todas as ordens de serviço foram removidas!')
-      
-      // Recarregar a página
-      window.location.reload()
-    } catch (error) {
-      console.error('❌ Erro ao limpar ordens:', error)
-      toast.dismiss()
-      toast.error('Erro ao limpar ordens de serviço: ' + (error as Error).message)
-    } finally {
-      setIsCleaningOS(false)
-    }
   }
 
   // Função para importar backup de ordens de serviço
@@ -464,16 +421,6 @@ Formatos aceitos:
                     {importingBackup ? 'Importando...' : 'Importar Backup'}
                   </button>
                 </div>
-
-                {/* Botão de Limpar Todas as OS */}
-                <button
-                  onClick={limparTodasOS}
-                  disabled={isCleaningOS}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
-                >
-                  <Trash2 className="h-5 w-5" />
-                  {isCleaningOS ? 'Limpando...' : 'Limpar Todas'}
-                </button>
               </>
             )}
             

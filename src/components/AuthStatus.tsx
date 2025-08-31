@@ -129,13 +129,10 @@ const AuthStatus: React.FC = () => {
         )}
 
         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-          <div className="text-yellow-800 font-medium mb-1">🎯 UUID Esperado:</div>
+          <div className="text-yellow-800 font-medium mb-1">🎯 UUID do Sistema:</div>
           <code className="text-xs bg-yellow-100 px-1 rounded">
-            f7fdf4cf-7101-45ab-86db-5248a7ac58c1
+            {user?.id || 'Usuário não logado'}
           </code>
-          <div className="text-xs text-yellow-700 mt-1">
-            (assistenciaallimport10@gmail.com)
-          </div>
         </div>
 
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
@@ -149,15 +146,6 @@ const AuthStatus: React.FC = () => {
             <div className="mt-2 text-xs">{testResult}</div>
           )}
         </div>
-
-        {user && user.id !== 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1' && (
-          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
-            <div className="text-red-800 font-medium">⚠️ UUID Diferente!</div>
-            <div className="text-xs text-red-700 mt-1">
-              O usuário logado tem UUID diferente do esperado. Isso pode explicar por que os produtos não aparecem.
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

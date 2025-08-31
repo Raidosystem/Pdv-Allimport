@@ -141,36 +141,6 @@ export function LoginPage() {
                 Entrar no Sistema
               </Button>
 
-              {/* Botão Login Rápido Admin */}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full text-sm py-3 border-2 border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-600"
-                onClick={async () => {
-                  setEmail('assistenciaallimport10@gmail.com')
-                  setPassword('Allplay123@')
-                  // Auto-submit após preencher
-                  setTimeout(async () => {
-                    setLoading(true)
-                    setError('')
-                    const { error } = await signIn('assistenciaallimport10@gmail.com', 'Allplay123@')
-                    if (error) {
-                      if (error.message === 'Email not confirmed') {
-                        setError('Usuário precisa confirmar o email. Verifique sua caixa de entrada.')
-                      } else if (error.message === 'Invalid login credentials') {
-                        setError('Credenciais inválidas - usuário pode não existir ainda')
-                      } else {
-                        setError('Erro ao fazer login: ' + error.message)
-                      }
-                    }
-                    setLoading(false)
-                  }, 100)
-                }}
-                disabled={loading}
-              >
-                🚀 Login Rápido Admin (assistenciaallimport10@gmail.com)
-              </Button>
-
               {/* Link Esqueci a Senha */}
               <div className="text-center">
                 <Link 

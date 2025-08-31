@@ -1,29 +1,36 @@
 -- Configurar domínio personalizado pdv.crmvsystem.com no Supabase
--- Execute este SQL no painel do Supabase > SQL Editor
+-- IMPORTANTE: A configuração de autenticação deve ser feita via Dashboard do Supabase
+-- Este SQL é apenas para verificar o ambiente
 
--- 1. Adicionar domínio aos allowed origins
-UPDATE auth.config 
-SET allowed_origins = array_append(
-  COALESCE(allowed_origins, ARRAY[]::text[]),
-  'https://pdv.crmvsystem.com'
-) 
-WHERE key = 'allowed_origins';
+-- 1. CONFIGURAÇÕES VIA DASHBOARD (NÃO SQL):
+-- Acesse: https://supabase.com/dashboard/project/kmcaaqetxtwkdcczdomw
+-- Vá em: Authentication > Settings > Site URL
+-- Defina: https://pdv.crmvsystem.com
 
--- Inserir se não existir
-INSERT INTO auth.config (key, allowed_origins)
-SELECT 'allowed_origins', ARRAY['https://pdv.crmvsystem.com', 'https://pdv-allimport.vercel.app']
-WHERE NOT EXISTS (SELECT 1 FROM auth.config WHERE key = 'allowed_origins');
+-- 2. CONFIGURAÇÕES CORS VIA DASHBOARD:
+-- Acesse: Settings > API > CORS Origins
+-- Adicione: https://pdv.crmvsystem.com
 
--- 2. Configurar redirect URLs para o domínio personalizado
-INSERT INTO auth.config (key, value) VALUES 
-('site_url', 'https://pdv.crmvsystem.com'),
-('redirect_urls', 'https://pdv.crmvsystem.com,https://pdv-allimport.vercel.app')
-ON CONFLICT (key) DO UPDATE SET 
-  value = EXCLUDED.value;
+-- 3. REDIRECT URLs VIA DASHBOARD:
+-- Vá em: Authentication > URL Configuration
+-- Adicione em "Redirect URLs": 
+-- https://pdv.crmvsystem.com
+-- https://pdv.crmvsystem.com/auth/callback
+-- https://pdv-allimport.vercel.app
+-- https://pdv-allimport.vercel.app/auth/callback
 
--- 3. Atualizar configurações CORS
--- Esta parte deve ser feita no painel do Supabase > Settings > API > CORS
--- Adicionar: https://pdv.crmvsystem.com
+-- 4. Verificar se RLS está ativo nas tabelas (via SQL):
+SELECT schemaname, tablename, rowsecurity 
+FROM pg_tables 
+WHERE schemaname = 'public' 
+AND tablename IN ('clientes', 'produtos', 'sales', 'financial_movements')
+ORDER BY tablename;
 
--- 4. Verificar configurações
-SELECT * FROM auth.config;
+-- 5. Verificar políticas RLS existentes:
+SELECT schemaname, tablename, policyname, cmd, qual 
+FROM pg_policies 
+WHERE schemaname = 'public' 
+ORDER BY tablename, policyname;
+
+-- 6. Testar conexão básica:
+SELECT 'Configuração de domínio - teste de conexão' as status, now() as timestamp;

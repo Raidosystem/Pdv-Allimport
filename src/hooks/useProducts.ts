@@ -8,19 +8,35 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
+  // Função para obter o usuário atual
+  const getCurrentUser = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error || !user) {
+      throw new Error('Usuário não autenticado')
+    }
+    
+    return user.id
+  }
+
   // Carregar todos os produtos
   const loadProducts = async () => {
     setLoading(true)
     try {
+      // Obter o UUID do usuário atual logado
+      const userId = await getCurrentUser()
+      
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
-        .order('criado_em', { ascending: false })
+        .eq('user_id', userId) // USAR UUID DO USUÁRIO ATUAL
+        .order('created_at', { ascending: false }) // CORRIGIDO: usar created_at ao invés de criado_em
 
       if (error) throw error
+      
       setProducts(data || [])
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error)
+      console.error('❌ Erro ao carregar produtos:', error)
       toast.error('Erro ao carregar produtos')
       setProducts([])
     } finally {
@@ -32,10 +48,13 @@ export function useProducts() {
   const deleteProduct = async (productId: string) => {
     setLoading(true)
     try {
+      const userId = await getCurrentUser()
+      
       const { error } = await supabase
         .from('produtos')
         .delete()
         .eq('id', productId)
+        .eq('user_id', userId) // FILTRO POR USUÁRIO ATUAL
 
       if (error) throw error
       
@@ -229,6 +248,13 @@ export function useProducts() {
   const saveProduct = async (productData: ProductFormData, id?: string): Promise<boolean> => {
     setLoading(true)
     try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        toast.error('Usuário não autenticado')
+        setLoading(false)
+        return false
+      }
+
       let imageUrl = null
 
       // Upload da imagem se fornecida
@@ -269,13 +295,15 @@ export function useProducts() {
           .from('produtos')
           .update(productToSave)
           .eq('id', id)
+          .eq('user_id', currentUser) // FILTRO POR USUÁRIO
       } else {
         // Criar novo produto
         result = await supabase
           .from('produtos')
           .insert([{
             ...productToSave,
-            criado_em: new Date().toISOString()
+            user_id: currentUser, // ASSOCIAR AO USUÁRIO
+            created_at: new Date().toISOString() // CORRIGIDO: usar created_at
           }])
       }
 
@@ -301,10 +329,17 @@ export function useProducts() {
   // Buscar produto por ID
   const getProduct = async (id: string): Promise<Product | null> => {
     try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        toast.error('Usuário não autenticado')
+        return null
+      }
+
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
         .eq('id', id)
+        .eq('user_id', currentUser) // FILTRO POR USUÁRIO
         .single()
 
       if (error) throw error
@@ -319,10 +354,16 @@ export function useProducts() {
   // Verificar se código já existe
   const checkCodeExists = async (code: string, excludeId?: string): Promise<boolean> => {
     try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        return false
+      }
+
       let query = supabase
         .from('produtos')
         .select('id')
         .eq('codigo', code)
+        .eq('user_id', currentUser) // FILTRO POR USUÁRIO
 
       if (excludeId) {
         query = query.neq('id', excludeId)

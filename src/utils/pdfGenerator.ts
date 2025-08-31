@@ -107,7 +107,7 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
     inativos: products.filter(p => !p.ativo).length,
     semEstoque: products.filter(p => p.estoque === 0).length,
     estoqueTotal: products.reduce((sum, p) => sum + p.estoque, 0),
-    valorTotal: products.reduce((sum, p) => sum + (p.preco_venda * p.estoque), 0)
+    valorTotal: products.reduce((sum, p) => sum + (p.preco * p.estoque), 0)
   }
   
   doc.setFontSize(12)
@@ -149,7 +149,7 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
     codigo: product.codigo,
     nome: product.nome.length > 25 ? product.nome.substring(0, 22) + '...' : product.nome,
     categoria: product.categoria || '-',
-    preco: formatCurrency(product.preco_venda),
+    preco: formatCurrency(product.preco),
     estoque: `${product.estoque} ${product.unidade}`,
     status: product.ativo ? 'Ativo' : 'Inativo'
   }))
@@ -157,7 +157,7 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
   doc.autoTable({
     startY: yPosition,
     head: [tableColumns.map(col => col.header)],
-    body: tableData.map(row => tableColumns.map(col => row[col.dataKey as keyof typeof row])),
+    body: tableData.map(row => tableColumns.map(col => String(row[col.dataKey as keyof typeof row] || ''))),
     theme: 'grid',
     styles: {
       fontSize: 8,

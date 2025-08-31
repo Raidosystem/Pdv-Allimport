@@ -147,13 +147,13 @@ export function LoginPage() {
                 variant="outline"
                 className="w-full text-sm py-3 border-2 border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-600"
                 onClick={async () => {
-                  setEmail('novaradiosystem@outlook.com')
-                  setPassword('admin123')
+                  setEmail('assistenciaallimport10@gmail.com')
+                  setPassword('Allplay123@')
                   // Auto-submit após preencher
                   setTimeout(async () => {
                     setLoading(true)
                     setError('')
-                    const { error } = await signIn('novaradiosystem@outlook.com', 'admin123')
+                    const { error } = await signIn('assistenciaallimport10@gmail.com', 'Allplay123@')
                     if (error) {
                       if (error.message === 'Email not confirmed') {
                         setError('Usuário precisa confirmar o email. Verifique sua caixa de entrada.')
@@ -168,7 +168,7 @@ export function LoginPage() {
                 }}
                 disabled={loading}
               >
-                🚀 Login Rápido Admin (novaradiosystem@outlook.com)
+                🚀 Login Rápido Admin (assistenciaallimport10@gmail.com)
               </Button>
 
               {/* Link Esqueci a Senha */}

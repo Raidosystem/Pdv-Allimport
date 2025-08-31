@@ -24,10 +24,10 @@ async function debugAuth() {
     console.log('4️⃣ Testando autenticação...')
     
     // Teste de login com o email principal correto
-    console.log('Tentando login com novaradiosystem@outlook.com...')
+    console.log('Tentando login com assistenciaallimport10@gmail.com...')
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'novaradiosystem@outlook.com',
-      password: 'admin123'
+      email: 'assistenciaallimport10@gmail.com',
+      password: 'Allplay123@'
     })
     
     if (error) {
@@ -46,7 +46,8 @@ async function debugAuth() {
   }
 }
 
-// Executar teste depois de um delay
-setTimeout(debugAuth, 2000)
+// Executar teste depois de um delay - DESABILITADO PARA PRODUÇÃO
+// setTimeout(debugAuth, 2000)
+console.log('⚠️ Login automático DESABILITADO para produção')
 
 export { debugAuth }

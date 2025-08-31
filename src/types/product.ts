@@ -1,10 +1,11 @@
 export interface Product {
   id?: string
   nome: string
-  codigo: string
+  codigo?: string
   codigo_barras?: string
-  categoria: string
-  preco_venda: number
+  categoria?: string
+  categoria_id?: string
+  preco: number
   preco_custo?: number
   estoque: number
   unidade: string
@@ -12,8 +13,12 @@ export interface Product {
   imagem_url?: string
   fornecedor?: string
   ativo: boolean
-  criado_em?: string
+  created_at?: string
+  updated_at?: string
   atualizado_em?: string
+  user_id?: string
+  sku?: string
+  estoque_minimo?: number
 }
 
 export interface ProductFormData {

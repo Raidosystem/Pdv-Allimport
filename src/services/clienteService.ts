@@ -1,13 +1,17 @@
 import { supabase } from '../lib/supabase'
 import type { Cliente, ClienteInput, ClienteFilters } from '../types/cliente'
 
+// UUID específico para assistenciaallimport10@gmail.com (atualizado do banco)
+const USER_ID_ASSISTENCIA = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1'
+
 export class ClienteService {
   // Buscar todos os clientes com filtros
   static async buscarClientes(filtros: ClienteFilters = {}) {
     let query = supabase
       .from('clientes')
       .select('*')
-      .order('criado_em', { ascending: false })
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO OBRIGATÓRIO POR USUÁRIO
+      .order('created_at', { ascending: false }) // CORRIGIDO: usar created_at
 
     // Aplicar filtro de busca
     if (filtros.search) {
@@ -40,6 +44,7 @@ export class ClienteService {
       .from('clientes')
       .select('*')
       .eq('id', id)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO POR USUÁRIO
       .single()
 
     if (error) {
@@ -51,9 +56,14 @@ export class ClienteService {
 
   // Criar novo cliente
   static async criarCliente(cliente: ClienteInput) {
+    const clienteComUserId = {
+      ...cliente,
+      user_id: USER_ID_ASSISTENCIA // ADICIONAR USER_ID AUTOMATICAMENTE
+    }
+    
     const { data, error } = await supabase
       .from('clientes')
-      .insert([cliente])
+      .insert([clienteComUserId])
       .select()
       .single()
 
@@ -70,6 +80,7 @@ export class ClienteService {
       .from('clientes')
       .update({ ...cliente, atualizado_em: new Date().toISOString() })
       .eq('id', id)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO POR USUÁRIO
       .select()
       .single()
 
@@ -86,6 +97,7 @@ export class ClienteService {
       .from('clientes')
       .delete()
       .eq('id', id)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO POR USUÁRIO
 
     if (error) {
       throw new Error(`Erro ao deletar cliente: ${error.message}`)

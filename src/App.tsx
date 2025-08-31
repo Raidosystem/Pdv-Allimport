@@ -10,7 +10,7 @@ import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPageNew'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
-import { ProductsPage } from './pages/ProductsPage'
+import { ProductsPageFixed as ProductsPage } from './pages/ProductsPageFixed'
 import { TestePage } from './pages/TestePage'
 import { CaixaPage } from './pages/CaixaPage'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
@@ -22,7 +22,7 @@ import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPageNew'
 import ImportBackupPage from './pages/ImportBackupPage'
 import ImportacaoPrivadaPage from './pages/ImportacaoPrivadaPage'
 import ImportacaoAutomaticaPage from './pages/ImportacaoAutomaticaPage'
-import RelatoriosPage from './pages/RelatoriosPage'
+import ReportsPage from './pages/ReportsPage'
 import ResumoDiarioPage from './pages/RelatoriosResumoDiarioPage'
 import RelatoriosPeriodoPage from './pages/RelatoriosPeriodoPage'
 import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
@@ -341,7 +341,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <SubscriptionGuard>
-                  <RelatoriosPage />
+                  <ReportsPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

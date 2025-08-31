@@ -2,6 +2,9 @@ import { supabase } from '../lib/supabase'
 import type { Product, Customer, Sale, CashRegister, SaleSearchParams } from '../types/sales'
 import { searchEmbeddedProducts } from '../data/products'
 
+// UUID do usuário assistenciaallimport10@gmail.com para isolamento multi-tenant (atualizado)
+const USER_ID_ASSISTENCIA = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
+
 // Serviços de Produtos
 export const productService = {
   async search(params: SaleSearchParams): Promise<Product[]> {
@@ -25,7 +28,8 @@ export const productService = {
           unidade,
           criado_em,
           atualizado_em
-        `);
+        `)
+        .eq('user_id', USER_ID_ASSISTENCIA); // FILTRO POR USUÁRIO
 
       // Aplicar filtros de busca
       if (params.search) {
@@ -106,7 +110,8 @@ export const productService = {
           unidade,
           criado_em,
           atualizado_em
-        `);
+        `)
+        .eq('user_id', USER_ID_ASSISTENCIA); // FILTRO POR USUÁRIO
 
       // Aplicar filtros se existirem
       if (params?.search) {
@@ -272,6 +277,7 @@ export const productService = {
           )
         `)
         .eq('id', id)
+        .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO POR USUÁRIO
         .eq('ativo', true)
         .single()
 
@@ -337,6 +343,7 @@ export const productService = {
       .from('produtos')
       .update({ estoque_atual: newQuantity })
       .eq('id', productId)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRO POR USUÁRIO
 
     if (error) throw error
   }

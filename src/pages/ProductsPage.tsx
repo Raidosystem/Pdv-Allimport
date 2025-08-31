@@ -2,21 +2,19 @@ import { useState, useEffect } from 'react'
 import { Package, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 
+// Tipo específico para produtos no sistema
 interface Product {
   id: string
-  user_id?: string
   name: string
-  barcode: string
-  category_id?: string
+  barcode?: string
   sale_price: number
   cost_price: number
   current_stock: number
   minimum_stock: number
   unit_measure: string
   active: boolean
-  expiry_date?: string | null
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 // Dados de exemplo do backup - carregando alguns produtos inicialmente
@@ -62,42 +60,18 @@ const sampleProducts: Product[] = [
   }
 ]
 
-// Função para carregar todos os produtos do backup
-const loadAllProducts = async (): Promise<Product[]> => {
-  try {
-    const response = await fetch('/backup-products.json')
-    const backupData = await response.json()
-    return backupData.data || []
-  } catch (error) {
-    console.error('Erro ao carregar backup:', error)
-    return sampleProducts
-  }
-}
-
 export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
-  const [products, setProducts] = useState<Product[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
+  
+  // Estado local para produtos - removendo hook problemático
+  const [products] = useState<Product[]>(sampleProducts)
+  const loading = false
 
   useEffect(() => {
-    // Carregar todos os produtos do backup
-    const loadProducts = async () => {
-      try {
-        const allProducts = await loadAllProducts()
-        setProducts(allProducts)
-        console.log(`✅ Carregados ${allProducts.length} produtos do backup`)
-      } catch (error) {
-        console.error('Erro ao carregar produtos:', error)
-        setProducts(sampleProducts)
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    loadProducts()
+    console.log(`✅ Produtos carregados localmente`)
   }, [])
 
   const handleNovoProduto = () => {
@@ -122,9 +96,9 @@ export function ProductsPage() {
     })
   }
 
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = products.filter((product: Product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.barcode.includes(searchTerm)
+    (product.barcode && product.barcode.includes(searchTerm))
   )
 
   const activeProducts = products.filter(p => p.active)

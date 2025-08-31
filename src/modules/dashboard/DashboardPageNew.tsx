@@ -40,7 +40,7 @@ import { SubscriptionCountdown } from '../../components/subscription/Subscriptio
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
 import { SalesPage } from '../sales/SalesPage'
 import { ClientesPage } from '../clientes/ClientesPage'
-import { ProductsPage } from '../../pages/ProductsPage'
+import { ProductsPageFixed as ProductsPage } from '../../pages/ProductsPageFixed'
 
 // Definir interfaces para tipagem correta
 interface MenuOption {

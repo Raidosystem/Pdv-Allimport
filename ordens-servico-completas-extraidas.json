@@ -1,0 +1,5442 @@
+[
+  {
+    "numero": 1,
+    "id": "dcdc1e19-d128-468c-b8f2-85b815a96d8e",
+    "cliente": {
+      "id": "fb78f0fa-1c56-4bf1-b783-8c5a60c00c62",
+      "nome": "EDVANIA DA SILVA",
+      "telefone": "17999790061",
+      "email": "BRANCAFABIANA@GMAIL.COM",
+      "endereco": "AV JACARANDA, 2226",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MOTO E13",
+      "nome": "CELULAR AZUL/PRETO",
+      "defeito": "TELA QUEBRADA"
+    },
+    "datas": {
+      "abertura": "2025-06-17",
+      "fechamento": "2025-06-17",
+      "criacao": "2025-06-17T21:17:03.501815+00:00",
+      "atualizacao": "2025-06-17T21:17:09.938095+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 290,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 2,
+    "id": "8b1bef3b-e62d-458d-aef6-c7c4eb7e3c80",
+    "cliente": {
+      "id": "fb78f0fa-1c56-4bf1-b783-8c5a60c00c62",
+      "nome": "EDVANIA DA SILVA",
+      "telefone": "17999790061",
+      "email": "BRANCAFABIANA@GMAIL.COM",
+      "endereco": "AV JACARANDA, 2226",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A06",
+      "nome": "CELULAR AZUL",
+      "defeito": "BLOQUEIO GMAIL"
+    },
+    "datas": {
+      "abertura": "2025-06-17",
+      "fechamento": "2025-06-17",
+      "criacao": "2025-06-17T21:19:41.909371+00:00",
+      "atualizacao": "2025-06-17T21:20:54.172126+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 380,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 30,
+      "observacoes": "FOI RETIRADO O GMAIL DO APARELHO"
+    }
+  },
+  {
+    "numero": 3,
+    "id": "f50b8b48-e7c7-4166-ab41-5f9615450efb",
+    "cliente": {
+      "id": "67526f20-485e-40a0-b448-303ce34932fc",
+      "nome": "SAULO DE TARSO",
+      "telefone": "17991784929",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A23",
+      "nome": "CELULAR BRANCO",
+      "defeito": "CAIU NA AGUA, AURICULAR NÃO ESTA FFUNCIONANDO"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": "2025-06-18",
+      "criacao": "2025-06-18T13:29:07.43627+00:00",
+      "atualizacao": "2025-06-18T13:29:13.595982+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 150,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 4,
+    "id": "0f526fa3-3d21-468b-b02e-f94f0f9c58fe",
+    "cliente": {
+      "id": "98e0b7d7-7362-4855-89f0-fa7c1644964f",
+      "nome": "ALINE CRISTINA CAMARGO",
+      "telefone": "17999746003",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A32",
+      "nome": "CELULAR BRANCO",
+      "defeito": "TELA NÃO FUNCIONA"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": "2025-06-18",
+      "criacao": "2025-06-18T13:48:41.334054+00:00",
+      "atualizacao": "2025-06-18T13:48:45.336718+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 250,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DE TELA"
+    }
+  },
+  {
+    "numero": 5,
+    "id": "b3acbfef-c898-4df0-bfba-4922ba5b6520",
+    "cliente": {
+      "id": "7af82c1b-9588-471f-b700-d2427b18c6ec",
+      "nome": "WINDERSON RODRIGUES LELIS",
+      "telefone": "16991879011",
+      "email": "Não informado",
+      "endereco": "AV 29, COAB 1",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "PS3",
+      "nome": "GAMER PRETO",
+      "defeito": "FAZER AVALIAÇÃO COMPLETA \nVEIO SOMENTE COM CABO DE ENERGIA"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": null,
+      "criacao": "2025-06-18T16:30:10.591938+00:00",
+      "atualizacao": "2025-06-18T16:30:10.591938+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 1,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 6,
+    "id": "b28607a0-3395-441f-a709-22eecc6406a1",
+    "cliente": {
+      "id": "98e0b7d7-7362-4855-89f0-fa7c1644964f",
+      "nome": "ALINE CRISTINA CAMARGO",
+      "telefone": "17999746003",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOTOROLA G23",
+      "nome": "CELULAR",
+      "defeito": "TELA COM PROBLEMA , FEITO TROCA DE TELA GARANTIA OS 16866"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": null,
+      "criacao": "2025-06-18T16:59:13.680217+00:00",
+      "atualizacao": "2025-06-18T16:59:13.680217+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0.01,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 7,
+    "id": "a01954f8-235d-4a3e-aa14-a1b7ce0e697f",
+    "cliente": {
+      "id": "7b05bd0a-1fc7-4334-8576-c4e77d27b196",
+      "nome": "EVALDO ANDRE MAZIETO",
+      "telefone": "17991230981",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Guaíra"
+    },
+    "equipamento": {
+      "modelo": "XBOX ",
+      "nome": "CONTROLE ",
+      "defeito": "BOTÃO ESQUERDO NÃO FUNCIONA"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": "2025-06-18",
+      "criacao": "2025-06-18T20:49:34.213213+00:00",
+      "atualizacao": "2025-06-18T20:50:39.340998+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 213,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 8,
+    "id": "da025224-7bd0-4220-99c8-7e98f5cee7a8",
+    "cliente": {
+      "id": "d8995586-abf4-457a-9756-735f5606e41c",
+      "nome": "JOSLIANA ERIDES DE PAULA FREITAS",
+      "telefone": "17981544129",
+      "email": "Não informado",
+      "endereco": "AV 37 A, 56, RES MARINA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSNUG S20 FE",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELA NÃO ESTA FUNCIONANDO , APARELHO CAIU"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-20",
+      "criacao": "2025-06-20T13:33:12.579104+00:00",
+      "atualizacao": "2025-06-20T13:40:07.028251+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "ORÇAMENTO:"
+    }
+  },
+  {
+    "numero": 9,
+    "id": "cc088a5a-cd4f-46b3-86bc-3e60b04d430d",
+    "cliente": {
+      "id": "66727ef3-2636-49fd-969f-233e1cc07f13",
+      "nome": "Giane Bitencourt",
+      "telefone": "17999795647",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "LENOVO IDEALPAD S145",
+      "nome": "NOTBOOK",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": "2025-06-18",
+      "criacao": "2025-06-18T20:51:45.540101+00:00",
+      "atualizacao": "2025-06-18T20:57:55.044114+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 100,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 10,
+    "id": "16dab66b-2bc4-4292-9648-123b8b688d15",
+    "cliente": {
+      "id": "98e0b7d7-7362-4855-89f0-fa7c1644964f",
+      "nome": "ALINE CRISTINA CAMARGO",
+      "telefone": "17999746003",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOTO G 23",
+      "nome": "CELULAR",
+      "defeito": "TELA COM DEFEITO"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-20",
+      "criacao": "2025-06-20T12:56:31.891513+00:00",
+      "atualizacao": "2025-06-20T12:56:43.853422+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 40,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "FEITO TROCA DE TELA, RETIRADO TELA ANTERIOR PAGO DIFERENÇA REFERENTE A ANTERIOR"
+    }
+  },
+  {
+    "numero": 11,
+    "id": "96e5a161-e615-4cd5-98a9-1dd530591b84",
+    "cliente": {
+      "id": "b8a4a1cc-80ab-420b-b720-eb4798e77c77",
+      "nome": "ADRIANA DA SILVA CIPRIANO",
+      "telefone": "(17)99978-9106",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360 1439",
+      "nome": "GAMER",
+      "defeito": "BANDEJA NÃO ABRE"
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-23",
+      "criacao": "2025-06-23T15:53:05.093047+00:00",
+      "atualizacao": "2025-06-23T15:53:11.114552+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 180,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DA BANDEJA"
+    }
+  },
+  {
+    "numero": 12,
+    "id": "813bcf9e-7ef0-4787-b7b6-d1152d1417ff",
+    "cliente": {
+      "id": "1a735ff3-17fb-41d7-9e44-e6ae6515b713",
+      "nome": "ODAIR FERREIRA DE SOUSA",
+      "telefone": "17999790003",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "G62 5G",
+      "nome": "CELULAR PRETO",
+      "defeito": "TELA COM DEFEITO"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-20",
+      "criacao": "2025-06-20T19:54:12.190594+00:00",
+      "atualizacao": "2025-06-20T19:55:19.473652+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 320,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DE TELA WEFIX"
+    }
+  },
+  {
+    "numero": 13,
+    "id": "fa8d7dd2-4d54-4ed4-9466-462472bc3b97",
+    "cliente": {
+      "id": "81402fa3-218d-470d-b679-b477902b08ec",
+      "nome": "CELIO SANTOS DE SOUSA",
+      "telefone": "17999787190",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE XR",
+      "nome": "CELULAR VERMELHO",
+      "defeito": "REPARO NA PLACA "
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-20",
+      "criacao": "2025-06-20T20:00:45.946856+00:00",
+      "atualizacao": "2025-06-20T20:00:49.608923+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 615.3,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "REPARO NA PLACA DIVIDIDO VALOR DE R$480,00 4X TOTAL 515,30\nPAG COMBUSIVEL NO DEBITO R$100,00"
+    }
+  },
+  {
+    "numero": 14,
+    "id": "c79cae4d-07b4-41c4-bd8a-f8c8d28aaff1",
+    "cliente": {
+      "id": "5c8b794a-ff86-4106-99af-43936b883814",
+      "nome": "Tiago Luiz Da Silva",
+      "telefone": "17999797127",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOTOROLA G84 ",
+      "nome": "CELULAR",
+      "defeito": "NÃO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-20",
+      "criacao": "2025-06-20T20:32:02.898689+00:00",
+      "atualizacao": "2025-06-20T20:32:07.585443+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 180,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DE BATERIA"
+    }
+  },
+  {
+    "numero": 15,
+    "id": "5cb6318c-bf05-4452-abeb-70157e1678d5",
+    "cliente": {
+      "id": "1de38261-6f87-45fb-966f-74f80d9a2b82",
+      "nome": "Ertili Alves Brandão",
+      "telefone": "17991412197",
+      "email": "Não informado",
+      "endereco": "AV 55 269 MURAISH",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 8 PLUS ",
+      "nome": "CELULAR PRETO",
+      "defeito": "NÃO CARREGA "
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-21",
+      "criacao": "2025-06-20T13:28:31.34024+00:00",
+      "atualizacao": "2025-06-21T13:40:42.790245+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 350,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FEITO TROCA DE PLACA"
+    }
+  },
+  {
+    "numero": 16,
+    "id": "0903bd43-616c-43ba-a1f0-5dd36a9756da",
+    "cliente": {
+      "id": "cec352ec-fd75-46f8-885e-f97c204ec860",
+      "nome": "Lucinei Batista",
+      "telefone": "(17)99979-7787",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "G78",
+      "nome": "CELULAR SAMSUNG",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-06-21",
+      "fechamento": "2025-06-21",
+      "criacao": "2025-06-21T14:57:03.717929+00:00",
+      "atualizacao": "2025-06-21T14:57:08.079385+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 170,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DE BATERIA"
+    }
+  },
+  {
+    "numero": 17,
+    "id": "2e6f93d9-2939-466e-ae52-1e2b700cf0ef",
+    "cliente": {
+      "id": "0de00017-d115-484d-9800-a2e818be06e0",
+      "nome": "EDSON RODRIGO",
+      "telefone": "17999750395",
+      "email": "Não informado",
+      "endereco": "RUA 28A , 383 - MURAISH ",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "MOTO G71",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "display oled"
+    },
+    "datas": {
+      "abertura": "2025-06-21",
+      "fechamento": "2025-06-21",
+      "criacao": "2025-06-21T12:51:10.210627+00:00",
+      "atualizacao": "2025-06-21T15:26:45.353381+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 350,
+      "valorTotal": 350,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "com bandejinha - sem chip"
+    }
+  },
+  {
+    "numero": 18,
+    "id": "da3dad0d-e528-4e5f-809e-1300c054fc72",
+    "cliente": {
+      "id": "e6ad0da5-e52c-44db-9303-c51b6224f5d7",
+      "nome": "Sirlene Janaina Amancio",
+      "telefone": "98128-2418",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A54 5G",
+      "nome": "CELULAR PRETO ",
+      "defeito": "DESLIGA SOZINHO"
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-23",
+      "criacao": "2025-06-23T15:54:40.2839+00:00",
+      "atualizacao": "2025-06-23T15:54:44.240522+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 180,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FEITO TROCA DA BATRIA "
+    }
+  },
+  {
+    "numero": 19,
+    "id": "e4e52338-9604-4d24-8a09-f36f15d53314",
+    "cliente": {
+      "id": "8e5f7dad-f0b8-4108-8df8-a5d72b71b091",
+      "nome": "ROBERTO BEL  PRESENTES",
+      "telefone": "17991061836",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "ACER N16Q3",
+      "nome": "NOTBOOK BRANCO",
+      "defeito": "TROCA SSD"
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-07-01",
+      "criacao": "2025-06-23T12:54:11.949709+00:00",
+      "atualizacao": "2025-07-01T20:54:27.089633+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ENTREGUE OK VALOR R$100,00"
+    }
+  },
+  {
+    "numero": 20,
+    "id": "af585103-d8c6-4153-80bc-35f1e6b5f5fc",
+    "cliente": {
+      "id": "fa2c9924-ad76-4174-bfa8-c738facbc740",
+      "nome": "LUIZ CARLOS ESTEVES",
+      "telefone": "17999784472",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A04",
+      "nome": "CELULAR AZUL CLARO",
+      "defeito": "NÃO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-25",
+      "criacao": "2025-06-23T13:04:02.434086+00:00",
+      "atualizacao": "2025-06-25T18:57:09.273662+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:"
+    }
+  },
+  {
+    "numero": 21,
+    "id": "9ba24f72-6c11-48e6-8c26-b27d041fc514",
+    "cliente": {
+      "id": "159ef458-4b88-422f-b6b5-98d99d53bd95",
+      "nome": "FLAVIA MARQUES FIGUEIREDO DE PAULA",
+      "telefone": "17999758595",
+      "email": "Não informado",
+      "endereco": "RUA 08,1462, JARDIM ELDORADO ",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "CONTROLE PETO",
+      "defeito": "ELE CONECTA NO JOGO E DESCONECTA O CONCTOR"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-23",
+      "criacao": "2025-06-20T18:42:37.467441+00:00",
+      "atualizacao": "2025-06-23T20:32:47.636049+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 22,
+    "id": "a71375aa-15e1-4e6f-aabe-17a25bc2e52c",
+    "cliente": {
+      "id": "d1c2b00e-4923-42a8-bd93-de8d2d18cfdd",
+      "nome": "Vitor Aleixo",
+      "telefone": "17999763679",
+      "email": "Não informado",
+      "endereco": "RUA 10, 23, CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "POCO M5",
+      "nome": "CELULAR",
+      "defeito": "NÃO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-23",
+      "criacao": "2025-06-20T20:11:09.361877+00:00",
+      "atualizacao": "2025-06-23T20:15:21.82117+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: GARANTIA ANTERIOR DA OS: 16741\nFLEX SOLTO DA PLACA DE CARGA"
+    }
+  },
+  {
+    "numero": 23,
+    "id": "c83a4ee1-0a1b-43cb-a590-16b4cc3e343d",
+    "cliente": {
+      "id": "159ef458-4b88-422f-b6b5-98d99d53bd95",
+      "nome": "FLAVIA MARQUES FIGUEIREDO DE PAULA",
+      "telefone": "17999758595",
+      "email": "Não informado",
+      "endereco": "RUA 08,1462, JARDIM ELDORADO ",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "LENOVO IDEALPAD S145",
+      "nome": "NOTBOOK CINZA",
+      "defeito": "CONCERTO DE CARCAÇA"
+    },
+    "datas": {
+      "abertura": "2025-06-20",
+      "fechamento": "2025-06-23",
+      "criacao": "2025-06-20T18:44:56.651484+00:00",
+      "atualizacao": "2025-06-23T20:32:32.982233+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 80,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:"
+    }
+  },
+  {
+    "numero": 24,
+    "id": "36210e2c-9f3c-40fc-890f-a902220b3081",
+    "cliente": {
+      "id": "1a684b17-330b-46e9-9b78-bb36fc213b74",
+      "nome": "IGOR DAHER RAMOS",
+      "telefone": "16989958303",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "LG K62+",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-06-24",
+      "fechamento": "2025-06-24",
+      "criacao": "2025-06-24T13:01:57.568518+00:00",
+      "atualizacao": "2025-06-24T20:42:20.476476+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 270,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 25,
+    "id": "5cc28c48-aa32-4079-9692-173265cc8a82",
+    "cliente": {
+      "id": "1de38261-6f87-45fb-966f-74f80d9a2b82",
+      "nome": "Ertili Alves Brandão",
+      "telefone": "17991412197",
+      "email": "Não informado",
+      "endereco": "AV 55 269 MURAISH",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 8 PLUS ",
+      "nome": "CELULAR PRETO",
+      "defeito": "GARANTIA - NÃO CARREGA "
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-26",
+      "criacao": "2025-06-23T19:43:42.80626+00:00",
+      "atualizacao": "2025-06-26T19:43:54.117489+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Ordem de garantia referente à OS #7E1678D5. Defeito original: NÃO CARREGA \nTESTAR PARA VERIFICAÇÃO SE VAI DESLIGAR"
+    }
+  },
+  {
+    "numero": 26,
+    "id": "27064aeb-1278-4bbb-8b37-af3d85056a7c",
+    "cliente": {
+      "id": "3e706edc-3e4c-412a-b806-ba9ab6adbedc",
+      "nome": "DARIO RODRIGO",
+      "telefone": "999771325",
+      "email": "Não informado",
+      "endereco": "AV 1 , N 27 CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "A12",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY "
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-25",
+      "criacao": "2025-06-23T20:45:42.181711+00:00",
+      "atualizacao": "2025-06-25T19:43:40.512933+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 280,
+      "valorTotal": 280,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 27,
+    "id": "11741f23-4461-40d8-9707-64961a72b314",
+    "cliente": {
+      "id": "57abc05f-f89f-4214-89f4-7c2419c1d8ec",
+      "nome": "cristiane matos",
+      "telefone": "1733311381",
+      "email": "Não informado",
+      "endereco": "av 53 , 625 antonio manoel",
+      "bairro": "Não informado",
+      "cidade": "guaír"
+    },
+    "equipamento": {
+      "modelo": "iphone 7",
+      "nome": "celular preto",
+      "defeito": "display "
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-07-01",
+      "criacao": "2025-06-23T12:34:05.23734+00:00",
+      "atualizacao": "2025-07-01T20:12:17.18985+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 280,
+      "valorTotal": 280,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "FOI FEITA A TROCA DE TELA"
+    }
+  },
+  {
+    "numero": 28,
+    "id": "aa8fa75c-0a20-4f0b-a8ae-2e926e93721e",
+    "cliente": {
+      "id": "b84d45af-8e02-4296-9ef7-30dfffe05754",
+      "nome": "RAFAELA BRUNA BARROS",
+      "telefone": "017999758149",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOT G60S",
+      "nome": "CELULAR AZUL",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-06-24",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-24T16:07:09.847248+00:00",
+      "atualizacao": "2025-06-30T19:12:04.809149+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: NÃO QUIS CONCERTAR"
+    }
+  },
+  {
+    "numero": 29,
+    "id": "3891764e-4925-4983-bea8-3251ec55519e",
+    "cliente": {
+      "id": "3c26ce91-1a8b-4a18-8e63-37244ee21d9e",
+      "nome": "JORGE FRANCISCO RIBEIRO",
+      "telefone": "999790204",
+      "email": "Não informado",
+      "endereco": "RUA 14 829 CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "ZTE MF253L",
+      "nome": "MOLDEM",
+      "defeito": "NÃO ESTA CONECTANDO "
+    },
+    "datas": {
+      "abertura": "2025-06-18",
+      "fechamento": "2025-07-11",
+      "criacao": "2025-06-18T19:57:15.130694+00:00",
+      "atualizacao": "2025-07-11T20:09:35.634097+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 30,
+      "valorTotal": 30,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NÃO DEU CONCERTO"
+    }
+  },
+  {
+    "numero": 30,
+    "id": "1f87f15a-3682-4f4f-b296-d11c4f5c7959",
+    "cliente": {
+      "id": "8139ca41-e231-49e9-b8a3-d7266552bb93",
+      "nome": "DOUGLAS RODRIGUES FERREIRA",
+      "telefone": "17999754390",
+      "email": "douuglinha@gmail.com",
+      "endereco": "Rua 14b numero 64 Tonico Garcia",
+      "bairro": "Não informado",
+      "cidade": "Guaira"
+    },
+    "equipamento": {
+      "modelo": "NOKIA 5.3",
+      "nome": "CELULAR ",
+      "defeito": "TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-06-24",
+      "fechamento": "2025-06-24",
+      "criacao": "2025-06-24T20:28:02.295418+00:00",
+      "atualizacao": "2025-06-24T20:28:25.331503+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 97,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DE TELA "
+    }
+  },
+  {
+    "numero": 31,
+    "id": "920e1321-f918-476a-bdd8-b8435ca2fdef",
+    "cliente": {
+      "id": "5c3f2244-1899-4c3b-bd49-afd6c5e24be3",
+      "nome": "FRANCISCO GENILDO",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "AV JOSE FLORES , N 84",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "A32",
+      "nome": "CELULAR PRETO",
+      "defeito": "CONECTOR "
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-06-26",
+      "criacao": "2025-06-26T18:36:32.365508+00:00",
+      "atualizacao": "2025-06-26T20:35:25.28123+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: Quando o aparelho for analisado e o defeito identificado, mas o cliente optar por não realizar o conserto, será cobrado uma taxa de avaliação sobre o processo de diagnóstico do técnico, no valor de R$ 30,00."
+    }
+  },
+  {
+    "numero": 32,
+    "id": "c643ae63-07e3-4b7f-a99a-80bb5f5163be",
+    "cliente": {
+      "id": "9f4c0884-bf60-40a3-bca5-cb5b04bcf10f",
+      "nome": "joana darc teixeira",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "av 21 , n 1075",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "E7 plus",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "conector"
+    },
+    "datas": {
+      "abertura": "2025-06-27",
+      "fechamento": "2025-06-27",
+      "criacao": "2025-06-27T15:23:40.924257+00:00",
+      "atualizacao": "2025-06-27T20:26:53.381569+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 130,
+      "valorTotal": 130,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 33,
+    "id": "4cd05493-b617-4864-994e-de0b4a599094",
+    "cliente": {
+      "id": "698ca802-0757-4442-9189-904b031b73ae",
+      "nome": "MARISSELMA DE OLIVEIRA BORGES",
+      "telefone": "017999765810",
+      "email": "Não informado",
+      "endereco": "RUA 11B, 660, TAIS 1",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG J7 PRIME",
+      "nome": "CELULAR ROSE",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-06-23",
+      "fechamento": "2025-06-24",
+      "criacao": "2025-06-23T16:24:28.651418+00:00",
+      "atualizacao": "2025-06-24T20:38:09.018412+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 240,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:\nESTA SÓ COM UMA BANDEJA DE SIM CARD"
+    }
+  },
+  {
+    "numero": 34,
+    "id": "0bd6af65-d2af-48bd-8d1b-e47206adeb9b",
+    "cliente": {
+      "id": "85460a9d-3277-4d82-9574-39cd914028c6",
+      "nome": "DANIELA BARBOSA",
+      "telefone": "17991207314 - 17999795159-17988472165",
+      "email": "Não informado",
+      "endereco": "RUA 40, 026A, CODESPAULO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MOT ONE FUSION",
+      "nome": "CELULAR AZUL ",
+      "defeito": "TROCA DE BATERIA\n"
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-06-27",
+      "criacao": "2025-06-26T13:25:32.290591+00:00",
+      "atualizacao": "2025-06-27T14:14:07.738197+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 160,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NÃO TEM BANDEJA DE SIM CARD"
+    }
+  },
+  {
+    "numero": 35,
+    "id": "67061904-603b-4ca4-b9e4-6a290f508821",
+    "cliente": {
+      "id": "6bd751c7-a33f-49eb-a21c-1e76dc9c59d5",
+      "nome": "Aguetoni Transportes LTDA",
+      "telefone": "33302400",
+      "email": "aguetoni@aguetoni.com.br",
+      "endereco": "av joão jorge garcia leal, 0601 - parque industrial",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "samsung A12",
+      "nome": "celular preto/branco",
+      "defeito": "display "
+    },
+    "datas": {
+      "abertura": "2025-06-27",
+      "fechamento": null,
+      "criacao": "2025-06-27T15:38:44.737129+00:00",
+      "atualizacao": "2025-06-27T15:38:44.737129+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 36,
+    "id": "b2895ee6-1913-4108-a705-44e87cabf91b",
+    "cliente": {
+      "id": "34d03de0-1545-4d24-ac72-7d75577a3697",
+      "nome": "LUCIANO TAVARES",
+      "telefone": "17999766445",
+      "email": "Não informado",
+      "endereco": "RUA 020, N 310 REINALDO STEIN",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "MOTOROLA G7",
+      "nome": "CELULAR CINZA",
+      "defeito": "TROCA DE BATERIA "
+    },
+    "datas": {
+      "abertura": "2025-06-27",
+      "fechamento": "2025-06-27",
+      "criacao": "2025-06-27T17:46:15.781026+00:00",
+      "atualizacao": "2025-06-27T19:11:42.564495+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 180,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 37,
+    "id": "3c888d30-4571-4706-8710-488dda28856e",
+    "cliente": {
+      "id": "fa24c59c-38bd-4e12-a9ca-87d267f61ad6",
+      "nome": "CRISTIANO LUIZ ",
+      "telefone": "17996821951",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "REDMI NOT 12",
+      "nome": "CELULAR PRETO",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": "2025-06-25",
+      "criacao": "2025-06-25T12:29:55.502728+00:00",
+      "atualizacao": "2025-06-25T15:06:41.457969+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 290,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 38,
+    "id": "d3252c8b-b148-4350-9d17-82ff4c2e07bb",
+    "cliente": {
+      "id": "b003b09f-423b-4587-a007-aa0daa5d9dfa",
+      "nome": "JAQUELINE CARDOSO",
+      "telefone": "17992061589",
+      "email": "Não informado",
+      "endereco": "AV OVIDIO GARCIA NOGUEIRA , 347",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A22",
+      "nome": "CELULAR BRANCO",
+      "defeito": "NÃO CARREGA E TELA DANIFICADA"
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": null,
+      "criacao": "2025-06-25T15:58:52.453835+00:00",
+      "atualizacao": "2025-06-25T15:58:52.453835+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:"
+    }
+  },
+  {
+    "numero": 39,
+    "id": "23a73d1f-7440-46e7-b70d-29213dc6435e",
+    "cliente": {
+      "id": "c7cddd7c-ce2b-4040-bf6d-48fa899289e1",
+      "nome": "GABRIEL VICTOR DOS SANTOS",
+      "telefone": "17999791152",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "ACER I3",
+      "nome": "NOTEBOOK",
+      "defeito": "FAZER UMA AVALIAÇÃO GERAL, PREÇO DA BATERIA, E ORÇAMENTO DO REPARO DA TELA."
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": null,
+      "criacao": "2025-06-25T16:36:15.047681+00:00",
+      "atualizacao": "2025-06-25T16:36:15.047681+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: FAZER UMA AVALIAÇÃO GERAL, PREÇO DA BATERIA, E ORÇAMENTO DO REPARO DA TELA."
+    }
+  },
+  {
+    "numero": 40,
+    "id": "12b17573-9df9-47bb-96eb-db1bca7620e7",
+    "cliente": {
+      "id": "bb9ffa5d-e7c4-42ac-b03d-142f0e44f387",
+      "nome": "Daiane Hukumoto",
+      "telefone": "17999742737",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 13 PRO",
+      "nome": "CELULAR VERDE",
+      "defeito": "TELA COM DEFEITO"
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": "2025-06-25",
+      "criacao": "2025-06-25T18:37:01.632733+00:00",
+      "atualizacao": "2025-06-25T18:45:10.648832+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 750,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "PAGO TOTAL "
+    }
+  },
+  {
+    "numero": 41,
+    "id": "7df002ed-fde7-4fd8-acb2-9e42600fd968",
+    "cliente": {
+      "id": "cf3869e6-ec88-428a-af48-e7fc8ae74867",
+      "nome": "raimundo da silva barcelar",
+      "telefone": "17999748155",
+      "email": "Não informado",
+      "endereco": "fazenda santa clara",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "mtoo g34",
+      "nome": "celular preto/azul",
+      "defeito": "display "
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": "2025-06-25",
+      "criacao": "2025-06-25T19:24:05.385604+00:00",
+      "atualizacao": "2025-06-25T21:19:15.697831+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 270,
+      "valorTotal": 270,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 42,
+    "id": "899169dc-1c5f-4ab0-9fd3-6f3eed2b12e3",
+    "cliente": {
+      "id": "fd5eb3bf-4054-430f-9f28-647b785dd2b8",
+      "nome": "ALINE MARIA PEREIRA DA CRUZ",
+      "telefone": "17999765852",
+      "email": "Não informado",
+      "endereco": "RUA 48,833 ANTONIO MANOEL",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "note 9",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "não liga - garantia"
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-06-26",
+      "criacao": "2025-06-26T15:30:54.064995+00:00",
+      "atualizacao": "2025-06-26T19:54:29.815866+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 43,
+    "id": "972df3f7-5fb3-4537-a7ce-52d8018a3c95",
+    "cliente": {
+      "id": "34d03de0-1545-4d24-ac72-7d75577a3697",
+      "nome": "LUCIANO TAVARES",
+      "telefone": "17999766445",
+      "email": "Não informado",
+      "endereco": "RUA 020, N 310 REINALDO STEIN",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "hdn-001",
+      "nome": "notendo switch",
+      "defeito": "trocar os dois analógicos (ele trouxe os analógicos)"
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": null,
+      "criacao": "2025-06-26T20:22:57.576938+00:00",
+      "atualizacao": "2025-06-26T20:22:57.576938+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 90,
+      "valorTotal": 90,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 44,
+    "id": "946956e1-20ad-47bd-bd11-7283a2b5f060",
+    "cliente": {
+      "id": "604c4701-d666-4422-b870-39ecdccacd77",
+      "nome": "Laurence wilians",
+      "telefone": "17991669948",
+      "email": "Não informado",
+      "endereco": "rua 3b , n37 aniceto",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "controle xbox 360 preto",
+      "defeito": "arrumou gatilho LT"
+    },
+    "datas": {
+      "abertura": "2025-06-27",
+      "fechamento": "2025-06-27",
+      "criacao": "2025-06-27T19:52:20.822349+00:00",
+      "atualizacao": "2025-06-27T19:52:29.257266+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 110,
+      "valorTotal": 110,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 45,
+    "id": "ac5e9822-a114-4c13-b804-e475ee90e94b",
+    "cliente": {
+      "id": "809316fe-c175-4d05-b735-5d3fd215d955",
+      "nome": "gabriela domiciano soares",
+      "telefone": "17991193787",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "moto g84",
+      "nome": "celular preto",
+      "defeito": "desligando quando põe pra carregar "
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-06-27",
+      "criacao": "2025-06-26T13:00:05.67018+00:00",
+      "atualizacao": "2025-06-27T20:06:17.966831+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 80,
+      "valorTotal": 80,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais.\n\nGarantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 46,
+    "id": "cd5f1671-7533-4de3-b749-76a84accd80c",
+    "cliente": {
+      "id": "ade9a716-2479-44c4-a405-fe97970149b5",
+      "nome": "JEAN JUNIOR RIBEIRO",
+      "telefone": "17999710015",
+      "email": "Não informado",
+      "endereco": "RUA 8B, 423, ANICETO CARLOS NOGUEIRA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "PS4",
+      "nome": "GAMER PRETO",
+      "defeito": "FICA UMA TELA PRETA COM CODIGO DE FALHA - SOFTWARE"
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-06-28",
+      "criacao": "2025-06-26T16:10:59.85346+00:00",
+      "atualizacao": "2025-06-28T15:28:04.552183+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 100,
+      "valorTotal": 100,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: Quando o aparelho for analisado e o defeito identificado, mas o cliente optar por não realizar o conserto, será cobrado uma taxa de avaliação sobre o processo de diagnóstico do técnico, no valor de R$ 30,00."
+    }
+  },
+  {
+    "numero": 47,
+    "id": "5957cb23-c1e2-4730-9cfa-48b706c91bdf",
+    "cliente": {
+      "id": "f18c4f04-7829-4d62-8c65-5484173e0659",
+      "nome": "Lucas Caio dos Santos",
+      "telefone": "179965639578",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XBOX",
+      "nome": "GAMER",
+      "defeito": "NÃO DA IMAGEM"
+    },
+    "datas": {
+      "abertura": "2025-06-28",
+      "fechamento": "2025-06-28",
+      "criacao": "2025-06-28T14:21:30.406899+00:00",
+      "atualizacao": "2025-06-28T14:22:10.488982+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 30,
+      "valorTotal": 30,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: Quando o aparelho for analisado e o defeito identificado, mas o cliente optar por não realizar o conserto, será cobrado uma taxa de avaliação sobre o processo de diagnóstico do técnico, no valor de R$ 30,00."
+    }
+  },
+  {
+    "numero": 48,
+    "id": "0771a194-683e-4674-b70e-869efcb69227",
+    "cliente": {
+      "id": "66e6e8d8-44d6-48de-8e45-3ea38d16cbc8",
+      "nome": "maria vitoria medeiros",
+      "telefone": "17",
+      "email": "Não informado",
+      "endereco": "av 13a, 256 ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "A71",
+      "nome": "celular preto",
+      "defeito": "não carrega e botão power "
+    },
+    "datas": {
+      "abertura": "2025-06-27",
+      "fechamento": "2025-06-28",
+      "criacao": "2025-06-27T14:53:42.578258+00:00",
+      "atualizacao": "2025-06-28T14:36:16.207204+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 90,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais.\nTROCA DO FLEX "
+    }
+  },
+  {
+    "numero": 49,
+    "id": "66f9be9f-8548-4263-a6fb-8e92d5ae5604",
+    "cliente": {
+      "id": "9f4c0884-bf60-40a3-bca5-cb5b04bcf10f",
+      "nome": "joana darc teixeira",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "av 21 , n 1075",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "E7 plus",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "GARANTIA - trocou conector - parou de sair som"
+    },
+    "datas": {
+      "abertura": "2025-06-28",
+      "fechamento": "2025-06-28",
+      "criacao": "2025-06-28T12:12:07.776654+00:00",
+      "atualizacao": "2025-06-28T15:37:04.513339+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Ordem de garantia referente à OS #5F5163BE. Defeito original: conector"
+    }
+  },
+  {
+    "numero": 50,
+    "id": "946f2654-5fa5-4523-8b58-d6dd5c6bd92b",
+    "cliente": {
+      "id": "fa2c9924-ad76-4174-bfa8-c738facbc740",
+      "nome": "LUIZ CARLOS ESTEVES",
+      "telefone": "17999784472",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A04E",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELEFONE NÃO SAI SOM\nPLACA E TELA"
+    },
+    "datas": {
+      "abertura": "2025-06-25",
+      "fechamento": null,
+      "criacao": "2025-06-25T19:51:24.227947+00:00",
+      "atualizacao": "2025-07-04T13:27:04.415937+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 390,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: BANDEJA"
+    }
+  },
+  {
+    "numero": 51,
+    "id": "13a944b0-246a-4343-88df-839692455d7c",
+    "cliente": {
+      "id": "35ddca11-a4b7-4989-b5a8-56cc672a8d1e",
+      "nome": "WILSON JOSE SERIBELI JUNIOR",
+      "telefone": "17991636614",
+      "email": "Não informado",
+      "endereco": "FAZ ESTANCIA SANTA MARIA",
+      "bairro": "Não informado",
+      "cidade": "GUAIA"
+    },
+    "equipamento": {
+      "modelo": "REDMI 13C",
+      "nome": "CELULAR PRETO",
+      "defeito": "TROCA DE TELA "
+    },
+    "datas": {
+      "abertura": "2025-06-28",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-28T13:19:55.852927+00:00",
+      "atualizacao": "2025-06-30T20:30:02.433797+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 290,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 179,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 52,
+    "id": "ebd3e236-83be-463d-a1ee-95f4068466b8",
+    "cliente": {
+      "id": "a78f10de-a548-4890-b8bd-4b66f512c1b4",
+      "nome": "marco aurélio becari ",
+      "telefone": "17997070468",
+      "email": "Não informado",
+      "endereco": "av 13a, 211 são francisco ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "moto e7 power",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "não liga "
+    },
+    "datas": {
+      "abertura": "2025-06-26",
+      "fechamento": "2025-07-03",
+      "criacao": "2025-06-26T14:53:04.796674+00:00",
+      "atualizacao": "2025-07-03T20:20:45.353807+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 260,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "troca de tela"
+    }
+  },
+  {
+    "numero": 53,
+    "id": "34a726fe-c8f4-42e7-ac76-d3cca20cc98a",
+    "cliente": {
+      "id": "ddbe4aae-4f51-4d41-bb29-53492d0b1343",
+      "nome": "adriana moraes",
+      "telefone": "17991343770",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "scph-77006",
+      "nome": "ps2 preto",
+      "defeito": "não roda jogo "
+    },
+    "datas": {
+      "abertura": "2025-06-24",
+      "fechamento": null,
+      "criacao": "2025-06-24T18:12:34.112706+00:00",
+      "atualizacao": "2025-07-08T13:36:25.448494+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 280,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "deixou só video game \n\nGarantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 54,
+    "id": "ca2d1dbc-a4cd-4a41-8f4f-550548544ca8",
+    "cliente": {
+      "id": "82d9c39d-f5e4-49ca-b07c-74204ea768c7",
+      "nome": "GABRIEL FLORA",
+      "telefone": "17991301037",
+      "email": "Não informado",
+      "endereco": "rua 6b aniceto n 290 ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "g22",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "display wefix"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": "2025-07-05",
+      "criacao": "2025-06-30T13:41:50.724909+00:00",
+      "atualizacao": "2025-07-05T13:02:17.371438+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 290,
+      "valorTotal": 290,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "display wefix"
+    }
+  },
+  {
+    "numero": 55,
+    "id": "19802d6a-69dc-4eef-920b-c03162938063",
+    "cliente": {
+      "id": "809316fe-c175-4d05-b735-5d3fd215d955",
+      "nome": "gabriela domiciano soares",
+      "telefone": "17991193787",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "moto g84",
+      "nome": "celular preto",
+      "defeito": "GARANTIA - desligando quando põe pra carregar - TROCOU DISPLAY "
+    },
+    "datas": {
+      "abertura": "2025-06-28",
+      "fechamento": "2025-07-05",
+      "criacao": "2025-06-28T13:12:44.667883+00:00",
+      "atualizacao": "2025-07-05T14:51:01.756249+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 350,
+      "valorTotal": 350,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "TROCOU DISPLAY"
+    }
+  },
+  {
+    "numero": 56,
+    "id": "e6c7962a-f5bd-40b1-80ba-8d9acdcbf5ad",
+    "cliente": {
+      "id": "8841b79a-af00-4b18-b12c-2ee28eaa9648",
+      "nome": "ALEXANDRE BUENO",
+      "telefone": "17991318714",
+      "email": "Não informado",
+      "endereco": "AURA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "PS4",
+      "nome": "CONTROLE PRETO",
+      "defeito": "ORÇAMENTO - VER DEFEITO "
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": null,
+      "criacao": "2025-06-30T14:50:32.797586+00:00",
+      "atualizacao": "2025-06-30T14:50:32.797586+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 57,
+    "id": "240be68f-de20-4252-9e90-911ec2a48a91",
+    "cliente": {
+      "id": "9149ae67-077d-4b9d-b0ff-26314e221838",
+      "nome": "MARCELO ARAUJO FARIAS",
+      "telefone": "75998842139",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 7 LUS",
+      "nome": "CELULAR",
+      "defeito": "FORMATAR ,  AVALIAR MICROFONE TELA"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": null,
+      "criacao": "2025-06-30T16:02:55.961365+00:00",
+      "atualizacao": "2025-06-30T16:04:54.576117+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 58,
+    "id": "8830179d-5d3e-451f-92c3-67bc27522e36",
+    "cliente": {
+      "id": "ebf9273f-7a34-4a17-9d78-eb0431a20d22",
+      "nome": "ROBERTO CARLOS  OLIVEIRA SILVA ",
+      "telefone": "17999753155",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A31 4G",
+      "nome": "CELULAR AZUL",
+      "defeito": "REPARO NA PLACA FPC"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-30T17:33:50.766477+00:00",
+      "atualizacao": "2025-06-30T17:34:07.954954+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 250,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 59,
+    "id": "7582e557-e571-41be-b460-db264f08ad5e",
+    "cliente": {
+      "id": "604c4701-d666-4422-b870-39ecdccacd77",
+      "nome": "Laurence wilians",
+      "telefone": "17991669948",
+      "email": "Não informado",
+      "endereco": "rua 3b , n37 aniceto",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "controle xbox 360 preto",
+      "defeito": "GARANTIA - arrumou gatilho LT - analógicos ruim"
+    },
+    "datas": {
+      "abertura": "2025-06-28",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-28T12:26:44.952981+00:00",
+      "atualizacao": "2025-06-30T20:12:54.385381+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Ordem de garantia referente à OS #A2B5F060. Defeito original: arrumou gatilho LT"
+    }
+  },
+  {
+    "numero": 60,
+    "id": "c77931e2-63b1-4e79-b528-63ea0d432764",
+    "cliente": {
+      "id": "3dc3e949-f54e-45f3-bff8-3a887f068d56",
+      "nome": "leticia costa ",
+      "telefone": "17991108057",
+      "email": "Não informado",
+      "endereco": "av 25, n 1047 jardim paulista",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "LENOVO IDEALPAD 3 15lml05",
+      "nome": "notebook prata ",
+      "defeito": "camera nao esta abrindo "
+    },
+    "datas": {
+      "abertura": "2025-07-02",
+      "fechamento": "2025-07-10",
+      "criacao": "2025-07-02T12:29:00.217158+00:00",
+      "atualizacao": "2025-07-10T21:02:54.197659+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 30,
+      "valorTotal": 30,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "atualização"
+    }
+  },
+  {
+    "numero": 61,
+    "id": "296aa3d6-ea77-4608-884c-6681c4ee21b1",
+    "cliente": {
+      "id": "0785fc34-bbc5-42a6-adf5-87e5e8334a4f",
+      "nome": "DENIS VIEIRA",
+      "telefone": "34999989601",
+      "email": "Não informado",
+      "endereco": "RUA 2 , N1942 PORTAL DO LAGO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "XBOX360",
+      "nome": "XBOX PRETO 360",
+      "defeito": "TESTAR P COMPRAR"
+    },
+    "datas": {
+      "abertura": "2025-07-02",
+      "fechamento": null,
+      "criacao": "2025-07-02T18:57:52.87888+00:00",
+      "atualizacao": "2025-07-02T18:57:52.87888+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 62,
+    "id": "7cac97d5-2e69-4a80-95e3-c7b59721f170",
+    "cliente": {
+      "id": "feab2273-8e47-4147-b813-e1fbe555e562",
+      "nome": "JOVAN NASCIMENTO",
+      "telefone": "17999761669",
+      "email": "Não informado",
+      "endereco": "AV 15, 315",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "XT2029",
+      "nome": "CELULAR PRETO",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-30T14:48:47.534866+00:00",
+      "atualizacao": "2025-06-30T20:52:48.45109+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 130,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 63,
+    "id": "d3ba2a4a-ebd4-4785-9780-af5b865bf5e7",
+    "cliente": {
+      "id": "2916edbe-88cd-4b52-8096-6a23c8051127",
+      "nome": "SILVIO BRITO",
+      "telefone": "17999794951",
+      "email": "Não informado",
+      "endereco": "RUA 21B - 1296",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "XT2081",
+      "nome": "CELULAR PRETO/;AZUL",
+      "defeito": "COLOCAR TELA - TESTAR BATERIA "
+    },
+    "datas": {
+      "abertura": "2025-07-02",
+      "fechamento": null,
+      "criacao": "2025-07-02T19:07:19.520678+00:00",
+      "atualizacao": "2025-07-02T19:07:19.520678+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 64,
+    "id": "d80b63e9-6209-4ad8-af11-939948eb491d",
+    "cliente": {
+      "id": "37909573-d8eb-4110-bd05-f53bc065c218",
+      "nome": "VANESIO MARTINS GUEDES",
+      "telefone": "17992862930",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSNUG A12",
+      "nome": "CELULAR BRANCO",
+      "defeito": "TROCA DE BATERIA , VERIFICAR BOTAÕA DE DESLIGAR"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-30T18:51:19.622532+00:00",
+      "atualizacao": "2025-06-30T20:58:36.670109+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 200,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 65,
+    "id": "5c841b7f-83e0-4ed2-a265-f8f352dfe420",
+    "cliente": {
+      "id": "b7832b5f-04af-4692-8ce5-7b191af49506",
+      "nome": "LUIZ CARLOS XAVIER",
+      "telefone": "17999797470",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOTO G60",
+      "nome": "CELULAR PRATA",
+      "defeito": "TELA E CARCAÇA"
+    },
+    "datas": {
+      "abertura": "2025-06-30",
+      "fechamento": "2025-06-30",
+      "criacao": "2025-06-30T16:59:49.807085+00:00",
+      "atualizacao": "2025-06-30T21:08:17.267048+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 400,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 66,
+    "id": "2600a6e6-9ff6-4b9c-bbf4-2f174bdcf8af",
+    "cliente": {
+      "id": "fb405b8e-c47b-4cca-ab26-d9601769f7c2",
+      "nome": "gustavo henrique",
+      "telefone": "17991885720",
+      "email": "Não informado",
+      "endereco": "av 33a , multirao 3 2255",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "play 2 ",
+      "nome": "playstation 2 ",
+      "defeito": "não roda jggo"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": null,
+      "criacao": "2025-07-01T19:47:09.518288+00:00",
+      "atualizacao": "2025-07-01T19:47:09.518288+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 67,
+    "id": "f0787984-3a78-4976-9a10-b15d92e36019",
+    "cliente": {
+      "id": "b5c5c7b8-ccb6-4f32-9f34-949ca12ebd45",
+      "nome": "DEIVID RUBIO ",
+      "telefone": "17999786757 017999783068",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "GAMER PRETO ",
+      "defeito": "HD INTERNO E BANDEJA"
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-03",
+      "criacao": "2025-07-03T16:46:35.982222+00:00",
+      "atualizacao": "2025-07-03T16:47:06.840097+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 200,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DA BORRACHA , BANDEJA E HD INTERNO"
+    }
+  },
+  {
+    "numero": 68,
+    "id": "67f4322c-fac9-4470-b412-403426a6968a",
+    "cliente": {
+      "id": "9c5ddf65-713e-4ffe-aa54-b86746b3da99",
+      "nome": "ELIAS MATIAS",
+      "telefone": "17999775678",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPEGA",
+      "nome": "CONTROLE GAMER ",
+      "defeito": "CONECTANDO O CABO NÃO DA SINAL"
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": "2025-07-10",
+      "criacao": "2025-07-04T16:59:19.811431+00:00",
+      "atualizacao": "2025-07-10T14:00:05.782609+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NÃO TEVE CONCERTO"
+    }
+  },
+  {
+    "numero": 69,
+    "id": "04f9a0c7-2994-45b8-a4b1-7c8a041416ab",
+    "cliente": {
+      "id": "2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a",
+      "nome": "larissa de oliveira espacini",
+      "telefone": "17992359416",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "iphone 13 pro max ",
+      "nome": "iphone 13 pro max",
+      "defeito": "bateria "
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-03",
+      "criacao": "2025-07-03T20:17:20.023499+00:00",
+      "atualizacao": "2025-07-03T20:17:34.331205+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 290,
+      "valorTotal": 290,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "bateria"
+    }
+  },
+  {
+    "numero": 70,
+    "id": "8abfde5f-853e-4741-bcd8-8ccdf9f50a28",
+    "cliente": {
+      "id": "2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a",
+      "nome": "larissa de oliveira espacini",
+      "telefone": "17992359416",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 13 PRO MAX",
+      "nome": "CELULAR CINZA",
+      "defeito": "TROCA DE TELA oled"
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-03",
+      "criacao": "2025-07-03T16:19:30.841772+00:00",
+      "atualizacao": "2025-07-03T20:16:26.790462+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 1100,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "display oled"
+    }
+  },
+  {
+    "numero": 71,
+    "id": "a58bddaa-0ffb-41d3-bd6b-c8bbd817db94",
+    "cliente": {
+      "id": "955f6165-be0b-4aad-856a-badb9016a00c",
+      "nome": "liliane maria dos santos",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "reinaldo stein 022 ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "a30s",
+      "nome": "celular preto",
+      "defeito": "testar pra comprar"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-01T12:34:14.079769+00:00",
+      "atualizacao": "2025-07-04T20:59:22.311803+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FEITO A COMPRA DO APARELHO R$40,00"
+    }
+  },
+  {
+    "numero": 72,
+    "id": "f1257dc2-c1fb-47ac-ad9d-db52161d8bdd",
+    "cliente": {
+      "id": "059ee7ac-66c9-4212-915b-077814b74010",
+      "nome": "ANA CAROLNA SANTOS DE OLIVEIRA",
+      "telefone": "17992310882",
+      "email": "Não informado",
+      "endereco": "AV 9A,84",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG RV415",
+      "nome": "NOTEBOOK PRETO CINZA",
+      "defeito": "DEIXOU PARA VENDER, NÃO INICIA"
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": null,
+      "criacao": "2025-07-04T15:03:54.670344+00:00",
+      "atualizacao": "2025-07-04T15:03:54.670344+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 73,
+    "id": "9aa40615-375d-47a4-9b93-63ca809a65a9",
+    "cliente": {
+      "id": "f8eaa952-ba4a-48af-8af0-b8252477f9ac",
+      "nome": "JOILSON DARLAN",
+      "telefone": "17997413689",
+      "email": "Não informado",
+      "endereco": "rua 18b n 1057 jose pugliese ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "ps4 ",
+      "nome": "controle ps4 preto",
+      "defeito": "não carrega "
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": null,
+      "criacao": "2025-07-04T16:17:08.065453+00:00",
+      "atualizacao": "2025-07-04T16:17:08.065453+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 74,
+    "id": "f8c4d7dd-b71d-4f31-b7b8-fd3193614c96",
+    "cliente": {
+      "id": "817ca735-c027-47ef-8339-01f51c7a1a3e",
+      "nome": "OTAVIO DE OLIVEIRA",
+      "telefone": "17999793159 17999792414",
+      "email": "Não informado",
+      "endereco": "FAZ SANTO ANTONIO",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A01",
+      "nome": "CELULAR PRETO",
+      "defeito": "TELEFONE CAIU NA AGUA"
+    },
+    "datas": {
+      "abertura": "2025-07-02",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-02T14:00:55.856949+00:00",
+      "atualizacao": "2025-07-04T17:22:18.258145+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 200,
+      "valorTotal": 200,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca de tela e limpeza"
+    }
+  },
+  {
+    "numero": 75,
+    "id": "4ab908a4-025b-4fbf-99d1-a75941617286",
+    "cliente": {
+      "id": "ebf9273f-7a34-4a17-9d78-eb0431a20d22",
+      "nome": "ROBERTO CARLOS  OLIVEIRA SILVA ",
+      "telefone": "17999753155",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A31 4G",
+      "nome": "CELULAR AZUL",
+      "defeito": "GARANTIA - REPARO NA PLACA FPC - parou microfone "
+    },
+    "datas": {
+      "abertura": "2025-07-02",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-02T20:25:32.891888+00:00",
+      "atualizacao": "2025-07-04T20:30:52.507977+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "MICROFONE"
+    }
+  },
+  {
+    "numero": 76,
+    "id": "b4a40143-2ec6-4a26-8e4c-c5fa4a5ac72b",
+    "cliente": {
+      "id": "cdeaa159-0c2a-498e-b229-3e4ca0740694",
+      "nome": "joão batista serafim gonçalves",
+      "telefone": "999742270",
+      "email": "Não informado",
+      "endereco": "av 1 n 8",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "g9650",
+      "nome": "celular preto",
+      "defeito": "display"
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-03T15:16:33.024022+00:00",
+      "atualizacao": "2025-07-04T19:56:37.162155+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 1000,
+      "valorTotal": 1000,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DE TELA PAGAMENTO VIA PIX"
+    }
+  },
+  {
+    "numero": 77,
+    "id": "9050307b-017b-4b37-91f5-4e33a3fa5b5f",
+    "cliente": {
+      "id": "f9ad1aaf-75bd-4c2a-a152-100ad806b9ea",
+      "nome": "MATHEUS CIRINO",
+      "telefone": "17991530919",
+      "email": "Não informado",
+      "endereco": "AV 23 , N 1235 JARDIM PAULISTA",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "REDMI 13",
+      "nome": "CELULAR PRETO",
+      "defeito": "BATERIA "
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-04T15:44:09.442593+00:00",
+      "atualizacao": "2025-07-04T20:47:07.383013+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 170,
+      "valorTotal": 170,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DE BATERIA"
+    }
+  },
+  {
+    "numero": 78,
+    "id": "0ce457a1-c215-4257-9d7f-c6a47941363a",
+    "cliente": {
+      "id": "955f6165-be0b-4aad-856a-badb9016a00c",
+      "nome": "liliane maria dos santos",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "reinaldo stein 022 ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "redmi 12",
+      "nome": "CELULAR PRETO/azul",
+      "defeito": "testar pra comprar"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": "2025-07-04",
+      "criacao": "2025-07-01T12:33:12.244878+00:00",
+      "atualizacao": "2025-07-04T20:59:51.463532+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FEITO A COMPRA DO APARELHO R$70,00"
+    }
+  },
+  {
+    "numero": 79,
+    "id": "3c885a25-828d-4611-ad46-95f751d67f4d",
+    "cliente": {
+      "id": "cdeaa159-0c2a-498e-b229-3e4ca0740694",
+      "nome": "joão batista serafim gonçalves",
+      "telefone": "999742270",
+      "email": "Não informado",
+      "endereco": "av 1 n 8",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "g9650",
+      "nome": "celular preto",
+      "defeito": "GARANTIA - display"
+    },
+    "datas": {
+      "abertura": "2025-07-05",
+      "fechamento": "2025-07-07",
+      "criacao": "2025-07-05T15:00:36.657032+00:00",
+      "atualizacao": "2025-07-07T19:07:59.155595+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "FOITO A TROCA DA TELA"
+    }
+  },
+  {
+    "numero": 80,
+    "id": "0725e057-9820-4ab6-8335-7073f8e78a94",
+    "cliente": {
+      "id": "2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a",
+      "nome": "larissa de oliveira espacini",
+      "telefone": "17992359416",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "A35",
+      "nome": "celular preto/branco",
+      "defeito": "deixou pra vender "
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-07",
+      "criacao": "2025-07-03T20:18:45.003035+00:00",
+      "atualizacao": "2025-07-07T19:59:48.894274+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NAO FEZ"
+    }
+  },
+  {
+    "numero": 81,
+    "id": "60c5c130-bce5-4195-95d2-ab2aad5ef9b3",
+    "cliente": {
+      "id": "fecf496e-9991-4cb4-a66e-b9bfd761d5c1",
+      "nome": "BEATRIZ DE SOUZA DA SILVA",
+      "telefone": "17997879280",
+      "email": "Não informado",
+      "endereco": "FAZENHA BREJINHO DAS ANTAS",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "POSITIVO MOTION PLUS RED Q464B",
+      "nome": "NOTEBOOK VERMELHO",
+      "defeito": "CARCAÇA DATELA QUEBRADA BOTÃO POWER SOLTO"
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": "2025-07-15",
+      "criacao": "2025-07-04T14:49:02.551981+00:00",
+      "atualizacao": "2025-07-15T16:40:44.717139+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 320,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca da carcaça"
+    }
+  },
+  {
+    "numero": 82,
+    "id": "96765271-63eb-4106-b7d1-4d154077ea4d",
+    "cliente": {
+      "id": "604c4701-d666-4422-b870-39ecdccacd77",
+      "nome": "Laurence wilians",
+      "telefone": "17991669948",
+      "email": "Não informado",
+      "endereco": "rua 3b , n37 aniceto",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "controle xbox 360 preto",
+      "defeito": "GARANTIA - arrumou gatilho LT - parou start e RB"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": "2025-07-14",
+      "criacao": "2025-07-01T19:28:00.513311+00:00",
+      "atualizacao": "2025-07-14T19:45:56.884175+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "start + rb"
+    }
+  },
+  {
+    "numero": 83,
+    "id": "d2c90a31-e1a5-4188-9846-65cb9c9ea1f5",
+    "cliente": {
+      "id": "0bbf9bb0-4a3a-47dd-955f-2f7e87875417",
+      "nome": "Valter  Baudoino",
+      "telefone": "17991304712",
+      "email": "Não informado",
+      "endereco": "rua 46, 16",
+      "bairro": "Não informado",
+      "cidade": "guiara"
+    },
+    "equipamento": {
+      "modelo": "m62",
+      "nome": "CELULAR PRETO",
+      "defeito": "display + tampa quebrada"
+    },
+    "datas": {
+      "abertura": "2025-07-03",
+      "fechamento": "2025-07-19",
+      "criacao": "2025-07-03T17:57:58.18898+00:00",
+      "atualizacao": "2025-07-19T15:34:51.690327+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 751.48,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "DISPLAY, TAMPA TRASEIRA\nPLACA"
+    }
+  },
+  {
+    "numero": 84,
+    "id": "65a9a591-0528-4459-84eb-9b76640eb7c6",
+    "cliente": {
+      "id": "35b6fb5c-45f6-4257-a7fe-e1744d475c0d",
+      "nome": "Luka Guia Guaira",
+      "telefone": "(17)99975-7575",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "Dell  Core 3",
+      "nome": "NOT PRETO",
+      "defeito": "COM FONTE"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": "2025-07-14",
+      "criacao": "2025-07-01T20:40:38.580438+00:00",
+      "atualizacao": "2025-07-14T21:09:06.273596+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 420,
+      "valorTotal": 420,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "conector jack e troca de componentes"
+    }
+  },
+  {
+    "numero": 85,
+    "id": "f972bd08-95fe-4055-9c43-a403ec9b70d2",
+    "cliente": {
+      "id": "1f044170-d8cd-462f-a2e7-b36c5688aa6c",
+      "nome": "ANTONIO MORAES",
+      "telefone": "17999790117",
+      "email": "Não informado",
+      "endereco": "RUA 9B, 099",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "X16+96086",
+      "nome": "NOTEBOOK PRETO",
+      "defeito": "NÃO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": "2025-07-18",
+      "criacao": "2025-07-04T19:21:09.244012+00:00",
+      "atualizacao": "2025-07-18T15:57:40.422149+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 80,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "FORMATAÇÃO E BACKUP"
+    }
+  },
+  {
+    "numero": 86,
+    "id": "39a0a972-0876-4e2b-bd2c-10f5a8275530",
+    "cliente": {
+      "id": "55c84001-83c9-43a5-aaf1-6b37974164c9",
+      "nome": "milena aparecida rico",
+      "telefone": "17992151977",
+      "email": "Não informado",
+      "endereco": "rua 36, 320 - centro",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "ps3",
+      "nome": "ps3 preto",
+      "defeito": "desbloqueio"
+    },
+    "datas": {
+      "abertura": "2025-07-01",
+      "fechamento": "2025-07-19",
+      "criacao": "2025-07-01T18:23:32.730168+00:00",
+      "atualizacao": "2025-07-19T15:47:46.237671+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 308.91,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "DESBLOQUEIO"
+    }
+  },
+  {
+    "numero": 87,
+    "id": "1d9a3122-4262-4864-adcf-dfe6a3348684",
+    "cliente": {
+      "id": "bce4a60f-ce64-4114-9f6c-cc377171b978",
+      "nome": "JOSE DE OLIVEIRA",
+      "telefone": "17997294388",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "J7 PRIME",
+      "nome": "CELULAR BRANCO",
+      "defeito": "DISPLAY QUEBRADO"
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": "2025-07-28",
+      "criacao": "2025-07-28T13:19:34.516196+00:00",
+      "atualizacao": "2025-07-28T18:26:57.571253+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "CLIENTE NÃO QUIS CONCERTAR"
+    }
+  },
+  {
+    "numero": 88,
+    "id": "b576b52c-2089-42a7-85b6-a163c6699cd1",
+    "cliente": {
+      "id": "35c5f024-c9b0-4dfa-b37d-54ae13349318",
+      "nome": "rogerio basilio de araujo",
+      "telefone": "17991217180",
+      "email": "Não informado",
+      "endereco": "rua 21b , n 1160 jose pugliede",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "E6 plus",
+      "nome": "celular preto/vermelho",
+      "defeito": "bateria mais conector"
+    },
+    "datas": {
+      "abertura": "2025-07-04",
+      "fechamento": "2025-07-05",
+      "criacao": "2025-07-04T12:40:08.974946+00:00",
+      "atualizacao": "2025-07-05T15:39:20.8448+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 158,
+      "valorTotal": 230,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca bateria e conctor"
+    }
+  },
+  {
+    "numero": 89,
+    "id": "b9e35df5-b49b-4928-83e0-8e182c6b86f1",
+    "cliente": {
+      "id": "1e03897b-633e-46ec-90bb-5a12dc99698e",
+      "nome": "MARIA JULIA",
+      "telefone": "17991914170",
+      "email": "Não informado",
+      "endereco": "RUA 9B, 204 ANICETO",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "LG K12+",
+      "nome": "CELULAR CINZA",
+      "defeito": "AUTO FALANTE"
+    },
+    "datas": {
+      "abertura": "2025-07-07",
+      "fechamento": null,
+      "criacao": "2025-07-07T17:07:06.077343+00:00",
+      "atualizacao": "2025-07-07T17:07:06.077343+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 90,
+    "id": "389ee475-63d7-489a-aa7f-769b150c3f83",
+    "cliente": {
+      "id": "48ad1879-63a7-421c-a4fc-fdb33cb45127",
+      "nome": "DARCI ORTIGOSO",
+      "telefone": "17999793639",
+      "email": "Não informado",
+      "endereco": "AV 13, 1035, CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A15 5G",
+      "nome": "CELULAR AMARELO",
+      "defeito": "TELEFONE NÃO CONECTA WIFI"
+    },
+    "datas": {
+      "abertura": "2025-07-07",
+      "fechamento": "2025-07-07",
+      "criacao": "2025-07-07T15:41:19.363668+00:00",
+      "atualizacao": "2025-07-07T18:02:58.714762+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FOITO A ATUALIZAÇÃO DA HORA E DEU CERTO"
+    }
+  },
+  {
+    "numero": 91,
+    "id": "67db952d-4c2c-4343-9367-cbec89af21f5",
+    "cliente": {
+      "id": "e996b904-ab4f-48cd-bc27-9a3a111230e9",
+      "nome": "JOEMERSON SILVEIRA DOS SANTOS",
+      "telefone": "17999784526",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A20",
+      "nome": "CELULAR PRETO",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": null,
+      "criacao": "2025-07-10T12:44:13.661388+00:00",
+      "atualizacao": "2025-07-10T19:58:42.298648+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 120,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "TELA TRINCADA, TAMPA TRASEIRA DANIFICADA"
+    }
+  },
+  {
+    "numero": 92,
+    "id": "4c15c58e-b383-47db-b3a2-987624bbb256",
+    "cliente": {
+      "id": "bbc37e46-1971-4c24-b602-e6f725424982",
+      "nome": "ADRIAN RENAN GONÇALVES PEREIRA",
+      "telefone": "16994008655",
+      "email": "Não informado",
+      "endereco": "AV 35A , N 463 - JARDIM ELIZA ",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG S20 FE",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELA NÃO FUNCIONA \nSENHA -50039370836"
+    },
+    "datas": {
+      "abertura": "2025-07-05",
+      "fechamento": "2025-07-07",
+      "criacao": "2025-07-05T15:43:12.833537+00:00",
+      "atualizacao": "2025-07-07T20:15:00.222058+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TELA - GARANTIA"
+    }
+  },
+  {
+    "numero": 93,
+    "id": "148452fd-a7c4-49d6-ad91-4c88c0d8ff7b",
+    "cliente": {
+      "id": "cdeaa159-0c2a-498e-b229-3e4ca0740694",
+      "nome": "joão batista serafim gonçalves",
+      "telefone": "999742270",
+      "email": "Não informado",
+      "endereco": "av 1 n 8",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "g9650",
+      "nome": "celular preto",
+      "defeito": "GARANTIA - display\nAPARELHO ESQUENTANDO E TRAVANDO"
+    },
+    "datas": {
+      "abertura": "2025-07-14",
+      "fechamento": null,
+      "criacao": "2025-07-14T14:09:27.77439+00:00",
+      "atualizacao": "2025-07-14T14:09:27.77439+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 150,
+      "observacoes": "Ordem de garantia referente à OS #4A5AC72B. Defeito original: display"
+    }
+  },
+  {
+    "numero": 94,
+    "id": "fe5b5593-cb83-48b3-8477-073827767a5b",
+    "cliente": {
+      "id": "65084213-045c-428c-afb4-afba359cc486",
+      "nome": "EDSON GUILHERME FONSECA",
+      "telefone": "17981872044",
+      "email": "Não informado",
+      "endereco": "RUA 12B 0784 LUIZ AFONSO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "A15",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY WEFIX"
+    },
+    "datas": {
+      "abertura": "2025-07-11",
+      "fechamento": "2025-07-11",
+      "criacao": "2025-07-11T13:26:28.572558+00:00",
+      "atualizacao": "2025-07-11T17:47:11.956869+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 290,
+      "valorTotal": 302.39,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DA TELA"
+    }
+  },
+  {
+    "numero": 95,
+    "id": "696b2e88-c774-4e8c-97a1-61059287dba6",
+    "cliente": {
+      "id": "6c644847-f4f6-452c-bca5-fbe646a6ed1c",
+      "nome": "RAQUEL APARECIDA GOMES",
+      "telefone": "17999717214",
+      "email": "Não informado",
+      "endereco": "RUA 23B, 1330, TAIS DOIS",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAM A10",
+      "nome": "CCELULAR AZUL",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": "2025-07-10",
+      "criacao": "2025-07-10T17:25:21.521662+00:00",
+      "atualizacao": "2025-07-10T20:15:59.824226+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 253,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "troca de tela"
+    }
+  },
+  {
+    "numero": 96,
+    "id": "d5964b11-e1dd-4da6-87aa-4fa036f91927",
+    "cliente": {
+      "id": "1bb74617-424f-4c0b-bcfc-2de5e87faf80",
+      "nome": "ALEX VACARO",
+      "telefone": "17999791111",
+      "email": "Não informado",
+      "endereco": "RUA 6, 285, CENTRO",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 14 PRO",
+      "nome": "CELULAR BRANCO",
+      "defeito": "TROCA D TAMPA TRASEIRA E VERIFICAR PQ NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-07-07",
+      "fechamento": "2025-07-07",
+      "criacao": "2025-07-07T17:13:28.144959+00:00",
+      "atualizacao": "2025-07-07T20:25:30.248415+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 400,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "ABERTURA DO APARELHO PARA LOCALIZAR DEFETO\nTROCA TAMPA TRASEIRA"
+    }
+  },
+  {
+    "numero": 97,
+    "id": "6186002b-6e87-4822-8612-9e35aeb17ca0",
+    "cliente": {
+      "id": "d92548f8-b488-4246-8f8d-f3e42f243fb1",
+      "nome": "RENATA CRISTINA CAETANO",
+      "telefone": "17981463015",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A34",
+      "nome": "CELULAR PRATA",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-07-08",
+      "fechamento": null,
+      "criacao": "2025-07-08T17:18:27.359189+00:00",
+      "atualizacao": "2025-07-08T17:18:27.359189+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 98,
+    "id": "65254cde-f5c7-4e56-859b-c8d52c3f1705",
+    "cliente": {
+      "id": "75b108c1-e5d8-4c19-9fd9-e97516ec4b01",
+      "nome": "Elson Teixeira",
+      "telefone": "17999750851",
+      "email": "Não informado",
+      "endereco": "Avenida 27,1370, Vila Aparecida",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MOTOROLA G8 POWER LITE",
+      "nome": "MOTOROLA  AZUL",
+      "defeito": "ORÇAMENTO DA TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-11",
+      "fechamento": null,
+      "criacao": "2025-07-11T18:26:27.616468+00:00",
+      "atualizacao": "2025-07-11T18:26:27.616468+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:"
+    }
+  },
+  {
+    "numero": 99,
+    "id": "f5e52807-010a-4422-8f06-840685d082f0",
+    "cliente": {
+      "id": "2181c9cb-fcb9-4148-b55a-19f0144c1975",
+      "nome": "FRANSCINEI DA SILVA",
+      "telefone": "17999783166",
+      "email": "Não informado",
+      "endereco": "RUA 9B, 315 ANICETO",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOTO G75",
+      "nome": "CELULAR AZUL",
+      "defeito": "TIRAR O GMAIL"
+    },
+    "datas": {
+      "abertura": "2025-07-07",
+      "fechamento": "2025-07-08",
+      "criacao": "2025-07-07T16:52:57.811999+00:00",
+      "atualizacao": "2025-07-08T19:49:05.418308+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "tirar gmail - nao deu certo"
+    }
+  },
+  {
+    "numero": 100,
+    "id": "2a382108-899d-437f-a32f-679dc5cd087b",
+    "cliente": {
+      "id": "3d6fda07-bf9a-4746-b050-73e7ead568aa",
+      "nome": "Roseli Lacerda Cartola",
+      "telefone": "999745417",
+      "email": "sousajeni25@gmail.com",
+      "endereco": "rua 020, 89, Reinaldo Stein",
+      "bairro": "Não informado",
+      "cidade": "Guaíra"
+    },
+    "equipamento": {
+      "modelo": "moto g53 5g",
+      "nome": "CELULAR PRETO, azul",
+      "defeito": "Display quebrado"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": "2025-07-10",
+      "criacao": "2025-07-10T12:06:52.471074+00:00",
+      "atualizacao": "2025-07-10T20:29:55.82101+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 320,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "trocou display"
+    }
+  },
+  {
+    "numero": 101,
+    "id": "1c925caa-fe00-451b-854d-8e43e324cb86",
+    "cliente": {
+      "id": "a78f10de-a548-4890-b8bd-4b66f512c1b4",
+      "nome": "marco aurélio becari ",
+      "telefone": "17997070468",
+      "email": "Não informado",
+      "endereco": "av 13a, 211 são francisco ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "moto edge 20 pro",
+      "nome": "celular preto",
+      "defeito": "wifi para e volta (ver atualização) \nFAZER A VERIFICAÇÃO DA PLACA"
+    },
+    "datas": {
+      "abertura": "2025-07-16",
+      "fechamento": null,
+      "criacao": "2025-07-16T13:35:06.21804+00:00",
+      "atualizacao": "2025-07-26T15:07:30.762724+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "PROBLEMA NA PLACA"
+    }
+  },
+  {
+    "numero": 102,
+    "id": "b92addb5-3a15-4e2c-849e-962c175c49ba",
+    "cliente": {
+      "id": "067e4459-c80b-434b-bfef-bd3018d0424d",
+      "nome": "MATEUS PAVANELLO",
+      "telefone": "01799975-2725",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A10 S",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELA "
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": null,
+      "criacao": "2025-07-10T12:51:58.563253+00:00",
+      "atualizacao": "2025-07-10T12:51:58.563253+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 230,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 103,
+    "id": "859153ae-fb25-4f3f-978f-3ba5eeccb9a3",
+    "cliente": {
+      "id": "85460a9d-3277-4d82-9574-39cd914028c6",
+      "nome": "DANIELA BARBOSA",
+      "telefone": "17991207314 - 17999795159-17988472165",
+      "email": "Não informado",
+      "endereco": "RUA 40, 026A, CODESPAULO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MOT ONE FUSION",
+      "nome": "CELULAR AZUL ",
+      "defeito": "GARANTIA - TROCA DE BATERIA\nnão esta carregando\n"
+    },
+    "datas": {
+      "abertura": "2025-07-08",
+      "fechamento": "2025-07-15",
+      "criacao": "2025-07-08T16:43:15.370717+00:00",
+      "atualizacao": "2025-07-15T13:03:18.768621+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "SEM CONCERTO"
+    }
+  },
+  {
+    "numero": 104,
+    "id": "0e31a761-33d1-4e8a-b903-29bbf0b8c2dd",
+    "cliente": {
+      "id": "7dc2d6f3-4033-4506-a195-1931a601d1bd",
+      "nome": "WELLINGTON LUIZ",
+      "telefone": "16997123251",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "NINTENDO SWITCH",
+      "nome": "GAMER",
+      "defeito": "CONTROLE DO LADO ESQUERDO NÃO FUNCIONA, APARELHO CAIUI"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": null,
+      "criacao": "2025-07-10T17:13:48.966271+00:00",
+      "atualizacao": "2025-07-10T17:13:48.966271+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 105,
+    "id": "760e0ff4-bac5-4902-aba7-0180ba5b85e5",
+    "cliente": {
+      "id": "df7e11e2-3856-4b11-8df7-40ad0465a54d",
+      "nome": "NEIDE FRAGUA",
+      "telefone": "01721430706",
+      "email": "Não informado",
+      "endereco": "RUA 12, RODOVIARIA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MI A2 LITE",
+      "nome": "CELULAR ROSE",
+      "defeito": "TELA QUEBRADA E NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-07-15",
+      "fechamento": "2025-07-15",
+      "criacao": "2025-07-15T12:28:57.866728+00:00",
+      "atualizacao": "2025-07-15T19:48:19.718701+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 280,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "TROCOU DISPLAY"
+    }
+  },
+  {
+    "numero": 106,
+    "id": "3941b403-34b4-40fc-b0a7-8cd35ab84ff2",
+    "cliente": {
+      "id": "03baff14-c408-472e-bce7-ec48646a370e",
+      "nome": "LUCAS LINO TEIXEIRA",
+      "telefone": "17992256085",
+      "email": "Não informado",
+      "endereco": "RUA 20B, 908, JOSE PUGLIESE",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "POCO C65",
+      "nome": "CELULAR PRETO",
+      "defeito": "TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-11",
+      "fechamento": null,
+      "criacao": "2025-07-11T13:10:53.20126+00:00",
+      "atualizacao": "2025-07-11T13:10:53.20126+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 320,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "TELA TAMPA TRASEIRA DANIFICADA"
+    }
+  },
+  {
+    "numero": 107,
+    "id": "fb952c9e-ff82-427b-92e4-1458c666b225",
+    "cliente": {
+      "id": "9ddd4f52-f2d7-400d-bad9-3e6ff55d64a2",
+      "nome": "JOSIANE VENTURA",
+      "telefone": "017991952462",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XIOMI NOT 12S",
+      "nome": "CELULAR PRETO",
+      "defeito": "TIRAR GMAIL"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": "2025-07-14",
+      "criacao": "2025-07-10T15:44:43.586394+00:00",
+      "atualizacao": "2025-07-14T18:41:29.482115+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 220,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "RETIRADO DO EMAIL"
+    }
+  },
+  {
+    "numero": 108,
+    "id": "86cbdc96-0600-4487-a087-83f05fbc605e",
+    "cliente": {
+      "id": "0f7e4449-6876-4362-8afa-d410f9c32a6b",
+      "nome": "DANIELE CUSTODIO DE MELO",
+      "telefone": "17999760238",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "ASUS VIVOBOOK -95605GW",
+      "nome": "NOTEBOOK PRETO NOVO",
+      "defeito": "FORMATAÇÃO SEM SALVAR"
+    },
+    "datas": {
+      "abertura": "2025-07-10",
+      "fechamento": "2025-07-11",
+      "criacao": "2025-07-10T13:14:11.286334+00:00",
+      "atualizacao": "2025-07-11T20:32:54.9144+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 70,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "FORMATAÇÃO"
+    }
+  },
+  {
+    "numero": 109,
+    "id": "a32fe765-83b6-4e27-bee5-c3bba81eb792",
+    "cliente": {
+      "id": "4e905e3d-8b94-48e2-a4aa-de5879e592ae",
+      "nome": "Altamiro Antonio de Matos",
+      "telefone": "17999797840",
+      "email": "Não informado",
+      "endereco": "RUA 21B, 940, JOSE PUGLIESE",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "Moto One Fusion",
+      "nome": "CELULAR ",
+      "defeito": "GARANTIA OS 16491\nNÃO CARREGA, QUANDO CHEGA NOS 30% PARA"
+    },
+    "datas": {
+      "abertura": "2025-07-12",
+      "fechamento": null,
+      "criacao": "2025-07-12T12:51:29.813114+00:00",
+      "atualizacao": "2025-07-12T12:51:58.725033+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 110,
+    "id": "dcd7be3e-99a1-47bd-b165-203952b029c3",
+    "cliente": {
+      "id": "35b6fb5c-45f6-4257-a7fe-e1744d475c0d",
+      "nome": "Luka Guia Guaira",
+      "telefone": "(17)99975-7575",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A30",
+      "nome": "SAMSUNG PRETO",
+      "defeito": "VERIFICAR CAMERAS "
+    },
+    "datas": {
+      "abertura": "2025-07-07",
+      "fechamento": "2025-07-14",
+      "criacao": "2025-07-07T17:11:07.10554+00:00",
+      "atualizacao": "2025-07-14T21:08:09.922791+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "trocou conector + bios"
+    }
+  },
+  {
+    "numero": 111,
+    "id": "b598466b-abb9-4214-9c65-ddbb8c911d18",
+    "cliente": {
+      "id": "8638766e-3406-4274-8463-db5b82ea21ad",
+      "nome": "LUANA VAZ",
+      "telefone": "17999756366",
+      "email": "Não informado",
+      "endereco": "RUA 012, 202, REINALDOSTEN",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "REDMI 13C",
+      "nome": "CELULAR PRETO",
+      "defeito": "GARANTIA DO DIA 04/04/2025, FOI FEITO A TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-11",
+      "fechamento": "2025-07-14",
+      "criacao": "2025-07-11T12:30:08.07315+00:00",
+      "atualizacao": "2025-07-14T12:54:48.749647+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 120,
+      "observacoes": "feito troca de tela"
+    }
+  },
+  {
+    "numero": 112,
+    "id": "c439748d-570e-439e-900d-8810687d13c4",
+    "cliente": {
+      "id": "73b62e47-eca9-45a4-bed8-705ca9f5ddc8",
+      "nome": "edna cristina spigali",
+      "telefone": "17999794274",
+      "email": "Não informado",
+      "endereco": "av 11a n 33 vivendas",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "mpegmovie vx",
+      "nome": "maquina fotografica prata",
+      "defeito": "não liga (deixou capa)"
+    },
+    "datas": {
+      "abertura": "2025-07-15",
+      "fechamento": null,
+      "criacao": "2025-07-15T19:10:20.801231+00:00",
+      "atualizacao": "2025-07-15T19:10:20.801231+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 113,
+    "id": "456c1c6f-114f-4aae-aa94-6f2ce0162fa8",
+    "cliente": {
+      "id": "3dc3e949-f54e-45f3-bff8-3a887f068d56",
+      "nome": "leticia costa ",
+      "telefone": "17991108057",
+      "email": "Não informado",
+      "endereco": "av 25, n 1047 jardim paulista",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "LENOVO IDEALPAD 3 15lml05",
+      "nome": "notebook prata ",
+      "defeito": "GARANTIA - camera nao esta abrindo "
+    },
+    "datas": {
+      "abertura": "2025-07-16",
+      "fechamento": null,
+      "criacao": "2025-07-16T20:24:09.366533+00:00",
+      "atualizacao": "2025-07-16T20:24:09.366533+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Ordem de garantia referente à OS #0D432764. Defeito original: camera nao esta abrindo "
+    }
+  },
+  {
+    "numero": 114,
+    "id": "bd1908e0-b5bc-4772-b1e1-f340de054822",
+    "cliente": {
+      "id": "50e05cb2-6587-4ebf-8cec-33b52037f93f",
+      "nome": "LARICE DE CASTRO",
+      "telefone": "17999741581",
+      "email": "Não informado",
+      "endereco": "AV PAULO DE LIMA,98, COAB II",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "MOTOROLA G54 ",
+      "nome": "CELULAR AZUL",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-15",
+      "fechamento": "2025-07-17",
+      "criacao": "2025-07-15T19:35:32.327211+00:00",
+      "atualizacao": "2025-07-17T20:42:32.715716+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 354.09,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "display"
+    }
+  },
+  {
+    "numero": 115,
+    "id": "3168f47a-d442-4756-9cf2-098627160718",
+    "cliente": {
+      "id": "231c72a1-2a56-4f0b-a6ae-dce0da1e44f4",
+      "nome": "MAIRA GARCIA LELLIS",
+      "telefone": "17999760079",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE X",
+      "nome": "CELULAR PRETO",
+      "defeito": "TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-16",
+      "fechamento": "2025-07-16",
+      "criacao": "2025-07-16T13:44:12.64965+00:00",
+      "atualizacao": "2025-07-16T18:54:17.009385+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 50,
+      "valorTotal": 50,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 0,
+      "observacoes": "TROCA DA TELA, TELA CLIENTE COBRANÇA SO DA MÃO DE OBRA"
+    }
+  },
+  {
+    "numero": 116,
+    "id": "925b42b4-3858-4870-91d6-31faa1104c9b",
+    "cliente": {
+      "id": "985bd782-ea67-4237-99bf-889eeaaa7108",
+      "nome": "JAIR DELEFRATE ",
+      "telefone": "17999794405",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "LENOVO CINZA",
+      "nome": "TABLET",
+      "defeito": "TIRAR GMAIL E DESBLOQUEIO DE TELA\nORÇAMENTO"
+    },
+    "datas": {
+      "abertura": "2025-07-14",
+      "fechamento": "2025-07-17",
+      "criacao": "2025-07-14T13:59:23.020143+00:00",
+      "atualizacao": "2025-07-17T18:57:41.514041+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 150,
+      "valorTotal": 150,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "tirou gmail"
+    }
+  },
+  {
+    "numero": 117,
+    "id": "fa56d3f5-b5c4-404f-91e6-1fc4450332f4",
+    "cliente": {
+      "id": "6ae15fcc-9409-47de-ba9a-d6920a70f73a",
+      "nome": "Pedro Henrique Eugenio",
+      "telefone": "(17)98135-9545",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "CONTROLE XBOX BRANCO",
+      "nome": "CONTROLE GAMER",
+      "defeito": "Seta Esquerda E Direita"
+    },
+    "datas": {
+      "abertura": "2025-07-14",
+      "fechamento": "2025-07-18",
+      "criacao": "2025-07-14T12:12:07.109478+00:00",
+      "atualizacao": "2025-07-18T14:07:01.560338+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 100,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Trocou analógico esquerdo"
+    }
+  },
+  {
+    "numero": 118,
+    "id": "35e79443-66c6-47c8-b8a4-0de4b3f62e7f",
+    "cliente": {
+      "id": "e8c33d27-ebd6-49e2-82a7-2d4aab7883c2",
+      "nome": "rafael borges",
+      "telefone": "17992672844",
+      "email": "Não informado",
+      "endereco": "rua 24 n 206 centro",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "note 11",
+      "nome": "celular preto",
+      "defeito": "orçamento - tocando sozinho a tela - reiniciando "
+    },
+    "datas": {
+      "abertura": "2025-07-16",
+      "fechamento": "2025-07-18",
+      "criacao": "2025-07-16T12:46:55.042591+00:00",
+      "atualizacao": "2025-07-18T18:17:54.165969+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 480,
+      "valorTotal": 480,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "Display wefix"
+    }
+  },
+  {
+    "numero": 119,
+    "id": "7887d360-70fd-41f0-bb3f-b804281b1ee8",
+    "cliente": {
+      "id": "3f805d2c-c858-48b3-98c2-ff570a7331e5",
+      "nome": "MAX MARQUES",
+      "telefone": "17999793265",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XBOX 360",
+      "nome": "GAMER PRETO",
+      "defeito": "DESBLOUEIO"
+    },
+    "datas": {
+      "abertura": "2025-07-23",
+      "fechamento": null,
+      "criacao": "2025-07-23T12:26:59.237031+00:00",
+      "atualizacao": "2025-07-23T12:26:59.237031+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 120,
+    "id": "4860a5b6-4ac7-4e1f-9a29-bf6d9202ef2d",
+    "cliente": {
+      "id": "4a60083b-113f-42db-a163-b35cb738fc9f",
+      "nome": "TARINAN GOMES DOS SANTOS",
+      "telefone": "17981612202",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "samsung A12",
+      "nome": "celualr preto",
+      "defeito": "display"
+    },
+    "datas": {
+      "abertura": "2025-07-15",
+      "fechamento": "2025-07-16",
+      "criacao": "2025-07-15T13:05:23.016697+00:00",
+      "atualizacao": "2025-07-16T20:35:04.368718+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 200,
+      "valorTotal": 234,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca de tela"
+    }
+  },
+  {
+    "numero": 121,
+    "id": "8b219c38-d1ee-4e0e-9b2b-1d80613a48d7",
+    "cliente": {
+      "id": "e8c33d27-ebd6-49e2-82a7-2d4aab7883c2",
+      "nome": "rafael borges",
+      "telefone": "17992672844",
+      "email": "Não informado",
+      "endereco": "rua 24 n 206 centro",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "1439",
+      "nome": "XBOX PRETO 360",
+      "defeito": "luz vermelha "
+    },
+    "datas": {
+      "abertura": "2025-07-17",
+      "fechamento": null,
+      "criacao": "2025-07-17T18:18:01.352814+00:00",
+      "atualizacao": "2025-07-17T18:18:01.352814+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "veio sem as bordas - ele desmontou "
+    }
+  },
+  {
+    "numero": 122,
+    "id": "b126c2c5-968e-4564-abe2-9f3eeeb8a80c",
+    "cliente": {
+      "id": "94606b30-8603-4773-87ea-0207d3043045",
+      "nome": "FERNANDA MARQUES DA SILVA CANDIDO",
+      "telefone": "17991016837",
+      "email": "Não informado",
+      "endereco": "AV 25,14 RES NADIA 4",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A22",
+      "nome": "CELULAR CHUMBO",
+      "defeito": "TIRAR GMAIL E DESBLOQUEIO"
+    },
+    "datas": {
+      "abertura": "2025-07-24",
+      "fechamento": "2025-07-24",
+      "criacao": "2025-07-24T13:33:50.877916+00:00",
+      "atualizacao": "2025-07-24T17:53:40.245544+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 30,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "tirou virus"
+    }
+  },
+  {
+    "numero": 123,
+    "id": "749fb822-f7fc-458a-99a4-c88b24de13ca",
+    "cliente": {
+      "id": "823f02e0-dc7c-407c-94eb-29b415d2120d",
+      "nome": "ana paula garcia barbosa",
+      "telefone": "17999790166",
+      "email": "Não informado",
+      "endereco": "av 1 n 66 centro",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone 6s",
+      "nome": "celular prata/preto",
+      "defeito": "display"
+    },
+    "datas": {
+      "abertura": "2025-07-17",
+      "fechamento": "2025-07-18",
+      "criacao": "2025-07-17T18:27:48.739623+00:00",
+      "atualizacao": "2025-07-18T13:22:03.313096+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 230,
+      "valorTotal": 230,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "display"
+    }
+  },
+  {
+    "numero": 124,
+    "id": "10e3261b-d0b9-4984-918b-4dff74934ebf",
+    "cliente": {
+      "id": "d9d8853a-b8bc-41a7-ade6-fcaccc7146f0",
+      "nome": "ELAINE CRISTINA RIBEIRO",
+      "telefone": "17999742346 - 17999761871",
+      "email": "Não informado",
+      "endereco": "AV 41,182, JARDIM ELIZA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "PW400 POWER SUPPLY",
+      "nome": "CPU PRETA ",
+      "defeito": "APARELHO LIGA E DESLIGA "
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": null,
+      "criacao": "2025-07-18T16:09:11.878504+00:00",
+      "atualizacao": "2025-07-18T16:09:11.878504+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "SEM A TAMPA LATERAL COM A FONTE DE ENERGIA "
+    }
+  },
+  {
+    "numero": 125,
+    "id": "9d37fc30-5fea-4f27-9fc7-bc7b958d48c0",
+    "cliente": {
+      "id": "6ae15fcc-9409-47de-ba9a-d6920a70f73a",
+      "nome": "Pedro Henrique Eugenio",
+      "telefone": "(17)98135-9545",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "CONTROLE XBOX BRANCO",
+      "nome": "CONTROLE GAMER",
+      "defeito": "GARANTIA - Seta Esquerda E Direita\n\nBOTÃO COM ATRASO"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": null,
+      "criacao": "2025-07-18T16:26:24.410333+00:00",
+      "atualizacao": "2025-07-18T16:26:24.410333+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Ordem de garantia referente à OS #450332F4. Defeito original: Seta Esquerda E Direita"
+    }
+  },
+  {
+    "numero": 126,
+    "id": "65b43bae-37ea-488b-abff-c05910535b3a",
+    "cliente": {
+      "id": "6ae15fcc-9409-47de-ba9a-d6920a70f73a",
+      "nome": "Pedro Henrique Eugenio",
+      "telefone": "(17)98135-9545",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "XBOX",
+      "nome": "CONTROLE  PETO",
+      "defeito": "TROCAR PARA O ANALOGICO"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": null,
+      "criacao": "2025-07-18T16:27:46.61445+00:00",
+      "atualizacao": "2025-07-18T16:27:46.61445+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 127,
+    "id": "e30bd71b-6e8a-4b73-8cd5-30bb8c169f79",
+    "cliente": {
+      "id": "65084213-045c-428c-afb4-afba359cc486",
+      "nome": "EDSON GUILHERME FONSECA",
+      "telefone": "17981872044",
+      "email": "Não informado",
+      "endereco": "RUA 12B 0784 LUIZ AFONSO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "A15",
+      "nome": "CELULAR PRETO",
+      "defeito": "trocou display - luz acendendo no sensor "
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-07-18",
+      "criacao": "2025-07-18T12:25:14.784132+00:00",
+      "atualizacao": "2025-07-18T18:26:20.306499+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "troca de tela"
+    }
+  },
+  {
+    "numero": 128,
+    "id": "89013be4-d8a0-4c74-ae69-af89eaa40f2b",
+    "cliente": {
+      "id": "fc7cb829-0208-4f73-bdb6-cbaf96f5117b",
+      "nome": "daltoni da cunha teixeira",
+      "telefone": "34991333654",
+      "email": "Não informado",
+      "endereco": "av edson bernardes doo nascimento n 1387 jardim eliza",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone 8",
+      "nome": "celular preto",
+      "defeito": "display + dar carga "
+    },
+    "datas": {
+      "abertura": "2025-07-19",
+      "fechamento": "2025-07-22",
+      "criacao": "2025-07-19T12:25:40.033087+00:00",
+      "atualizacao": "2025-07-22T13:32:04.881817+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 230,
+      "formaPagamento": "dinheiro"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DE TELA"
+    }
+  },
+  {
+    "numero": 129,
+    "id": "9cc36704-6d79-4af4-9397-734c1cd6a8e5",
+    "cliente": {
+      "id": "2b2e6d7f-6c38-4648-96a4-c47005ae0a5e",
+      "nome": "SULAMITA FERREIRA DE SOUZA",
+      "telefone": "17991092353",
+      "email": "Não informado",
+      "endereco": "RUA 18,82 CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "LENOVO IDEAL PAD S146",
+      "nome": "NOTE PRATA",
+      "defeito": "APARELHO ESTA TRAVANDO\nVERIFICAR FORMATAÇÃO E SALVAR "
+    },
+    "datas": {
+      "abertura": "2025-07-19",
+      "fechamento": "2025-07-25",
+      "criacao": "2025-07-19T14:18:27.56507+00:00",
+      "atualizacao": "2025-07-25T20:54:34.920723+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 310,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "TROCA DE SSD 240G"
+    }
+  },
+  {
+    "numero": 130,
+    "id": "bdb2b08b-0e0b-4673-b343-a2984ad0369c",
+    "cliente": {
+      "id": "d4ed0f0b-82ec-46cd-9906-871f97065b5a",
+      "nome": "ANGELO GABRIEL ",
+      "telefone": "17",
+      "email": "Não informado",
+      "endereco": "AV 17 N 1947 GUAIRA E ",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "G9 POWER",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY 1 LINHA "
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": null,
+      "criacao": "2025-07-28T12:22:44.83042+00:00",
+      "atualizacao": "2025-07-28T12:22:44.83042+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 280,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 131,
+    "id": "494c4d35-bdc6-4f81-be43-fd676d3080cd",
+    "cliente": {
+      "id": "8b3fadbc-273d-402f-8de8-5a46fca50ca1",
+      "nome": "LUIZ FABIO TALARICO DE OLIVEIRA",
+      "telefone": "17991933809",
+      "email": "Não informado",
+      "endereco": "RUA 17B , 0815, LUIZ AFONSO PGNANELLI",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "OP-67593 COD-66215",
+      "nome": "CPU PRETA",
+      "defeito": "FARMATAR"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-07-21",
+      "criacao": "2025-07-18T17:14:04.860311+00:00",
+      "atualizacao": "2025-07-21T15:31:51.587363+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 80,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Formataçaõ"
+    }
+  },
+  {
+    "numero": 132,
+    "id": "4b0b700c-6f2f-44b7-bde8-a5e9a2815df8",
+    "cliente": {
+      "id": "e4aa6d76-2168-4c06-ac88-3c619aff787b",
+      "nome": "IRENE ROSA DE SOUZA VALENTI",
+      "telefone": "17999796224 -17991201805",
+      "email": "Não informado",
+      "endereco": "AV 53,146, ANTONIO MANOEL",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAM A14",
+      "nome": "CELULAR PRATA",
+      "defeito": "ORÇAMENTOTROCA DE TELA "
+    },
+    "datas": {
+      "abertura": "2025-07-22",
+      "fechamento": "2025-07-23",
+      "criacao": "2025-07-22T17:52:53.935861+00:00",
+      "atualizacao": "2025-07-23T16:33:46.279535+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "não quis o concerto"
+    }
+  },
+  {
+    "numero": 133,
+    "id": "4b3eddac-6ec2-4839-ba45-3687d8d79969",
+    "cliente": {
+      "id": "5d289b72-c214-4f59-a73c-68d2642518ef",
+      "nome": "PAULO SERGIO OLIMPIO",
+      "telefone": "17992329831",
+      "email": "Não informado",
+      "endereco": "AV1,2268, NOVA GUAIRA",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "J8",
+      "nome": "CELULAR ROXO  ",
+      "defeito": "BOTÃO POWER NÃO FUNCIONA e troca de tela"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-07-23",
+      "criacao": "2025-07-18T16:40:21.65525+00:00",
+      "atualizacao": "2025-07-23T19:33:27.973429+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 465.07,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "display + botão power"
+    }
+  },
+  {
+    "numero": 134,
+    "id": "a5884473-3da5-4c57-bb0b-07200146c4af",
+    "cliente": {
+      "id": "77e3cf28-ea42-4cae-b5b5-7d3a7db2a073",
+      "nome": "ANA LIVIA  FONSECA",
+      "telefone": "98791810214",
+      "email": "ANA@GMAIL.COM",
+      "endereco": "rua 10",
+      "bairro": "Não informado",
+      "cidade": "Guaíra"
+    },
+    "equipamento": {
+      "modelo": "IPHONE 12 VERDE",
+      "nome": "SMARTPHONE",
+      "defeito": "NAO ESTA DANDO SINAL QUANDO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-07-22",
+      "criacao": "2025-07-18T17:00:40.085997+00:00",
+      "atualizacao": "2025-07-22T17:03:51.69203+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 30,
+      "valorTotal": 30,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "não teve conccerto"
+    }
+  },
+  {
+    "numero": 135,
+    "id": "6c0d0d59-251c-4543-9335-f0bf04474c0d",
+    "cliente": {
+      "id": "b8485121-7418-463d-ac9e-d955f60b9a10",
+      "nome": "valeria cristina da costa ",
+      "telefone": "17991116588",
+      "email": "Não informado",
+      "endereco": "rua 10b n 27 antonio garcia",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "A32 4G",
+      "nome": "celular preto",
+      "defeito": "display oled"
+    },
+    "datas": {
+      "abertura": "2025-07-19",
+      "fechamento": "2025-07-23",
+      "criacao": "2025-07-19T13:43:33.483432+00:00",
+      "atualizacao": "2025-07-23T16:48:14.781379+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 375.74,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "troca do display"
+    }
+  },
+  {
+    "numero": 136,
+    "id": "97fce405-22e3-453c-b58b-ef5c9606f7a1",
+    "cliente": {
+      "id": "5ea16650-778e-4ae4-8598-fca206c7dff1",
+      "nome": "ANDREA LUGUE",
+      "telefone": "17981796738",
+      "email": "Não informado",
+      "endereco": "RUA 16, 990, CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A16",
+      "nome": "CELULAR CHUMBO",
+      "defeito": "TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-22",
+      "fechamento": "2025-07-22",
+      "criacao": "2025-07-22T13:26:27.236958+00:00",
+      "atualizacao": "2025-07-22T20:13:44.049772+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 470,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "troca de tela"
+    }
+  },
+  {
+    "numero": 137,
+    "id": "597bc28a-3426-4a70-a5ac-84a88ac83d59",
+    "cliente": {
+      "id": "1736c2f0-7acd-49ee-bb2e-dd44d858ee7b",
+      "nome": "marcos junior",
+      "telefone": "17999751297",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "ps 2",
+      "nome": "gamer preto",
+      "defeito": "não da imagem"
+    },
+    "datas": {
+      "abertura": "2025-07-23",
+      "fechamento": null,
+      "criacao": "2025-07-23T17:06:18.907426+00:00",
+      "atualizacao": "2025-07-23T17:06:18.907426+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 138,
+    "id": "018038b8-22e9-4a9e-8356-a8249ba83535",
+    "cliente": {
+      "id": "d942be79-f8ab-4300-b5e1-408b4de2fdad",
+      "nome": "LILIAN CRISTINA FLOR",
+      "telefone": "33313150",
+      "email": "Não informado",
+      "endereco": "RUA 02 N 1421 - NADIA ",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "NOTE 12",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY paralelo"
+    },
+    "datas": {
+      "abertura": "2025-07-24",
+      "fechamento": "2025-07-24",
+      "criacao": "2025-07-24T12:46:08.648402+00:00",
+      "atualizacao": "2025-07-24T20:49:52.19343+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 300.59,
+      "formaPagamento": "cartao-credito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "display paralelo"
+    }
+  },
+  {
+    "numero": 139,
+    "id": "cbbc2646-ca83-49f7-9158-9564c19541f4",
+    "cliente": {
+      "id": "e956c295-b989-406a-ae1a-44ea6503b2e6",
+      "nome": "JOAO VITOR CAVENAG",
+      "telefone": "17981304376",
+      "email": "Não informado",
+      "endereco": "AV 47, 3989, ANTONIO M,ANOEL",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "POCO X7 PRO",
+      "nome": "CELULAR PRETO",
+      "defeito": "TELA , VERIFICAR TELEFONE GERAL"
+    },
+    "datas": {
+      "abertura": "2025-07-23",
+      "fechamento": "2025-07-23",
+      "criacao": "2025-07-23T12:12:39.605281+00:00",
+      "atualizacao": "2025-07-23T18:51:23.506332+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NÃO QUIS ARRUMAR"
+    }
+  },
+  {
+    "numero": 140,
+    "id": "3cf3b52a-671b-4974-af2e-a82dfa400f3a",
+    "cliente": {
+      "id": "0785fc34-bbc5-42a6-adf5-87e5e8334a4f",
+      "nome": "DENIS VIEIRA",
+      "telefone": "34999989601",
+      "email": "Não informado",
+      "endereco": "RUA 2 , N1942 PORTAL DO LAGO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "MOT ONE FUSION",
+      "nome": "CELULAR AZUL ESCURO",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-24",
+      "fechamento": "2025-07-24",
+      "criacao": "2025-07-24T12:41:11.92638+00:00",
+      "atualizacao": "2025-07-24T20:30:32.423676+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 250,
+      "formaPagamento": "cartao-debito"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca de tela paalela"
+    }
+  },
+  {
+    "numero": 141,
+    "id": "062f29eb-26f4-4383-b84e-052344999839",
+    "cliente": {
+      "id": "6ff3b90e-ecb0-48b8-814e-52567807c752",
+      "nome": "gilson zanotelo",
+      "telefone": "17999797964 josi",
+      "email": "Não informado",
+      "endereco": "rua 12b - n 409",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone xs",
+      "nome": "celular preto/dourado",
+      "defeito": "caiu na água "
+    },
+    "datas": {
+      "abertura": "2025-07-24",
+      "fechamento": null,
+      "criacao": "2025-07-24T20:41:07.572939+00:00",
+      "atualizacao": "2025-07-24T20:41:07.572939+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 80,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 142,
+    "id": "30309151-c423-4358-8f4d-8bc0612e024c",
+    "cliente": {
+      "id": "f1afda76-5bbf-410f-a007-36775ef2cf1d",
+      "nome": "suelen carla davanço ",
+      "telefone": "17991963907",
+      "email": "Não informado",
+      "endereco": "guaira",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "samsung A12 ",
+      "nome": "celular preto",
+      "defeito": "display "
+    },
+    "datas": {
+      "abertura": "2025-07-25",
+      "fechamento": null,
+      "criacao": "2025-07-25T15:00:17.265742+00:00",
+      "atualizacao": "2025-07-25T15:00:17.265742+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 260,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 143,
+    "id": "ed55f3c4-194d-4820-8dc3-43620d34d263",
+    "cliente": {
+      "id": "b80944ee-91c7-4109-9698-18596d006321",
+      "nome": "rogerio de paiva",
+      "telefone": "17981617312",
+      "email": "Não informado",
+      "endereco": "rua 18 , n 363 nobre vile ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "cuh -zct2u ",
+      "nome": "controle ps4 preto",
+      "defeito": "analógico direito"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-07-25",
+      "criacao": "2025-07-18T13:45:26.561559+00:00",
+      "atualizacao": "2025-07-25T15:05:12.353236+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 110,
+      "valorTotal": 110,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "Trocou analogico direito"
+    }
+  },
+  {
+    "numero": 144,
+    "id": "5bb60895-1c84-4249-9834-8b3d2c7d0150",
+    "cliente": {
+      "id": "bce4a60f-ce64-4114-9f6c-cc377171b978",
+      "nome": "JOSE DE OLIVEIRA",
+      "telefone": "17997294388",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "MOT E22",
+      "nome": "CELULAR",
+      "defeito": "TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-25",
+      "fechamento": null,
+      "criacao": "2025-07-25T18:11:38.719284+00:00",
+      "atualizacao": "2025-07-25T18:11:53.777836+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 290,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 180,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 145,
+    "id": "768401ea-500b-437b-9a61-3f12c19e4231",
+    "cliente": {
+      "id": "7bd6c0d8-e754-4de4-9918-a890d59f07a9",
+      "nome": "ANISIO GABRIEL",
+      "telefone": "17991794274",
+      "email": "Não informado",
+      "endereco": "AV VICENTE LOPES DO NASCIMENTO, 152, BOM JESUS",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG P550XDA",
+      "nome": "NOT PRATA",
+      "defeito": "SÓ FICA LIGADO QUANDO ESTA NA TOMADA "
+    },
+    "datas": {
+      "abertura": "2025-07-26",
+      "fechamento": null,
+      "criacao": "2025-07-26T14:06:56.385001+00:00",
+      "atualizacao": "2025-07-26T14:09:45.566913+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO:\nCOM FONTE "
+    }
+  },
+  {
+    "numero": 146,
+    "id": "0390cd38-b6d0-4373-bb23-1aa333f96070",
+    "cliente": {
+      "id": "a78f10de-a548-4890-b8bd-4b66f512c1b4",
+      "nome": "marco aurélio becari ",
+      "telefone": "17997070468",
+      "email": "Não informado",
+      "endereco": "av 13a, 211 são francisco ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "POCO M3",
+      "nome": "CELULAR PRETO",
+      "defeito": "NÃO LIGA"
+    },
+    "datas": {
+      "abertura": "2025-07-19",
+      "fechamento": "2025-07-26",
+      "criacao": "2025-07-19T13:13:24.688163+00:00",
+      "atualizacao": "2025-07-26T15:09:38.426249+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 489.99,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "REPARO NA PLACA"
+    }
+  },
+  {
+    "numero": 147,
+    "id": "23020e40-5b94-4972-8cbf-23fd90c12e31",
+    "cliente": {
+      "id": "67526f20-485e-40a0-b448-303ce34932fc",
+      "nome": "SAULO DE TARSO",
+      "telefone": "17991784929",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "DELL X16-96086",
+      "nome": "NOT PRATA",
+      "defeito": "VERIFICAR POSSIBILIDADE DE COMPRAR"
+    },
+    "datas": {
+      "abertura": "2025-07-26",
+      "fechamento": null,
+      "criacao": "2025-07-26T15:23:14.155664+00:00",
+      "atualizacao": "2025-07-26T15:46:07.679494+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: COM FONTE, SEM RISCOS"
+    }
+  },
+  {
+    "numero": 148,
+    "id": "a219233b-0c3c-4336-ad7f-2dde79ae4544",
+    "cliente": {
+      "id": "5ea16650-778e-4ae4-8598-fca206c7dff1",
+      "nome": "ANDREA LUGUE",
+      "telefone": "17981796738",
+      "email": "Não informado",
+      "endereco": "RUA 16, 990, CENTRO",
+      "bairro": "Não informado",
+      "cidade": "GUAIRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A16",
+      "nome": "CELULAR CHUMBO",
+      "defeito": "GARANTIA - TROCA DE TELA\ntela com sencibilidade fraca e alto falante "
+    },
+    "datas": {
+      "abertura": "2025-07-25",
+      "fechamento": "2025-07-26",
+      "criacao": "2025-07-25T19:16:01.66323+00:00",
+      "atualizacao": "2025-07-26T16:08:35.292925+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "garantia"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 150,
+      "observacoes": "TROCA DA TELA"
+    }
+  },
+  {
+    "numero": 149,
+    "id": "09a79ecb-1108-4ad0-9b08-05caf349ac18",
+    "cliente": {
+      "id": "d2b69b59-b14d-4563-ab72-40a41f728cf7",
+      "nome": "COOPERCITRUS VALTRA",
+      "telefone": "016991925271",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "LENOVO  THINKPAD E14 GEN 2 MOD- 20T7",
+      "nome": "NOT PRATA",
+      "defeito": "DESBLOQUEIO DE ACESSO "
+    },
+    "datas": {
+      "abertura": "2025-07-24",
+      "fechamento": "2025-07-28",
+      "criacao": "2025-07-24T20:07:51.723348+00:00",
+      "atualizacao": "2025-07-28T12:09:06.049804+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "NÃO TEVE CONCERTO"
+    }
+  },
+  {
+    "numero": 150,
+    "id": "66466177-a934-46b4-94ef-10f8b4768004",
+    "cliente": {
+      "id": "3dd98e80-a9bc-409b-bbc3-d3069202f766",
+      "nome": "CARLOS DA SILVA BARBOSA",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "RUA 34 N 350",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "REDMI 13c",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY - 5 MESES"
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": null,
+      "criacao": "2025-07-28T13:39:17.250026+00:00",
+      "atualizacao": "2025-07-28T13:39:17.250026+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 280,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 180,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 151,
+    "id": "eeebc373-a742-425a-930a-7e351dac3a57",
+    "cliente": {
+      "id": "231c72a1-2a56-4f0b-a6ae-dce0da1e44f4",
+      "nome": "MAIRA GARCIA LELLIS",
+      "telefone": "17999760079",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "IPHONE X",
+      "nome": "celular preto",
+      "defeito": "TROCS DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": null,
+      "criacao": "2025-07-28T13:44:26.285215+00:00",
+      "atualizacao": "2025-07-28T13:44:26.285215+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 152,
+    "id": "312f1c4a-2642-4a7a-ab32-0bfcd77322c9",
+    "cliente": {
+      "id": "d87374ff-86cd-4872-9684-bec98c167ca9",
+      "nome": "VALESCA RUBIA PAIVA TOLENTINO",
+      "telefone": "179992637183",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A30 5G",
+      "nome": "CELULAR CHUMBO",
+      "defeito": "NÃO CARREGA"
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": null,
+      "criacao": "2025-07-28T16:28:41.365409+00:00",
+      "atualizacao": "2025-07-28T16:28:41.365409+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 153,
+    "id": "ee31ad2c-6eae-41bd-9ea1-80ce156453d9",
+    "cliente": {
+      "id": "0a812f7f-5c68-4044-a6c3-f2e8ae8a2d32",
+      "nome": "MARCIO MB INFORMATICA",
+      "telefone": "17981260094",
+      "email": "Não informado",
+      "endereco": "Não informado",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "SAM A30S",
+      "nome": "CELULAR BRANCO",
+      "defeito": "TROCA DE TELA"
+    },
+    "datas": {
+      "abertura": "2025-07-28",
+      "fechamento": null,
+      "criacao": "2025-07-28T19:05:27.979823+00:00",
+      "atualizacao": "2025-07-28T19:05:27.979823+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": "orcamento"
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "ORÇAMENTO: COM BANDEJA"
+    }
+  },
+  {
+    "numero": 154,
+    "id": "4629ee92-6153-432f-85b9-3e9197da12fe",
+    "cliente": {
+      "id": "ffbceb28-0219-4eef-81f6-4238586e03a9",
+      "nome": "andrea da silva brosco",
+      "telefone": "33313646",
+      "email": "Não informado",
+      "endereco": "av 49 n 135 palmeiras ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone 6s plus ",
+      "nome": "celular branco/ dourado",
+      "defeito": "display + botão home "
+    },
+    "datas": {
+      "abertura": "2025-07-29",
+      "fechamento": null,
+      "criacao": "2025-07-29T14:31:09.996648+00:00",
+      "atualizacao": "2025-07-29T14:31:09.996648+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 155,
+    "id": "0ac02371-83ef-4ab1-8e7d-3eae97c70efa",
+    "cliente": {
+      "id": "719a0456-02b7-4934-b9d8-fa68cefa4822",
+      "nome": "dara neves",
+      "telefone": "17",
+      "email": "Não informado",
+      "endereco": "19b n 1106 jose pugliese",
+      "bairro": "Não informado",
+      "cidade": "Não informado"
+    },
+    "equipamento": {
+      "modelo": "iphone 14 ",
+      "nome": "celular branco",
+      "defeito": "display primeira linha "
+    },
+    "datas": {
+      "abertura": "2025-07-29",
+      "fechamento": null,
+      "criacao": "2025-07-29T14:38:47.176805+00:00",
+      "atualizacao": "2025-07-29T14:38:47.176805+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 780,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 156,
+    "id": "f17e96e5-61d8-4c02-814c-6326226110ce",
+    "cliente": {
+      "id": "a07aeea2-bd3b-4b5c-9a1a-b3c87f50cfcd",
+      "nome": "maiza gonçalves",
+      "telefone": "17981174856",
+      "email": "Não informado",
+      "endereco": "av 25 nadia 4 n 4",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone 11",
+      "nome": "celular preto/amarelo",
+      "defeito": "display primeira linha "
+    },
+    "datas": {
+      "abertura": "2025-07-29",
+      "fechamento": null,
+      "criacao": "2025-07-29T15:42:10.162715+00:00",
+      "atualizacao": "2025-07-29T15:42:10.162715+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 350,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Garantia não cobre danos causados por mau uso, como quedas, arranhões, contato com líquidos ou uso de acessórios não originais."
+    }
+  },
+  {
+    "numero": 157,
+    "id": "57c2ed01-a5d1-4493-bd60-6a7673186863",
+    "cliente": {
+      "id": "2a49ab83-e053-418b-9d16-88f14ff2d028",
+      "nome": "gabriel alves scarpelini dos santos",
+      "telefone": "17992327268",
+      "email": "Não informado",
+      "endereco": "av 45 n 245 -  antonio manoel ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "redmi 13c",
+      "nome": "celular preto",
+      "defeito": "tirar gmail "
+    },
+    "datas": {
+      "abertura": "2025-07-29",
+      "fechamento": null,
+      "criacao": "2025-07-29T16:12:57.415619+00:00",
+      "atualizacao": "2025-07-29T16:12:57.415619+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 170,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "Nenhuma observação"
+    }
+  },
+  {
+    "numero": 158,
+    "id": "58d0e69f-60fb-40f1-8c53-7c3dd9b6fe1e",
+    "cliente": {
+      "id": "4af50a1b-acf2-4229-b806-f0ce578119ac",
+      "nome": "daniel rosa de oliveira",
+      "telefone": "Não informado",
+      "email": "Não informado",
+      "endereco": "rua 7c n 117 - residencial amélia ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "iphone 11 pro",
+      "nome": "celular preto",
+      "defeito": "bateria paralela "
+    },
+    "datas": {
+      "abertura": "2025-07-29",
+      "fechamento": "2025-07-29",
+      "criacao": "2025-07-29T16:25:03.320145+00:00",
+      "atualizacao": "2025-07-29T16:25:13.160802+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 300,
+      "formaPagamento": "pix"
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 180,
+      "observacoes": "trocou bateria"
+    }
+  },
+  {
+    "numero": 159,
+    "id": "13a3afe6-0f24-4d03-a570-389953f5592d",
+    "cliente": {
+      "id": "5487ccc9-e53a-4a83-b29f-46e8297c842a",
+      "nome": "anizio gabriel",
+      "telefone": "17991794274",
+      "email": "Não informado",
+      "endereco": "av vicente lopes n 2 ",
+      "bairro": "Não informado",
+      "cidade": "guaíra"
+    },
+    "equipamento": {
+      "modelo": "cuh-zct2e",
+      "nome": "controle vermelho ps4",
+      "defeito": "L1"
+    },
+    "datas": {
+      "abertura": "2025-07-25",
+      "fechamento": "2025-07-29",
+      "criacao": "2025-07-25T13:16:56.054745+00:00",
+      "atualizacao": "2025-07-29T17:47:18.013892+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 100,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "aberta",
+      "garantia": 90,
+      "observacoes": "nada"
+    }
+  },
+  {
+    "numero": 160,
+    "id": "89ca6338-a9df-4fea-b757-5140779b889c",
+    "cliente": {
+      "id": "0f5f5458-b45b-408f-82f9-8f1053969c17",
+      "nome": "CRISTIAN PAULINO ",
+      "telefone": "17999766666",
+      "email": "Não informado",
+      "endereco": "FAZENDA SÃO PEDRO",
+      "bairro": "Não informado",
+      "cidade": "GUAÍRA"
+    },
+    "equipamento": {
+      "modelo": "SAMSUNG A14",
+      "nome": "CELULAR PRETO",
+      "defeito": "DISPLAY - GARANTIA"
+    },
+    "datas": {
+      "abertura": "2025-07-18",
+      "fechamento": "2025-08-01",
+      "criacao": "2025-07-18T16:07:04.590351+00:00",
+      "atualizacao": "2025-08-01T20:48:31.167098+00:00"
+    },
+    "financeiro": {
+      "maoDeObra": 0,
+      "valorTotal": 0,
+      "formaPagamento": ""
+    },
+    "servico": {
+      "status": "fechada",
+      "garantia": 90,
+      "observacoes": "troca de tela"
+    }
+  }
+]

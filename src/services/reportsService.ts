@@ -253,18 +253,26 @@ export class ReportsService {
 
   // Dashboard com métricas principais
   async getDashboardMetrics(): Promise<DashboardMetrics> {
+    console.log('🔍 ReportsService: Iniciando getDashboardMetrics')
     const userId = await this.getCurrentUser()
+    console.log('👤 UserId:', userId)
+    
     const hoje = new Date().toISOString().split('T')[0]
     const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0]
     const mes_atual = new Date().toISOString().slice(0, 7) // YYYY-MM
     
+    console.log('📅 Datas:', { hoje, ontem, mes_atual })
+    
     // Vendas hoje
+    console.log('🔍 Buscando vendas hoje...')
     const { data: vendas_hoje } = await supabase
       .from('sales')
       .select('total')
       .eq('user_id', userId)
       .gte('data_venda', hoje)
       .lte('data_venda', hoje + ' 23:59:59')
+
+    console.log('📊 Vendas hoje:', vendas_hoje)
 
     const { data: vendas_ontem } = await supabase
       .from('sales')
@@ -273,7 +281,13 @@ export class ReportsService {
       .gte('data_venda', ontem)
       .lte('data_venda', ontem + ' 23:59:59')
 
+    const valor_hoje = vendas_hoje?.reduce((acc, v) => acc + v.total, 0) || 0
+    const valor_ontem = vendas_ontem?.reduce((acc, v) => acc + v.total, 0) || 0
+    
+    console.log('💰 Valores calculados:', { valor_hoje, valor_ontem })
+
     // Vendas do mês atual
+    console.log('🔍 Buscando vendas do mês...')
     const { data: vendas_mes } = await supabase
       .from('sales')
       .select('total')
@@ -281,10 +295,12 @@ export class ReportsService {
       .gte('data_venda', mes_atual + '-01')
       .lte('data_venda', mes_atual + '-31')
 
-    const valor_hoje = vendas_hoje?.reduce((acc, v) => acc + v.total, 0) || 0
-    const valor_ontem = vendas_ontem?.reduce((acc, v) => acc + v.total, 0) || 0
+    console.log('📊 Vendas do mês:', vendas_mes)
+
     const valor_mes = vendas_mes?.reduce((acc, v) => acc + v.total, 0) || 0
     const crescimento_hoje = valor_ontem > 0 ? ((valor_hoje - valor_ontem) / valor_ontem) * 100 : 0
+
+    console.log('📈 Crescimento calculado:', crescimento_hoje)
 
     // Clientes ativos (com pelo menos uma compra nos últimos 90 dias)
     const noventa_dias_atras = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]

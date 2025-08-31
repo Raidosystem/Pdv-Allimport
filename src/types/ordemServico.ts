@@ -4,6 +4,7 @@ import type { Cliente } from './cliente'
 export interface OrdemServico {
   id: string
   cliente_id: string
+  numero_os?: string // Número da OS para identificação
   
   // Informações do aparelho
   tipo: TipoEquipamento
@@ -11,21 +12,27 @@ export interface OrdemServico {
   modelo: string
   cor?: string
   numero_serie?: string
+  equipamento?: string // Campo unificado para equipamento
   
   // Checklist técnico
-  checklist: ChecklistOS
+  checklist?: ChecklistOS
   observacoes?: string
   defeito_relatado?: string
+  descricao_problema?: string // Descrição completa do problema
   
   // Datas e status
   data_entrada: string
   data_previsao?: string
   data_entrega?: string
+  data_finalizacao?: string // Data de finalização do serviço
   status: StatusOS
   
-  // Valores
+  // Valores e pagamento
   valor_orcamento?: number
+  valor?: number // Valor final da OS
   valor_final?: number
+  mao_de_obra?: number // Custo da mão de obra
+  forma_pagamento?: string // Forma de pagamento utilizada
   
   // Garantia
   garantia_meses?: number

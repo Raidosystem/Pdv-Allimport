@@ -51,16 +51,65 @@ export function useOrdemServico() {
       }
       
       // Mapear dados para o formato esperado
-      const ordensFormatadas: OrdemServico[] = (ordensServico || []).map((os: any) => ({
-        ...os,
-        cliente: os.clientes ? {
-          ...os.clientes,
-          tipo: 'Física',
-          ativo: true,
-          criado_em: new Date().toISOString(),
-          atualizado_em: new Date().toISOString()
-        } : undefined
-      }))
+      const ordensFormatadas: OrdemServico[] = (ordensServico || []).map((os: any) => {
+        // Definir tipo baseado no equipamento ou usar default
+        const detectarTipo = (equipamento: string = ''): TipoEquipamento => {
+          const equip = equipamento.toLowerCase()
+          if (equip.includes('celular') || equip.includes('smartphone') || equip.includes('iphone') || equip.includes('samsung')) return 'Celular'
+          if (equip.includes('notebook') || equip.includes('laptop') || equip.includes('dell') || equip.includes('hp')) return 'Notebook'
+          if (equip.includes('console') || equip.includes('playstation') || equip.includes('xbox')) return 'Console'
+          if (equip.includes('tablet') || equip.includes('ipad')) return 'Tablet'
+          return 'Outro'
+        }
+
+        return {
+          id: os.id || '',
+          cliente_id: os.cliente_id || '',
+          numero_os: os.numero_os || '',
+          // Equipamento
+          tipo: detectarTipo(os.equipamento || ''),
+          marca: os.marca || 'Não informado',
+          modelo: os.modelo || 'Não informado',
+          numero_serie: os.numero_serie || undefined,
+          // Problema
+          defeito_relatado: os.descricao_problema || 'Não informado',
+          observacoes: os.observacoes || undefined,
+          // Status e datas
+          status: os.status as StatusOS || 'Em análise',
+          data_entrada: os.data_entrada || '',
+          data_previsao: os.data_previsao || undefined,
+          data_entrega: os.data_finalizacao || undefined,
+          // Valores
+          valor_orcamento: os.valor ? Number(os.valor) : undefined,
+          valor_final: os.valor ? Number(os.valor) : undefined,
+          // Garantia
+          garantia_meses: os.garantia_meses ? Number(os.garantia_meses) : undefined,
+          data_fim_garantia: os.data_fim_garantia || undefined,
+          // Checklist básico
+          checklist: os.checklist || { liga: true },
+          // Controle
+          usuario_id: os.usuario_id || '',
+          criado_em: os.criado_em || '',
+          atualizado_em: os.atualizado_em || '',
+          // Cliente relacionado
+          cliente: os.clientes ? {
+            id: os.clientes.id || '',
+            nome: os.clientes.nome || 'Não informado',
+            telefone: os.clientes.telefone || '',
+            email: os.clientes.email || '',
+            cpf_cnpj: os.clientes.cpf_cnpj || '',
+            endereco: os.clientes.endereco || '',
+            cidade: os.clientes.cidade || '',
+            estado: os.clientes.estado || '',
+            cep: os.clientes.cep || '',
+            tipo: 'Física' as const,
+            ativo: true,
+            usuario_id: os.usuario_id || '',
+            criado_em: os.clientes.criado_em || '',
+            atualizado_em: os.clientes.atualizado_em || ''
+          } : undefined
+        }
+      })
       
       setOrdensServico(ordensFormatadas)
       

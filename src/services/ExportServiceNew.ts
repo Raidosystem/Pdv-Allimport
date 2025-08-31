@@ -177,13 +177,4 @@ export class ExportService {
       }, 500)
     }
   }
-
-  // Métodos financeiros - placeholders para futura implementação
-  static async exportFinancialToPDF(data: any, filters: any) {
-    console.log('Exportando financeiro para PDF...', data, filters)
-  }
-
-  static async exportFinancialToExcel(data: any, filters: any) {
-    console.log('Exportando financeiro para Excel...', data, filters)
-  }
 }

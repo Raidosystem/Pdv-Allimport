@@ -1,0 +1,50 @@
+[
+  {
+    "numero_os": "OS001",
+    "cliente_nome": "João da Silva",
+    "cliente_telefone": "(11) 99999-9999", 
+    "marca": "Samsung",
+    "modelo": "Galaxy S21",
+    "defeito_relatado": "Tela trincada e touchscreen não responde",
+    "status": "Orçamento",
+    "data_entrada": "2025-08-31",
+    "valor_orcado": "250.00"
+  },
+  {
+    "numero_os": "OS002",
+    "cliente_nome": "Maria Santos",
+    "telefone": "(11) 88888-8888",
+    "marca": "Apple", 
+    "modelo": "iPhone 13",
+    "problema": "Bateria não carrega",
+    "situacao": "Em andamento",
+    "entrada": "2025-08-30",
+    "price": "180.00"
+  },
+  {
+    "numeroOS": "OS003",
+    "clienteNome": "Pedro Costa",
+    "brand": "Dell",
+    "model": "Inspiron 15",
+    "issue": "Não liga, LED apagado", 
+    "state": "Pronto",
+    "data_entrada": "2025-08-29",
+    "valor": "150.00"
+  },
+  {
+    "numero_os": "OS004",
+    "cliente_nome": "Ana Lima",
+    "marca": "LG",
+    "modelo": "Smart TV 55",
+    "defeito": "Imagem com listras",
+    "status": "Concluído",
+    "valor_final": "320.00"
+  },
+  {
+    "numeroOS": "OS005",
+    "clienteNome": "Carlos Oliveira", 
+    "brand": "HP",
+    "model": "Pavilion Gaming",
+    "problema": "PC travando constantemente"
+  }
+]

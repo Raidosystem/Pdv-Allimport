@@ -198,10 +198,15 @@ class OrdemServicoService {
 
     if (error) {
       console.error('Erro ao atualizar ordem:', error)
-      throw new Error(`Erro ao atualizar ordem de serviço: ${error.message}`)
+      throw new Error(`Erro ao atualizar ordem: ${error.message}`)
     }
 
     return data
+  }
+
+  // Método alias para compatibilidade
+  async atualizar(id: string, dados: Partial<OrdemServico>): Promise<OrdemServico> {
+    return this.atualizarOrdem(id, dados)
   }
 
   // Atualizar apenas o status

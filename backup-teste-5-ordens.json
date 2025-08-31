@@ -1,0 +1,65 @@
+[
+  {
+    "defeito_relatado": "TELA QUEBRADA",
+    "cliente_nome": "EDVANIA DA SILVA",
+    "marca": "MOTOROLA",
+    "modelo": "E13",
+    "numero_os": "TEST001",
+    "status": "Entregue",
+    "valor_final": 290,
+    "data_entrada": "2025-06-17",
+    "data_conclusao": "2025-06-17",
+    "garantia_meses": 5,
+    "observacoes": "CELULAR AZUL/PRETO"
+  },
+  {
+    "defeito_relatado": "BLOQUEIO GMAIL",
+    "cliente_nome": "EDVANIA DA SILVA",
+    "marca": "SAMSUNG",
+    "modelo": "A06",
+    "numero_os": "TEST002",
+    "status": "Entregue",
+    "valor_final": 380,
+    "data_entrada": "2025-06-17",
+    "data_conclusao": "2025-06-17",
+    "garantia_meses": 1,
+    "observacoes": "FOI RETIRADO O GMAIL DO APARELHO - CELULAR AZUL"
+  },
+  {
+    "defeito_relatado": "CAIU NA AGUA, AURICULAR NÃO ESTA FUNCIONANDO",
+    "cliente_nome": "SAULO DE TARSO",
+    "marca": "SAMSUNG",
+    "modelo": "A23",
+    "numero_os": "TEST003",
+    "status": "Entregue",
+    "valor_final": 150,
+    "data_entrada": "2025-06-18",
+    "data_conclusao": "2025-06-18",
+    "observacoes": "CELULAR BRANCO"
+  },
+  {
+    "defeito_relatado": "TELA NÃO FUNCIONA",
+    "cliente_nome": "ALINE CRISTINA CAMARGO",
+    "marca": "SAMSUNG",
+    "modelo": "A32",
+    "numero_os": "TEST004",
+    "status": "Entregue",
+    "valor_final": 250,
+    "data_entrada": "2025-06-18",
+    "data_conclusao": "2025-06-18",
+    "garantia_meses": 5,
+    "observacoes": "TROCA DE TELA - CELULAR BRANCO"
+  },
+  {
+    "defeito_relatado": "NÃO LIGA",
+    "cliente_nome": "Giane Bitencourt",
+    "marca": "LENOVO",
+    "modelo": "IDEALPAD S145",
+    "numero_os": "TEST005",
+    "status": "Entregue",
+    "valor_final": 100,
+    "data_entrada": "2025-06-18",
+    "data_conclusao": "2025-06-18",
+    "observacoes": "NOTEBOOK BRANCO"
+  }
+]

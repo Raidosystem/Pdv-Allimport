@@ -1,0 +1,40 @@
+[
+  {
+    "numero_os": "OS-TESTE-001",
+    "defeito_relatado": "Smartphone não liga após queda",
+    "cliente_nome": "João Silva Teste",
+    "cliente_telefone": "(11) 99999-8888",
+    "cliente_email": "joao.teste@email.com",
+    "marca": "Samsung",
+    "modelo": "Galaxy S21",
+    "numero_serie": "SN123456789",
+    "status": "Em andamento",
+    "valor_final": 250.00,
+    "data_entrada": "2024-01-15",
+    "observacoes": "Tela trincada, possível problema na bateria",
+    "garantia_meses": 3
+  },
+  {
+    "numero_os": "OS-TESTE-002", 
+    "defeito_relatado": "Notebook aquecendo muito",
+    "cliente_nome": "Maria Santos Teste",
+    "cliente_telefone": "(11) 98888-7777",
+    "marca": "Dell",
+    "modelo": "Inspiron 15",
+    "status": "Orçamento",
+    "valor_orcado": 180.00,
+    "data_entrada": "2024-01-16",
+    "observacoes": "Ventilador fazendo ruído"
+  },
+  {
+    "defeito_relatado": "Impressora não reconhece tinta",
+    "cliente_nome": "Pedro Costa Teste",
+    "cliente_telefone": "(11) 97777-6666", 
+    "marca": "HP",
+    "modelo": "DeskJet 2720",
+    "status": "Concluído",
+    "valor_final": 85.00,
+    "data_entrada": "2024-01-14",
+    "data_conclusao": "2024-01-16"
+  }
+]

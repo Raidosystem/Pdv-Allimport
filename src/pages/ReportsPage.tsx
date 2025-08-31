@@ -14,6 +14,9 @@ import {
   ArrowDown
 } from 'lucide-react'
 import { reportsService } from '../services/reportsService'
+import { debugDatabase } from '../utils/debugDatabase'
+import { createSampleData } from '../utils/createSampleData'
+import { testSupabaseConnection } from '../utils/testSupabase'
 import { SalesTabComponent } from '../components/reports/SalesTab'
 import { FinancialTab } from '../components/reports/FinancialTab'
 import { StockTab } from '../components/reports/StockTab'
@@ -30,6 +33,7 @@ export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [loading, setLoading] = useState(false)
   const [dashboardData, setDashboardData] = useState<DashboardMetrics | null>(null)
+  const [debugInfo, setDebugInfo] = useState<string>('')
   // const [showNotifications, setShowNotifications] = useState(false)
   // const [showGoals, setShowGoals] = useState(false)
   const [filters, setFilters] = useState<ReportFilters>({
@@ -39,16 +43,23 @@ export default function ReportsPage() {
 
   // Carrega métricas do dashboard
   useEffect(() => {
+    testSupabaseConnection() // Teste básico
+    debugDatabase() // Debug da base de dados
     loadDashboard()
   }, [])
 
   const loadDashboard = async () => {
     try {
       setLoading(true)
+      console.log('🔄 Carregando dashboard...')
+      setDebugInfo('Carregando dashboard...')
       const data = await reportsService.getDashboardMetrics()
+      console.log('✅ Dashboard carregado:', data)
+      setDebugInfo('Dashboard carregado: ' + JSON.stringify(data, null, 2))
       setDashboardData(data)
     } catch (error: any) {
-      console.error('Erro ao carregar dashboard:', error)
+      console.error('❌ Erro ao carregar dashboard:', error)
+      setDebugInfo('ERRO: ' + error.message)
       toast.error('Erro ao carregar dashboard: ' + error.message)
     } finally {
       setLoading(false)
@@ -106,6 +117,21 @@ export default function ReportsPage() {
                 <Download className="h-4 w-4" />
                 <span>Exportar</span>
               </button>
+              <button 
+                onClick={() => debugDatabase()}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <span>Debug DB</span>
+              </button>
+              <button 
+                onClick={async () => {
+                  await createSampleData()
+                  loadDashboard() // Recarregar após criar dados
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <span>Criar Dados</span>
+              </button>
             </div>
           </div>
 
@@ -134,12 +160,53 @@ export default function ReportsPage() {
 
       {/* Content */}
       <div className="p-6">
+        {/* Debug Panel - Temporary */}
+        {debugInfo && (
+          <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+            <h3 className="font-bold mb-2">Debug Info:</h3>
+            <pre className="text-xs overflow-auto max-h-40">{debugInfo}</pre>
+          </div>
+        )}
         {activeTab === 'dashboard' && (
-          <DashboardTab 
-            data={dashboardData} 
-            loading={loading} 
-            formatCurrency={formatCurrency}
-          />
+          <div>
+            <div className="mb-4">
+              <button 
+                onClick={async () => {
+                  const test = await testSupabaseConnection()
+                  setDebugInfo('Teste Supabase: ' + JSON.stringify(test, null, 2))
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded mr-2"
+              >
+                Testar Conexão
+              </button>
+              <button 
+                onClick={async () => {
+                  await createSampleData()
+                  loadDashboard()
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded mr-2"
+              >
+                Criar Dados de Teste
+              </button>
+              <button 
+                onClick={() => loadDashboard()}
+                className="px-4 py-2 bg-yellow-600 text-white rounded mr-2"
+              >
+                Recarregar Dashboard
+              </button>
+              <button 
+                onClick={() => window.location.href = '/login'}
+                className="px-4 py-2 bg-purple-600 text-white rounded"
+              >
+                Ir para Login
+              </button>
+            </div>
+            <DashboardTab 
+              data={dashboardData} 
+              loading={loading} 
+              formatCurrency={formatCurrency}
+            />
+          </div>
         )}
         {activeTab === 'vendas' && (
           <SalesTabComponent 

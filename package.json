@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "npm cache clean --force && vite",
+    "dev:debug": "vite --debug",
     "build": "tsc -b tsconfig.deploy.json && vite build",
     "build:gh-pages": "VITE_BASE_URL=/Pdv-Allimport/ tsc -b tsconfig.deploy.json && vite build --base=/Pdv-Allimport/",
     "lint": "eslint .",

@@ -6,6 +6,7 @@ import { useAuth } from '../../modules/auth/AuthContext'
 import { useSubscription } from '../../hooks/useSubscription'
 import { mercadoPagoApiService as mercadoPagoService } from '../../services/mercadoPagoApiService'
 import { PAYMENT_PLANS } from '../../types/subscription'
+import { PaymentDebugger } from '../debug/PaymentDebugger'
 import toast from 'react-hot-toast'
 
 interface PaymentPageProps {
@@ -551,6 +552,11 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               🔄 Verificar Status da Assinatura
             </Button>
           </div>
+        </div>
+
+        {/* Debug do Pagamento */}
+        <div className="mt-8">
+          <PaymentDebugger />
         </div>
       </div>
     </div>

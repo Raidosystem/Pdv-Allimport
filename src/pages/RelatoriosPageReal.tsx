@@ -407,7 +407,7 @@ export default function RelatoriosPageReal() {
             </div>
             <div className="bg-yellow-50 p-4 rounded-lg">
               <p className="text-sm text-yellow-600">OS Abertas</p>
-              <p className="text-2xl font-bold text-yellow-800">{relatorioOS.osAbertas}</p>
+              <p className="text-2xl font-bold text-yellow-800">{relatorioOS.os_abertas}</p>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg">
               <p className="text-sm text-purple-600">Faturamento</p>
@@ -485,8 +485,8 @@ export default function RelatoriosPageReal() {
               <p className="text-2xl font-bold text-purple-800">{formatCurrency(relatorioFinanceiro.receita_total * 0.3)}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Transações</p>
-              <p className="text-2xl font-bold text-gray-800">{relatorioFinanceiro.totalTransacoes}</p>
+              <p className="text-sm text-gray-600">Margem de Lucro</p>
+              <p className="text-2xl font-bold text-gray-800">{relatorioFinanceiro.margem_lucro.toFixed(1)}%</p>
             </div>
           </div>
         </div>
@@ -497,7 +497,7 @@ export default function RelatoriosPageReal() {
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={relatorioFinanceiro.formasPagamento}
+                data={relatorioFinanceiro.formas_pagamento}
                 cx="50%"
                 cy="50%"
                 labelLine={false}

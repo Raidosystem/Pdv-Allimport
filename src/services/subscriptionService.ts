@@ -30,6 +30,46 @@ export class SubscriptionService {
     }
   }
 
+  // Verificar status completo via API
+  static async checkFullStatus(userEmail: string): Promise<any> {
+    try {
+      const response = await fetch(`/api/subscription/status?email=${encodeURIComponent(userEmail)}`)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao verificar status completo:', error)
+      throw error
+    }
+  }
+
+  // Forçar ativação de assinatura
+  static async forceActivation(userEmail: string, paymentId?: string): Promise<any> {
+    try {
+      const response = await fetch('/api/subscription/activate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          payment_id: paymentId
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao forçar ativação:', error)
+      throw error
+    }
+  }
+
   // Ativar período de teste (chamado pelo admin)
   static async activateTrial(userEmail: string) {
     try {

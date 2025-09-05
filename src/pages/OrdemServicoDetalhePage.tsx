@@ -20,7 +20,7 @@ import { Card } from '../components/ui/Card'
 import { ModalEntregaOS } from '../components/ordem-servico/ModalEntregaOS'
 import { ordemServicoService } from '../services/ordemServicoService'
 import type { OrdemServico, StatusOS } from '../types/ordemServico'
-import { STATUS_COLORS, TIPO_ICONS } from '../types/ordemServico'
+import { STATUS_COLORS, getTipoIcon } from '../types/ordemServico'
 
 export function OrdemServicoDetalhePage() {
   const { id } = useParams<{ id: string }>()
@@ -323,7 +323,7 @@ export function OrdemServicoDetalhePage() {
         {/* Informações do Aparelho */}
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl">{TIPO_ICONS[ordem.tipo]}</span>
+            <span className="text-xl">{getTipoIcon(ordem.tipo)}</span>
             <h2 className="text-lg font-semibold text-gray-900">Informações do Aparelho</h2>
           </div>
           

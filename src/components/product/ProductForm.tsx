@@ -8,6 +8,7 @@ import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
 import { useProducts } from '../../hooks/useProducts'
 import { CategorySelector } from './CategorySelector'
+import { capitalizeWords } from '../../utils/textUtils'
 
 const ProductFormSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -104,7 +105,10 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               render={({ field: { onChange, value } }) => (
                 <Input
                   value={value}
-                  onChange={onChange}
+                  onChange={(e) => {
+                    const capitalized = capitalizeWords(e.target.value)
+                    onChange(capitalized)
+                  }}
                   placeholder="Nome do produto"
                   error={getErrorMessage(errors.nome)}
                 />
@@ -122,7 +126,10 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               render={({ field: { onChange, value } }) => (
                 <Input
                   value={value}
-                  onChange={onChange}
+                  onChange={(e) => {
+                    const capitalized = capitalizeWords(e.target.value)
+                    onChange(capitalized)
+                  }}
                   placeholder="Código interno"
                   error={getErrorMessage(errors.codigo)}
                 />

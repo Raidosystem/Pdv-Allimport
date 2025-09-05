@@ -26,7 +26,7 @@ import type { Cliente } from '../types/cliente'
 
 // Schema de validação
 const ordemServicoEditSchema = z.object({
-  tipo: z.enum(['Celular', 'Notebook', 'Console', 'Tablet', 'Outro']),
+  tipo: z.string().min(1, 'Tipo de equipamento é obrigatório'),
   marca: z.string().min(2, 'Marca é obrigatória'),
   modelo: z.string().min(2, 'Modelo é obrigatório'),
   cor: z.string().optional(),
@@ -277,7 +277,7 @@ export function OrdemServicoEditPage() {
               <select
                 {...register('tipo')}
                 onChange={(e) => {
-                  const valor = e.target.value as TipoEquipamento
+                  const valor = e.target.value
                   setValue('tipo', valor)
                   setMostrarCampoPersonalizado(valor === 'Outro')
                 }}

@@ -14,6 +14,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { ClienteService } from '../../services/clienteService'
 import { formatarTelefone, formatarCpfCnpj, validarCpfCnpj } from '../../utils/formatacao'
+import { handleCapitalizeInput, handleCapitalizeTextarea } from '../../utils/textUtils'
 import type { Cliente, ClienteInput } from '../../types/cliente'
 
 // Schema de validação para o formulário de cliente completo
@@ -262,6 +263,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                 <input
                   {...register('nome')}
                   type="text"
+                  onChange={(e) => {
+                    handleCapitalizeInput(e)
+                    setValue('nome', e.target.value)
+                  }}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nome completo"
                 />
@@ -396,6 +401,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                 <input
                   {...register('logradouro')}
                   type="text"
+                  onChange={(e) => {
+                    handleCapitalizeInput(e)
+                    setValue('logradouro', e.target.value)
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="das Flores, Paulista, etc."
                 />
@@ -425,6 +434,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                 <input
                   {...register('complemento')}
                   type="text"
+                  onChange={(e) => {
+                    handleCapitalizeInput(e)
+                    setValue('complemento', e.target.value)
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Apto 101, Bloco A"
                 />
@@ -442,6 +455,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                 <input
                   {...register('bairro')}
                   type="text"
+                  onChange={(e) => {
+                    handleCapitalizeInput(e)
+                    setValue('bairro', e.target.value)
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Centro"
                 />
@@ -454,6 +471,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
                 <input
                   {...register('cidade')}
                   type="text"
+                  onChange={(e) => {
+                    handleCapitalizeInput(e)
+                    setValue('cidade', e.target.value)
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="São Paulo"
                 />
@@ -509,6 +530,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
               <input
                 {...register('ponto_referencia')}
                 type="text"
+                onChange={(e) => {
+                  handleCapitalizeInput(e)
+                  setValue('ponto_referencia', e.target.value)
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Próximo ao shopping, em frente à farmácia"
               />
@@ -540,6 +565,10 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
           <textarea
             {...register('observacoes')}
             rows={3}
+            onChange={(e) => {
+              handleCapitalizeTextarea(e)
+              setValue('observacoes', e.target.value)
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Observações sobre o cliente..."
           />

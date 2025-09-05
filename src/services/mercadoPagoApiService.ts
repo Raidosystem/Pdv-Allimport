@@ -130,10 +130,11 @@ class MercadoPagoApiService {
         console.log('🎯 Ambiente produção detectado - usando API do Vercel...');
         try {
           console.log('✅ Fazendo requisição PIX via API Vercel...');
-          const response = await this.makeApiCall('/api/pix', 'POST', {
+          const response = await this.makeApiCall('/api/payments/pix', 'POST', {
+            userEmail: data.userEmail,
+            userName: data.userName,
             amount: data.amount,
-            description: data.description,
-            email: data.userEmail
+            description: data.description
           });
 
           console.log('🔍 Resposta da API PIX:', response);
@@ -187,7 +188,12 @@ class MercadoPagoApiService {
       }
 
       console.log('✅ API disponível! Fazendo requisição PIX real...');
-      const response = await this.makeApiCall('/api/pix', 'POST', data);
+      const response = await this.makeApiCall('/api/payments/pix', 'POST', {
+        userEmail: data.userEmail,
+        userName: data.userName,
+        amount: data.amount,
+        description: data.description
+      });
 
       return {
         success: true,
@@ -307,10 +313,11 @@ class MercadoPagoApiService {
       }
 
       console.log('✅ API disponível! Fazendo requisição real...');
-      const response = await this.makeApiCall('/api/preference', 'POST', {
+      const response = await this.makeApiCall('/api/payments/preference', 'POST', {
+        userEmail: data.userEmail,
+        userName: data.userName,
         amount: data.amount,
-        description: data.description || 'Assinatura PDV Allimport',
-        email: data.userEmail
+        planName: data.description || 'Assinatura PDV Allimport'
       });
 
       return {
@@ -353,7 +360,7 @@ class MercadoPagoApiService {
         return { status: 'pending', approved: false };
       }
 
-      const response = await this.makeApiCall(`/api/payment-status/${paymentIdStr}`);
+      const response = await this.makeApiCall(`/api/payments/${paymentIdStr}/status`);
       
       return {
         status: response.status || 'unknown',

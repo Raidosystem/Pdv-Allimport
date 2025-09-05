@@ -283,6 +283,38 @@ class OrdemServicoService {
     return data
   }
 
+  // Buscar equipamentos únicos de um cliente
+  async buscarEquipamentosCliente(clienteId: string): Promise<any[]> {
+    await requireAuth()
+
+    const { data, error } = await supabase
+      .from('ordens_servico')
+      .select('tipo, marca, modelo, cor, numero_serie')
+      .eq('cliente_id', clienteId)
+      .order('criado_em', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar equipamentos do cliente:', error)
+      return []
+    }
+
+    // Remover duplicatas baseado em tipo+marca+modelo
+    const equipamentosUnicos = data?.reduce((acc: any[], current: any) => {
+      const chave = `${current.tipo}-${current.marca}-${current.modelo}`.toLowerCase()
+      const jaExiste = acc.find(eq => 
+        `${eq.tipo}-${eq.marca}-${eq.modelo}`.toLowerCase() === chave
+      )
+      
+      if (!jaExiste && current.tipo && current.marca && current.modelo) {
+        acc.push(current)
+      }
+      
+      return acc
+    }, []) || []
+
+    return equipamentosUnicos
+  }
+
   // Buscar clientes por termo
   async buscarClientes(termo: string): Promise<Cliente[]> {
     await requireAuth()

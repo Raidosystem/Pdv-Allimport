@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Settings, Users, Shield, Database, Server, Activity, Lock, Plus, Edit, Trash2, CheckCircle, XCircle, AlertTriangle, Save, Download, Upload, FileText, Cloud } from 'lucide-react'
+import { Settings, Users, Shield, Database, Server, Activity, Lock, Plus, Edit, Trash2, CheckCircle, XCircle, AlertTriangle, Save, Download, Upload, FileText, Cloud, FileDown } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import toast from 'react-hot-toast'
 
 type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'seguranca'
 
@@ -45,6 +47,7 @@ interface LogSistema {
 
 export function AdministracaoPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
+  const [importingBackupOS, setImportingBackupOS] = useState(false)
   // Estados comentados para evitar warnings - podem ser implementados futuramente
   // const [searchTerm, setSearchTerm] = useState('')
   // const [selectedUser, setSelectedUser] = useState<Usuario | null>(null)
@@ -144,42 +147,83 @@ export function AdministracaoPage() {
   // Funções de Backup
   const handleExportBackup = async () => {
     try {
+      toast.loading('Gerando backup do sistema...', { id: 'export-backup' })
+
       // Simular dados do sistema para backup
       const backupData = {
         version: '1.0',
         timestamp: new Date().toISOString(),
+        exported_by: 'Admin System',
+        system_info: {
+          name: 'PDV Allimport',
+          version: '2.2.3',
+          environment: process.env.NODE_ENV || 'production'
+        },
         data: {
           users: usuariosMock,
           permissions: permissoesMock,
           configurations: configuracoesSystema,
           logs: logsSistema.slice(0, 100), // Últimos 100 logs
-          stats: stats
+          stats: stats,
+          // Adicionar mais tabelas conforme necessário
+          // products: [], // TODO: Adicionar produtos
+          // customers: [], // TODO: Adicionar clientes
+          // sales: [], // TODO: Adicionar vendas
         },
         metadata: {
-          exported_by: 'Admin',
-          system: 'PDV Allimport',
-          total_records: usuariosMock.length + permissoesMock.length + configuracoesSystema.length + logsSistema.length
+          export_date: new Date().toISOString(),
+          total_users: usuariosMock.length,
+          total_permissions: permissoesMock.length,
+          total_configurations: configuracoesSystema.length,
+          total_logs: logsSistema.length,
+          total_records: usuariosMock.length + permissoesMock.length + configuracoesSystema.length + logsSistema.length,
+          file_size_mb: 0 // Será calculado após stringificar
         }
       }
 
-      // Converter para JSON
+      // Converter para JSON formatado
       const jsonString = JSON.stringify(backupData, null, 2)
       
+      // Calcular tamanho do arquivo
+      const sizeInMB = (new Blob([jsonString]).size / (1024 * 1024)).toFixed(2)
+      backupData.metadata.file_size_mb = parseFloat(sizeInMB)
+      
+      // Re-stringify com o tamanho atualizado
+      const finalJsonString = JSON.stringify(backupData, null, 2)
+      
       // Criar blob e fazer download
-      const blob = new Blob([jsonString], { type: 'application/json' })
+      const blob = new Blob([finalJsonString], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`
+      
+      // Nome do arquivo com timestamp
+      const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '')
+      const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '')
+      link.download = `backup-pdv-allimport-${timestamp}-${time}.json`
+      
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      alert('Backup exportado com sucesso!')
-    } catch (error) {
-      console.error('Erro ao exportar backup:', error)
-      alert('Erro ao exportar backup. Verifique o console para mais detalhes.')
+      toast.success(
+        `Backup exportado com sucesso!\n\n` +
+        `📁 Arquivo: backup-pdv-allimport-${timestamp}-${time}.json\n` +
+        `📊 Registros: ${backupData.metadata.total_records}\n` +
+        `💾 Tamanho: ${sizeInMB} MB`,
+        { 
+          id: 'export-backup',
+          duration: 6000
+        }
+      )
+
+    } catch (error: any) {
+      console.error('❌ Erro ao exportar backup:', error)
+      toast.error(
+        `Erro ao exportar backup: ${error.message || 'Erro desconhecido'}`,
+        { id: 'export-backup' }
+      )
     }
   }
 
@@ -187,33 +231,86 @@ export function AdministracaoPage() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    if (file.type !== 'application/json') {
-      alert('Por favor, selecione um arquivo JSON válido.')
+    // Validações de arquivo
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+      toast.error('Por favor, selecione um arquivo JSON válido.')
       return
     }
+
+    if (file.size > 50 * 1024 * 1024) { // 50MB limite
+      toast.error('Arquivo muito grande. O limite é 50MB.')
+      return
+    }
+
+    toast.loading('Importando backup do sistema...', { id: 'import-backup' })
 
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
         const backupData = JSON.parse(e.target?.result as string)
         
-        // Validar estrutura básica do backup
-        if (!backupData.version || !backupData.data) {
-          throw new Error('Estrutura de backup inválida')
+        // Validar estrutura completa do backup
+        if (!backupData.version || !backupData.data || !backupData.timestamp) {
+          throw new Error('Estrutura de backup inválida - campos obrigatórios ausentes')
         }
 
-        console.log('Backup importado:', backupData)
-        alert(`Backup importado com sucesso!\n\nVersão: ${backupData.version}\nData: ${new Date(backupData.timestamp).toLocaleString()}\nRegistros: ${backupData.metadata?.total_records || 'N/A'}`)
+        // Validar versão compatível
+        if (backupData.version !== '1.0') {
+          throw new Error(`Versão de backup incompatível: ${backupData.version}. Versão suportada: 1.0`)
+        }
+
+        // Validar dados essenciais
+        const { data } = backupData
+        if (!data.users && !data.permissions && !data.configurations) {
+          throw new Error('Backup não contém dados válidos para importação')
+        }
+
+        console.log('✅ Backup importado com sucesso:', backupData)
         
-        // Aqui você implementaria a lógica real de importação
-        // Por exemplo, atualizar estados ou enviar para o backend
+        // Estatísticas do backup
+        const totalUsuarios = data.users?.length || 0
+        const totalPermissoes = data.permissions?.length || 0
+        const totalConfiguracoes = data.configurations?.length || 0
+        const totalLogs = data.logs?.length || 0
+        const dataBackup = new Date(backupData.timestamp).toLocaleString('pt-BR')
         
-      } catch (error) {
-        console.error('Erro ao importar backup:', error)
-        alert('Erro ao importar backup. Arquivo inválido ou corrompido.')
+        toast.success(
+          `Backup importado com sucesso!\n\n` +
+          `📅 Data: ${dataBackup}\n` +
+          `👥 Usuários: ${totalUsuarios}\n` +
+          `🔐 Permissões: ${totalPermissoes}\n` +
+          `⚙️ Configurações: ${totalConfiguracoes}\n` +
+          `📋 Logs: ${totalLogs}`,
+          { 
+            id: 'import-backup',
+            duration: 8000
+          }
+        )
+        
+        // TODO: Implementar lógica real de importação
+        // Aqui você salvaria os dados no Supabase:
+        // - Inserir usuários em auth.users
+        // - Inserir permissões na tabela de permissões
+        // - Atualizar configurações do sistema
+        // - Registrar log da importação
+        
+      } catch (error: any) {
+        console.error('❌ Erro ao importar backup:', error)
+        toast.error(
+          `Erro ao importar backup: ${error.message || 'Arquivo inválido ou corrompido'}`,
+          { id: 'import-backup' }
+        )
       }
     }
+
+    reader.onerror = () => {
+      toast.error('Erro ao ler arquivo de backup', { id: 'import-backup' })
+    }
+
     reader.readAsText(file)
+    
+    // Limpar o input para permitir reimportação do mesmo arquivo
+    event.target.value = ''
   }
 
   const handleGenerateReport = () => {
@@ -241,6 +338,146 @@ export function AdministracaoPage() {
     URL.revokeObjectURL(url)
 
     alert('Relatório do sistema gerado com sucesso!')
+  }
+
+  // Função para importar backup de ordens de serviço
+  const importarBackupOS = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Reset input para permitir re-upload do mesmo arquivo
+    event.target.value = ''
+
+    setImportingBackupOS(true)
+    toast.loading('Preparando importação de backup...', { id: 'backup-os' })
+
+    try {
+      const text = await file.text()
+      const backupData = JSON.parse(text)
+
+      console.log('📂 Backup carregado:', backupData)
+
+      // Detectar formato do backup
+      let ordensParaImportar = []
+
+      // Formato 1: Array direto
+      if (Array.isArray(backupData)) {
+        ordensParaImportar = backupData
+      }
+      // Formato 2: Objeto com propriedade "ordens" ou similares
+      else if (backupData.ordens) {
+        ordensParaImportar = backupData.ordens
+      }
+      else if (backupData.service_orders) {
+        ordensParaImportar = backupData.service_orders
+      }
+      else if (backupData.data?.service_orders) {
+        ordensParaImportar = backupData.data.service_orders
+      }
+      // Formato 3: Objeto com chaves que parecem ser ordens
+      else if (typeof backupData === 'object') {
+        ordensParaImportar = Object.values(backupData).filter((item: any) => 
+          item && typeof item === 'object' && (item.cliente_nome || item.equipamento || item.defeito)
+        )
+      }
+
+      if (!ordensParaImportar.length) {
+        throw new Error('Nenhuma ordem de serviço encontrada no arquivo')
+      }
+
+      console.log(`📋 ${ordensParaImportar.length} ordens encontradas`)
+      toast.success(`${ordensParaImportar.length} ordens encontradas. Importando...`, { id: 'backup-os' })
+
+      // Obter o usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      let sucessos = 0
+      let erros: string[] = []
+
+      // Importar cada ordem individualmente
+      for (const ordem of ordensParaImportar) {
+        try {
+          console.log('🔄 Processando ordem:', ordem)
+
+          // Mapear campos do backup para o formato do banco
+          const ordemFormatada = {
+            id: ordem.id || crypto.randomUUID(),
+            user_id: user.id, // ISOLAMENTO POR USUÁRIO
+            numero_os: ordem.numero_os || ordem.numeroOS || ordem.os || `OS${Date.now()}`,
+            client_name: ordem.cliente_nome || ordem.clienteNome || ordem.cliente || ordem.name || 'Cliente Importado',
+            client_phone: ordem.cliente_telefone || ordem.clienteTelefone || ordem.telefone || ordem.phone || null,
+            equipment_type: ordem.tipo_equipamento || ordem.tipoEquipamento || ordem.tipo || ordem.equipamento || 'Equipamento',
+            equipment_brand: ordem.marca || ordem.brand || 'Marca',
+            equipment_model: ordem.modelo || ordem.model || 'Modelo',
+            equipment_serial: ordem.serie || ordem.serial || null,
+            defect_description: ordem.defeito_relatado || ordem.defeitoRelatado || ordem.defeito || ordem.problema || ordem.issue || 'Defeito relatado',
+            technical_observations: ordem.observacoes_tecnicas || ordem.observacoesTecnicas || ordem.observacoes || null,
+            estimated_value: parseFloat(ordem.valor_orcado || ordem.valorOrcado || ordem.orcamento || ordem.price || ordem.valor || '0'),
+            service_status: mapearStatus(ordem.status || ordem.situacao || ordem.state || 'Em análise'),
+            warranty_months: parseInt(ordem.garantia_meses || ordem.garantiaMeses || ordem.garantia || '3'),
+            created_at: ordem.created_at || ordem.data_criacao || ordem.dataCriacao || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+
+          console.log('📝 Ordem formatada:', ordemFormatada)
+
+          // Inserir no banco
+          const { error } = await supabase
+            .from('service_orders')
+            .insert([ordemFormatada])
+
+          if (error) {
+            console.error('❌ Erro ao inserir ordem:', error)
+            erros.push(`${ordemFormatada.numero_os}: ${error.message}`)
+          } else {
+            sucessos++
+            console.log(`✅ Ordem ${ordemFormatada.numero_os} importada com sucesso`)
+          }
+
+        } catch (error: any) {
+          console.error('❌ Erro ao processar ordem:', error)
+          erros.push(`Ordem ${ordem.numero_os || 'desconhecida'}: ${error.message}`)
+        }
+      }
+
+      // Exibir resultado
+      if (sucessos > 0) {
+        toast.success(`✅ ${sucessos} ordens importadas com sucesso!`, { id: 'backup-os', duration: 5000 })
+        
+        if (erros.length > 0) {
+          console.warn('⚠️ Alguns erros ocorreram:', erros)
+          toast.error(`⚠️ ${erros.length} ordens falharam na importação`, { duration: 5000 })
+        }
+      } else {
+        toast.error('❌ Nenhuma ordem foi importada', { id: 'backup-os' })
+      }
+
+      console.log(`📊 Resultado final: ${sucessos} sucessos, ${erros.length} erros`)
+
+    } catch (error: any) {
+      console.error('❌ Erro ao importar backup:', error)
+      toast.error('Erro ao importar backup: ' + error.message, { id: 'backup-os' })
+    } finally {
+      setImportingBackupOS(false)
+    }
+  }
+
+  // Função auxiliar para mapear status
+  const mapearStatus = (statusOriginal: string): string => {
+    const statusMap: { [key: string]: string } = {
+      'Orçamento': 'Em análise',
+      'Em andamento': 'Em conserto', 
+      'Conserto': 'Em conserto',
+      'Concluído': 'Pronto',
+      'Concluido': 'Pronto',
+      'Entregue': 'Entregue',
+      'Cancelado': 'Cancelado'
+    }
+
+    return statusMap[statusOriginal] || statusOriginal || 'Em análise'
   }
 
   // Card de Estatística
@@ -612,7 +849,7 @@ export function AdministracaoPage() {
       {/* Ações de Backup */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h4 className="text-lg font-semibold text-gray-900 mb-4">Ações de Backup</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Exportar Backup */}
           <button
@@ -640,6 +877,29 @@ export function AdministracaoPage() {
               className="hidden"
             />
           </label>
+
+          {/* Importar Backup de Ordens de Serviço */}
+          <div className="relative">
+            <label className="flex flex-col items-center p-6 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors group cursor-pointer">
+              <FileDown className="h-12 w-12 text-orange-500 group-hover:text-orange-600 mb-3" />
+              <span className="text-lg font-medium text-gray-900 mb-1">Backup OS</span>
+              <span className="text-sm text-gray-600 text-center">
+                Importar ordens de serviço a partir de arquivo JSON
+              </span>
+              <input
+                type="file"
+                accept=".json"
+                onChange={importarBackupOS}
+                className="hidden"
+                disabled={importingBackupOS}
+              />
+            </label>
+            {importingBackupOS && (
+              <div className="absolute inset-0 bg-orange-100 bg-opacity-75 rounded-lg flex items-center justify-center">
+                <span className="text-orange-600 font-medium">Importando...</span>
+              </div>
+            )}
+          </div>
 
           {/* Gerar Relatório */}
           <button

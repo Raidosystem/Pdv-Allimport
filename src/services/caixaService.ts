@@ -133,7 +133,8 @@ class CaixaService {
         return null;
       }
 
-      return this.calcularResumoCaixa(data);
+      // Incluir vendas no cálculo
+      return await this.incluirVendasNoCaixa(this.calcularResumoCaixa(data));
     } catch (error) {
       if (error instanceof Error && error.message.includes('autenticado')) {
         throw error;
@@ -141,6 +142,69 @@ class CaixaService {
       
       console.error('Erro ao buscar caixa atual:', error);
       throw new Error('Erro ao buscar caixa atual');
+    }
+  }
+
+  // ===== INCLUIR VENDAS NO CÁLCULO DO CAIXA =====
+  
+  private async incluirVendasNoCaixa(caixa: CaixaCompleto): Promise<CaixaCompleto> {
+    try {
+      console.log('🔍 Buscando vendas para caixa:', caixa.id);
+      
+      // UUID do usuário assistenciaallimport10@gmail.com
+      const USER_ID_ASSISTENCIA = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
+      
+      // Buscar vendas do caixa usando os campos corretos com filtro por usuário
+      const { data: vendas, error } = await supabase
+        .from('vendas')
+        .select('total_amount, payment_method, created_at')
+        .eq('cash_register_id', caixa.id)
+        .eq('user_id', USER_ID_ASSISTENCIA)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      console.log('📊 Query vendas - Caixa ID:', caixa.id, 'User ID:', USER_ID_ASSISTENCIA);
+      console.log('📊 Vendas encontradas:', vendas?.length || 0, 'Error:', error);
+      
+      if (error) {
+        console.error('❌ Erro na query de vendas:', error);
+      }
+
+      let total_vendas = 0;
+      if (!error && vendas && vendas.length > 0) {
+        total_vendas = vendas.reduce((sum, venda) => sum + (venda.total_amount || 0), 0);
+        console.log('💰 Total de vendas calculado:', total_vendas);
+        console.log('📋 Detalhes das vendas:', vendas.map(v => ({
+          valor: v.total_amount,
+          pagamento: v.payment_method,
+          data: v.created_at
+        })));
+      } else {
+        console.log('⚠️ Nenhuma venda encontrada para este caixa');
+      }
+
+      // Recalcular totais incluindo vendas
+      const total_entradas = (caixa.total_entradas || 0) + total_vendas;
+      const saldo_atual = (caixa.valor_inicial || 0) + total_entradas - (caixa.total_saidas || 0);
+
+      console.log('📈 Resumo do caixa atualizado:', {
+        valor_inicial: caixa.valor_inicial,
+        total_entradas_anteriores: caixa.total_entradas,
+        total_vendas,
+        total_entradas_final: total_entradas,
+        total_saidas: caixa.total_saidas,
+        saldo_atual
+      });
+
+      return {
+        ...caixa,
+        total_entradas,
+        total_vendas,
+        saldo_atual
+      };
+    } catch (error) {
+      console.error('❌ Erro ao incluir vendas no caixa:', error);
+      return caixa; // Retorna caixa sem vendas em caso de erro
     }
   }
 

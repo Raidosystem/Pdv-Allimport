@@ -32,7 +32,10 @@ export interface OrdemServico {
   valor?: number // Valor final da OS
   valor_final?: number
   mao_de_obra?: number // Custo da mão de obra
-  forma_pagamento?: string // Forma de pagamento utilizada
+  forma_pagamento?: string // Forma de pagamento principal
+  forma_pagamento_2?: string // Segunda forma de pagamento
+  valor_pagamento_1?: number // Valor do primeiro pagamento
+  valor_pagamento_2?: number // Valor do segundo pagamento
   
   // Garantia
   garantia_meses?: number
@@ -47,12 +50,7 @@ export interface OrdemServico {
   cliente?: Cliente
 }
 
-export type TipoEquipamento = 
-  | 'Celular' 
-  | 'Notebook' 
-  | 'Console' 
-  | 'Tablet' 
-  | 'Outro'
+export type TipoEquipamento = string
 
 export type StatusOS = 
   | 'Em análise'
@@ -82,6 +80,9 @@ export interface NovaOrdemServicoForm {
   cliente_nome?: string
   cliente_telefone?: string
   cliente_email?: string
+  cliente_endereco?: string
+  cliente_cidade?: string
+  cliente_estado?: string
   
   // Aparelho
   tipo: TipoEquipamento
@@ -91,13 +92,26 @@ export interface NovaOrdemServicoForm {
   numero_serie?: string
   
   // Detalhes
-  checklist: ChecklistOS
+  checklist?: ChecklistOS
   observacoes?: string
   defeito_relatado?: string
+  descricao_problema?: string
   
-  // Prazos
+  // Prazos e Status
+  data_entrada?: string
   data_previsao?: string
+  status?: StatusOS
+  
+  // Financeiro
   valor_orcamento?: number
+  mao_de_obra?: number
+  valor_total?: number
+  forma_pagamento?: string
+  forma_pagamento_2?: string
+  valor_pagamento_1?: number
+  valor_pagamento_2?: number
+  pago?: boolean
+  garantia_meses?: number
 }
 
 export interface FiltrosOS {
@@ -121,10 +135,24 @@ export const STATUS_COLORS: Record<StatusOS, string> = {
 }
 
 // Ícones para tipos de equipamento
-export const TIPO_ICONS: Record<TipoEquipamento, string> = {
-  'Celular': '📱',
-  'Notebook': '💻',
-  'Console': '🎮',
-  'Tablet': '📱',
-  'Outro': '🔧'
+export const getTipoIcon = (tipo: string): string => {
+  const icons: Record<string, string> = {
+    'Celular': '📱',
+    'Notebook': '💻',
+    'Console': '🎮',
+    'Tablet': '📱',
+    'Outro': '🔧'
+  }
+  
+  // Busca exata ou por palavras similares
+  const tipoLower = tipo.toLowerCase()
+  
+  if (icons[tipo]) return icons[tipo]
+  if (tipoLower.includes('celular') || tipoLower.includes('smartphone') || tipoLower.includes('telefone')) return '📱'
+  if (tipoLower.includes('notebook') || tipoLower.includes('laptop') || tipoLower.includes('computador')) return '💻'
+  if (tipoLower.includes('console') || tipoLower.includes('game') || tipoLower.includes('playstation') || tipoLower.includes('xbox')) return '🎮'
+  if (tipoLower.includes('tablet') || tipoLower.includes('ipad')) return '📱'
+  
+  // Ícone padrão
+  return '🔧'
 }

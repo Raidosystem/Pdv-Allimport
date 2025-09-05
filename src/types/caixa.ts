@@ -30,6 +30,7 @@ export interface CaixaCompleto extends Caixa {
   movimentacoes_caixa?: MovimentacaoCaixa[];
   total_entradas: number;
   total_saidas: number;
+  total_vendas?: number;
   saldo_atual: number;
   total_movimentacoes: number;
 }

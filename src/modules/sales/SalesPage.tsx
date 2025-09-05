@@ -167,6 +167,12 @@ export function SalesPage() {
         }))
       }
 
+      console.log('🛒 Dados da venda sendo criada:', {
+        user_id: user.id,
+        total_amount: totalAmount,
+        items_count: items.length
+      })
+
       // Criar venda
       const sale = await salesService.create(saleData)
 

@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
 import { useClientes } from '../../hooks/useClientes'
-import type { Cliente } from '../../types/cliente'
+import type { Cliente, ClienteFilters } from '../../types/cliente'
 
 type ViewMode = 'list' | 'form' | 'view'
 
@@ -20,6 +20,16 @@ export function ClientesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null)
   const [clienteVisualizando, setClienteVisualizando] = useState<Cliente | null>(null)
+
+  // Carregar clientes na inicialização
+  useEffect(() => {
+    carregarClientes()
+  }, [])
+
+  // Função para aplicar filtros de busca
+  const handleFiltersChange = async (filtros: ClienteFilters) => {
+    await carregarClientes(filtros)
+  }
 
   // Estatísticas dos clientes
   const clientesAtivos = clientes.filter(c => c.ativo).length
@@ -217,7 +227,7 @@ export function ClientesPage() {
           onView={handleVisualizarCliente}
           onDelete={handleDeleteCliente}
           onToggleStatus={handleToggleStatus}
-          onFiltersChange={() => {}}
+          onFiltersChange={handleFiltersChange}
         />
       </main>
     </div>

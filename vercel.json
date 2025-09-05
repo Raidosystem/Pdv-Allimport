@@ -4,7 +4,20 @@
     "VITE_SUPABASE_URL": "https://kmcaaqetxtwkdcczdomw.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjY1MTMsImV4cCI6MjA3MjAwMjUxM30.sBOHwFeZ2e558puxCN7-h2nkRvuz2srxdb2LNGS9Ny4",
     "VITE_APP_NAME": "PDV Allimport",
-    "VITE_APP_URL": "https://pdv.crmvsystem.com"
+    "VITE_APP_URL": "https://pdv.crmvsystem.com",
+    "VITE_MP_ACCESS_TOKEN": "APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193",
+    "VITE_MP_PUBLIC_KEY": "APP_USR-2de8bb58-e0b6-43ab-a87b-ee56e47b0a1c",
+    "MP_ACCESS_TOKEN": "APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193",
+    "MP_PUBLIC_KEY": "APP_USR-2de8bb58-e0b6-43ab-a87b-ee56e47b0a1c",
+    "SUPABASE_URL": "https://kmcaaqetxtwkdcczdomw.supabase.co",
+    "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQyNjUxMywiZXhwIjoyMDcyMDAyNTEzfQ.vhj3J6xgUL8HCBCvgJxjI6vOdJ2A39c3eZQvIaLGu6A",
+    "API_BASE_URL": "https://pdv.crmvsystem.com",
+    "FRONTEND_URL": "https://pdv.crmvsystem.com"
+  },
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
+    }
   },
   "builds": [
     {
@@ -14,6 +27,10 @@
         "distDir": "dist",
         "buildCommand": "npm run build"
       }
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [

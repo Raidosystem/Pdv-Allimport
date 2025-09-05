@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CreditCard, DollarSign, X, Plus, Calculator, CheckCircle, AlertCircle, Zap } from 'lucide-react'
+import { CreditCard, DollarSign, X, Plus, Calculator, CheckCircle, Zap } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { Input } from '../../../components/ui/Input'
@@ -37,7 +37,6 @@ export function PagamentoForm({
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0) + cashReceived
   const remainingAmount = Math.max(0, totalAmount - totalPaid)
-  const isPaymentComplete = totalPaid >= totalAmount
 
   const handleAddPayment = () => {
     const amount = parseFloat(paymentAmount)
@@ -317,28 +316,7 @@ export function PagamentoForm({
           </div>
         </div>
 
-        {/* Status Final */}
-        <div className="text-center">
-          {isPaymentComplete ? (
-            <div className="p-4 bg-green-50 rounded-xl border-2 border-green-200">
-              <div className="flex items-center justify-center space-x-2 text-green-700">
-                <CheckCircle className="w-6 h-6" />
-                <span className="text-lg font-semibold">
-                  ✅ Pagamento Finalizado - Pronto para Finalizar!
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
-              <div className="flex items-center justify-center space-x-2 text-orange-700">
-                <AlertCircle className="w-6 h-6" />
-                <span className="text-lg font-semibold">
-                  ⚠️ Falta pagar: {formatCurrency(remainingAmount)}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
+
       </div>
     </Card>
   )

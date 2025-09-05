@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
 import { formatarTelefone, formatarCpfCnpj, validarCpfCnpj } from '../../utils/formatacao'
+import { handleCapitalizeInput, handleCapitalizeTextarea } from '../../utils/textUtils'
 import type { Cliente, ClienteInput } from '../../types/cliente'
 
 // Schema de validação
@@ -142,6 +143,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
               placeholder="Digite o nome completo"
               error={errors.nome?.message}
               icon={<User className="w-4 h-4 text-gray-400" />}
+              onChange={(e) => {
+                handleCapitalizeInput(e)
+                setValue('nome', e.target.value)
+              }}
             />
           </div>
 
@@ -221,6 +226,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
             placeholder="Rua, número, bairro, cidade, CEP"
             error={errors.endereco?.message}
             icon={<MapPin className="w-4 h-4 text-gray-400" />}
+            onChange={(e) => {
+              handleCapitalizeInput(e)
+              setValue('endereco', e.target.value)
+            }}
           />
         </div>
 
@@ -234,6 +243,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
             rows={3}
             placeholder="Informações adicionais sobre o cliente..."
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+            onChange={(e) => {
+              handleCapitalizeTextarea(e)
+              setValue('observacoes', e.target.value)
+            }}
           />
         </div>
 

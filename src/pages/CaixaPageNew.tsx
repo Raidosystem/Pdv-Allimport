@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
-import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle, ShoppingCart, Eye } from 'lucide-react'
 import { useCaixa } from '../hooks/useCaixa'
+import { salesService } from '../services/sales'
 import type { AberturaCaixaForm } from '../types/caixa'
+import type { Sale } from '../types/sales'
 
-type ViewMode = 'dashboard' | 'movimentacoes' | 'historico'
+type ViewMode = 'dashboard' | 'movimentacoes' | 'vendas' | 'historico'
 
 export function CaixaPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -12,6 +14,10 @@ export function CaixaPage() {
   const [showAbrirCaixaModal, setShowAbrirCaixaModal] = useState(false)
   const [showFecharCaixaModal, setShowFecharCaixaModal] = useState(false)
   const [showMovimentacaoModal, setShowMovimentacaoModal] = useState(false)
+  const [showAllVendas, setShowAllVendas] = useState(false)
+  const [showAllMovimentacoes, setShowAllMovimentacoes] = useState(false)
+  const [vendas, setVendas] = useState<Sale[]>([])
+  const [loadingVendas, setLoadingVendas] = useState(false)
 
   const {
     caixaAtual: caixaAtivo,
@@ -21,6 +27,56 @@ export function CaixaPage() {
     fecharCaixa,
     adicionarMovimentacao
   } = useCaixa()
+
+  // Carregar vendas do caixa atual
+  useEffect(() => {
+    const carregarVendas = async () => {
+      if (caixaAtivo) {
+        setLoadingVendas(true)
+        try {
+          console.log('🛒 Carregando vendas do caixa:', caixaAtivo.id)
+          
+          // Buscar todas as vendas e filtrar pelo caixa atual
+          const todasVendas = await salesService.getAll()
+          const vendasDoCaixa = todasVendas.filter(venda => venda.cash_register_id === caixaAtivo.id)
+          
+          console.log('📊 Total de vendas encontradas:', todasVendas.length)
+          console.log('📊 Vendas do caixa atual:', vendasDoCaixa.length)
+          console.log('📋 Dados das vendas do caixa:', vendasDoCaixa)
+          
+          setVendas(vendasDoCaixa)
+        } catch (error) {
+          console.error('❌ Erro ao carregar vendas:', error)
+        } finally {
+          setLoadingVendas(false)
+        }
+      } else {
+        setVendas([])
+      }
+    }
+    
+    carregarVendas()
+  }, [caixaAtivo])
+
+  // Carregar vendas do caixa atual
+  useEffect(() => {
+    const carregarVendas = async () => {
+      if (caixaAtivo) {
+        setLoadingVendas(true)
+        try {
+          const vendasDoCaixa = await salesService.getTodaySales()
+          console.log('📊 Vendas do caixa:', vendasDoCaixa)
+          setVendas(vendasDoCaixa)
+        } catch (error) {
+          console.error('Erro ao carregar vendas:', error)
+        } finally {
+          setLoadingVendas(false)
+        }
+      }
+    }
+    
+    carregarVendas()
+  }, [caixaAtivo])
 
   // Mock data para demonstração - interface rápida
   const movimentacoes = caixaAtivo?.movimentacoes_caixa || []
@@ -519,6 +575,17 @@ export function CaixaPage() {
               Dashboard
             </button>
             <button
+              onClick={() => setViewMode('vendas')}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                viewMode === 'vendas'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Vendas
+            </button>
+            <button
               onClick={() => setViewMode('movimentacoes')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'movimentacoes'
@@ -542,6 +609,84 @@ export function CaixaPage() {
         </div>
 
         {/* Conteúdo baseado na view */}
+        {viewMode === 'vendas' && caixaAtivo && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Vendas do Caixa</h3>
+                <p className="text-sm text-gray-600">
+                  {loadingVendas ? 'Carregando...' : `${vendas.length} vendas encontradas`}
+                </p>
+              </div>
+              {vendas.length > 10 && (
+                <button
+                  onClick={() => setShowAllVendas(!showAllVendas)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
+                >
+                  <Eye className="h-4 w-4" />
+                  {showAllVendas ? 'Ver Menos' : 'Ver Todas'}
+                </button>
+              )}
+            </div>
+            
+            {loadingVendas ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4" />
+                <p className="text-gray-600">Carregando vendas...</p>
+              </div>
+            ) : vendas.length === 0 ? (
+              <div className="p-8 text-center">
+                <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg">Nenhuma venda registrada neste caixa</p>
+                <p className="text-gray-500 text-sm">As vendas aparecerão aqui conforme forem realizadas</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Horário</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Cliente</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Valor</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Pagamento</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {(showAllVendas ? vendas : vendas.slice(0, 10)).map((venda) => (
+                      <tr key={venda.id} className="hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm text-gray-900">
+                          {formatTime(venda.created_at)}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {venda.customer?.name || 'Cliente não informado'}
+                        </td>
+                        <td className="py-3 px-4 text-sm font-medium text-green-600">
+                          {formatCurrency(venda.total_amount || 0)}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {venda.payment_method || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            venda.status === 'completed'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {venda.status === 'completed' ? 'Concluída' : 'Pendente'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {viewMode === 'movimentacoes' && caixaAtivo && (
           <>
             {/* Filtros */}
@@ -575,6 +720,24 @@ export function CaixaPage() {
 
             {/* Tabela de Movimentações */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6 border-b flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Movimentações</h3>
+                  <p className="text-sm text-gray-600">
+                    {movimentacoesFiltradas.length} movimentação(ões) encontrada(s)
+                  </p>
+                </div>
+                {movimentacoesFiltradas.length > 10 && (
+                  <button
+                    onClick={() => setShowAllMovimentacoes(!showAllMovimentacoes)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
+                  >
+                    <Eye className="h-4 w-4" />
+                    {showAllMovimentacoes ? 'Ver Menos' : 'Ver Todas'}
+                  </button>
+                )}
+              </div>
+              
               {loading && movimentacoes.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4" />
@@ -603,7 +766,7 @@ export function CaixaPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {movimentacoesFiltradas.map((mov: any) => (
+                      {(showAllMovimentacoes ? movimentacoesFiltradas : movimentacoesFiltradas.slice(0, 10)).map((mov: any) => (
                         <tr key={mov.id} className="hover:bg-gray-50">
                           <td className="py-3 px-4 text-sm text-gray-500">
                             {formatTime(mov.data)}

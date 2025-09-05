@@ -5,6 +5,8 @@ import { searchEmbeddedProducts } from '../data/products'
 // UUID do usuário assistenciaallimport10@gmail.com para isolamento multi-tenant (atualizado)
 const USER_ID_ASSISTENCIA = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
 
+console.log('🔑 USER_ID_ASSISTENCIA configurado:', USER_ID_ASSISTENCIA)
+
 // Serviços de Produtos
 export const productService = {
   async search(params: SaleSearchParams): Promise<Product[]> {
@@ -512,6 +514,13 @@ export const salesService = {
     }>
   }): Promise<Sale> {
     try {
+      console.log('💰 Criando nova venda com dados:', {
+        user_id: sale.user_id,
+        total_amount: sale.total_amount,
+        payment_method: sale.payment_method,
+        items_count: sale.items.length
+      })
+      
       // Tentar inserir no Supabase
       const { data: saleData, error: saleError } = await supabase
         .from('vendas')
@@ -529,7 +538,12 @@ export const salesService = {
         .select()
         .single()
 
-      if (saleError) throw saleError
+      if (saleError) {
+        console.error('❌ Erro ao inserir venda:', saleError)
+        throw saleError
+      }
+
+      console.log('✅ Venda inserida no Supabase:', saleData)
 
       // Inserir itens da venda
       const saleItems = sale.items.map(item => ({
@@ -544,7 +558,12 @@ export const salesService = {
         .from('itens_venda')
         .insert(saleItems)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        console.error('❌ Erro ao inserir itens da venda:', itemsError)
+        throw itemsError
+      }
+
+      console.log(`✅ ${saleItems.length} itens da venda inseridos`)
 
       // Atualizar total de vendas no caixa
       const { error: updateCashError } = await supabase.rpc('update_cash_register_sales', {
@@ -553,9 +572,10 @@ export const salesService = {
       })
 
       if (updateCashError) {
-        console.warn('Erro ao atualizar total do caixa:', updateCashError)
+        console.warn('⚠️ Erro ao atualizar total do caixa:', updateCashError)
       }
 
+      console.log('✅ Venda criada com sucesso, ID:', saleData.id)
       return saleData
     } catch (error) {
       console.warn('Erro ao salvar venda no Supabase, simulando venda local:', error)
@@ -607,6 +627,7 @@ export const salesService = {
         )
       `)
       .eq('id', id)
+      .eq('user_id', USER_ID_ASSISTENCIA) // ADICIONAR FILTRO POR USUÁRIO
       .single()
 
     if (error) throw error
@@ -626,11 +647,59 @@ export const salesService = {
           product:produtos(*)
         )
       `)
+      .eq('user_id', USER_ID_ASSISTENCIA) // ADICIONAR FILTRO POR USUÁRIO
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lte('created_at', `${today}T23:59:59.999Z`)
       .order('created_at', { ascending: false })
 
     if (error) throw error
+    return data || []
+  },
+
+  async getAll(): Promise<Sale[]> {
+    const { data, error } = await supabase
+      .from('vendas')
+      .select(`
+        *,
+        customer:clientes(*),
+        itens_venda(
+          *,
+          product:produtos(*)
+        )
+      `)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRAR POR USUÁRIO
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  async getSalesByDateRange(startDate: string, endDate: string): Promise<Sale[]> {
+    console.log(`🔍 Buscando vendas entre ${startDate} e ${endDate} para usuário: ${USER_ID_ASSISTENCIA}`)
+    
+    const { data, error } = await supabase
+      .from('vendas')
+      .select(`
+        *,
+        customer:clientes(*),
+        itens_venda(
+          *,
+          product:produtos(*)
+        )
+      `)
+      .eq('user_id', USER_ID_ASSISTENCIA) // FILTRAR POR USUÁRIO
+      .gte('created_at', `${startDate}T00:00:00.000Z`)
+      .lte('created_at', `${endDate}T23:59:59.999Z`)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('❌ Erro ao buscar vendas por data:', error)
+      throw error
+    }
+    
+    console.log(`✅ Encontradas ${data?.length || 0} vendas no período`)
+    console.log('📋 Dados das vendas:', data)
+    
     return data || []
   }
 }

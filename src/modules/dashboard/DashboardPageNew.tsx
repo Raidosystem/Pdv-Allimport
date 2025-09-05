@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
 import { CaixaPage } from '../../pages/CaixaPageNew'
-import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
+import RelatoriosPageReal from '../../pages/RelatoriosPageReal'
 import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
 import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
 import { useState, useEffect } from 'react'
@@ -550,7 +550,7 @@ export function DashboardPage() {
                     products: <ProductsPage key="products-page" />,
                     orders: <OrdensServicoPage key="orders-page" />,
                     cashier: <CaixaPage key="cashier-page" />,
-                    reports: <RelatoriosPage key="reports-page" />,
+                    reports: <RelatoriosPageReal key="reports-page" />,
                     admin: <AdministracaoPage key="admin-page" />,
                     settings: <ConfiguracoesPage key="settings-page" />
                   }[menu.name]

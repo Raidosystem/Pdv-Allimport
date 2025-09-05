@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { SubscriptionService } from '../../services/subscriptionService'
 import { useAuth } from '../../modules/auth'
+import { supabase } from '../../lib/supabase'
 
 interface PaymentDebugData {
   subscription: any
@@ -9,6 +10,7 @@ interface PaymentDebugData {
   subscription_active: boolean
   payment_approved: boolean
   needs_activation: boolean
+  error?: string
 }
 
 export const PaymentDebugger: React.FC = () => {
@@ -25,12 +27,60 @@ export const PaymentDebugger: React.FC = () => {
 
     setLoading(true)
     try {
-      const data = await SubscriptionService.checkFullStatus(user.email)
-      setDebugData(data)
-      console.log('🔍 Status completo:', data)
+      console.log('🔍 Verificando status para:', user.email)
+      
+      // Tentar usar a nova API primeiro
+      try {
+        const data = await SubscriptionService.checkFullStatus(user.email)
+        setDebugData(data)
+        console.log('✅ Status via API:', data)
+        return
+      } catch (apiError) {
+        console.warn('⚠️ API falhou, tentando método alternativo:', apiError)
+      }
+
+      // Fallback: buscar dados diretamente via supabase
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('email', user.email)
+        .single()
+
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('payer_email', user.email)
+        .order('created_at', { ascending: false })
+
+      const latestPayment = payments?.[0]
+
+      const fallbackData = {
+        subscription: subscription || null,
+        latest_payment: latestPayment || null,
+        subscription_active: subscription?.status === 'active',
+        payment_approved: latestPayment?.mp_status === 'approved',
+        needs_activation: subscription && latestPayment && 
+                         latestPayment.mp_status === 'approved' && 
+                         subscription.status !== 'active'
+      }
+
+      setDebugData(fallbackData)
+      console.log('✅ Status via fallback:', fallbackData)
+      
     } catch (error) {
-      console.error('Erro ao verificar status:', error)
-      toast.error('Erro ao verificar status')
+      console.error('❌ Erro ao verificar status:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      toast.error(`Erro ao verificar status: ${errorMessage}`)
+      
+      // Tentar mostrar pelo menos informações básicas do usuário
+      setDebugData({
+        subscription: null,
+        latest_payment: null,
+        subscription_active: false,
+        payment_approved: false,
+        needs_activation: false,
+        error: errorMessage
+      })
     } finally {
       setLoading(false)
     }
@@ -97,6 +147,17 @@ export const PaymentDebugger: React.FC = () => {
 
       {debugData && (
         <div className="space-y-4">
+          {/* Mostrar erro se houver */}
+          {debugData.error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h4 className="font-medium text-red-800 mb-2">❌ Erro Detectado</h4>
+              <p className="text-sm text-red-700">{debugData.error}</p>
+              <p className="text-xs text-red-600 mt-2">
+                Tentando buscar dados com método alternativo...
+              </p>
+            </div>
+          )}
+
           {/* Status Geral */}
           <div className="grid grid-cols-2 gap-4">
             <div className={`p-3 rounded-lg ${debugData.subscription_active ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>

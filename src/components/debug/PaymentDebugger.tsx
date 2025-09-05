@@ -7,10 +7,22 @@ import { supabase } from '../../lib/supabase'
 interface PaymentDebugData {
   subscription: any
   latest_payment: any
+  payments_history?: any[]
   subscription_active: boolean
   payment_approved: boolean
   needs_activation: boolean
+  access_allowed?: boolean
   error?: string
+  debug_info?: {
+    has_subscription: boolean
+    subscription_status: string
+    payment_count: number
+    latest_payment_status: string
+    errors?: {
+      subscription_error?: string
+      payment_error?: string
+    }
+  }
 }
 
 export const PaymentDebugger: React.FC = () => {
@@ -29,14 +41,29 @@ export const PaymentDebugger: React.FC = () => {
     try {
       console.log('🔍 Verificando status para:', user.email)
       
-      // Tentar usar a nova API primeiro
+      // Tentar usar a API simples primeiro (não depende de RPC)
+      try {
+        const response = await fetch(`/api/subscription/simple-status?email=${encodeURIComponent(user.email)}`)
+        if (response.ok) {
+          const data = await response.json()
+          setDebugData(data)
+          console.log('✅ Status via API simples:', data)
+          return
+        } else {
+          console.warn('⚠️ API simples falhou:', response.status)
+        }
+      } catch (apiError) {
+        console.warn('⚠️ API simples falhou:', apiError)
+      }
+
+      // Tentar usar a API original como segunda opção
       try {
         const data = await SubscriptionService.checkFullStatus(user.email)
         setDebugData(data)
-        console.log('✅ Status via API:', data)
+        console.log('✅ Status via API original:', data)
         return
       } catch (apiError) {
-        console.warn('⚠️ API falhou, tentando método alternativo:', apiError)
+        console.warn('⚠️ API original falhou, tentando método direto:', apiError)
       }
 
       // Fallback: buscar dados diretamente via supabase
@@ -65,7 +92,7 @@ export const PaymentDebugger: React.FC = () => {
       }
 
       setDebugData(fallbackData)
-      console.log('✅ Status via fallback:', fallbackData)
+      console.log('✅ Status via fallback direto:', fallbackData)
       
     } catch (error) {
       console.error('❌ Erro ao verificar status:', error)
@@ -226,6 +253,44 @@ export const PaymentDebugger: React.FC = () => {
               <p className="text-sm text-green-700">
                 Sua assinatura está ativa e funcionando corretamente.
               </p>
+            </div>
+          )}
+
+          {/* Debug Info Adicional */}
+          {debugData.debug_info && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-medium text-blue-800 mb-2">🔧 Informações de Debug</h4>
+              <div className="text-sm space-y-1 text-blue-700">
+                <p><strong>Tem Assinatura:</strong> {debugData.debug_info.has_subscription ? 'Sim' : 'Não'}</p>
+                <p><strong>Status:</strong> {debugData.debug_info.subscription_status || 'N/A'}</p>
+                <p><strong>Qtd Pagamentos:</strong> {debugData.debug_info.payment_count}</p>
+                <p><strong>Status Último Pagamento:</strong> {debugData.debug_info.latest_payment_status || 'N/A'}</p>
+                {debugData.debug_info.errors?.subscription_error && (
+                  <p className="text-red-600"><strong>Erro Assinatura:</strong> {debugData.debug_info.errors.subscription_error}</p>
+                )}
+                {debugData.debug_info.errors?.payment_error && (
+                  <p className="text-red-600"><strong>Erro Pagamento:</strong> {debugData.debug_info.errors.payment_error}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Histórico de Pagamentos */}
+          {debugData.payments_history && debugData.payments_history.length > 1 && (
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h4 className="font-medium mb-2">📋 Histórico de Pagamentos</h4>
+              <div className="space-y-2">
+                {debugData.payments_history.slice(0, 3).map((payment: any) => (
+                  <div key={payment.id} className="text-sm flex justify-between">
+                    <span>#{payment.mp_payment_id?.slice(-6) || 'N/A'}</span>
+                    <span className={payment.mp_status === 'approved' ? 'text-green-600' : 'text-yellow-600'}>
+                      {payment.mp_status}
+                    </span>
+                    <span>R$ {payment.amount}</span>
+                    <span>{new Date(payment.created_at).toLocaleDateString()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

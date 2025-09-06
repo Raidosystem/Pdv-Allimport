@@ -5,7 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_DEPLOY_TARGET === 'gh-pages' ? '/Pdv-Allimport/' : '/',
+  base: '/', // Sempre usar base raiz para Vercel
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

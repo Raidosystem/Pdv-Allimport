@@ -145,6 +145,49 @@ export const PaymentDebugger: React.FC = () => {
     }
   }
 
+  const emergencyBypass = async () => {
+    if (!user?.email) {
+      toast.error('Usuário não encontrado')
+      return
+    }
+
+    const adminEmail = prompt('🔐 Digite o email de admin para autorizar o bypass:')
+    if (!adminEmail) return
+
+    setActivating(true)
+    try {
+      const response = await fetch('/api/admin/emergency-bypass', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          admin_email: adminEmail
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log('🆘 Bypass de emergência:', result)
+      toast.success('Acesso liberado via bypass administrativo!')
+      
+      // Aguardar um pouco e recarregar
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+    } catch (error: any) {
+      console.error('Erro no bypass:', error)
+      toast.error(error.message || 'Erro no bypass de emergência')
+    } finally {
+      setActivating(false)
+    }
+  }
+
   useEffect(() => {
     if (user?.email) {
       checkStatus()
@@ -236,15 +279,39 @@ export const PaymentDebugger: React.FC = () => {
               <p className="text-sm text-yellow-700 mb-3">
                 Seu pagamento foi aprovado, mas a assinatura ainda não foi ativada automaticamente.
               </p>
-              <button
-                onClick={forceActivation}
-                disabled={activating}
-                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
-              >
-                {activating ? 'Ativando...' : 'Ativar Assinatura Agora'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={forceActivation}
+                  disabled={activating}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
+                >
+                  {activating ? 'Ativando...' : 'Ativar Assinatura Agora'}
+                </button>
+                <button
+                  onClick={emergencyBypass}
+                  disabled={activating}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm"
+                >
+                  🆘 Bypass Emergência
+                </button>
+              </div>
             </div>
           )}
+
+          {/* Bypass de Emergência - sempre disponível */}
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h4 className="font-medium text-red-800 mb-2">🆘 Acesso de Emergência</h4>
+            <p className="text-sm text-red-700 mb-3">
+              Se o sistema estiver travado, use o bypass administrativo (apenas para admins).
+            </p>
+            <button
+              onClick={emergencyBypass}
+              disabled={activating}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {activating ? 'Processando...' : 'Bypass Administrativo'}
+            </button>
+          </div>
 
           {/* Status OK */}
           {debugData.subscription_active && debugData.payment_approved && (

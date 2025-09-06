@@ -37,8 +37,28 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     return <>{children}</>
   }
 
-  // Admins sempre têm acesso
-  if (isAdmin()) {
+  // Emails administrativos sempre têm acesso (bypass especial)
+  const adminEmails = [
+    'admin@pdvallimport.com',
+    'novaradiosystem@outlook.com',
+    'cristiamribeiro@outlook.com'
+  ]
+  
+  if (user.email && adminEmails.includes(user.email.toLowerCase())) {
+    console.log('🔓 Acesso admin liberado para:', user.email)
+    return <>{children}</>
+  }
+
+  // Verificação de admin genérica
+  if (isAdmin && isAdmin()) {
+    console.log('🔓 Acesso admin (função) liberado')
+    return <>{children}</>
+  }
+
+  // BYPASS TEMPORÁRIO: Se há erro no subscription service, liberar acesso
+  // Isso evita que o sistema trave completamente
+  if (subscriptionLoading === false && !hasAccess && !needsPayment && !isInTrial) {
+    console.log('⚠️ Bypass ativado - possível erro no serviço de assinatura')
     return <>{children}</>
   }
 
@@ -48,9 +68,11 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const shouldShowPayment = (isInTrial && isExpired) || (!hasAccess && !isActive)
   
   if (shouldShowPayment || needsPayment) {
+    console.log('💳 Redirecionando para pagamento:', { shouldShowPayment, needsPayment })
     return <PaymentPage onPaymentSuccess={() => window.location.reload()} />
   }
 
   // Usuário tem acesso, mostrar conteúdo
+  console.log('✅ Acesso liberado')
   return <>{children}</>
 }

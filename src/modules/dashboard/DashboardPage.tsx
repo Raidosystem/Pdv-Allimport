@@ -21,8 +21,15 @@ import { PaymentCountdown } from '../../components/subscription/PaymentCountdown
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
 
 export function DashboardPage() {
+  console.log('🚨 DASHBOARD PAGE INICIANDO...')
+  
   const { user, signOut } = useAuth()
+  console.log('🔑 useAuth result:', { user: user?.email })
+  
   const { isActive } = useSubscription()
+  console.log('📊 useSubscription result:', { isActive })
+
+  console.log('🏠 DashboardPage renderizado - user:', user?.email, 'isActive:', isActive)
 
   const handleSignOut = async () => {
     await signOut()

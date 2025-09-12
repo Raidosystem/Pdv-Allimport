@@ -10,11 +10,15 @@ interface PaymentCountdownProps {
 }
 
 export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
+  console.log('🚨 PAYMENT COUNTDOWN INICIANDO...')
+  
   const { subscription, isActive, subscriptionStatus, loading, error } = useSubscription()
   const { user } = useAuth()
   const [daysUntilPayment, setDaysUntilPayment] = useState<number>(0)
   const [nextPaymentDate, setNextPaymentDate] = useState<Date | null>(null)
   const [showPaymentLink, setShowPaymentLink] = useState(false)
+
+  console.log('💳 PaymentCountdown renderizado!')
 
   // Calcular próxima data de pagamento (31 dias)
   useEffect(() => {

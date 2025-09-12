@@ -75,16 +75,19 @@ export function ProductsPage() {
   }, [])
 
   const handleNovoProduto = () => {
+    console.log('🆕 Abrindo modal para novo produto')
     setEditingProduct(null) // Limpar produto sendo editado
     setShowModal(true)
   }
 
   const handleEditarProduto = (product: Product) => {
+    console.log('✏️ Abrindo modal para editar produto:', product.name)
     setEditingProduct(product) // Definir produto para edição
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
+    console.log('❌ Fechando modal')
     setShowModal(false)
     setEditingProduct(null) // Limpar estado de edição
   }
@@ -92,17 +95,21 @@ export function ProductsPage() {
   const handleSaveProduct = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     
+    console.log('🔄 Salvando produto...')
+    
     const formData = new FormData(event.currentTarget)
     const productData = {
       name: formData.get('name') as string,
       barcode: formData.get('barcode') as string,
-      sale_price: parseFloat((formData.get('sale_price') as string).replace(/[^\d,]/g, '').replace(',', '.')),
-      cost_price: parseFloat((formData.get('cost_price') as string).replace(/[^\d,]/g, '').replace(',', '.')),
-      current_stock: parseInt(formData.get('current_stock') as string),
-      minimum_stock: parseInt(formData.get('minimum_stock') as string),
+      sale_price: parseFloat((formData.get('sale_price') as string).replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+      cost_price: parseFloat((formData.get('cost_price') as string).replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+      current_stock: parseInt(formData.get('current_stock') as string) || 0,
+      minimum_stock: parseInt(formData.get('minimum_stock') as string) || 1,
       unit_measure: formData.get('unit_measure') as string,
       active: formData.get('active') === 'true'
     }
+
+    console.log('📝 Dados do produto:', productData)
 
     if (editingProduct) {
       // Editar produto existente
@@ -128,7 +135,7 @@ export function ProductsPage() {
       console.log('✅ Novo produto criado:', newProduct)
     }
 
-    alert('Produto salvo com sucesso!')
+    alert(`Produto ${editingProduct ? 'atualizado' : 'criado'} com sucesso!`)
     handleCloseModal()
   }
 

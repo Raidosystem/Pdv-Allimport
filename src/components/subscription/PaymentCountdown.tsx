@@ -127,6 +127,18 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
             Data: {formatNextPaymentDate()}
           </span>
         </div>
+        
+        {/* Botão de renovação sempre visível */}
+        <Link to="/assinatura">
+          <Button 
+            size="sm"
+            variant="outline"
+            className="flex items-center space-x-1 text-xs border-primary-300 text-primary-700 hover:bg-primary-50 ml-2"
+          >
+            <CreditCard className="w-3 h-3" />
+            <span>Renovar</span>
+          </Button>
+        </Link>
       </div>
 
       {/* Link de pagamento quando necessário */}

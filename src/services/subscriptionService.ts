@@ -134,19 +134,72 @@ export class SubscriptionService {
     paymentMethod: string
   ) {
     try {
-      const { data, error } = await supabase.rpc('activate_subscription_after_payment', {
-        user_email: userEmail,
-        payment_id: paymentId,
-        payment_method: paymentMethod
+      // Usar nova API de extensão que soma dias restantes + 31 dias
+      const response = await fetch('/api/subscription/extend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          payment_id: paymentId,
+          payment_method: paymentMethod
+        })
       })
 
-      if (error) {
-        throw new Error(`Erro ao ativar assinatura: ${error.message}`)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
-      return data
+      const result = await response.json()
+      console.log('✅ Assinatura estendida:', result)
+      return result
     } catch (error) {
-      console.error('Erro ao ativar assinatura:', error)
+      console.error('Erro ao ativar/estender assinatura:', error)
+      
+      // Fallback para método antigo se a nova API falhar
+      try {
+        const { data, error: rpcError } = await supabase.rpc('activate_subscription_after_payment', {
+          user_email: userEmail,
+          payment_id: paymentId,
+          payment_method: paymentMethod
+        })
+
+        if (rpcError) {
+          throw new Error(`Erro ao ativar assinatura: ${rpcError.message}`)
+        }
+
+        return data
+      } catch (fallbackError) {
+        console.error('Erro no fallback:', fallbackError)
+        throw error // Throw original error
+      }
+    }
+  }
+
+  // Estender assinatura (somar dias restantes + 31 dias novos)
+  static async extendSubscription(userEmail: string, paymentId?: string): Promise<any> {
+    try {
+      const response = await fetch('/api/subscription/extend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          payment_id: paymentId
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao estender assinatura:', error)
       throw error
     }
   }

@@ -95,6 +95,22 @@ export function useSubscription() {
     }
   }
 
+  // Estender assinatura (renovação antecipada)
+  const extendSubscription = async (paymentId?: string) => {
+    if (!user?.email) {
+      throw new Error('Usuário não encontrado')
+    }
+
+    try {
+      const result = await SubscriptionService.extendSubscription(user.email, paymentId)
+      await loadSubscriptionData() // Recarregar dados
+      return result
+    } catch (error) {
+      console.error('Erro ao estender assinatura:', error)
+      throw error
+    }
+  }
+
   // Cancelar assinatura
   const cancelSubscription = async () => {
     if (!user?.id) {
@@ -134,6 +150,7 @@ export function useSubscription() {
     // Ações
     activateTrial,
     activateAfterPayment,
+    extendSubscription,
     cancelSubscription,
     refresh
   }

@@ -142,18 +142,16 @@ export function DashboardPage() {
                 </div>
               </div>
               
-              {/* Botão Assinatura - só mostrar se não estiver ativa */}
-              {!isActive && (
-                <Link to="/assinatura">
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center space-x-2 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
-                  >
-                    <Crown className="w-5 h-5" />
-                    <span>Assinatura</span>
-                  </Button>
-                </Link>
-              )}
+              {/* Botão Assinatura - sempre mostrar */}
+              <Link to="/assinatura">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-2 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>{isActive ? 'Renovar' : 'Assinatura'}</span>
+                </Button>
+              </Link>
               
               <Button 
                 variant="outline" 

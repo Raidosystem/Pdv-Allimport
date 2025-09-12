@@ -22,11 +22,13 @@ export function useSubscription() {
 
       // Buscar status da assinatura
       const status = await SubscriptionService.checkSubscriptionStatus(user.email)
+      console.log('SubscriptionStatus:', status)
       setSubscriptionStatus(status)
 
       // Buscar dados completos da assinatura se existir
       if (status.has_subscription && user.id) {
         const subscriptionData = await SubscriptionService.getUserSubscription(user.id)
+        console.log('SubscriptionData:', subscriptionData)
         setSubscription(subscriptionData)
       }
     } catch (err) {

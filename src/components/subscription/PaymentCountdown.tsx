@@ -10,7 +10,7 @@ interface PaymentCountdownProps {
 }
 
 export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
-  const { subscription, isActive } = useSubscription()
+  const { subscription, isActive, subscriptionStatus, loading, error } = useSubscription()
   const { user } = useAuth()
   const [daysUntilPayment, setDaysUntilPayment] = useState<number>(0)
   const [nextPaymentDate, setNextPaymentDate] = useState<Date | null>(null)
@@ -53,8 +53,70 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
     return () => clearInterval(interval)
   }, [nextPaymentDate])
 
-  // Só mostrar se tem assinatura ativa
+  // Debug: verificar status da assinatura
+  console.log('PaymentCountdown Debug:', {
+    isActive,
+    subscription: subscription ? 'existe' : 'null',
+    subscriptionStatus,
+    loading,
+    error,
+    nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : 'null',
+    user: user ? user.email : 'null'
+  })
+
+  // Mostrar loading se ainda carregando
+  if (loading) {
+    return (
+      <div className={`flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg border ${className}`}>
+        <Clock className="w-4 h-4 animate-spin" />
+        <span className="text-sm font-medium">Carregando assinatura...</span>
+      </div>
+    )
+  }
+
+  // Mostrar erro se houver
+  if (error) {
+    return (
+      <div className={`flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded-lg border border-red-300 ${className}`}>
+        <ExternalLink className="w-4 h-4" />
+        <span className="text-sm font-medium">Erro: {error}</span>
+      </div>
+    )
+  }
+
+  // Mostrar informações mesmo sem assinatura ativa (para debug)
   if (!isActive || !subscription || !nextPaymentDate) {
+    console.log('PaymentCountdown não será exibido:', { isActive, hasSubscription: !!subscription, hasNextPaymentDate: !!nextPaymentDate })
+    
+    // Mostrar informações de debug no desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <div className={`flex flex-col gap-2 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-300 ${className}`}>
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm font-medium">Debug: Assinatura</span>
+          </div>
+          <div className="text-xs">
+            <div>isActive: {isActive ? 'true' : 'false'}</div>
+            <div>subscription: {subscription ? 'existe' : 'null'}</div>
+            <div>status: {subscriptionStatus?.status || 'null'}</div>
+            <div>has_subscription: {subscriptionStatus?.has_subscription ? 'true' : 'false'}</div>
+            {user && (
+              <div className="mt-2">
+                <Link 
+                  to="/assinatura" 
+                  className="inline-flex items-center gap-1 text-yellow-700 hover:text-yellow-900 underline"
+                >
+                  <CreditCard className="w-3 h-3" />
+                  Configurar Assinatura
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+    
     return null
   }
 

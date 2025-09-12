@@ -32,10 +32,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email é obrigatório' });
     }
 
-    // Configurar Supabase
+    // Configurar Supabase com fallback para múltiplas chaves
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || 
+                      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+                      process.env.SUPABASE_ANON_KEY;
+
+    if (!process.env.SUPABASE_URL || !serviceKey) {
+      return res.status(500).json({ 
+        error: 'Configuração do Supabase incompleta',
+        debug: {
+          url_configured: !!process.env.SUPABASE_URL,
+          service_key_configured: !!serviceKey
+        }
+      });
+    }
+
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
+      serviceKey
     );
 
     // 1. Buscar assinatura atual

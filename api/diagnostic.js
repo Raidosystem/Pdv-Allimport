@@ -16,16 +16,26 @@ export default async function handler(req, res) {
 
   try {
     // Verificar variáveis de ambiente (mascaradas por segurança)
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || 
+                      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+                      process.env.SUPABASE_ANON_KEY;
+
     const envCheck = {
       SUPABASE_URL: process.env.SUPABASE_URL ? 
         `${process.env.SUPABASE_URL.substring(0, 20)}...` : 
         'NÃO CONFIGURADA',
-      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 
-        `${process.env.SUPABASE_ANON_KEY.substring(0, 20)}...` : 
-        'NÃO CONFIGURADA',
       SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY ? 
         `${process.env.SUPABASE_SERVICE_KEY.substring(0, 20)}...` : 
         'NÃO CONFIGURADA',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 
+        `${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 20)}...` : 
+        'NÃO CONFIGURADA',
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 
+        `${process.env.SUPABASE_ANON_KEY.substring(0, 20)}...` : 
+        'NÃO CONFIGURADA',
+      SERVICE_KEY_USADO: serviceKey ? 
+        `${serviceKey.substring(0, 20)}...` : 
+        'NENHUMA DISPONÍVEL',
       MP_ACCESS_TOKEN: process.env.MP_ACCESS_TOKEN ? 
         `${process.env.MP_ACCESS_TOKEN.substring(0, 20)}...` : 
         'NÃO CONFIGURADA',
@@ -35,12 +45,12 @@ export default async function handler(req, res) {
     // Testar conexão com Supabase
     let supabaseTest = 'Erro: variáveis não configuradas';
     
-    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    if (process.env.SUPABASE_URL && serviceKey) {
       try {
         const { createClient } = await import('@supabase/supabase-js');
         const supabase = createClient(
           process.env.SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_KEY
+          serviceKey
         );
         
         // Teste simples - tentar listar tabelas

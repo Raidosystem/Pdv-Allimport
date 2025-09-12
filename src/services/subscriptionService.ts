@@ -6,26 +6,43 @@ export class SubscriptionService {
   // Verificar status da assinatura do usuário
   static async checkSubscriptionStatus(userEmail: string): Promise<SubscriptionStatus> {
     try {
+      console.log('🔄 SubscriptionService: Verificando status para:', userEmail)
+      
       const { data, error } = await supabase.rpc('check_subscription_status', {
         user_email: userEmail
       })
 
+      console.log('📥 RPC Response:', { data, error })
+
       if (error) {
-        console.error('Erro ao verificar status da assinatura:', error)
+        console.error('❌ Erro ao verificar status da assinatura:', error)
         return {
           has_subscription: false,
           status: 'no_subscription',
-          access_allowed: false
+          access_allowed: false,
+          days_remaining: 0
         }
       }
 
-      return data as SubscriptionStatus
+      // Se data é um JSON string, fazer parse
+      let result = data
+      if (typeof data === 'string') {
+        try {
+          result = JSON.parse(data)
+        } catch (e) {
+          console.error('❌ Erro ao fazer parse do JSON:', e)
+        }
+      }
+
+      console.log('✅ Status processado:', result)
+      return result as SubscriptionStatus
     } catch (error) {
-      console.error('Erro ao verificar status da assinatura:', error)
+      console.error('❌ Erro ao verificar status da assinatura:', error)
       return {
         has_subscription: false,
         status: 'no_subscription',
-        access_allowed: false
+        access_allowed: false,
+        days_remaining: 0
       }
     }
   }

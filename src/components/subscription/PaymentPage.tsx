@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
+import { Navigate } from 'react-router-dom'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../modules/auth/AuthContext'
@@ -14,7 +15,7 @@ interface PaymentPageProps {
 }
 
 export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { subscription, daysRemaining, refresh, activateAfterPayment } = useSubscription()
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
@@ -27,6 +28,23 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Verificar autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+          <p className="text-secondary-600">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Se não estiver logado, redirecionar para login com retorno para assinatura
+  if (!user) {
+    return <Navigate to="/login?redirect=/assinatura" replace />
+  }
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
 

@@ -187,14 +187,10 @@ function App() {
           {/* Página de Teste de Pagamento */}
           <Route path="/payment-test" element={<PaymentTest />} />
           
-          {/* Página de Assinatura */}
+          {/* Página de Assinatura - Acesso direto para usuários logados */}
           <Route 
             path="/assinatura" 
-            element={
-              <ProtectedRoute>
-                <PaymentPage onPaymentSuccess={() => window.location.href = '/dashboard'} />
-              </ProtectedRoute>
-            } 
+            element={<PaymentPage onPaymentSuccess={() => window.location.href = '/dashboard'} />}
           />
           
           {/* Rotas protegidas */}

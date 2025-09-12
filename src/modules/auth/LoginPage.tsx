@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
@@ -8,15 +8,19 @@ import { Card } from '../../components/ui/Card'
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // URL de redirecionamento após login
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
+
   // Redirecionar se já estiver logado
   if (user) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

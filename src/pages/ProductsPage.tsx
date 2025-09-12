@@ -67,7 +67,7 @@ export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   
   // Estado local para produtos - removendo hook problemático
-  const [products] = useState<Product[]>(sampleProducts)
+  const [products, setProducts] = useState<Product[]>(sampleProducts)
   const loading = false
 
   useEffect(() => {
@@ -87,6 +87,49 @@ export function ProductsPage() {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingProduct(null) // Limpar estado de edição
+  }
+
+  const handleSaveProduct = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    
+    const formData = new FormData(event.currentTarget)
+    const productData = {
+      name: formData.get('name') as string,
+      barcode: formData.get('barcode') as string,
+      sale_price: parseFloat((formData.get('sale_price') as string).replace(/[^\d,]/g, '').replace(',', '.')),
+      cost_price: parseFloat((formData.get('cost_price') as string).replace(/[^\d,]/g, '').replace(',', '.')),
+      current_stock: parseInt(formData.get('current_stock') as string),
+      minimum_stock: parseInt(formData.get('minimum_stock') as string),
+      unit_measure: formData.get('unit_measure') as string,
+      active: formData.get('active') === 'true'
+    }
+
+    if (editingProduct) {
+      // Editar produto existente
+      const updatedProducts = products.map(product => 
+        product.id === editingProduct.id 
+          ? { 
+              ...product, 
+              ...productData,
+              updated_at: new Date().toISOString()
+            }
+          : product
+      )
+      setProducts(updatedProducts)
+      console.log('✅ Produto editado:', editingProduct.id, productData)
+    } else {
+      // Criar novo produto
+      const newProduct: Product = {
+        id: Date.now().toString(), // ID temporário
+        ...productData,
+        created_at: new Date().toISOString()
+      }
+      setProducts([...products, newProduct])
+      console.log('✅ Novo produto criado:', newProduct)
+    }
+
+    alert('Produto salvo com sucesso!')
+    handleCloseModal()
   }
 
   const formatPrice = (price: number) => {
@@ -310,7 +353,7 @@ export function ProductsPage() {
               {editingProduct ? `Editar Produto: ${editingProduct.name}` : 'Novo Produto'}
             </h3>
             
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSaveProduct}>
               {/* Nome do Produto */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -318,8 +361,10 @@ export function ProductsPage() {
                 </label>
                 <input
                   type="text"
+                  name="name"
                   defaultValue={editingProduct?.name || ''}
                   placeholder="Digite o nome do produto"
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -331,6 +376,7 @@ export function ProductsPage() {
                 </label>
                 <input
                   type="text"
+                  name="barcode"
                   defaultValue={editingProduct?.barcode || ''}
                   placeholder="Digite o código de barras"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -345,10 +391,12 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
+                    name="sale_price"
                     defaultValue={editingProduct ? editingProduct.sale_price.toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2
                     }) : '0,00'}
+                    required
                     onFocus={(e) => {
                       if (e.target.value === '0,00') {
                         e.target.value = ''
@@ -377,6 +425,7 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
+                    name="cost_price"
                     defaultValue={editingProduct ? editingProduct.cost_price.toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2
@@ -411,7 +460,9 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
+                    name="current_stock"
                     defaultValue={editingProduct ? editingProduct.current_stock.toString() : '0'}
+                    required
                     onFocus={(e) => {
                       if (e.target.value === '0') {
                         e.target.value = ''
@@ -434,7 +485,8 @@ export function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="1"
+                    name="minimum_stock"
+                    defaultValue={editingProduct ? editingProduct.minimum_stock.toString() : '1'}
                     onFocus={(e) => {
                       if (e.target.value === '1') {
                         e.target.value = ''
@@ -457,7 +509,11 @@ export function ProductsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Unidade de Medida
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select 
+                    name="unit_measure"
+                    defaultValue={editingProduct?.unit_measure || 'un'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
                     <option value="un">Unidade</option>
                     <option value="kg">Quilograma</option>
                     <option value="g">Grama</option>
@@ -476,7 +532,11 @@ export function ProductsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Status
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select 
+                    name="active"
+                    defaultValue={editingProduct ? editingProduct.active.toString() : 'true'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
                     <option value="true">Ativo</option>
                     <option value="false">Inativo</option>
                   </select>
@@ -505,15 +565,10 @@ export function ProductsPage() {
                   Cancelar
                 </button>
                 <button 
-                  type="button"
-                  onClick={() => {
-                    // Aqui você pode adicionar a lógica para salvar
-                    alert('Produto salvo com sucesso!')
-                    handleCloseModal()
-                  }}
+                  type="submit"
                   className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-medium"
                 >
-                  Salvar Produto
+                  {editingProduct ? 'Atualizar Produto' : 'Salvar Produto'}
                 </button>
               </div>
             </form>

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { Calendar, Clock, CreditCard } from 'lucide-react'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useAuth } from '../../modules/auth/AuthContext'
@@ -11,49 +10,10 @@ interface PaymentCountdownProps {
 export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
   console.log('🚨 PAYMENT COUNTDOWN INICIANDO...')
   
-  const { subscription, isActive, subscriptionStatus, loading, error } = useSubscription()
+  const { subscription, isActive, subscriptionStatus, loading, error, daysRemaining } = useSubscription()
   const { user } = useAuth()
-  const [daysUntilPayment, setDaysUntilPayment] = useState<number>(0)
-  const [nextPaymentDate, setNextPaymentDate] = useState<Date | null>(null)
 
   console.log('💳 PaymentCountdown renderizado!')
-
-  // Calcular próxima data de pagamento (31 dias)
-  useEffect(() => {
-    if (subscription?.created_at) {
-      const createdDate = new Date(subscription.created_at)
-      const nextPayment = new Date(createdDate)
-      nextPayment.setDate(nextPayment.getDate() + 31)
-      
-      setNextPaymentDate(nextPayment)
-      
-      // Calcular dias restantes
-      const today = new Date()
-      const diffTime = nextPayment.getTime() - today.getTime()
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      setDaysUntilPayment(diffDays)
-      
-      // Debug log
-      console.log('PaymentCountdown: Próximo pagamento em', diffDays, 'dias')
-    }
-  }, [subscription])
-
-  // Atualizar contador a cada minuto
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (nextPaymentDate) {
-        const today = new Date()
-        const diffTime = nextPaymentDate.getTime() - today.getTime()
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        
-        setDaysUntilPayment(diffDays)
-        console.log('PaymentCountdown: Atualização - dias restantes:', diffDays)
-      }
-    }, 60000) // Atualizar a cada minuto
-
-    return () => clearInterval(interval)
-  }, [nextPaymentDate])
 
   // Debug: verificar status da assinatura
   console.log('PaymentCountdown Debug:', {
@@ -62,7 +22,7 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
     subscriptionStatus,
     loading,
     error,
-    nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : 'null',
+    daysRemaining,
     user: user ? user.email : 'null'
   })
 
@@ -87,8 +47,8 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
   }
 
   // Mostrar informações mesmo sem assinatura ativa (para debug)
-  if (!isActive || !subscription || !nextPaymentDate) {
-    console.log('PaymentCountdown não será exibido:', { isActive, hasSubscription: !!subscription, hasNextPaymentDate: !!nextPaymentDate })
+  if (!isActive || !subscription) {
+    console.log('PaymentCountdown não será exibido:', { isActive, hasSubscription: !!subscription })
     
     // Mostrar informações de debug no desenvolvimento
     if (process.env.NODE_ENV === 'development') {
@@ -103,6 +63,7 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
             <div>subscription: {subscription ? 'existe' : 'null'}</div>
             <div>status: {subscriptionStatus?.status || 'null'}</div>
             <div>has_subscription: {subscriptionStatus?.has_subscription ? 'true' : 'false'}</div>
+            <div>daysRemaining: {daysRemaining}</div>
             {user && (
               <div className="mt-2">
                 <Link 
@@ -124,21 +85,21 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
 
   // Determinar cor baseada nos dias restantes
   const getColorInfo = () => {
-    if (daysUntilPayment <= 0) {
+    if (daysRemaining <= 0) {
       return {
         bgColor: 'bg-red-100',
         textColor: 'text-red-800',
         borderColor: 'border-red-300',
         icon: <CreditCard className="w-4 h-4" />
       }
-    } else if (daysUntilPayment <= 3) {
+    } else if (daysRemaining <= 3) {
       return {
         bgColor: 'bg-orange-100',
         textColor: 'text-orange-800',
         borderColor: 'border-orange-300',
         icon: <Clock className="w-4 h-4" />
       }
-    } else if (daysUntilPayment <= 7) {
+    } else if (daysRemaining <= 7) {
       return {
         bgColor: 'bg-yellow-100',
         textColor: 'text-yellow-800',
@@ -159,10 +120,10 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
 
   // Texto baseado nos dias restantes - versão simplificada para header
   const getCountdownText = () => {
-    if (daysUntilPayment <= 0) {
+    if (daysRemaining <= 0) {
       return '0'
     } else {
-      return `${daysUntilPayment}`
+      return `${daysRemaining}`
     }
   }
 

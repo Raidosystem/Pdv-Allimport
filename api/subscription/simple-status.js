@@ -29,6 +29,22 @@ export default async function handler(req, res) {
 
     console.log('🔍 Verificando status simples para:', email);
 
+    // Verificar se as variáveis de ambiente estão configuradas
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      console.error('❌ Variáveis do Supabase não configuradas:', {
+        SUPABASE_URL: !!process.env.SUPABASE_URL,
+        SUPABASE_SERVICE_KEY: !!process.env.SUPABASE_SERVICE_KEY
+      });
+      
+      return res.status(500).json({ 
+        error: 'Configuração do servidor incompleta',
+        debug: {
+          supabase_url_configured: !!process.env.SUPABASE_URL,
+          supabase_key_configured: !!process.env.SUPABASE_SERVICE_KEY
+        }
+      });
+    }
+
     // Configurar Supabase com service key para acesso completo
     const supabase = createClient(
       process.env.SUPABASE_URL,

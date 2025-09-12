@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle } from 'lucide-react'
+import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, CreditCard } from 'lucide-react'
 
-type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao'
+type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'assinatura' | 'notificacoes' | 'seguranca' | 'integracao'
 
 interface ConfiguracaoEmpresa {
   nome: string
@@ -735,6 +735,67 @@ export function ConfiguracoesPage() {
     </div>
   )
 
+  // Nova view para Assinatura
+  const AssinaturaView = () => {
+    const handleAcessarPagamento = () => {
+      // Usar window.location para navegar diretamente para a página de pagamento
+      window.location.href = '/payment'
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Gerenciar Assinatura</h3>
+            <p className="text-gray-600 mt-1">Acesse opções de pagamento e renovação da assinatura</p>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-lg">
+            <CreditCard className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+            <h4 className="text-xl font-semibold text-gray-900 mb-2">
+              Renovar Assinatura Antecipadamente
+            </h4>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Se você deseja renovar sua assinatura antes do vencimento ou tem algum problema com o pagamento, clique no botão abaixo para acessar as opções de pagamento.
+            </p>
+            
+            <button
+              onClick={handleAcessarPagamento}
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-3 mx-auto text-lg font-medium"
+            >
+              <CreditCard className="h-5 w-5" />
+              Acessar Página de Pagamento
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h5 className="font-medium text-gray-900 mb-2">Quando usar?</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Renovar antes do vencimento</li>
+                <li>• Resolver problemas de pagamento</li>
+                <li>• Alterar método de pagamento</li>
+                <li>• Consultar status da assinatura</li>
+              </ul>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-gray-900 mb-2">Métodos disponíveis</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• PIX (aprovação instantânea)</li>
+                <li>• Cartão de crédito</li>
+                <li>• Cartão de débito</li>
+                <li>• Boleto bancário</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -795,6 +856,17 @@ export function ConfiguracoesPage() {
               <Printer className="h-4 w-4 inline mr-2" />
               Impressão
             </button>
+            <button
+              onClick={() => setViewMode('assinatura')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'assinatura'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <CreditCard className="h-4 w-4 inline mr-2" />
+              Assinatura
+            </button>
           </div>
         </div>
 
@@ -804,6 +876,7 @@ export function ConfiguracoesPage() {
           {viewMode === 'empresa' && <EmpresaView />}
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
+          {viewMode === 'assinatura' && <AssinaturaView />}
         </div>
       </div>
     </div>

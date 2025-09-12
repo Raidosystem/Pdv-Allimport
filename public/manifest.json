@@ -2,6 +2,7 @@
   "name": "PDV Allimport - Sistema de Ponto de Venda",
   "short_name": "PDV Allimport",
   "description": "Sistema completo de ponto de venda com controle de estoque, vendas e relatórios",
+  "version": "2.3.0",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

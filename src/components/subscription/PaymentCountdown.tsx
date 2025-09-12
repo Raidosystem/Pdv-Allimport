@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, CreditCard, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, CreditCard } from 'lucide-react'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useAuth } from '../../modules/auth/AuthContext'
-import { Button } from '../ui/Button'
 import { Link } from 'react-router-dom'
 
 interface PaymentCountdownProps {
@@ -16,7 +15,6 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
   const { user } = useAuth()
   const [daysUntilPayment, setDaysUntilPayment] = useState<number>(0)
   const [nextPaymentDate, setNextPaymentDate] = useState<Date | null>(null)
-  const [showPaymentLink, setShowPaymentLink] = useState(false)
 
   console.log('💳 PaymentCountdown renderizado!')
 
@@ -36,8 +34,8 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
       
       setDaysUntilPayment(diffDays)
       
-      // Mostrar link de pagamento se venceu ou está próximo (3 dias)
-      setShowPaymentLink(diffDays <= 3)
+      // Debug log
+      console.log('PaymentCountdown: Próximo pagamento em', diffDays, 'dias')
     }
   }, [subscription])
 
@@ -50,7 +48,7 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
         
         setDaysUntilPayment(diffDays)
-        setShowPaymentLink(diffDays <= 3)
+        console.log('PaymentCountdown: Atualização - dias restantes:', diffDays)
       }
     }, 60000) // Atualizar a cada minuto
 
@@ -82,7 +80,7 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
   if (error) {
     return (
       <div className={`flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded-lg border border-red-300 ${className}`}>
-        <ExternalLink className="w-4 h-4" />
+        <CreditCard className="w-4 h-4" />
         <span className="text-sm font-medium">Erro: {error}</span>
       </div>
     )
@@ -159,114 +157,26 @@ export function PaymentCountdown({ className = '' }: PaymentCountdownProps) {
 
   const colorInfo = getColorInfo()
 
-  // Formatear data do próximo pagamento
-  const formatNextPaymentDate = () => {
-    return nextPaymentDate.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  // Texto baseado nos dias restantes
+  // Texto baseado nos dias restantes - versão simplificada para header
   const getCountdownText = () => {
     if (daysUntilPayment <= 0) {
-      return 'Pagamento vencido!'
-    } else if (daysUntilPayment === 1) {
-      return 'Próximo pagamento: amanhã'
+      return '0'
     } else {
-      return `Próximo pagamento: ${daysUntilPayment} dias`
+      return `${daysUntilPayment}`
     }
   }
 
   return (
-    <div className={`flex flex-col space-y-2 ${className}`}>
-      {/* Contador principal */}
-      <div className={`
-        inline-flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium
+    <Link 
+      to="/assinatura" 
+      className={`
+        inline-flex items-center space-x-2 px-3 py-1 rounded-lg border text-sm font-medium transition-colors
         ${colorInfo.bgColor} ${colorInfo.textColor} ${colorInfo.borderColor}
-      `}>
-        {colorInfo.icon}
-        <div className="flex flex-col">
-          <span className="font-semibold">{getCountdownText()}</span>
-          <span className="text-xs opacity-75">
-            Data: {formatNextPaymentDate()}
-          </span>
-        </div>
-        
-        {/* Botão de renovação sempre visível */}
-        <Link to="/assinatura">
-          <Button 
-            size="sm"
-            variant="outline"
-            className="flex items-center space-x-1 text-xs border-primary-300 text-primary-700 hover:bg-primary-50 ml-2"
-          >
-            <CreditCard className="w-3 h-3" />
-            <span>Renovar</span>
-          </Button>
-        </Link>
-      </div>
-
-      {/* Link de pagamento quando necessário */}
-      {showPaymentLink && (
-        <div className={`
-          p-3 rounded-lg border-2 border-dashed
-          ${daysUntilPayment <= 0 
-            ? 'border-red-300 bg-red-50' 
-            : 'border-orange-300 bg-orange-50'
-          }
-        `}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={`font-medium text-sm ${
-                daysUntilPayment <= 0 ? 'text-red-800' : 'text-orange-800'
-              }`}>
-                {daysUntilPayment <= 0 
-                  ? '⚠️ Pagamento em atraso' 
-                  : '💳 Pagamento próximo'
-                }
-              </p>
-              <p className={`text-xs ${
-                daysUntilPayment <= 0 ? 'text-red-600' : 'text-orange-600'
-              }`}>
-                {daysUntilPayment <= 0 
-                  ? 'Renove sua assinatura para continuar usando o sistema'
-                  : 'Renove antecipadamente para evitar interrupções'
-                }
-              </p>
-            </div>
-            
-            <Link to="/assinatura">
-              <Button 
-                size="sm"
-                className={`
-                  flex items-center space-x-1 text-xs
-                  ${daysUntilPayment <= 0 
-                    ? 'bg-red-600 hover:bg-red-700 text-white' 
-                    : 'bg-orange-600 hover:bg-orange-700 text-white'
-                  }
-                `}
-              >
-                <CreditCard className="w-3 h-3" />
-                <span>Renovar</span>
-                <ExternalLink className="w-3 h-3" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
-      
-      {/* Informações extras para debug (remover em produção) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-          <div>Debug Info:</div>
-          <div>• Criado em: {new Date(subscription.created_at).toLocaleDateString('pt-BR')}</div>
-          <div>• Próximo pagamento: {formatNextPaymentDate()}</div>
-          <div>• Dias restantes: {daysUntilPayment}</div>
-          <div>• Status: {subscription.status}</div>
-          <div>• Email: {user?.email}</div>
-        </div>
-      )}
-    </div>
+        hover:opacity-80
+      `}
+    >
+      {colorInfo.icon}
+      <span>{getCountdownText()}</span>
+    </Link>
   )
 }

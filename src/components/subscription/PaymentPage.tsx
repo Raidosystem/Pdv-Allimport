@@ -16,6 +16,31 @@ interface PaymentPageProps {
 
 export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const { user, loading: authLoading } = useAuth()
+  
+  // Early return para loading de auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+          <p className="text-secondary-600">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Early return para usuário não logado
+  if (!user) {
+    return <Navigate to="/login?redirect=/assinatura" replace />
+  }
+
+  // Todos os hooks após as verificações de autenticação
+  return <PaymentPageContent onPaymentSuccess={onPaymentSuccess} />
+}
+
+// Componente separado para o conteúdo da página
+function PaymentPageContent({ onPaymentSuccess }: PaymentPageProps) {
+  const { user } = useAuth()
   const { subscription, daysRemaining, refresh, activateAfterPayment } = useSubscription()
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
@@ -29,23 +54,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Verificar autenticação
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-          <p className="text-secondary-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Se não estiver logado, redirecionar para login com retorno para assinatura
-  if (!user) {
-    return <Navigate to="/login?redirect=/assinatura" replace />
-  }
-
   const plan = PAYMENT_PLANS[0] // Plano mensal
 
   // Reset error when changing payment method
@@ -56,7 +64,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
-    if (pixData && paymentStatus === 'waiting' && !String(pixData.payment_id).startsWith('mock-')) {
+    if (pixData && paymentStatus === 'waiting' && !String(pixData.payment_id).startsWith('mock-') && activateAfterPayment) {
       const interval = setInterval(async () => {
         try {
           setCheckingPayment(true)
@@ -100,7 +108,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
       return () => clearInterval(interval)
     }
-  }, [pixData, paymentStatus, refresh, onPaymentSuccess, user?.email])
+  }, [pixData, paymentStatus, refresh, onPaymentSuccess, user?.email, activateAfterPayment])
 
   const generatePixPayment = async () => {
     if (!user?.email) {

@@ -739,7 +739,7 @@ export function ConfiguracoesPage() {
   const AssinaturaView = () => {
     const handleAcessarPagamento = () => {
       // Usar window.location para navegar diretamente para a página de pagamento
-      window.location.href = '/payment'
+      window.location.href = '/assinatura'
     }
 
     return (

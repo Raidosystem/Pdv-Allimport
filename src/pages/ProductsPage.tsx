@@ -61,7 +61,7 @@ const sampleProducts: Product[] = [
 ]
 
 export function ProductsPage() {
-  console.log('🔥 ProductsPage carregando...')
+  console.log('🔥 ProductsPage carregando... - VERSÃO CORRETA COM EDIÇÃO')
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')

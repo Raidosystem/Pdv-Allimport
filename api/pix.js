@@ -19,9 +19,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, description, email } = req.body;
+    const { amount, description, email, company_id, user_id } = req.body;
 
-    console.log('🚀 Processando PIX:', { amount, description, email });
+    console.log('🚀 Processando PIX:', { amount, description, email, company_id, user_id });
 
     if (!amount || !description) {
       res.status(400).json({ error: 'Amount and description are required' });
@@ -39,7 +39,12 @@ export default async function handler(req, res) {
         last_name: 'PDV'
       },
       external_reference: `pix_${Date.now()}`,
-      notification_url: `${req.headers.origin || 'https://pdv-allimport-90oev2mm0-radiosystem.vercel.app'}/api/mp/webhook`
+      notification_url: `${req.headers.origin || 'https://pdv-allimport.vercel.app'}/api/mp/webhook`,
+      metadata: {
+        company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`, // Usar email como company_id
+        user_email: email,
+        payment_type: 'subscription'
+      }
     };
 
     console.log('📤 Enviando para Mercado Pago:', paymentData);

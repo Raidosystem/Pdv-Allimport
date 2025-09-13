@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     return res.status(200).json({ 
-      message: "Webhook Mercado Pago - Funcionando!",
+      message: "Webhook MP v3 - Status OK",
       timestamp: new Date().toISOString(),
       env: {
         hasMP_TOKEN: !!(process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN),

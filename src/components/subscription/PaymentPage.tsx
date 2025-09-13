@@ -149,6 +149,10 @@ export function PaymentPage({}: PaymentPageProps) {
         } else {
           setIsDemoMode(false);
           toast.success('QR Code PIX gerado! Escaneie para pagar.');
+          
+          // Iniciar polling automático para verificar status do pagamento
+          console.log('🔄 Iniciando polling para pagamento:', pixInfo.payment_id);
+          startPaymentPolling(pixInfo.payment_id);
         }
         
         console.log('✅ Estado após geração do PIX:', {
@@ -224,6 +228,73 @@ export function PaymentPage({}: PaymentPageProps) {
       setLoading(false)
     }
   }
+
+  // Sistema de polling automático para verificar status do pagamento
+  const startPaymentPolling = (paymentId: string) => {
+    console.log('🔄 Iniciando polling para pagamento:', paymentId);
+    
+    const checkPayment = async () => {
+      try {
+        console.log('🔍 Verificando status do pagamento:', paymentId);
+        const status = await mercadoPagoService.checkPaymentStatus(paymentId);
+        console.log('📊 Status do pagamento:', status);
+        
+        if (status.approved) {
+          console.log('🎉 Pagamento aprovado! Ativando assinatura...');
+          setPaymentStatus('checking');
+          toast.success('✅ Pagamento PIX aprovado!');
+          
+          try {
+            // Ativar assinatura
+            const result = await activateAfterPayment(paymentId, 'pix');
+            console.log('✅ Assinatura ativada:', result);
+            
+            setPaymentStatus('success');
+            toast.success('🎉 Assinatura ativada com sucesso!');
+            
+            // Atualizar dados da assinatura
+            await refresh();
+            
+            // Redirecionar para dashboard
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 2000);
+            
+          } catch (error) {
+            console.error('❌ Erro ao ativar assinatura:', error);
+            toast.error('Pagamento confirmado, mas erro na ativação. Contate o suporte.');
+            setPaymentStatus('failed');
+          }
+          
+          return true; // Para o polling
+        }
+        
+        return false; // Continua o polling
+      } catch (error) {
+        console.error('❌ Erro no polling:', error);
+        return false; // Continua o polling
+      }
+    };
+    
+    // Verificar imediatamente
+    checkPayment().then(shouldStop => {
+      if (shouldStop) return;
+      
+      // Continuar verificando a cada 10 segundos por até 15 minutos
+      const interval = setInterval(async () => {
+        const shouldStop = await checkPayment();
+        if (shouldStop) {
+          clearInterval(interval);
+        }
+      }, 10000);
+      
+      // Parar após 15 minutos (15 * 60 * 1000 = 900000ms)
+      setTimeout(() => {
+        clearInterval(interval);
+        console.log('⏰ Polling finalizado após 15 minutos');
+      }, 900000);
+    });
+  };
 
   const checkManualPayment = async () => {
     if (!user?.email) {

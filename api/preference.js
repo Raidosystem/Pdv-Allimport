@@ -19,9 +19,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, description, email } = req.body;
+    const { amount, description, email, company_id, user_id } = req.body;
 
-    console.log('🚀 Criando preferência de pagamento:', { amount, description, email });
+    console.log('🚀 Criando preferência de pagamento:', { amount, description, email, company_id, user_id });
 
     if (!amount || !description) {
       res.status(400).json({ error: 'Amount and description are required' });
@@ -55,7 +55,12 @@ export default async function handler(req, res) {
       },
       auto_return: 'approved',
       external_reference: `preference_${Date.now()}`,
-      notification_url: 'https://pdv-allimport.vercel.app/api/webhook',
+      notification_url: 'https://pdv-allimport.vercel.app/api/mp/webhook',
+      metadata: {
+        company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`, // Usar email como company_id
+        user_email: email,
+        payment_type: 'subscription'
+      },
       expires: true,
       expiration_date_from: new Date().toISOString(),
       expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas

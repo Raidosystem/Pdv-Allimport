@@ -206,6 +206,14 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       })
 
       if (preference.success) {
+        // Verificar se há erro ou se deve usar PIX
+        if (preference.error || !preference.checkoutUrl) {
+          toast.error(preference.error || 'Pagamento com cartão não disponível. Use PIX.')
+          // Alternar automaticamente para PIX
+          setPaymentMethod('pix')
+          return
+        }
+        
         // Verificar se é modo demo
         if (preference.paymentId?.startsWith('demo_')) {
           setIsDemoMode(true)
@@ -245,7 +253,9 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           }
         }
       } else {
-        toast.error('Erro ao gerar checkout. Tente novamente.')
+        toast.error(preference.error || 'Erro ao gerar checkout. Use o método PIX.')
+        // Alternar automaticamente para PIX se cartão falhar
+        setPaymentMethod('pix')
       }
     } catch (error) {
       console.error('Erro ao gerar checkout:', error)
@@ -491,13 +501,17 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                 {/* Opções de pagamento */}
                 <div className="space-y-4">
                   <div
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors relative ${
                       paymentMethod === 'pix'
                         ? 'border-primary-500 bg-primary-50'
                         : 'border-secondary-200 hover:border-secondary-300'
                     }`}
                     onClick={() => handlePaymentMethodChange('pix')}
                   >
+                    {/* Badge recomendado */}
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                      ✅ Recomendado
+                    </div>
                     <div className="flex items-center space-x-3">
                       <div className={`w-5 h-5 rounded-full border-2 ${
                         paymentMethod === 'pix'
@@ -511,19 +525,23 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                       <Zap className="w-6 h-6 text-primary-600" />
                       <div>
                         <p className="font-semibold text-secondary-900">PIX</p>
-                        <p className="text-sm text-secondary-600">Pagamento instantâneo</p>
+                        <p className="text-sm text-secondary-600">Pagamento instantâneo • Aprovação automática</p>
                       </div>
                     </div>
                   </div>
 
                   <div
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors relative ${
                       paymentMethod === 'card'
                         ? 'border-primary-500 bg-primary-50'
-                        : 'border-secondary-200 hover:border-secondary-300'
+                        : 'border-secondary-200 hover:border-secondary-300 opacity-75'
                     }`}
                     onClick={() => handlePaymentMethodChange('card')}
                   >
+                    {/* Badge indisponível */}
+                    <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                      ⚠️ Limitado
+                    </div>
                     <div className="flex items-center space-x-3">
                       <div className={`w-5 h-5 rounded-full border-2 ${
                         paymentMethod === 'card'
@@ -537,7 +555,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                       <CreditCard className="w-6 h-6 text-primary-600" />
                       <div>
                         <p className="font-semibold text-secondary-900">Cartão de Crédito/Débito</p>
-                        <p className="text-sm text-secondary-600">Parcelamento disponível</p>
+                        <p className="text-sm text-secondary-600">Temporariamente com limitações</p>
                       </div>
                     </div>
                   </div>

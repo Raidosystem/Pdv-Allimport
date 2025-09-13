@@ -24,8 +24,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Payment ID is required' });
     }
 
-    // Credenciais do Mercado Pago
-    const accessToken = process.env.MP_ACCESS_TOKEN;
+    // Credenciais do Mercado Pago - usar as mesmas credenciais dos outros arquivos
+    const accessToken = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
     
     if (!accessToken) {
       console.error('❌ MP_ACCESS_TOKEN não configurado');

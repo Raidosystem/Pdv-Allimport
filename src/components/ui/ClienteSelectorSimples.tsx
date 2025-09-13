@@ -122,7 +122,7 @@ export function ClienteSelector({
       
       // Verificar apenas se tiver pelo menos 8 dígitos (começa a ser útil)
       if (cleanValue.length >= 8) {
-        console.log('🔍 Verificando duplicata em tempo real para:', cpfCnpjValue, '| Dígitos:', cleanValue.length)
+        console.log('🔍 [VERIFICAR DUPLICATA] Iniciando verificação para:', cpfCnpjValue, '| Dígitos:', cleanValue.length)
         setVerificandoDuplicata(true)
         try {
           const clientes = await ClienteService.buscarClientes({
@@ -130,7 +130,10 @@ export function ClienteSelector({
             ativo: true
           })
           
-          console.log('📋 Clientes encontrados na busca:', clientes.length)
+          console.log('📋 [VERIFICAR DUPLICATA] Clientes encontrados na busca:', clientes.length)
+          clientes.forEach((cliente, index) => {
+            console.log(`   ${index + 1}. ${cliente.nome} - CPF: ${cliente.cpf_cnpj}`)
+          })
           
           // Procurar por CPF/CNPJ que contenha os dígitos digitados
           const clienteExistente = clientes.find(cliente => {
@@ -140,25 +143,25 @@ export function ClienteSelector({
             // Se já temos 11 ou 14 dígitos, fazer busca exata
             if (cleanValue.length === 11 || cleanValue.length === 14) {
               const match = clienteCpfCnpj === cleanValue
-              if (match) console.log('✅ Match exato encontrado:', cliente.nome)
+              if (match) console.log('✅ [VERIFICAR DUPLICATA] Match exato encontrado:', cliente.nome)
               return match
             }
             
             // Senão, verificar se o CPF/CNPJ do cliente começa com os dígitos digitados
             const partialMatch = clienteCpfCnpj.startsWith(cleanValue)
-            if (partialMatch) console.log('🎯 Match parcial encontrado:', cliente.nome, '|', clienteCpfCnpj)
+            if (partialMatch) console.log('🎯 [VERIFICAR DUPLICATA] Match parcial encontrado:', cliente.nome, '|', clienteCpfCnpj)
             return partialMatch
           })
           
           if (clienteExistente) {
-            console.log('⚠️ Cliente duplicado detectado:', clienteExistente.nome)
+            console.log('⚠️ [VERIFICAR DUPLICATA] Cliente duplicado detectado:', clienteExistente.nome)
           } else {
-            console.log('✅ Nenhuma duplicata encontrada')
+            console.log('✅ [VERIFICAR DUPLICATA] Nenhuma duplicata encontrada')
           }
           
           setClienteDuplicado(clienteExistente || null)
         } catch (error) {
-          console.error('Erro ao verificar duplicata:', error)
+          console.error('[VERIFICAR DUPLICATA] Erro ao verificar duplicata:', error)
         } finally {
           setVerificandoDuplicata(false)
         }
@@ -172,6 +175,46 @@ export function ClienteSelector({
     const timeoutId = setTimeout(verificarDuplicata, 500)
     return () => clearTimeout(timeoutId)
   }, [cpfCnpjValue])
+
+  // Verificar duplicata também pelo campo de busca quando tem padrão de CPF/CNPJ
+  useEffect(() => {
+    const verificarDuplicataBusca = async () => {
+      // Verificar se o campo de busca contém um padrão de CPF/CNPJ
+      const cleanBusca = busca.replace(/\D/g, '')
+      
+      if (cleanBusca.length >= 11 && (cleanBusca.length === 11 || cleanBusca.length === 14)) {
+        console.log('🔍 Detectando CPF/CNPJ no campo de busca:', busca)
+        try {
+          const clientes = await ClienteService.buscarClientes({
+            search: busca,
+            ativo: true
+          })
+          
+          const clienteExistente = clientes.find(cliente => {
+            if (!cliente.cpf_cnpj) return false
+            const clienteCpfCnpj = cliente.cpf_cnpj.replace(/\D/g, '')
+            return clienteCpfCnpj === cleanBusca
+          })
+          
+          if (clienteExistente && !mostrarFormCadastro) {
+            console.log('📱 Cliente encontrado via busca por CPF/CNPJ:', clienteExistente.nome)
+            setClienteDuplicado(clienteExistente)
+            setMostrarSugestoes(false) // Esconder sugestões normais para mostrar o aviso
+          }
+        } catch (error) {
+          console.error('Erro ao verificar duplicata por busca:', error)
+        }
+      } else if (!mostrarFormCadastro) {
+        // Limpar detecção de duplicata se não é CPF/CNPJ válido
+        setClienteDuplicado(null)
+      }
+    }
+
+    if (busca.length >= 11) {
+      const timeoutId = setTimeout(verificarDuplicataBusca, 300)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [busca, mostrarFormCadastro])
 
   // Fechar sugestões quando clicar fora
   useEffect(() => {
@@ -405,6 +448,46 @@ export function ClienteSelector({
                 ))}
               </div>
             )}
+
+            {/* Detecção instantânea de cliente por CPF/CNPJ */}
+            {clienteDuplicado && !mostrarFormCadastro && (
+              <div className="absolute z-50 w-full mt-1 bg-blue-50 border-2 border-blue-200 rounded-lg shadow-lg p-4">
+                <div className="text-center space-y-2">
+                  <div className="text-base font-mono font-bold text-blue-800">
+                    {formatarCpfCnpj(clienteDuplicado.cpf_cnpj || '')}
+                  </div>
+                  <div className="text-red-600 font-semibold">
+                    Cliente já cadastrado!
+                  </div>
+                  <div className="bg-white p-3 rounded border">
+                    <p className="font-semibold text-gray-900">{clienteDuplicado.nome}</p>
+                    {clienteDuplicado.telefone && (
+                      <p className="text-sm text-gray-600">{formatarTelefone(clienteDuplicado.telefone)}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        selecionarCliente(clienteDuplicado)
+                      }}
+                      className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-700"
+                    >
+                      ✅ Selecionar
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        abrirFormCadastro()
+                      }}
+                      className="flex-1 bg-orange-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-orange-600"
+                    >
+                      ✏️ Editar Cliente
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Botão para cadastrar novo cliente */}
@@ -525,45 +608,55 @@ export function ClienteSelector({
                 
                 {/* Aviso de cliente duplicado - Detecção em tempo real */}
                 {clienteDuplicado && (
-                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <User className="w-5 h-5 text-orange-600" />
+                  <div className="mt-2 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg shadow-sm">
+                    <div className="text-center space-y-3">
+                      {/* CPF formatado */}
+                      <div className="text-lg font-mono font-bold text-blue-800">
+                        {formatarCpfCnpj(clienteDuplicado.cpf_cnpj || '')}
                       </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium text-orange-800">
-                          ⚡ Cliente encontrado automaticamente
-                        </h4>
-                        <p className="text-sm text-orange-700 mt-1">
-                          Detectamos um cliente com este {tipoSelecionado === 'Física' ? 'CPF' : 'CNPJ'}:
+                      
+                      {/* Mensagem de destaque */}
+                      <div className="text-red-600 font-semibold text-base">
+                        Cliente já cadastrado!
+                      </div>
+                      
+                      {/* Dados do cliente */}
+                      <div className="bg-white p-3 rounded-lg border">
+                        <p className="text-base font-semibold text-gray-900 mb-1">
+                          {clienteDuplicado.nome}
                         </p>
-                        <div className="mt-2 p-2 bg-white rounded border">
-                          <p className="text-sm font-medium text-gray-900">{clienteDuplicado.nome}</p>
-                          <p className="text-xs text-gray-600">
-                            {clienteDuplicado.telefone && formatarTelefone(clienteDuplicado.telefone)}
-                            {clienteDuplicado.email && ` • ${clienteDuplicado.email}`}
+                        {clienteDuplicado.telefone && (
+                          <p className="text-sm text-gray-600">
+                            {formatarTelefone(clienteDuplicado.telefone)}
                           </p>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onClienteSelect(clienteDuplicado)
-                              setBusca(clienteDuplicado.nome)
-                              fecharFormCadastro()
-                            }}
-                            className="text-xs bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
-                          >
-                            Usar Este Cliente
-                          </button>
-                          <button
-                            type="button"
-                            onClick={editarClienteExistente}
-                            className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                          >
-                            Editar Dados
-                          </button>
-                        </div>
+                        )}
+                        {clienteDuplicado.endereco && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            📍 {clienteDuplicado.endereco}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Botões de ação */}
+                      <div className="flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClienteSelect(clienteDuplicado)
+                            setBusca(clienteDuplicado.nome)
+                            fecharFormCadastro()
+                          }}
+                          className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                        >
+                          ✅ Selecionar Este Cliente
+                        </button>
+                        <button
+                          type="button"
+                          onClick={editarClienteExistente}
+                          className="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 font-medium transition-colors"
+                        >
+                          ✏️ Editar Cliente
+                        </button>
                       </div>
                     </div>
                   </div>

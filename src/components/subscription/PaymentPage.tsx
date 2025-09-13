@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -14,7 +15,9 @@ interface PaymentPageProps {
 
 export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const { user } = useAuth()
-  const { subscription, daysRemaining, refresh, activateAfterPayment } = useSubscription()
+  const { subscription, daysRemaining, refresh, activateAfterPayment, isInTrial } = useSubscription()
+  const [searchParams] = useSearchParams()
+  const isRenewal = searchParams.get('action') === 'renew'
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
   const [pixData, setPixData] = useState<{
@@ -309,14 +312,30 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             )}
           </div>
           <h1 className="text-3xl font-bold text-secondary-900 mb-2">
-            {isTrialExpired ? 'Período de teste expirado' : 'Continue usando o PDV'}
+            {isRenewal ? 'Renovar Assinatura' : 
+             isTrialExpired ? 'Período de teste expirado' : 'Continue usando o PDV'}
           </h1>
           <p className="text-secondary-600 text-lg">
-            {isTrialExpired 
+            {isRenewal 
+              ? `Renovar antecipadamente sua assinatura. ${isInTrial ? `Ainda restam ${daysRemaining} dias do teste.` : 'Sua assinatura atual será estendida.'}`
+              : isTrialExpired 
               ? 'Para continuar usando o sistema, escolha um plano de pagamento'
               : `Faltam ${daysRemaining} dias do seu período de teste`
             }
           </p>
+
+          {/* Aviso especial para renovação antecipada */}
+          {isRenewal && (
+            <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="flex items-center gap-2 text-purple-800">
+                <Zap className="w-5 h-5" />
+                <span className="font-semibold">Renovação Antecipada</span>
+              </div>
+              <p className="text-sm text-purple-700 mt-1">
+                💡 Ao renovar agora, o tempo restante da sua assinatura atual será preservado e adicionado ao novo período.
+              </p>
+            </div>
+          )}
         </div>
 
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">

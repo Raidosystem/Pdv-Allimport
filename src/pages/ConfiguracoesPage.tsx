@@ -88,7 +88,7 @@ export function ConfiguracoesPage() {
                 </div>
                 <h3 className="text-xl font-semibold">Gerenciar Assinatura</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  Acesse sua área de assinatura para visualizar status, renovar plano ou gerenciar pagamentos.
+                  Controle sua assinatura, visualize status e renove quando quiser.
                 </p>
               </div>
 
@@ -119,14 +119,55 @@ export function ConfiguracoesPage() {
                 </div>
               </div>
 
-              {/* Botão principal */}
-              <div className="text-center">
-                <Link to="/assinatura">
-                  <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 gap-2">
-                    <Crown className="w-5 h-5" />
-                    {isActive ? 'Gerenciar Assinatura' : 'Assinar Agora'}
-                  </Button>
-                </Link>
+              {/* Botões de Ação */}
+              <div className="space-y-4">
+                {/* Botão principal - Gerenciar/Assinar */}
+                <div className="text-center">
+                  <Link to="/assinatura">
+                    <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 gap-2">
+                      <Crown className="w-5 h-5" />
+                      {isActive ? 'Gerenciar Assinatura' : 'Assinar Agora'}
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Botão especial - Pagar Quando Quiser */}
+                {(isActive || isInTrial) && (
+                  <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                    <div className="text-center space-y-3">
+                      <h4 className="font-semibold text-purple-800">💳 Pagar Quando Quiser</h4>
+                      <p className="text-sm text-purple-700">
+                        Quer renovar sua assinatura antes do vencimento? 
+                        {isInTrial && ` Ainda restam ${daysRemaining} dias do seu teste.`}
+                        {isActive && ` Sua assinatura está ativa, mas você pode renovar antecipadamente.`}
+                      </p>
+                      <Link to="/assinatura?action=renew">
+                        <Button 
+                          variant="outline" 
+                          className="border-purple-300 text-purple-700 hover:bg-purple-50 gap-2"
+                        >
+                          <Crown className="w-4 h-4" />
+                          Renovar Agora
+                        </Button>
+                      </Link>
+                      <p className="text-xs text-purple-600">
+                        💡 Ao renovar antecipadamente, o tempo restante será preservado
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Informações adicionais */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-800 mb-2">ℹ️ Informações Importantes</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Sua assinatura garante acesso completo ao sistema</li>
+                  <li>• Backup automático de todos os seus dados</li>
+                  <li>• Suporte técnico prioritário</li>
+                  <li>• Atualizações automáticas e novas funcionalidades</li>
+                  {isInTrial && <li>• <strong>Período de teste:</strong> Experimente sem compromisso</li>}
+                </ul>
               </div>
             </div>
           </Card>

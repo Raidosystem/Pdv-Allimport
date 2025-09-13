@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -17,6 +17,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const { user } = useAuth()
   const { subscription, daysRemaining, refresh, activateAfterPayment, isInTrial } = useSubscription()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const isRenewal = searchParams.get('action') === 'renew'
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
@@ -270,6 +271,12 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               // Atualizar estado local sem reload
               await refresh();
               setPaymentStatus('success');
+              
+              // Redirecionar para o dashboard após 2 segundos
+              setTimeout(() => {
+                navigate('/dashboard')
+              }, 2000);
+              
               return;
             } catch (activationError) {
               console.error('❌ Erro ao ativar assinatura:', activationError);
@@ -291,6 +298,11 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       // Recarregar dados da assinatura
       await refresh();
       toast.success('✅ Status da assinatura atualizado');
+      
+      // Redirecionar para o dashboard após verificação
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1500);
       
     } catch (error) {
       console.error('Erro ao verificar pagamento manual:', error)
@@ -412,7 +424,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   Sua assinatura foi ativada com sucesso. Redirecionando automaticamente...
                 </p>
                 <Button 
-                  onClick={() => refresh()}
+                  onClick={() => navigate('/dashboard')}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   Acessar sistema agora
@@ -615,6 +627,17 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             >
               🔄 Verificar Status da Assinatura
             </Button>
+            
+            {/* Botão para voltar ao dashboard */}
+            <div className="mt-3">
+              <Button
+                onClick={() => navigate('/dashboard')}
+                variant="outline"
+                className="bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300"
+              >
+                ← Voltar ao Dashboard
+              </Button>
+            </div>
           </div>
         </div>
       </div>

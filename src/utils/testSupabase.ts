@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 
-export async function testSupabase() {
+export async function testSupabaseConnection() {
   try {
     console.log('🔗 Testando conexão com Supabase...')
     

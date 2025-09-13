@@ -1,6 +1,6 @@
 // Service Worker para PWA - PDV Allimport
-const CACHE_NAME = 'pdv-allimport-v2.2.4';
-const STATIC_CACHE = 'pdv-static-v2.2.4';
+const CACHE_NAME = 'pdv-allimport-v2.2.5';
+const STATIC_CACHE = 'pdv-static-v2.2.5';
 
 // Recursos essenciais para cache
 const CORE_FILES = [
@@ -13,7 +13,7 @@ const CORE_FILES = [
 
 // Install event - cache core files
 self.addEventListener('install', event => {
-  console.log('SW v2.2.4: Installing...');
+  console.log('SW v2.2.5: Installing...');
   event.waitUntil(
     Promise.all([
       caches.open(STATIC_CACHE)

@@ -1,4 +1,7 @@
 // PIX Payment endpoint for Vercel
+// Credenciais de produção do Mercado Pago
+const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,6 +21,8 @@ export default async function handler(req, res) {
   try {
     const { amount, description, email } = req.body;
 
+    console.log('🚀 Processando PIX:', { amount, description, email });
+
     if (!amount || !description) {
       res.status(400).json({ error: 'Amount and description are required' });
       return;
@@ -30,16 +35,20 @@ export default async function handler(req, res) {
       payment_method_id: 'pix',
       payer: {
         email: email || 'cliente@pdvallimport.com',
-        first_name: 'Cliente',
+        first_name: email ? email.split('@')[0] : 'Cliente',
         last_name: 'PDV'
-      }
+      },
+      external_reference: `pix_${Date.now()}`,
+      notification_url: `https://pdv-allimport.vercel.app/api/webhook`
     };
+
+    console.log('📤 Enviando para Mercado Pago:', paymentData);
 
     // Fazer chamada para API do Mercado Pago
     const response = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
         'X-Idempotency-Key': Date.now().toString()
       },
@@ -47,37 +56,15 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
       throw new Error(`Mercado Pago API error: ${response.status}`);
     }
 
     const paymentResponse = await response.json();
+    console.log('✅ Resposta do Mercado Pago:', paymentResponse);
 
-    // Salvar no Supabase usando fetch
-    try {
-      const supabaseResponse = await fetch(`${process.env.SUPABASE_URL}/rest/v1/payments`, {
-        method: 'POST',
-        headers: {
-          'apikey': process.env.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          payment_id: paymentResponse.id,
-          amount: paymentResponse.transaction_amount,
-          status: paymentResponse.status,
-          payment_type: 'pix',
-          qr_code: paymentResponse.point_of_interaction?.transaction_data?.qr_code,
-          qr_code_base64: paymentResponse.point_of_interaction?.transaction_data?.qr_code_base64,
-          ticket_url: paymentResponse.point_of_interaction?.transaction_data?.ticket_url,
-          created_at: new Date().toISOString()
-        })
-      });
-    } catch (supabaseError) {
-      console.error('Supabase error:', supabaseError);
-      // Continue mesmo se Supabase falhar
-    }
-
+    // Retornar resposta com QR code do Mercado Pago
     res.status(200).json({
       success: true,
       payment_id: paymentResponse.id,

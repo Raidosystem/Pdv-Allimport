@@ -158,64 +158,40 @@ class MercadoPagoApiService {
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // Tentar usar API do Vercel primeiro (se disponível)
-      if (this.isProduction) {
-        console.log('🎯 Tentando API do Vercel para PIX...');
-        try {
-          const response = await this.makeApiCall('/api/pix', 'POST', {
-            amount: data.amount,
-            description: data.description,
-            email: data.userEmail
-          });
+      // Sempre tentar usar a API do Vercel para PIX
+      console.log('🎯 Fazendo requisição PIX via API Vercel...');
+      try {
+        const response = await this.makeApiCall('/api/pix', 'POST', {
+          amount: data.amount,
+          description: data.description,
+          email: data.userEmail
+        });
 
-          console.log('🔍 Resposta da API PIX:', response);
+        console.log('🔍 Resposta da API PIX:', response);
+        
+        if (response && response.success && (response.qr_code || response.qr_code_base64)) {
+          const result = {
+            success: true,
+            paymentId: String(response.payment_id),
+            status: response.status || 'pending',
+            qrCode: response.qr_code || '',
+            qrCodeBase64: response.qr_code_base64 || '',
+            ticketUrl: response.ticket_url || ''
+          };
           
-          if (response && (response.qr_code || response.qr_code_base64)) {
-            const result = {
-              success: true,
-              paymentId: String(response.payment_id || `api_${Date.now()}`),
-              status: response.status || 'pending',
-              qrCode: response.qr_code || '',
-              qrCodeBase64: response.qr_code_base64 || '',
-              ticketUrl: response.ticket_url || ''
-            };
-            
-            console.log('🎯 Resultado da API Vercel:', result);
-            return result;
-          }
-        } catch (error) {
-          console.log('⚠️ API Vercel não disponível:', error);
+          console.log('🎯 PIX criado com sucesso:', result);
+          return result;
+        } else {
+          throw new Error('Resposta inválida da API');
         }
+      } catch (error) {
+        console.error('❌ Erro na API PIX:', error);
+        throw new Error(`Erro ao gerar PIX: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       }
-      
-      // Fallback: Gerar QR code PIX funcional localmente
-      console.log('🔄 Usando geração local de PIX...');
-      
-      // Gerar um código PIX válido para o valor
-      const pixCode = this.generateMockQRCode();
-      const pixBase64 = await this.generateMockQRCodeBase64();
-      
-      // Simular um payment ID realístico
-      const paymentId = `pix_local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      console.log('✅ PIX gerado localmente:', {
-        paymentId,
-        hasQrCode: !!pixCode,
-        hasQrBase64: !!pixBase64
-      });
-      
-      return {
-        success: true,
-        paymentId,
-        status: 'pending',
-        qrCode: pixCode,
-        qrCodeBase64: pixBase64,
-        ticketUrl: `#pix-${paymentId}`
-      };
       
     } catch (error) {
       console.error('❌ Erro ao criar pagamento PIX:', error);
-      throw new Error('Erro ao processar pagamento PIX. Tente novamente.');
+      throw new Error('Erro ao processar pagamento PIX. Verifique sua conexão e tente novamente.');
     }
   }
 

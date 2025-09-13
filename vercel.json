@@ -4,7 +4,9 @@
     "VITE_SUPABASE_URL": "https://YOUR_SUPABASE_PROJECT.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
     "VITE_APP_NAME": "PDV Allimport",
-    "VITE_APP_URL": "https://pdv.crmvsystem.com"
+    "VITE_APP_URL": "https://pdv.crmvsystem.com",
+    "VITE_MP_ACCESS_TOKEN": "APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193",
+    "VITE_MP_PUBLIC_KEY": "APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022"
   },
   "builds": [
     {

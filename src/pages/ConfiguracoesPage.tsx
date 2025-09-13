@@ -9,7 +9,8 @@ import {
   Palette,
   ArrowLeft,
   ChevronRight,
-  Crown
+  Crown,
+  Printer
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -18,20 +19,13 @@ import { useSubscription } from '../hooks/useSubscription'
 import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../components/subscription/SubscriptionCountdown'
 
-type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription'
+type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription' | 'printing'
 
 export function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState<ConfigSection>('dashboard')
   const { isActive, isInTrial, daysRemaining } = useSubscription()
 
   const configSections = [
-    {
-      id: 'subscription' as ConfigSection,
-      title: 'Assinatura',
-      description: 'Gerenciar plano e pagamentos',
-      icon: Crown,
-      color: 'bg-yellow-500'
-    },
     {
       id: 'backup' as ConfigSection,
       title: 'Backup e Restauração',
@@ -73,6 +67,20 @@ export function ConfiguracoesPage() {
       description: 'Tema e personalização visual',
       icon: Palette,
       color: 'bg-pink-500'
+    },
+    {
+      id: 'printing' as ConfigSection,
+      title: 'Impressão',
+      description: 'Configurações de impressora e recibos',
+      icon: Printer,
+      color: 'bg-blue-600'
+    },
+    {
+      id: 'subscription' as ConfigSection,
+      title: 'Assinatura',
+      description: 'Gerenciar plano e pagamentos',
+      icon: Crown,
+      color: 'bg-yellow-500'
     }
   ]
 
@@ -242,6 +250,63 @@ export function ConfiguracoesPage() {
           </Card>
         )
       
+      case 'printing':
+        return (
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                  <Printer className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold">Configurações de Impressão</h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  Configure sua impressora e personalize recibos e relatórios.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Impressora Padrão</h4>
+                  <p className="text-sm text-gray-600 mb-3">Selecione a impressora para recibos e relatórios</p>
+                  <select className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option>Selecionar impressora...</option>
+                    <option>Impressora Padrão do Sistema</option>
+                    <option>Impressora Térmica</option>
+                  </select>
+                </div>
+
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Configurações de Recibo</h4>
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" defaultChecked />
+                      <span className="text-sm text-gray-700">Imprimir logo da empresa</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" defaultChecked />
+                      <span className="text-sm text-gray-700">Incluir informações de contato</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span className="text-sm text-gray-700">Imprimir automaticamente após venda</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1">
+                    <Printer className="w-4 h-4 mr-2" />
+                    Teste de Impressão
+                  </Button>
+                  <Button className="flex-1">
+                    Salvar Configurações
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )
+      
       default:
         return (
           <div className="space-y-6">
@@ -276,6 +341,42 @@ export function ConfiguracoesPage() {
                     </button>
                   )
                 })}
+              </div>
+            </Card>
+
+            {/* Botão destacado de Assinatura */}
+            <Card className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Status da Assinatura</h4>
+                    <p className="text-sm text-gray-600">
+                      {isActive 
+                        ? `Assinatura ativa${isInTrial ? ` (Trial: ${daysRemaining} dias restantes)` : ''}`
+                        : 'Assinatura inativa - Assine agora'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveSection('subscription')}
+                    className="gap-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Ver Detalhes
+                  </Button>
+                  <Link to="/assinatura">
+                    <Button className="gap-2 bg-yellow-500 hover:bg-yellow-600 text-white">
+                      <Crown className="w-4 h-4" />
+                      {isActive ? 'Renovar Antecipado' : 'Assinar Agora'}
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </Card>
           </div>

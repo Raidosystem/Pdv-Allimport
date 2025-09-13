@@ -68,9 +68,10 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             
             // Aguardar um pouco para mostrar a mensagem de sucesso
             setTimeout(() => {
-              // Recarregar a página para atualizar o estado da assinatura
-              window.location.reload()
-            }, 3000)
+              // Atualizar estado ao invés de reload
+              refresh()
+              setPaymentStatus('success')
+            }, 2000)
             
             onPaymentSuccess?.()
             clearInterval(interval)
@@ -266,16 +267,20 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               await activateAfterPayment(String(pixData.payment_id), 'pix');
               toast.success('🎉 Assinatura ativada com sucesso!');
               
-              setTimeout(() => {
-                window.location.reload();
-              }, 2000);
+              // Atualizar estado local sem reload
+              await refresh();
+              setPaymentStatus('success');
               return;
             } catch (activationError) {
               console.error('❌ Erro ao ativar assinatura:', activationError);
               toast.error('Pagamento confirmado, mas erro na ativação. Contate o suporte.');
+              return;
             }
           } else {
-            toast.error(`❌ PIX ainda não foi confirmado. Status: ${status.status}`);
+            toast(`⏳ PIX ainda pendente. Status: ${status.status}`, {
+              icon: 'ℹ️',
+              duration: 4000
+            });
           }
         } catch (statusError) {
           console.error('❌ Erro ao verificar status do PIX:', statusError);
@@ -283,13 +288,9 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         }
       }
       
-      // Recarregar dados da assinatura de qualquer forma
-      await refresh()
-      
-      // Aguardar um pouco para processar
-      setTimeout(() => {
-        window.location.reload()
-      }, 3000)
+      // Recarregar dados da assinatura
+      await refresh();
+      toast.success('✅ Status da assinatura atualizado');
       
     } catch (error) {
       console.error('Erro ao verificar pagamento manual:', error)
@@ -326,7 +327,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-red-600 mb-4">Erro no Sistema de Pagamento</h2>
               <p className="text-secondary-600 mb-6">{error}</p>
-              <Button onClick={() => window.location.reload()} className="bg-primary-600 hover:bg-primary-700">
+              <Button onClick={() => refresh()} className="bg-primary-600 hover:bg-primary-700">
                 Tentar Novamente
               </Button>
             </div>
@@ -411,7 +412,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                   Sua assinatura foi ativada com sucesso. Redirecionando automaticamente...
                 </p>
                 <Button 
-                  onClick={() => window.location.reload()}
+                  onClick={() => refresh()}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   Acessar sistema agora
@@ -487,9 +488,9 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                     <Button
                       onClick={() => {
                         setPaymentStatus('success')
-                        toast.success('🎉 Pagamento confirmado! Redirecionando...')
+                        toast.success('🎉 Pagamento confirmado! Aguarde...')
                         setTimeout(() => {
-                          window.location.reload()
+                          refresh()
                         }, 2000)
                       }}
                       className="bg-green-600 hover:bg-green-700 text-white"

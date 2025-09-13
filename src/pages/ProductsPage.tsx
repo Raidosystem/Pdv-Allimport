@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Package, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import ProductForm from '../components/product/ProductForm'
 
 interface Product {
   id: string
@@ -18,6 +19,8 @@ interface Product {
   created_at: string
   updated_at: string
 }
+
+type ViewMode = 'list' | 'form' | 'view'
 
 // Dados de exemplo do backup - carregando alguns produtos inicialmente
 const sampleProducts: Product[] = [
@@ -77,8 +80,9 @@ const loadAllProducts = async (): Promise<Product[]> => {
 export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
   const [products, setProducts] = useState<Product[]>([])
-  const [showModal, setShowModal] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -101,18 +105,35 @@ export function ProductsPage() {
   }, [])
 
   const handleNovoProduto = () => {
-    setEditingProduct(null) // Limpar produto sendo editado
-    setShowModal(true)
+    setEditingProduct(null)
+    setViewMode('form')
   }
 
   const handleEditarProduto = (product: Product) => {
-    setEditingProduct(product) // Definir produto para edição
-    setShowModal(true)
+    setEditingProduct(product)
+    setViewMode('form')
   }
 
-  const handleCloseModal = () => {
-    setShowModal(false)
-    setEditingProduct(null) // Limpar estado de edição
+  const handleVisualizarProduto = (product: Product) => {
+    setViewingProduct(product)
+    setViewMode('view')
+  }
+
+  const handleSalvarProduto = async () => {
+    try {
+      // Recarregar lista (aqui seria a implementação do save)
+      setViewMode('list')
+      setEditingProduct(null)
+      console.log('✅ Produto salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error)
+    }
+  }
+
+  const handleCancelar = () => {
+    setViewMode('list')
+    setEditingProduct(null)
+    setViewingProduct(null)
   }
 
   const formatPrice = (price: number) => {
@@ -130,6 +151,185 @@ export function ProductsPage() {
   const activeProducts = products.filter(p => p.active)
   const lowStockProducts = products.filter(p => p.current_stock <= p.minimum_stock)
   const totalValue = products.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
+
+  // View de formulário (nova/editar produto)
+  if (viewMode === 'form') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                </h1>
+                <p className="text-sm text-gray-600">Preencha os dados do produto</p>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleCancelar}
+              variant="outline"
+            >
+              Voltar para Lista
+            </Button>
+          </div>
+
+          <ProductForm
+            productId={editingProduct?.id}
+            onSuccess={handleSalvarProduto}
+            onCancel={handleCancelar}
+          />
+        </main>
+      </div>
+    )
+  }
+
+  // View de visualização do produto
+  if (viewMode === 'view' && viewingProduct) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Visualizar Produto
+                </h1>
+                <p className="text-sm text-gray-600">{viewingProduct.name}</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleEditarProduto(viewingProduct)}
+                variant="outline"
+              >
+                Editar Produto
+              </Button>
+              <Button
+                onClick={handleCancelar}
+                variant="outline"
+              >
+                Voltar para Lista
+              </Button>
+            </div>
+          </div>
+
+          {/* Card de visualização do produto */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Informações básicas */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                  Informações Básicas
+                </h2>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Nome do Produto</label>
+                  <p className="text-gray-900 font-medium">{viewingProduct.name}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Código de Barras</label>
+                  <p className="text-gray-900">{viewingProduct.barcode || 'Não informado'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Unidade de Medida</label>
+                  <p className="text-gray-900">{viewingProduct.unit_measure}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Status</label>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    viewingProduct.active 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {viewingProduct.active ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Preços e estoque */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                  Preços e Estoque
+                </h2>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Preço de Venda</label>
+                  <p className="text-xl font-bold text-green-600">{formatPrice(viewingProduct.sale_price)}</p>
+                </div>
+                
+                {viewingProduct.cost_price > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Preço de Custo</label>
+                    <p className="text-lg font-medium text-gray-700">{formatPrice(viewingProduct.cost_price)}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Estoque Atual</label>
+                  <p className={`text-lg font-bold ${
+                    viewingProduct.current_stock <= viewingProduct.minimum_stock 
+                      ? 'text-red-600' 
+                      : 'text-gray-900'
+                  }`}>
+                    {viewingProduct.current_stock} {viewingProduct.unit_measure}
+                  </p>
+                  {viewingProduct.current_stock <= viewingProduct.minimum_stock && (
+                    <p className="text-sm text-red-500 mt-1">⚠️ Estoque baixo!</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Estoque Mínimo</label>
+                  <p className="text-gray-900">{viewingProduct.minimum_stock} {viewingProduct.unit_measure}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Informações adicionais */}
+            <div className="mt-6 pt-6 border-t">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Informações Adicionais
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                <div>
+                  <span className="font-medium">Criado em:</span> {new Date(viewingProduct.created_at).toLocaleDateString('pt-BR')}
+                </div>
+                <div>
+                  <span className="font-medium">Última atualização:</span> {new Date(viewingProduct.updated_at).toLocaleDateString('pt-BR')}
+                </div>
+                {viewingProduct.expiry_date && (
+                  <div>
+                    <span className="font-medium">Data de vencimento:</span> {new Date(viewingProduct.expiry_date).toLocaleDateString('pt-BR')}
+                  </div>
+                )}
+                {viewingProduct.cost_price > 0 && viewingProduct.sale_price > 0 && (
+                  <div>
+                    <span className="font-medium">Margem de lucro:</span> 
+                    <span className="ml-1 font-bold text-green-600">
+                      {(((viewingProduct.sale_price - viewingProduct.cost_price) / viewingProduct.cost_price) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -266,20 +466,14 @@ export function ProductsPage() {
                       <button 
                         className="p-1 text-blue-600 hover:text-blue-800"
                         title="Visualizar produto"
-                        onClick={() => {
-                          console.log('👁️ Visualizar produto:', product.id);
-                          alert(`Visualizar produto: ${product.name}`);
-                        }}
+                        onClick={() => handleVisualizarProduto(product)}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
                         className="p-1 text-green-600 hover:text-green-800"
                         title="Editar produto"
-                        onClick={() => {
-                          console.log('✏️ Editar produto:', product.id);
-                          handleEditarProduto(product);
-                        }}
+                        onClick={() => handleEditarProduto(product)}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
@@ -327,225 +521,6 @@ export function ProductsPage() {
           </div>
         )}
       </div>
-
-      {/* Modal de Formulário Completo */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">
-              {editingProduct ? `Editar Produto: ${editingProduct.name}` : 'Novo Produto'}
-            </h3>
-            
-            <form className="space-y-4">
-              {/* Nome do Produto */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome do Produto *
-                </label>
-                <input
-                  type="text"
-                  defaultValue={editingProduct?.name || ''}
-                  placeholder="Digite o nome do produto"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Código de Barras */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Código de Barras
-                </label>
-                <input
-                  type="text"
-                  defaultValue={editingProduct?.barcode || ''}
-                  placeholder="Digite o código de barras"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Preço de Venda */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preço de Venda *
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={editingProduct ? editingProduct.sale_price.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    }) : '0,00'}
-                    onFocus={(e) => {
-                      if (e.target.value === '0,00') {
-                        e.target.value = ''
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        e.target.value = '0,00'
-                      } else {
-                        const num = parseFloat(e.target.value.replace(',', '.')) || 0
-                        e.target.value = num.toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })
-                      }
-                    }}
-                    placeholder="0,00"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                {/* Preço de Custo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preço de Custo
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={editingProduct ? editingProduct.cost_price.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    }) : '0,00'}
-                    onFocus={(e) => {
-                      if (e.target.value === '0,00') {
-                        e.target.value = ''
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        e.target.value = '0,00'
-                      } else {
-                        const num = parseFloat(e.target.value.replace(',', '.')) || 0
-                        e.target.value = num.toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })
-                      }
-                    }}
-                    placeholder="0,00"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Estoque Atual */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estoque Atual *
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={editingProduct ? editingProduct.current_stock.toString() : '0'}
-                    onFocus={(e) => {
-                      if (e.target.value === '0') {
-                        e.target.value = ''
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        e.target.value = '0'
-                      }
-                    }}
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                {/* Estoque Mínimo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estoque Mínimo
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="1"
-                    onFocus={(e) => {
-                      if (e.target.value === '1') {
-                        e.target.value = ''
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        e.target.value = '1'
-                      }
-                    }}
-                    placeholder="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Unidade de Medida */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unidade de Medida
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="un">Unidade</option>
-                    <option value="kg">Quilograma</option>
-                    <option value="g">Grama</option>
-                    <option value="l">Litro</option>
-                    <option value="ml">Mililitro</option>
-                    <option value="m">Metro</option>
-                    <option value="cm">Centímetro</option>
-                    <option value="pç">Peça</option>
-                    <option value="cx">Caixa</option>
-                    <option value="pct">Pacote</option>
-                  </select>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="true">Ativo</option>
-                    <option value="false">Inativo</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Descrição */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descrição
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="Descrição detalhada do produto (opcional)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                ></textarea>
-              </div>
-
-              {/* Botões */}
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button 
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    // Aqui você pode adicionar a lógica para salvar
-                    alert('Produto salvo com sucesso!')
-                    handleCloseModal()
-                  }}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-medium"
-                >
-                  Salvar Produto
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

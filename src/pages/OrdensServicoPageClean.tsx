@@ -53,67 +53,11 @@ const sampleOrdens: OrdemServico[] = [
 // Função para carregar todas as ordens de serviço do backup
 const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
   try {
-    console.log('🔄 Carregando ordens de serviço do backup...')
     const response = await fetch('/backup-allimport.json')
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
     const backupData = await response.json()
-    // Corrigir o caminho dos dados - está em data.service_orders
-    const orders = backupData.data?.service_orders || []
-    
-    // Validar e limpar dados
-    const validOrders = orders.map((order: any) => {
-      // Normalizar status para o padrão do sistema
-      let status = order.status || 'aberta';
-      if (status === 'fechada' || status === 'fechado' || status === 'concluida' || status === 'pago') {
-        status = 'Entregue';
-      } else if (status === 'cancelada') {
-        status = 'Cancelado';
-      } else if (status === 'pendente') {
-        status = 'Em análise';
-      } else {
-        status = 'Em análise';
-      }
-
-      return {
-        id: order.id || Date.now().toString(),
-        cliente: {
-          id: order.client_id || '',
-          nome: order.client_name || 'Cliente não informado',
-          telefone: order.client_phone || ''
-        },
-        marca: order.device_model?.split(' ')[0] || 'Marca não informada',
-        modelo: order.device_model || 'Modelo não informado',
-        tipo: order.device_name || 'Tipo não informado',
-        numero_os: order.id?.slice(-6) || '',
-        status: status as any,
-        defeito_relatado: order.defect || 'Defeito não informado',
-        data_entrada: order.opening_date || new Date().toISOString().split('T')[0],
-        data_entrega: order.closing_date || '',
-        valor_orcamento: order.total_amount || 0,
-        valor_final: order.total_amount || 0,
-        observacoes: order.observations || '',
-        garantia_meses: order.warranty_days ? Math.ceil(order.warranty_days / 30) : 0,
-        created_at: order.created_at || new Date().toISOString(),
-        updated_at: order.updated_at || new Date().toISOString()
-      };
-    })
-    
-    console.log('✅ Ordens validadas:', validOrders.length)
-    console.log('📋 Primeira ordem com cliente:', {
-      id: validOrders[0]?.id?.slice(-6),
-      cliente: validOrders[0]?.cliente?.nome,
-      marca: validOrders[0]?.marca,
-      modelo: validOrders[0]?.modelo,
-      defeito: validOrders[0]?.defeito_relatado,
-      status: validOrders[0]?.status,
-      data_entrega: validOrders[0]?.data_entrega,
-      garantia: validOrders[0]?.garantia_meses
-    })
-    return validOrders
+    return backupData.data?.service_orders || []
   } catch (error) {
-    console.error('❌ Erro ao carregar backup de ordens:', error)
+    console.error('Erro ao carregar backup de ordens:', error)
     return sampleOrdens
   }
 }
@@ -132,9 +76,8 @@ export function OrdensServicoPage() {
     const loadOrdens = async () => {
       try {
         const allOrdens = await loadAllServiceOrders()
-        console.log(`✅ Carregadas ${allOrdens.length} ordens de serviço do backup`)
-        console.log('📋 Primeira ordem de exemplo:', allOrdens[0])
         setOrdens(allOrdens)
+        console.log(`✅ Carregadas ${allOrdens.length} ordens de serviço do backup`)
       } catch (error) {
         console.error('Erro ao carregar ordens:', error)
         setOrdens(sampleOrdens)
@@ -190,10 +133,10 @@ export function OrdensServicoPage() {
   }
 
   const filteredOrdens = ordens.filter(ordem =>
-    (ordem.cliente?.nome?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.marca?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.modelo?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.numero_os?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    ordem.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ordem.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ordem.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ordem.numero_os?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const activeOrdens = ordens.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado')
@@ -457,9 +400,7 @@ export function OrdensServicoPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipamento</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Entrada</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Saída</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Garantia</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
             </thead>
@@ -478,8 +419,8 @@ export function OrdensServicoPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="text-sm">
-                      <div className="font-medium text-gray-900">{(ordem.marca || '')} {(ordem.modelo || '')}</div>
-                      <div className="text-gray-500">{ordem.tipo || 'Não informado'}</div>
+                      <div className="font-medium text-gray-900">{ordem.marca} {ordem.modelo}</div>
+                      <div className="text-gray-500">{ordem.tipo}</div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -506,12 +447,6 @@ export function OrdensServicoPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {formatDate(ordem.data_entrada)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {ordem.data_entrega ? formatDate(ordem.data_entrega) : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {(ordem.garantia_meses || 0) > 0 ? `${ordem.garantia_meses} meses` : '-'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

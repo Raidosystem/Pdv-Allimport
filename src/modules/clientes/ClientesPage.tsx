@@ -3,6 +3,7 @@ import { Users, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
+import { ClienteView } from '../../components/cliente/ClienteView'
 import { useClientes } from '../../hooks/useClientes'
 import type { Cliente } from '../../types/cliente'
 
@@ -127,10 +128,20 @@ export function ClientesPage() {
   }
 
   if (viewMode === 'view' && clienteVisualizando) {
-    // Por enquanto, vamos editar ao invés de visualizar
-    setViewMode('form')
-    setClienteEditando(clienteVisualizando)
-    setClienteVisualizando(null)
+    return (
+      <ClienteView
+        cliente={clienteVisualizando}
+        onEdit={(cliente) => {
+          setClienteEditando(cliente)
+          setViewMode('form')
+          setClienteVisualizando(null)
+        }}
+        onBack={() => {
+          setViewMode('list')
+          setClienteVisualizando(null)
+        }}
+      />
+    )
   }
 
   return (

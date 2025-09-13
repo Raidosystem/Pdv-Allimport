@@ -249,15 +249,47 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
     try {
       setLoading(true)
-      toast.success('🔄 Verificando status da assinatura...')
+      toast.success('🔄 Verificando status da assinatura e pagamento...')
       
-      // Recarregar dados da assinatura
+      // Se temos um PIX pendente, verificar seu status primeiro
+      if (pixData && pixData.payment_id && !String(pixData.payment_id).startsWith('mock-')) {
+        console.log('🔍 Verificando status específico do PIX:', pixData.payment_id);
+        try {
+          const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id));
+          console.log('📊 Status do PIX:', status);
+          
+          if (status.approved) {
+            toast.success('✅ Pagamento PIX encontrado e aprovado!');
+            
+            // Ativar assinatura
+            try {
+              await activateAfterPayment(String(pixData.payment_id), 'pix');
+              toast.success('🎉 Assinatura ativada com sucesso!');
+              
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+              return;
+            } catch (activationError) {
+              console.error('❌ Erro ao ativar assinatura:', activationError);
+              toast.error('Pagamento confirmado, mas erro na ativação. Contate o suporte.');
+            }
+          } else {
+            toast.error(`❌ PIX ainda não foi confirmado. Status: ${status.status}`);
+          }
+        } catch (statusError) {
+          console.error('❌ Erro ao verificar status do PIX:', statusError);
+          toast.error('Erro ao verificar status do PIX');
+        }
+      }
+      
+      // Recarregar dados da assinatura de qualquer forma
       await refresh()
       
       // Aguardar um pouco para processar
       setTimeout(() => {
         window.location.reload()
-      }, 2000)
+      }, 3000)
       
     } catch (error) {
       console.error('Erro ao verificar pagamento manual:', error)

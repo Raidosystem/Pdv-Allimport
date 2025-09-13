@@ -253,6 +253,8 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       setLoading(true)
       toast.success('🔄 Verificando status da assinatura e pagamento...')
       
+      let paymentApproved = false
+      
       // Se temos um PIX pendente, verificar seu status primeiro
       if (pixData && pixData.payment_id && !String(pixData.payment_id).startsWith('mock-')) {
         console.log('🔍 Verificando status específico do PIX:', pixData.payment_id);
@@ -262,6 +264,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           
           if (status.approved) {
             toast.success('✅ Pagamento PIX encontrado e aprovado!');
+            paymentApproved = true
             
             // Ativar assinatura
             try {
@@ -272,7 +275,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               await refresh();
               setPaymentStatus('success');
               
-              // Redirecionar para o dashboard após 2 segundos
+              // Redirecionar para o dashboard após 2 segundos apenas se pagamento foi aprovado
               setTimeout(() => {
                 navigate('/dashboard')
               }, 2000);
@@ -288,18 +291,30 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               icon: 'ℹ️',
               duration: 4000
             });
+            // Não redirecionar se pagamento ainda está pendente
+            return;
           }
         } catch (statusError) {
           console.error('❌ Erro ao verificar status do PIX:', statusError);
           toast.error('Erro ao verificar status do PIX');
+          return;
         }
       }
       
       // Recarregar dados da assinatura
       await refresh();
-      toast.success('✅ Status da assinatura atualizado');
       
-      // Redirecionar para o dashboard após verificação
+      // Verificar se a assinatura está vencida (0 dias ou menos)
+      const isExpired = daysRemaining <= 0;
+      
+      if (!paymentApproved && !isExpired) {
+        // Se não há pagamento aprovado e assinatura não venceu, não redirecionar
+        toast.success('✅ Status da assinatura atualizado');
+        return;
+      }
+      
+      // Só redirecionar se pagamento foi aprovado OU se assinatura já venceu
+      toast.success('✅ Status da assinatura atualizado');
       setTimeout(() => {
         navigate('/dashboard')
       }, 1500);
@@ -616,8 +631,11 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               💳 Já fez o pagamento?
             </p>
             <p className="text-blue-600 text-sm mb-3">
-              Se você já efetuou o pagamento e sua assinatura não foi ativada automaticamente, 
-              clique no botão abaixo para verificar o status.
+              Se você já efetuou o pagamento, clique no botão abaixo para verificar o status.
+              <br />
+              <span className="font-medium">
+                O sistema só redirecionará automaticamente após confirmar a aprovação do pagamento.
+              </span>
             </p>
             <Button
               onClick={checkManualPayment}

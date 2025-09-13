@@ -56,6 +56,8 @@ export function ClienteSelector({
   const [loadingCadastro, setLoadingCadastro] = useState(false)
   const [telefoneValue, setTelefoneValue] = useState('')
   const [cpfCnpjValue, setCpfCnpjValue] = useState('')
+  const [clienteDuplicado, setClienteDuplicado] = useState<Cliente | null>(null)
+  const [verificandoDuplicata, setVerificandoDuplicata] = useState(false)
 
   const {
     register,
@@ -90,10 +92,12 @@ export function ClienteSelector({
 
       setLoadingBusca(true)
       try {
+        console.log('🔍 Buscando clientes com termo:', busca)
         const clientes = await ClienteService.buscarClientes({
           search: busca,
           ativo: true
         })
+        console.log('📋 Clientes encontrados:', clientes.length)
         setClientesEncontrados(clientes.slice(0, 5)) // Limitar a 5 resultados
         setMostrarSugestoes(true)
       } catch (error) {
@@ -110,6 +114,64 @@ export function ClienteSelector({
     return () => clearTimeout(timeoutId)
   }, [busca])
 
+  // Verificar duplicata de CPF/CNPJ em tempo real
+  useEffect(() => {
+    const verificarDuplicata = async () => {
+      const cleanValue = cpfCnpjValue.replace(/\D/g, '')
+      
+      // Verificar apenas se tiver pelo menos 8 dígitos (começa a ser útil)
+      if (cleanValue.length >= 8) {
+        console.log('🔍 Verificando duplicata em tempo real para:', cpfCnpjValue, '| Dígitos:', cleanValue.length)
+        setVerificandoDuplicata(true)
+        try {
+          const clientes = await ClienteService.buscarClientes({
+            search: cpfCnpjValue,
+            ativo: true
+          })
+          
+          console.log('📋 Clientes encontrados na busca:', clientes.length)
+          
+          // Procurar por CPF/CNPJ que contenha os dígitos digitados
+          const clienteExistente = clientes.find(cliente => {
+            if (!cliente.cpf_cnpj) return false
+            const clienteCpfCnpj = cliente.cpf_cnpj.replace(/\D/g, '')
+            
+            // Se já temos 11 ou 14 dígitos, fazer busca exata
+            if (cleanValue.length === 11 || cleanValue.length === 14) {
+              const match = clienteCpfCnpj === cleanValue
+              if (match) console.log('✅ Match exato encontrado:', cliente.nome)
+              return match
+            }
+            
+            // Senão, verificar se o CPF/CNPJ do cliente começa com os dígitos digitados
+            const partialMatch = clienteCpfCnpj.startsWith(cleanValue)
+            if (partialMatch) console.log('🎯 Match parcial encontrado:', cliente.nome, '|', clienteCpfCnpj)
+            return partialMatch
+          })
+          
+          if (clienteExistente) {
+            console.log('⚠️ Cliente duplicado detectado:', clienteExistente.nome)
+          } else {
+            console.log('✅ Nenhuma duplicata encontrada')
+          }
+          
+          setClienteDuplicado(clienteExistente || null)
+        } catch (error) {
+          console.error('Erro ao verificar duplicata:', error)
+        } finally {
+          setVerificandoDuplicata(false)
+        }
+      } else {
+        setClienteDuplicado(null)
+        setVerificandoDuplicata(false)
+      }
+    }
+
+    // Debounce de 500ms para não fazer muitas requisições
+    const timeoutId = setTimeout(verificarDuplicata, 500)
+    return () => clearTimeout(timeoutId)
+  }, [cpfCnpjValue])
+
   // Fechar sugestões quando clicar fora
   useEffect(() => {
     const handleClickOutside = () => {
@@ -123,6 +185,7 @@ export function ClienteSelector({
   }, [mostrarSugestoes])
 
   const selecionarCliente = (cliente: Cliente) => {
+    console.log('👤 Cliente selecionado no selector:', cliente)
     onClienteSelect(cliente)
     setBusca(cliente.nome)
     setMostrarSugestoes(false)
@@ -162,23 +225,69 @@ export function ClienteSelector({
     setValue('cpf_cnpj', formatted)
   }
 
+  // Função para editar cliente existente
+  const editarClienteExistente = () => {
+    if (clienteDuplicado) {
+      // Preencher formulário com dados do cliente existente
+      setValue('nome', clienteDuplicado.nome)
+      setValue('telefone', clienteDuplicado.telefone || '')
+      setValue('cpf_cnpj', clienteDuplicado.cpf_cnpj || '')
+      setValue('email', clienteDuplicado.email || '')
+      setValue('endereco', clienteDuplicado.endereco || '')
+      setValue('tipo', clienteDuplicado.tipo || 'Física')
+      setValue('observacoes', clienteDuplicado.observacoes || '')
+      
+      setTelefoneValue(formatarTelefone(clienteDuplicado.telefone || ''))
+      setCpfCnpjValue(formatarCpfCnpj(clienteDuplicado.cpf_cnpj || ''))
+      
+      // Limpar a duplicata para permitir edição
+      setClienteDuplicado(null)
+    }
+  }
+
   const onSubmitNovoCliente = async (data: NovoClienteData) => {
     setLoadingCadastro(true)
     try {
-      const novoCliente: ClienteInput = {
+      const dadosCliente: ClienteInput = {
         ...data,
         ativo: true
       }
       
-      const clienteCriado = await ClienteService.criarCliente(novoCliente)
+      let clienteResultado: Cliente
       
-      toast.success('Cliente cadastrado com sucesso!')
-      onClienteSelect(clienteCriado)
-      setBusca(clienteCriado.nome)
+      // Verificar se estamos editando um cliente existente (baseado no CPF/CNPJ)
+      if (data.cpf_cnpj) {
+        const clientesExistentes = await ClienteService.buscarClientes({
+          search: data.cpf_cnpj,
+          ativo: true
+        })
+        
+        const clienteExistente = clientesExistentes.find(cliente => 
+          cliente.cpf_cnpj?.replace(/\D/g, '') === data.cpf_cnpj?.replace(/\D/g, '')
+        )
+        
+        if (clienteExistente) {
+          // Atualizar cliente existente
+          clienteResultado = await ClienteService.atualizarCliente(clienteExistente.id, dadosCliente)
+          toast.success('Cliente atualizado com sucesso!')
+        } else {
+          // Criar novo cliente
+          clienteResultado = await ClienteService.criarCliente(dadosCliente)
+          toast.success('Cliente cadastrado com sucesso!')
+        }
+      } else {
+        // Criar novo cliente sem CPF/CNPJ
+        clienteResultado = await ClienteService.criarCliente(dadosCliente)
+        toast.success('Cliente cadastrado com sucesso!')
+      }
+      
+      onClienteSelect(clienteResultado)
+      setBusca(clienteResultado.nome)
       fecharFormCadastro()
+      setClienteDuplicado(null)
     } catch (error: unknown) {
-      console.error('Erro ao criar cliente:', error)
-      toast.error((error as Error).message || 'Erro ao cadastrar cliente')
+      console.error('Erro ao salvar cliente:', error)
+      toast.error((error as Error).message || 'Erro ao salvar cliente')
     } finally {
       setLoadingCadastro(false)
     }
@@ -243,7 +352,7 @@ export function ClienteSelector({
                 onChange={(e) => setBusca(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Buscar cliente por nome, telefone ou CPF..."
+                placeholder="Buscar cliente por nome, telefone, CPF, CNPJ ou endereço..."
               />
               {loadingBusca && (
                 <div className="absolute right-3 top-3">
@@ -266,12 +375,17 @@ export function ClienteSelector({
                   >
                     <div className="flex items-center gap-3">
                       <User className="w-4 h-4 text-gray-400" />
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium text-gray-900">{cliente.nome}</div>
                         <div className="text-sm text-gray-500">
                           {formatarTelefone(cliente.telefone)}
                           {cliente.cpf_cnpj && ` • ${cliente.cpf_cnpj}`}
                         </div>
+                        {cliente.endereco && (
+                          <div className="text-xs text-gray-400 mt-1 truncate">
+                            📍 {cliente.endereco}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -364,17 +478,82 @@ export function ClienteSelector({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {tipoSelecionado === 'Física' ? 'CPF' : 'CNPJ'}
+                  {verificandoDuplicata && (
+                    <span className="ml-2 text-xs text-blue-600 flex items-center gap-1">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600"></div>
+                      Verificando...
+                    </span>
+                  )}
                 </label>
-                <input
-                  value={cpfCnpjValue}
-                  onChange={handleCpfCnpjChange}
-                  type="text"
-                  maxLength={tipoSelecionado === 'Física' ? 14 : 18}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder={tipoSelecionado === 'Física' ? '000.000.000-00' : '00.000.000/0000-00'}
-                />
+                <div className="relative">
+                  <input
+                    value={cpfCnpjValue}
+                    onChange={handleCpfCnpjChange}
+                    type="text"
+                    maxLength={tipoSelecionado === 'Física' ? 14 : 18}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      clienteDuplicado 
+                        ? 'border-orange-300 focus:ring-orange-500 bg-orange-50' 
+                        : verificandoDuplicata
+                        ? 'border-blue-300 focus:ring-blue-500 bg-blue-50'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
+                    placeholder={tipoSelecionado === 'Física' ? '000.000.000-00' : '00.000.000/0000-00'}
+                  />
+                  {verificandoDuplicata && (
+                    <div className="absolute right-3 top-3">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
+                </div>
                 {errors.cpf_cnpj && (
                   <span className="text-red-500 text-sm">{errors.cpf_cnpj.message}</span>
+                )}
+                
+                {/* Aviso de cliente duplicado - Detecção em tempo real */}
+                {clienteDuplicado && (
+                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <User className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-orange-800">
+                          ⚡ Cliente encontrado automaticamente
+                        </h4>
+                        <p className="text-sm text-orange-700 mt-1">
+                          Detectamos um cliente com este {tipoSelecionado === 'Física' ? 'CPF' : 'CNPJ'}:
+                        </p>
+                        <div className="mt-2 p-2 bg-white rounded border">
+                          <p className="text-sm font-medium text-gray-900">{clienteDuplicado.nome}</p>
+                          <p className="text-xs text-gray-600">
+                            {clienteDuplicado.telefone && formatarTelefone(clienteDuplicado.telefone)}
+                            {clienteDuplicado.email && ` • ${clienteDuplicado.email}`}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onClienteSelect(clienteDuplicado)
+                              setBusca(clienteDuplicado.nome)
+                              fecharFormCadastro()
+                            }}
+                            className="text-xs bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+                          >
+                            Usar Este Cliente
+                          </button>
+                          <button
+                            type="button"
+                            onClick={editarClienteExistente}
+                            className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                          >
+                            Editar Dados
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 

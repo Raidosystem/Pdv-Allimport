@@ -44,17 +44,20 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
     reset
   } = useForm<EntregaFormData>({
     resolver: zodResolver(entregaSchema),
     defaultValues: {
       garantia_tipo: 'sem_garantia',
-      valor_final: ordem.valor_orcamento
+      valor_final: ordem.valor_orcamento,
+      garantia_meses: 12
     }
   })
 
   const garantiaTipo = watch('garantia_tipo')
+  const garantiaMeses = watch('garantia_meses')
 
   // Calcular tempo de reparo
   const calcularTempoReparo = () => {
@@ -137,7 +140,7 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
 
           {/* Informações do Reparo */}
           <Card className="p-4 mb-6 bg-green-50 border-green-200">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-green-600" />
                 <div>
@@ -154,6 +157,16 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
                   <div className="text-sm text-gray-600">Tempo de Reparo</div>
                   <div className="font-medium text-gray-900">
                     {calcularTempoReparo()} dias
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <div className="text-sm text-gray-600">Data de Entrega</div>
+                  <div className="font-medium text-gray-900">
+                    {formatarData(new Date().toISOString())}
                   </div>
                 </div>
               </div>
@@ -218,10 +231,25 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
               {/* Campo de meses quando garantia está selecionada */}
               {garantiaTipo === 'com_garantia' && (
                 <div className="ml-8">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Período de Garantia (meses)
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Período de Garantia
                   </label>
-                  <div className="flex gap-3">
+                  
+                  {/* Opções rápidas de garantia */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                    {[3, 6, 12, 24].map((meses) => (
+                      <button
+                        key={meses}
+                        type="button"
+                        onClick={() => setValue('garantia_meses', meses)}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-green-50 hover:border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        {meses} meses
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-3 items-center">
                     <input
                       {...register('garantia_meses', { valueAsNumber: true })}
                       type="number"
@@ -230,16 +258,62 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
                       className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                       placeholder="12"
                     />
-                    <div className="text-sm text-gray-600 py-2">
+                    <div className="text-sm text-gray-600">
                       meses (máximo 60 meses)
                     </div>
                   </div>
+                  
                   {errors.garantia_meses && (
                     <span className="text-red-500 text-sm">{errors.garantia_meses.message}</span>
+                  )}
+                  
+                  {/* Mostrar previsão de fim da garantia */}
+                  {garantiaMeses && garantiaMeses > 0 && (
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">
+                          Fim da Garantia: 
+                        </span>
+                        <span className="text-sm text-blue-700">
+                          {formatarData(calcularFimGarantia(garantiaMeses))}
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
             </div>
+
+            {/* Resumo Final */}
+            <Card className="p-4 bg-gray-50 border-gray-200">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">📋 Resumo do Encerramento</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Data/Hora de Entrega:</span>
+                  <span className="font-medium">{formatarData(new Date().toISOString())}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Valor Final:</span>
+                  <span className="font-medium text-green-600">
+                    R$ {(watch('valor_final') || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Garantia:</span>
+                  <span className="font-medium">
+                    {garantiaTipo === 'com_garantia' && garantiaMeses 
+                      ? `${garantiaMeses} meses (até ${formatarData(calcularFimGarantia(garantiaMeses)).split(' ')[0]})`
+                      : 'Sem garantia'
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tempo de Reparo:</span>
+                  <span className="font-medium">{calcularTempoReparo()} dias</span>
+                </div>
+              </div>
+            </Card>
 
             {/* Botões de Ação */}
             <div className="flex gap-3 pt-4 border-t">

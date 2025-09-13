@@ -10,7 +10,7 @@ export function SubscriptionDaysIndicator() {
 
   // Definir a cor baseada nos dias restantes
   const getIndicatorStyle = () => {
-    if (daysRemaining > 25) {
+    if (daysRemaining >= 6) {
       return {
         bgColor: 'bg-green-100',
         textColor: 'text-green-800',

@@ -67,62 +67,8 @@ export function PaymentPage({}: PaymentPageProps) {
     setPaymentMethod(method)
   }
 
-  // Verificar status do pagamento PIX periodicamente - VERSÃO SIMPLIFICADA
-  useEffect(() => {
-    // Não fazer nada se não temos dados ou não está esperando
-    if (!pixData?.payment_id || paymentStatus !== 'waiting') {
-      return;
-    }
-
-    // Não verificar se é mock
-    if (String(pixData.payment_id).startsWith('mock-')) {
-      return;
-    }
-
-    console.log('🔄 Iniciando verificação periódica do PIX:', pixData.payment_id);
-    
-    const paymentId = String(pixData.payment_id); // Capturar valor atual
-    
-    const interval = setInterval(async () => {
-      // Verificar se ainda está montado
-      if (!isMountedRef.current) {
-        clearInterval(interval);
-        return;
-      }
-
-      try {
-        console.log('🔍 Verificando status do PIX automaticamente:', paymentId);
-        
-        const status = await mercadoPagoService.checkPaymentStatus(paymentId)
-        console.log('📊 Status recebido:', status);
-        
-        // Verificar se ainda está montado antes de atualizar estado
-        if (!isMountedRef.current) {
-          clearInterval(interval);
-          return;
-        }
-        
-        if (status.approved) {
-          console.log('✅ PIX APROVADO! Parando verificação automática.');
-          clearInterval(interval);
-          
-          // Só continuar se ainda está montado
-          if (isMountedRef.current) {
-            toast.success('🎉 Pagamento confirmado! Clique em "Verificar Status" para ativar.');
-          }
-        } else {
-          console.log('⏳ PIX ainda pendente, status:', status.status);
-        }
-      } catch (error) {
-        console.error('❌ Erro ao verificar status do pagamento:', error)
-      }
-    }, 10000) // Verificar a cada 10 segundos (menos frequente)
-
-    return () => {
-      console.log('🧹 Limpando interval de verificação PIX');
-      clearInterval(interval);
-    }
-  }, []) // SEM DEPENDÊNCIAS para evitar loops
+  // NOTA: Verificação automática removida - o webhook do Mercado Pago 
+  // agora ativa automaticamente as assinaturas quando PIX é aprovado
 
   const generatePixPayment = async () => {
     if (!user?.email) {

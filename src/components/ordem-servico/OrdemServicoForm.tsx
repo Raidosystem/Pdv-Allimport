@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,7 +7,11 @@ import {
   Settings,
   Calendar,
   DollarSign,
-  Save
+  Save,
+  History,
+  Smartphone,
+  Plus,
+  X
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { BackButton } from '../ui/BackButton'
@@ -16,8 +20,7 @@ import { ClienteSelector } from '../ui/ClienteSelectorSimples'
 import { ordemServicoService } from '../../services/ordemServicoService'
 import type { 
   NovaOrdemServicoForm, 
-  TipoEquipamento, 
-  ChecklistOS 
+  TipoEquipamento 
 } from '../../types/ordemServico'
 import type { Cliente } from '../../types/cliente'
 
@@ -57,9 +60,32 @@ const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
 export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps) {
   const [loading, setLoading] = useState(false)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
-  const [checklist, setChecklist] = useState<ChecklistOS>({})
+  const [checklist, setChecklist] = useState<Record<string, boolean>>({})
   const [tipoPersonalizado, setTipoPersonalizado] = useState('')
   const [mostrarCampoPersonalizado, setMostrarCampoPersonalizado] = useState(false)
+  
+  // Estados para checklist dinâmico
+  const [itensChecklist, setItensChecklist] = useState<Array<{id: string, label: string}>>([
+    { id: 'aparelho_liga', label: 'Aparelho liga?' }
+  ])
+  const [novoItemChecklist, setNovoItemChecklist] = useState('')
+  const [mostrandoFormNovoItem, setMostrandoFormNovoItem] = useState(false)
+  
+  const [equipamentosAnteriores, setEquipamentosAnteriores] = useState<Array<{
+    tipo: string
+    marca: string
+    modelo: string
+    cor?: string
+    defeitos: string[]
+    ordens: Array<{
+      id: string
+      data: string
+      defeito: string
+      status: string
+      valor?: number
+    }>
+    totalReparos: number
+  }>>([])
 
   const {
     register,
@@ -73,12 +99,193 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     }
   })
 
+  // Função para buscar equipamentos anteriores do cliente
+  const buscarEquipamentosAnteriores = async (clienteId: string) => {
+    try {
+      console.log('🔍 Buscando equipamentos para cliente:', clienteId, clienteSelecionado?.nome)
+      console.log('📊 Cliente selecionado completo:', clienteSelecionado)
+      
+      const response = await fetch('/backup-allimport.json')
+      const backupData = await response.json()
+      const orders = backupData.data?.service_orders || []
+      
+      console.log('📦 Total de ordens no backup:', orders.length)
+      console.log('📦 Primeira ordem exemplo:', orders[0])
+      
+      // Filtrar ordens do cliente selecionado (principalmente por nome, pois é o mais confiável)
+      const ordensCliente = orders.filter((order: any) => {
+        const matchName = clienteSelecionado && order.client_name && 
+          order.client_name.toLowerCase().trim() === clienteSelecionado.nome.toLowerCase().trim()
+        const matchId = order.client_id === clienteId
+        
+        console.log('🔎 Comparando:', {
+          orderClientName: order.client_name,
+          selectedClientName: clienteSelecionado?.nome,
+          matchName,
+          matchId,
+          orderId: order.id
+        })
+        
+        return matchName || matchId
+      })
+      
+      console.log('📋 Ordens encontradas para o cliente:', ordensCliente.length)
+      console.log('📋 Primeira ordem de exemplo:', ordensCliente[0])
+      
+      // Agrupar por equipamento (marca + modelo) mantendo histórico completo
+      const equipamentosMap = new Map()
+      
+      ordensCliente.forEach((order: any) => {
+        const modelo = order.device_model || 'Modelo não informado'
+        const nome = order.device_name || 'Equipamento não informado'
+        const chave = `${modelo}-${nome}`.toLowerCase()
+        
+        const ordemInfo = {
+          id: order.id || '',
+          data: order.opening_date || 'Data não informada',
+          defeito: order.defect || 'Defeito não informado',
+          status: order.status || 'Em análise',
+          valor: order.total_amount || 0
+        }
+        
+        if (equipamentosMap.has(chave)) {
+          // Adicionar nova ordem ao equipamento existente
+          const equipamento = equipamentosMap.get(chave)
+          equipamento.ordens.push(ordemInfo)
+          if (!equipamento.defeitos.includes(ordemInfo.defeito)) {
+            equipamento.defeitos.push(ordemInfo.defeito)
+          }
+          equipamento.totalReparos++
+        } else {
+          // Criar novo equipamento
+          equipamentosMap.set(chave, {
+            tipo: nome,
+            marca: modelo?.split(' ')[0] || 'Marca não informada',
+            modelo: modelo,
+            cor: order.device_color || '',
+            defeitos: [ordemInfo.defeito],
+            ordens: [ordemInfo],
+            totalReparos: 1
+          })
+        }
+      })
+      
+      const equipamentosArray = Array.from(equipamentosMap.values())
+      console.log('🔧 Equipamentos processados:', equipamentosArray.length)
+      console.log('🔧 Equipamentos array:', equipamentosArray)
+      setEquipamentosAnteriores(equipamentosArray)
+    } catch (error) {
+      console.error('❌ Erro ao buscar equipamentos anteriores:', error)
+    }
+  }
+
+  // Efeito para buscar equipamentos quando cliente é selecionado
+  useEffect(() => {
+    console.log('👤 Cliente selecionado mudou:', clienteSelecionado)
+    if (clienteSelecionado?.nome) {
+      console.log('🔍 Iniciando busca para cliente Nome:', clienteSelecionado.nome)
+      // Usar o nome como ID se não tiver ID
+      const idParaBusca = clienteSelecionado.id || clienteSelecionado.nome
+      buscarEquipamentosAnteriores(idParaBusca)
+    } else {
+      console.log('❌ Nenhum cliente selecionado, limpando equipamentos')
+      setEquipamentosAnteriores([])
+    }
+  }, [clienteSelecionado])
+
+  // Função de teste para buscar um cliente específico (apenas para debug)
+  const testarBuscaCliente = async (nomeCliente: string) => {
+    console.log('🧪 Testando busca para cliente:', nomeCliente)
+    const clienteTeste = { nome: nomeCliente, id: nomeCliente }
+    setClienteSelecionado(clienteTeste as any)
+  }
+
+  // Expor função de teste no console para debug
+  useEffect(() => {
+    ;(window as any).testarBuscaCliente = testarBuscaCliente
+    ;(window as any).verificarEquipamentosAtual = () => {
+      console.log('📊 Estado atual dos equipamentos:', equipamentosAnteriores)
+      console.log('👤 Cliente atual:', clienteSelecionado)
+    }
+    ;(window as any).buscarEquipamentosDebug = buscarEquipamentosAnteriores
+    ;(window as any).testeSimples = async () => {
+      console.log('🧪 Teste simples - criando cliente fixo')
+      const clienteTeste = { 
+        id: 'test-id', 
+        nome: 'EDVANIA DA SILVA', 
+        telefone: '(11) 99999-9999',
+        email: 'test@test.com'
+      }
+      setClienteSelecionado(clienteTeste as any)
+      console.log('👤 Cliente definido:', clienteTeste)
+      
+      // Aguardar um pouco e buscar equipamentos
+      setTimeout(() => {
+        console.log('� Buscando equipamentos após 1 segundo')
+        buscarEquipamentosAnteriores('EDVANIA DA SILVA')
+      }, 1000)
+    }
+    console.log('�🛠️ Funções de teste disponíveis:')
+    console.log('- window.testarBuscaCliente("EDVANIA DA SILVA")')
+    console.log('- window.verificarEquipamentosAtual()')
+    console.log('- window.buscarEquipamentosDebug("EDVANIA DA SILVA")')
+    console.log('- window.testeSimples() // Teste com cliente fixo')
+  }, [equipamentosAnteriores, clienteSelecionado])
+
+  // Função para preencher dados do equipamento anterior
+  const preencherEquipamentoAnterior = (equipamento: any) => {
+    setValue('marca', equipamento.marca)
+    setValue('modelo', equipamento.modelo)
+    if (equipamento.cor) setValue('cor', equipamento.cor)
+    
+    // Tentar identificar o tipo
+    const tipoEquipamento = equipamento.tipo.toLowerCase()
+    if (tipoEquipamento.includes('celular') || tipoEquipamento.includes('smartphone')) {
+      setValue('tipo', 'Celular')
+    } else if (tipoEquipamento.includes('notebook') || tipoEquipamento.includes('laptop')) {
+      setValue('tipo', 'Notebook')
+    } else if (tipoEquipamento.includes('tablet')) {
+      setValue('tipo', 'Tablet')
+    } else if (tipoEquipamento.includes('console')) {
+      setValue('tipo', 'Console')
+    } else {
+      setValue('tipo', 'Outro')
+      setTipoPersonalizado(equipamento.tipo)
+      setMostrarCampoPersonalizado(true)
+    }
+    
+    toast.success('Dados do equipamento preenchidos!')
+  }
+
   // Atualizar checklist
-  const atualizarChecklist = (campo: keyof ChecklistOS, valor: boolean) => {
+  const atualizarChecklist = (itemId: string, valor: boolean) => {
     setChecklist(prev => ({
       ...prev,
-      [campo]: valor
+      [itemId]: valor
     }))
+  }
+
+  // Adicionar novo item ao checklist
+  const adicionarItemChecklist = () => {
+    if (novoItemChecklist.trim()) {
+      const novoId = `item_${Date.now()}`
+      setItensChecklist(prev => [...prev, { 
+        id: novoId, 
+        label: novoItemChecklist.trim() 
+      }])
+      setNovoItemChecklist('')
+      setMostrandoFormNovoItem(false)
+    }
+  }
+
+  // Remover item do checklist
+  const removerItemChecklist = (itemId: string) => {
+    setItensChecklist(prev => prev.filter(item => item.id !== itemId))
+    setChecklist(prev => {
+      const novoChecklist = { ...prev }
+      delete novoChecklist[itemId]
+      return novoChecklist
+    })
   }
 
   // Submeter formulário
@@ -147,6 +354,110 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
           onClienteSelect={setClienteSelecionado}
           clienteSelecionado={clienteSelecionado}
         />
+
+        {/* Seção: Equipamentos Anteriores */}
+        {equipamentosAnteriores.length > 0 && (
+          <Card className="p-6 bg-blue-50 border-blue-200">
+            <div className="flex items-center gap-2 mb-4">
+              <History className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Histórico de Equipamentos</h2>
+              <span className="text-sm text-gray-600">
+                ({equipamentosAnteriores.length} equipamento{equipamentosAnteriores.length > 1 ? 's' : ''})
+              </span>
+            </div>
+            
+            {/* Grid responsivo para mostrar cards lado a lado - mais compacto */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {equipamentosAnteriores.map((equipamento, index) => (
+                <div 
+                  key={index}
+                  className="bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
+                  onClick={() => preencherEquipamentoAnterior(equipamento)}
+                >
+                  {/* Cabeçalho ultra compacto */}
+                  <div className="flex items-start gap-2 mb-2">
+                    <Smartphone className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-gray-900 truncate" title={`${equipamento.marca} ${equipamento.modelo}`}>
+                        {equipamento.marca}
+                      </div>
+                      <div className="text-xs text-gray-600 truncate" title={equipamento.modelo}>
+                        {equipamento.modelo}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        {equipamento.tipo}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Badge de reparos mini */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                      {equipamento.totalReparos} rep.
+                    </span>
+                    {equipamento.cor && (
+                      <span className="text-xs text-gray-500 truncate" title={`Cor: ${equipamento.cor}`}>
+                        {equipamento.cor}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Defeito mais recente (só 1) */}
+                  {equipamento.defeitos.length > 0 && (
+                    <div className="mb-2">
+                      <div className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs truncate" title={equipamento.defeitos[0]}>
+                        {equipamento.defeitos[0].length > 20 ? 
+                          equipamento.defeitos[0].substring(0, 20) + '...' : 
+                          equipamento.defeitos[0]
+                        }
+                      </div>
+                      {equipamento.defeitos.length > 1 && (
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          +{equipamento.defeitos.length - 1} outros
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Última ordem (ultra resumida) */}
+                  {equipamento.ordens.length > 0 && (
+                    <div className="bg-gray-50 p-2 rounded border-l-2 border-blue-300">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-500">
+                          {equipamento.ordens[0]?.data?.split('-').reverse().join('/') || '--/--'}
+                        </span>
+                        <span className={`text-xs px-1 py-0.5 rounded ${
+                          equipamento.ordens[0]?.status === 'fechada' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {equipamento.ordens[0]?.status === 'fechada' ? '✓' : '⏳'}
+                        </span>
+                      </div>
+                      {(equipamento.ordens[0]?.valor || 0) > 0 && (
+                        <div className="text-xs font-medium text-green-600">
+                          R$ {(equipamento.ordens[0]?.valor || 0).toFixed(0)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Indicador de clique mini */}
+                  <div className="text-xs text-blue-600 mt-1 text-center opacity-50 hover:opacity-100">
+                    Clique aqui
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Histórico Completo:</strong> Todos os aparelhos e reparos anteriores do cliente. 
+                Clique no nome do equipamento para preencher automaticamente os dados.
+              </p>
+            </div>
+          </Card>
+        )}
 
         {/* Seção: Informações do Aparelho */}
         <Card className="p-6">
@@ -257,33 +568,128 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
 
         {/* Seção: Checklist Técnico */}
         <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Settings className="w-5 h-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Checklist Técnico</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-purple-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Checklist Técnico</h2>
+              <span className="text-sm text-gray-500">({itensChecklist.length} itens)</span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setMostrandoFormNovoItem(true)}
+              className="flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar Item
+            </Button>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[
-              { key: 'liga', label: 'Aparelho liga?' },
-              { key: 'tela_quebrada', label: 'Tela quebrada?' },
-              { key: 'molhado', label: 'Aparelho molhado?' },
-              { key: 'com_senha', label: 'Com senha?' },
-              { key: 'bateria_boa', label: 'Bateria boa?' },
-              { key: 'tampa_presente', label: 'Tampa presente?' },
-              { key: 'acessorios', label: 'Acessórios entregues?' },
-              { key: 'carregador', label: 'Carregador?' }
-            ].map((item) => (
-              <label key={item.key} className="flex items-center gap-2 cursor-pointer">
+
+          {/* Form para adicionar novo item */}
+          {mostrandoFormNovoItem && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+              <div className="flex gap-2">
                 <input
-                  type="checkbox"
-                  checked={checklist[item.key as keyof ChecklistOS] || false}
-                  onChange={(e) => atualizarChecklist(item.key as keyof ChecklistOS, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  type="text"
+                  value={novoItemChecklist}
+                  onChange={(e) => setNovoItemChecklist(e.target.value)}
+                  placeholder="Ex: Tela funcionando? / Aparelho carrega? / etc..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyPress={(e) => e.key === 'Enter' && adicionarItemChecklist()}
                 />
-                <span className="text-sm text-gray-700">{item.label}</span>
-              </label>
+                <Button
+                  type="button"
+                  onClick={adicionarItemChecklist}
+                  size="sm"
+                  disabled={!novoItemChecklist.trim()}
+                >
+                  Adicionar
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setMostrandoFormNovoItem(false)
+                    setNovoItemChecklist('')
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                💡 Dica: Adicione verificações que você sempre faz, como "Tela quebrada?", "Aparelho liga?", etc.
+              </p>
+            </div>
+          )}
+          
+          {/* Lista de itens do checklist */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {itensChecklist.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <label className="flex items-center gap-2 cursor-pointer flex-1">
+                  <input
+                    type="checkbox"
+                    checked={checklist[item.id] || false}
+                    onChange={(e) => atualizarChecklist(item.id, e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{item.label}</span>
+                </label>
+                
+                {/* Botão para remover item (só para itens personalizados) */}
+                {item.id !== 'aparelho_liga' && (
+                  <button
+                    type="button"
+                    onClick={() => removerItemChecklist(item.id)}
+                    className="ml-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                    title="Remover item"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
             ))}
+            
+            {/* Mensagem quando não há itens */}
+            {itensChecklist.length === 0 && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                <Settings className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhum item no checklist.</p>
+                <p className="text-sm">Clique em "Adicionar Item" para começar.</p>
+              </div>
+            )}
           </div>
+
+          {/* Sugestões rápidas */}
+          {itensChecklist.length <= 3 && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800 font-medium mb-2">💡 Sugestões de itens:</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  'Tela quebrada?',
+                  'Aparelho molhado?', 
+                  'Com senha?',
+                  'Bateria boa?',
+                  'Tampa presente?',
+                  'Carregador entregue?'
+                ].map((sugestao) => (
+                  <button
+                    key={sugestao}
+                    type="button"
+                    onClick={() => {
+                      setNovoItemChecklist(sugestao)
+                      setMostrandoFormNovoItem(true)
+                    }}
+                    className="text-xs bg-white text-blue-700 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100"
+                  >
+                    + {sugestao}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Seção: Detalhes do Problema */}

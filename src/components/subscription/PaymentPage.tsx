@@ -30,7 +30,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [testMode, setTestMode] = useState(false)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
 

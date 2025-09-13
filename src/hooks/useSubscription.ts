@@ -155,48 +155,6 @@ export function useSubscription() {
     loadSubscriptionData()
   }
 
-  // Escutar mudanças em tempo real na assinatura
-  const listenToSubscriptionChanges = () => {
-    if (!user?.email) return null
-
-    console.log('🔄 Iniciando escuta Realtime para assinatura:', user.email)
-
-    const channel = supabase
-      .channel('subscription-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'subscriptions',
-          filter: `user_email=eq.${user.email}`
-        },
-        (payload) => {
-          console.log('🔄 Mudança detectada na assinatura:', payload)
-          // Recarregar dados quando houver mudanças
-          setTimeout(() => {
-            loadSubscriptionData()
-          }, 1000) // Delay para garantir que os dados foram salvos
-        }
-      )
-      .subscribe()
-
-    return () => {
-      console.log('🧹 Removendo escuta Realtime da assinatura')
-      supabase.removeChannel(channel)
-    }
-  }
-
-  // Hook para escutar mudanças em tempo real
-  useEffect(() => {
-    const unsubscribe = listenToSubscriptionChanges()
-    return () => {
-      if (unsubscribe) {
-        unsubscribe()
-      }
-    }
-  }, [user?.email])
-
   return {
     // Estados
     subscriptionStatus,

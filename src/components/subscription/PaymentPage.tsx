@@ -692,7 +692,9 @@ export function PaymentPage({}: PaymentPageProps) {
               💳 Já fez o pagamento?
             </p>
             <p className="text-blue-600 text-sm mb-3">
-              Se você já efetuou o pagamento, clique no botão abaixo para verificar o status.
+              <span className="font-medium">🚀 NOVIDADE:</span> O sistema agora detecta pagamentos automaticamente via webhook!
+              <br />
+              Se você já efetuou o pagamento, aguarde alguns minutos ou clique no botão abaixo para verificar.
               <br />
               <span className="font-medium">
                 O sistema só redirecionará automaticamente após confirmar a aprovação do pagamento.

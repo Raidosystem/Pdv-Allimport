@@ -1,4 +1,7 @@
--- CORREÇÃO: Adicionar 30 dias à assinatura existente ao invés de resetar
+-- CORREÇÃO: Adicionar 31 dias à assinatura existente ao invés de resetar
+-- Primeiro remove a função existente para evitar conflitos
+
+DROP FUNCTION IF EXISTS activate_subscription_after_payment(TEXT, TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION activate_subscription_after_payment(
   user_email TEXT,
@@ -24,7 +27,7 @@ BEGIN
   -- Pegar a data atual de expiração
   current_end_date := subscription_record.subscription_end_date;
   
-  -- Determinar a data base para adicionar 30 dias:
+  -- Determinar a data base para adicionar 31 dias:
   -- Se a assinatura ainda está válida (data futura), usar a data de expiração atual
   -- Se já expirou, usar a data atual
   IF current_end_date > NOW() THEN
@@ -33,8 +36,8 @@ BEGIN
     base_date := NOW();
   END IF;
   
-  -- Calcular nova data de expiração (30 dias adicionados à base_date)
-  subscription_end := base_date + INTERVAL '30 days';
+  -- Calcular nova data de expiração (31 dias adicionados à base_date)
+  subscription_end := base_date + INTERVAL '31 days';
   
   -- Atualizar assinatura
   UPDATE public.subscriptions 
@@ -55,13 +58,13 @@ BEGIN
     'success', true,
     'status', 'active',
     'subscription_end_date', subscription_end,
-    'days_added', 30,
+    'days_added', 31,
     'previous_end_date', current_end_date,
     'message', CASE 
       WHEN current_end_date > NOW() THEN 
-        'Renovação: 30 dias adicionados ao tempo restante'
+        'Renovação: 31 dias adicionados ao tempo restante'
       ELSE 
-        'Ativação: 30 dias a partir de hoje'
+        'Ativação: 31 dias a partir de hoje'
     END
   );
 END;

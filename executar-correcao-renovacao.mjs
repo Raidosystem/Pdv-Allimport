@@ -32,6 +32,8 @@ async function executarCorrecaoRenovacao() {
         console.log('💡 Executando via RPC personalizado...')
         // Criar a função diretamente
         const createFunctionQuery = `
+        DROP FUNCTION IF EXISTS activate_subscription_after_payment(TEXT, TEXT, TEXT);
+        
         CREATE OR REPLACE FUNCTION activate_subscription_after_payment(
           user_email TEXT,
           payment_id TEXT,
@@ -60,7 +62,7 @@ async function executarCorrecaoRenovacao() {
             base_date := NOW();
           END IF;
           
-          subscription_end := base_date + INTERVAL '30 days';
+          subscription_end := base_date + INTERVAL '31 days';
           
           UPDATE public.subscriptions 
           SET 
@@ -80,13 +82,13 @@ async function executarCorrecaoRenovacao() {
             'success', true,
             'status', 'active',
             'subscription_end_date', subscription_end,
-            'days_added', 30,
+            'days_added', 31,
             'previous_end_date', current_end_date,
             'message', CASE 
               WHEN current_end_date > NOW() THEN 
-                'Renovação: 30 dias adicionados ao tempo restante'
+                'Renovação: 31 dias adicionados ao tempo restante'
               ELSE 
-                'Ativação: 30 dias a partir de hoje'
+                'Ativação: 31 dias a partir de hoje'
             END
           );
         END;
@@ -106,9 +108,9 @@ async function executarCorrecaoRenovacao() {
     }
     
     console.log('\n🎯 CORREÇÃO IMPLEMENTADA:')
-    console.log('- Renovação AGORA adiciona 30 dias ao tempo restante')
-    console.log('- Se cliente tem 10 dias + paga = 40 dias total')
-    console.log('- Se assinatura expirou = 30 dias a partir de hoje')
+    console.log('- Renovação AGORA adiciona 31 dias ao tempo restante')
+    console.log('- Se cliente tem 10 dias + paga = 41 dias total')
+    console.log('- Se assinatura expirou = 31 dias a partir de hoje')
     
   } catch (error) {
     console.error('❌ Erro:', error)

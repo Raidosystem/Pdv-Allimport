@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Payment Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Payment Status</h1>
+        <p>Esta ferramenta permite verificar diretamente o status de pagamentos PIX.</p>
+        
+        <div class="input-group">
+            <label>Payment ID:</label>
+            <input type="text" id="paymentId" placeholder="Digite o ID do pagamento PIX" />
+        </div>
+        
+        <button onclick="checkPaymentStatus()">🔍 Verificar Status</button>
+        <button onclick="testActivation()">🚀 Testar Ativação</button>
+        <button onclick="checkCurrentUser()">👤 Verificar Usuário Atual</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `result ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            resultDiv.appendChild(logEntry);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        async function checkPaymentStatus() {
+            const paymentId = document.getElementById('paymentId').value;
+            if (!paymentId) {
+                log('❌ Digite um Payment ID válido', 'error');
+                return;
+            }
+
+            try {
+                log(`🔍 Verificando status do pagamento: ${paymentId}`);
+                
+                // Usar a mesma API que o sistema
+                const response = await fetch(`/api/payment-status?paymentId=${paymentId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Status recebido: ${JSON.stringify(data, null, 2)}`, 'success');
+                    
+                    if (data.approved) {
+                        log('🎉 PAGAMENTO APROVADO! Pode ativar a assinatura.', 'success');
+                    } else {
+                        log(`⏳ Pagamento pendente. Status: ${data.status}`, 'info');
+                    }
+                } else {
+                    log(`❌ Erro na API: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro na requisição: ${error.message}`, 'error');
+            }
+        }
+
+        async function testActivation() {
+            const paymentId = document.getElementById('paymentId').value;
+            if (!paymentId) {
+                log('❌ Digite um Payment ID válido', 'error');
+                return;
+            }
+
+            try {
+                log(`🚀 Testando ativação com Payment ID: ${paymentId}`);
+                
+                // Simular chamada da função SQL
+                const testData = {
+                    user_email: 'teste@exemplo.com', // Você pode ajustar isso
+                    payment_id: paymentId,
+                    payment_method: 'pix'
+                };
+                
+                log(`📤 Dados que seriam enviados para a função SQL: ${JSON.stringify(testData, null, 2)}`, 'info');
+                log('⚠️ Esta é apenas uma simulação. Para testar realmente, use o botão na aplicação.', 'info');
+                
+            } catch (error) {
+                log(`❌ Erro no teste: ${error.message}`, 'error');
+            }
+        }
+
+        function checkCurrentUser() {
+            log('👤 Para verificar o usuário atual, abra o console do navegador na aplicação principal e digite:', 'info');
+            log('localStorage.getItem("sb-wxrhffyhtyhlkocnuiyv-auth-token")', 'info');
+            log('ou verifique em Application > Local Storage no DevTools', 'info');
+        }
+
+        // Carregar automaticamente se houver ID na URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentId = urlParams.get('paymentId');
+            if (paymentId) {
+                document.getElementById('paymentId').value = paymentId;
+                log(`📥 Payment ID carregado da URL: ${paymentId}`, 'info');
+            }
+        };
+    </script>
+</body>
+</html>

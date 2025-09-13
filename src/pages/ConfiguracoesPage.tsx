@@ -9,8 +9,7 @@ import {
   Palette,
   ArrowLeft,
   ChevronRight,
-  Crown,
-  Printer
+  Crown
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -19,7 +18,7 @@ import { useSubscription } from '../hooks/useSubscription'
 import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../components/subscription/SubscriptionCountdown'
 
-type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription' | 'printing'
+type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription'
 
 export function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState<ConfigSection>('dashboard')
@@ -67,13 +66,6 @@ export function ConfiguracoesPage() {
       description: 'Tema e personalização visual',
       icon: Palette,
       color: 'bg-pink-500'
-    },
-    {
-      id: 'printing' as ConfigSection,
-      title: 'Impressão',
-      description: 'Configurações de impressora e recibos',
-      icon: Printer,
-      color: 'bg-blue-600'
     },
     {
       id: 'subscription' as ConfigSection,
@@ -247,63 +239,6 @@ export function ConfiguracoesPage() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Aparência</h3>
             <p className="text-gray-600">Configurações de aparência em desenvolvimento...</p>
-          </Card>
-        )
-      
-      case 'printing':
-        return (
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                  <Printer className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-semibold">Configurações de Impressão</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Configure sua impressora e personalize recibos e relatórios.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Impressora Padrão</h4>
-                  <p className="text-sm text-gray-600 mb-3">Selecione a impressora para recibos e relatórios</p>
-                  <select className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option>Selecionar impressora...</option>
-                    <option>Impressora Padrão do Sistema</option>
-                    <option>Impressora Térmica</option>
-                  </select>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Configurações de Recibo</h4>
-                  <div className="space-y-3">
-                    <label className="flex items-center">
-                      <input type="checkbox" className="mr-2" defaultChecked />
-                      <span className="text-sm text-gray-700">Imprimir logo da empresa</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="mr-2" defaultChecked />
-                      <span className="text-sm text-gray-700">Incluir informações de contato</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="mr-2" />
-                      <span className="text-sm text-gray-700">Imprimir automaticamente após venda</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
-                    <Printer className="w-4 h-4 mr-2" />
-                    Teste de Impressão
-                  </Button>
-                  <Button className="flex-1">
-                    Salvar Configurações
-                  </Button>
-                </div>
-              </div>
-            </div>
           </Card>
         )
       

@@ -33,42 +33,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
 
-  // FUNÇÃO DE TESTE: Simular pagamento aprovado para debug
-  const testSubscriptionRenewal = async () => {
-    if (!user?.email) {
-      toast.error('Usuário não encontrado')
-      return
-    }
-
-    try {
-      setLoading(true)
-      toast.success('🧪 TESTE: Simulando pagamento aprovado...')
-      
-      const testPaymentId = 'test-' + Date.now()
-      
-      console.log('🧪 TESTE: Iniciando renovação com payment_id:', testPaymentId)
-      
-      // Chamar diretamente a função de ativação
-      await activateAfterPayment(testPaymentId, 'pix')
-      
-      toast.success('🎉 TESTE: Renovação executada com sucesso!')
-      
-      // Atualizar dados
-      await refresh()
-      setPaymentStatus('success')
-      
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 2000)
-      
-    } catch (error) {
-      console.error('❌ TESTE: Erro na renovação:', error)
-      toast.error('TESTE: Erro na renovação - veja o console')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // Reset error when changing payment method
   const handlePaymentMethodChange = (method: 'pix' | 'card') => {
     setError(null)
@@ -663,18 +627,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             >
               🔄 Verificar Status da Assinatura
             </Button>
-            
-            {/* Botão de teste para debug da renovação */}
-            <div className="mt-3">
-              <Button
-                onClick={testSubscriptionRenewal}
-                loading={loading}
-                variant="outline"
-                className="bg-orange-600 text-white hover:bg-orange-700 border-orange-600"
-              >
-                🧪 TESTE: Simular Renovação
-              </Button>
-            </div>
             
             {/* Botão para voltar ao dashboard */}
             <div className="mt-3">

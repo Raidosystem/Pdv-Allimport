@@ -42,12 +42,18 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
     if (pixData && paymentStatus === 'waiting' && !String(pixData.payment_id).startsWith('mock-')) {
+      console.log('🔄 Iniciando verificação periódica do PIX:', pixData.payment_id);
+      
       const interval = setInterval(async () => {
         try {
           setCheckingPayment(true)
+          console.log('🔍 Verificando status do PIX automaticamente:', pixData.payment_id);
+          
           const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id))
+          console.log('📊 Status recebido:', status);
           
           if (status.approved) {
+            console.log('✅ PIX APROVADO! Iniciando ativação da assinatura...');
             setPaymentStatus('success')
             toast.success('🎉 Pagamento confirmado! Ativando assinatura...')
             
@@ -59,23 +65,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
               })
               
               if (user?.email) {
-                await activateAfterPayment(String(pixData.payment_id), 'pix')
+                const activationResult = await activateAfterPayment(String(pixData.payment_id), 'pix')
+                console.log('🎯 Resultado da ativação:', activationResult);
                 toast.success('✅ Assinatura ativada com sucesso!')
+                
+                // Aguardar e atualizar dados
+                setTimeout(async () => {
+                  await refresh()
+                  setPaymentStatus('success')
+                  console.log('🔄 Dados da assinatura atualizados');
+                }, 2000)
               }
             } catch (activationError) {
               console.error('❌ Erro ao ativar assinatura:', activationError)
               toast.error('Pagamento confirmado, mas houve erro na ativação. Contate o suporte.')
             }
             
-            // Aguardar um pouco para mostrar a mensagem de sucesso
-            setTimeout(() => {
-              // Atualizar estado ao invés de reload
-              refresh()
-              setPaymentStatus('success')
-            }, 2000)
-            
             onPaymentSuccess?.()
             clearInterval(interval)
+          } else {
+            console.log('⏳ PIX ainda pendente, status:', status.status);
           }
         } catch (error) {
           console.error('Erro ao verificar status do pagamento:', error)
@@ -259,8 +268,10 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       if (pixData && pixData.payment_id && !String(pixData.payment_id).startsWith('mock-')) {
         console.log('🔍 Verificando status específico do PIX:', pixData.payment_id);
         try {
+          toast.loading(`🔍 Consultando pagamento PIX: ${pixData.payment_id}...`, { duration: 3000 });
+          
           const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id));
-          console.log('📊 Status do PIX:', status);
+          console.log('📊 Status detalhado do PIX:', status);
           
           if (status.approved) {
             toast.success('✅ Pagamento PIX encontrado e aprovado!');
@@ -268,7 +279,10 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
             
             // Ativar assinatura
             try {
-              await activateAfterPayment(String(pixData.payment_id), 'pix');
+              console.log('🚀 Iniciando ativação da assinatura...');
+              const activationResult = await activateAfterPayment(String(pixData.payment_id), 'pix');
+              console.log('✅ Resultado da ativação:', activationResult);
+              
               toast.success('🎉 Assinatura ativada com sucesso!');
               
               // Atualizar estado local sem reload
@@ -289,23 +303,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
           } else {
             toast(`⏳ PIX ainda pendente. Status: ${status.status}`, {
               icon: 'ℹ️',
-              duration: 4000
+              duration: 6000
             });
+            console.log('⏳ Detalhes do status pendente:', status);
             // Não redirecionar se pagamento ainda está pendente
             return;
           }
         } catch (statusError) {
           console.error('❌ Erro ao verificar status do PIX:', statusError);
-          toast.error('Erro ao verificar status do PIX');
+          toast.error('Erro ao verificar status do PIX. Tente novamente em alguns minutos.');
           return;
         }
       }
       
       // Recarregar dados da assinatura
+      console.log('🔄 Atualizando dados da assinatura...');
       await refresh();
       
       // Verificar se a assinatura está vencida (0 dias ou menos)
       const isExpired = daysRemaining <= 0;
+      console.log('📅 Status da assinatura:', { daysRemaining, isExpired });
       
       if (!paymentApproved && !isExpired) {
         // Se não há pagamento aprovado e assinatura não venceu, não redirecionar

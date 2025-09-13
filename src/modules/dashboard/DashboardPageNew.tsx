@@ -38,6 +38,7 @@ import { Button } from '../../components/ui/Button'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
+import { SubscriptionDaysIndicator } from '../../components/subscription/SubscriptionDaysIndicator'
 import { SalesPage } from '../sales/SalesPage'
 import { ClientesPage } from '../clientes/ClientesPage'
 import { ProductsPage } from '../../pages/ProductsPage'
@@ -358,6 +359,11 @@ export function DashboardPage() {
                 <h1 className="text-xl font-bold text-gray-900">PDV Allimport</h1>
                 <p className="text-sm text-gray-600 hidden sm:block">Sistema de Ponto de Venda</p>
               </div>
+            </div>
+            
+            {/* Indicador de dias restantes da assinatura */}
+            <div className="flex-1 flex justify-center">
+              <SubscriptionDaysIndicator />
             </div>
             
             {/* Actions */}

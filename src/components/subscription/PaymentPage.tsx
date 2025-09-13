@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
 import { Button } from '../ui/Button'
@@ -13,7 +13,7 @@ interface PaymentPageProps {
   onPaymentSuccess?: () => void
 }
 
-export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
+export function PaymentPage({}: PaymentPageProps) {
   const { user } = useAuth()
   const { subscription, daysRemaining, refresh, activateAfterPayment, isInTrial } = useSubscription()
   const [searchParams] = useSearchParams()
@@ -26,7 +26,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
     qr_code_base64: string
     payment_id: string
   } | null>(null)
-  const [checkingPayment, setCheckingPayment] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,13 +46,6 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       console.log('🧹 PaymentPage desmontada');
       isMountedRef.current = false
       setComponentMounted(false);
-    }
-  }, [])
-
-  // Função segura para setState apenas se montado
-  const safeSetState = useCallback((setter: () => void) => {
-    if (isMountedRef.current) {
-      setter()
     }
   }, [])
 
@@ -554,7 +546,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                 )}
 
                 <div className="flex items-center justify-center space-x-2 text-secondary-600 mb-6">
-                  {checkingPayment ? (
+                  {paymentStatus === 'checking' ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
                       <span>Verificando pagamento...</span>

@@ -94,6 +94,12 @@ export class SubscriptionService {
     paymentMethod: string
   ) {
     try {
+      console.log('🔄 Chamando função SQL activate_subscription_after_payment:', {
+        userEmail,
+        paymentId,
+        paymentMethod
+      });
+
       const { data, error } = await supabase.rpc('activate_subscription_after_payment', {
         user_email: userEmail,
         payment_id: paymentId,
@@ -101,7 +107,16 @@ export class SubscriptionService {
       })
 
       if (error) {
+        console.error('❌ Erro na função SQL:', error);
         throw new Error(`Erro ao ativar assinatura: ${error.message}`)
+      }
+
+      console.log('✅ Resultado da função SQL:', data);
+      
+      // Verificar se a função retornou sucesso
+      if (data && data.success === false) {
+        console.error('❌ Função SQL retornou erro:', data.error);
+        throw new Error(`Erro na renovação: ${data.error || 'Erro desconhecido'}`);
       }
 
       return data

@@ -131,7 +131,26 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         if (!pixInfo.qr_code && !pixInfo.qr_code_base64) {
           console.warn('⚠️ Nenhum QR Code foi gerado - forçando modo demo');
           pixInfo.qr_code = 'demo_qr_code_' + Date.now();
-          pixInfo.qr_code_base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+          // Usar um QR code demo melhor
+          pixInfo.qr_code_base64 = 'data:image/svg+xml;base64,' + btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+              <rect width="256" height="256" fill="white"/>
+              <rect x="20" y="20" width="40" height="40" fill="black"/>
+              <rect x="80" y="20" width="20" height="20" fill="black"/>
+              <rect x="120" y="20" width="20" height="20" fill="black"/>
+              <rect x="160" y="20" width="40" height="40" fill="black"/>
+              <rect x="220" y="20" width="20" height="20" fill="black"/>
+              <text x="128" y="120" text-anchor="middle" font-family="monospace" font-size="14" fill="black">
+                QR CODE DEMO
+              </text>
+              <text x="128" y="140" text-anchor="middle" font-family="monospace" font-size="10" fill="gray">
+                PIX de demonstração
+              </text>
+              <text x="128" y="160" text-anchor="middle" font-family="monospace" font-size="10" fill="gray">
+                Valor: R$ ${plan.price.toFixed(2)}
+              </text>
+            </svg>
+          `);
           pixInfo.payment_id = 'demo_' + Date.now();
           setIsDemoMode(true);
         }

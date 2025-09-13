@@ -1,15 +1,24 @@
 import type { MercadoPagoPreference, MercadoPagoPayment } from '../types/subscription'
 
-// Configuração do Mercado Pago
-const MP_ACCESS_TOKEN = import.meta.env.VITE_MP_ACCESS_TOKEN || ''
-const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || ''
-const MP_BASE_URL = import.meta.env.VITE_MP_BASE_URL || 'https://api.mercadopago.com'
+// Credenciais de produção do Mercado Pago para comercialização
+const MP_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193'
+const MP_PUBLIC_KEY = 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022'
+const MP_BASE_URL = 'https://api.mercadopago.com'
 
 export class MercadoPagoService {
   
   // Verificar se as credenciais estão configuradas
   static hasCredentials(): boolean {
-    return !!(MP_ACCESS_TOKEN && MP_PUBLIC_KEY && MP_ACCESS_TOKEN !== '' && MP_PUBLIC_KEY !== '')
+    return true // Credenciais de produção sempre configuradas
+  }
+
+  // Obter credenciais de produção
+  static getCredentials() {
+    return {
+      accessToken: MP_ACCESS_TOKEN,
+      publicKey: MP_PUBLIC_KEY,
+      baseUrl: MP_BASE_URL
+    }
   }
 
   // Mock para desenvolvimento
@@ -56,11 +65,7 @@ export class MercadoPagoService {
     planPrice: number,
     planName: string
   ): Promise<MercadoPagoPreference> {
-    // Se não tiver credenciais configuradas, usar mock
-    if (!this.hasCredentials()) {
-      console.warn('⚠️ Credenciais do Mercado Pago não configuradas. Usando mock para desenvolvimento.')
-      return this.createMockPreference(planPrice, planName)
-    }
+    console.log('🚀 Criando preferência de pagamento com credenciais de produção');
 
     try {
       const preferenceData = {
@@ -145,11 +150,7 @@ export class MercadoPagoService {
     amount: number,
     description: string
   ): Promise<{ qr_code: string; qr_code_base64: string; payment_id: string }> {
-    // Se não tiver credenciais configuradas, usar mock
-    if (!this.hasCredentials()) {
-      console.warn('⚠️ Credenciais do Mercado Pago não configuradas. Usando mock para desenvolvimento.')
-      return this.createMockPix(amount)
-    }
+    console.log('🚀 Gerando QR Code PIX com credenciais de produção');
 
     try {
       const pixData = {
@@ -255,19 +256,10 @@ export class MercadoPagoService {
 
   // Validar configuração do Mercado Pago
   static validateConfiguration(): { valid: boolean; errors: string[] } {
-    const errors: string[] = []
-
-    if (!MP_ACCESS_TOKEN) {
-      errors.push('VITE_MP_ACCESS_TOKEN não configurado')
-    }
-
-    if (!MP_PUBLIC_KEY) {
-      errors.push('VITE_MP_PUBLIC_KEY não configurado')
-    }
-
+    // Credenciais de produção sempre configuradas
     return {
-      valid: errors.length === 0,
-      errors
+      valid: true,
+      errors: []
     }
   }
 }

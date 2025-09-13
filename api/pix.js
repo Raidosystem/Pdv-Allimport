@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         last_name: 'PDV'
       },
       external_reference: `pix_${Date.now()}`,
-      notification_url: `https://pdv-allimport.vercel.app/api/webhook`
+      notification_url: `${req.headers.origin || 'https://pdv-allimport-90oev2mm0-radiosystem.vercel.app'}/api/mp/webhook`
     };
 
     console.log('📤 Enviando para Mercado Pago:', paymentData);

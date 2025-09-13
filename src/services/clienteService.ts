@@ -5,6 +5,8 @@ export class ClienteService {
   // Buscar todos os clientes com filtros
   static async buscarClientes(filtros: ClienteFilters = {}) {
     try {
+      console.log('🚀 [CLIENTE SERVICE] Iniciando busca com filtros:', filtros)
+      
       // Primeiro tentar buscar no Supabase
       let query = supabase
         .from('clientes')
@@ -29,10 +31,11 @@ export class ClienteService {
       const { data, error } = await query
 
       if (error) {
-        console.warn('Erro ao buscar clientes no Supabase, tentando backup:', error)
+        console.warn('[CLIENTE SERVICE] Erro ao buscar clientes no Supabase, tentando backup:', error)
       }
 
       let clientesSupabase = data || []
+      console.log(`📊 [CLIENTE SERVICE] Encontrados ${clientesSupabase.length} clientes no Supabase`)
 
       // Buscar também no backup
       let clientesBackup: Cliente[] = []
@@ -99,25 +102,74 @@ export class ClienteService {
         // Aplicar filtro de busca nos clientes do backup
         if (filtros.search) {
           const search = filtros.search.toLowerCase()
-          clientesBackup = clientesBackup.filter(cliente => 
-            cliente.nome.toLowerCase().includes(search) ||
-            cliente.telefone.includes(search) ||
-            (cliente.cpf_cnpj && String(cliente.cpf_cnpj).includes(search)) ||
-            (cliente.endereco && cliente.endereco.toLowerCase().includes(search))
-          )
+          console.log(`🔍 [CLIENTE SERVICE] Aplicando filtro de busca no backup: "${search}"`)
+          
+          const clientesAntesFiltro = clientesBackup.length
+          clientesBackup = clientesBackup.filter(cliente => {
+            const nome = cliente.nome.toLowerCase()
+            const telefone = cliente.telefone || ''
+            const cpf_cnpj = String(cliente.cpf_cnpj || '')
+            const endereco = (cliente.endereco || '').toLowerCase()
+            
+            // Buscar em diferentes campos
+            const matchNome = nome.includes(search)
+            const matchTelefone = telefone.includes(search)
+            const matchCpfCnpj = cpf_cnpj.includes(search) || cpf_cnpj.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
+            const matchEndereco = endereco.includes(search)
+            
+            const match = matchNome || matchTelefone || matchCpfCnpj || matchEndereco
+            
+            if (match) {
+              console.log(`✅ [BACKUP FILTER] Match encontrado: ${cliente.nome}`)
+              console.log(`    - Nome: ${matchNome ? '✓' : '✗'}`)
+              console.log(`    - Telefone: ${matchTelefone ? '✓' : '✗'}`)
+              console.log(`    - CPF/CNPJ: ${matchCpfCnpj ? '✓' : '✗'} (${cpf_cnpj})`)
+              console.log(`    - Endereço: ${matchEndereco ? '✓' : '✗'}`)
+            }
+            
+            return match
+          })
+          
+          console.log(`📊 [CLIENTE SERVICE] Filtro aplicado: ${clientesAntesFiltro} → ${clientesBackup.length} clientes`)
         }
       } catch (backupError) {
         console.warn('Erro ao buscar clientes no backup:', backupError)
       }
 
-      // Combinar clientes do Supabase e backup, removendo duplicatas
+      // Combinar clientes do Supabase e backup, priorizando dados mais completos
       const todosClientes = [...clientesSupabase]
+      
       clientesBackup.forEach(clienteBackup => {
-        const jaExiste = todosClientes.some(cliente => 
+        // Procurar por cliente similar no Supabase
+        const clienteSupabaseIndex = todosClientes.findIndex(cliente => 
           cliente.nome.toLowerCase() === clienteBackup.nome.toLowerCase() ||
-          (cliente.telefone && clienteBackup.telefone && cliente.telefone === clienteBackup.telefone)
+          (cliente.telefone && clienteBackup.telefone && cliente.telefone === clienteBackup.telefone) ||
+          (cliente.cpf_cnpj && clienteBackup.cpf_cnpj && 
+           cliente.cpf_cnpj.replace(/\D/g, '') === clienteBackup.cpf_cnpj.replace(/\D/g, ''))
         )
-        if (!jaExiste) {
+        
+        if (clienteSupabaseIndex >= 0) {
+          // Cliente existe no Supabase, mesclar dados priorizando os mais completos
+          const clienteSupabase = todosClientes[clienteSupabaseIndex]
+          const clienteMesclado = {
+            ...clienteSupabase,
+            // Priorizar dados do backup se estiverem mais completos
+            cpf_cnpj: clienteBackup.cpf_cnpj || clienteSupabase.cpf_cnpj,
+            endereco: clienteBackup.endereco || clienteSupabase.endereco,
+            telefone: clienteBackup.telefone || clienteSupabase.telefone,
+            email: clienteBackup.email || clienteSupabase.email,
+          }
+          
+          console.log(`🔄 Mesclando dados para ${clienteSupabase.nome}:`, {
+            cpf_antes: clienteSupabase.cpf_cnpj,
+            cpf_depois: clienteMesclado.cpf_cnpj,
+            endereco_antes: clienteSupabase.endereco,
+            endereco_depois: clienteMesclado.endereco
+          })
+          
+          todosClientes[clienteSupabaseIndex] = clienteMesclado
+        } else {
+          // Cliente não existe no Supabase, adicionar do backup
           todosClientes.push(clienteBackup)
         }
       })

@@ -14,7 +14,7 @@ import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductFormModal } from '../../components/product/ProductFormModal'
 import PrintConfirmationModal from '../../components/PrintConfirmationModal'
-import { salesService } from '../../services/salesNew'
+import { salesService } from '../../services/salesEmbedded'
 import type { Product, Customer } from '../../types/sales'
 import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
@@ -152,14 +152,15 @@ export function SalesPage() {
         user_id: user.id,
         total_amount: totalAmount,
         discount_amount: discountAmount,
-        payment_method: payments.length > 0 ? 'mixed' : 'cash',
+        payment_method: (payments.length > 0 ? 'mixed' : 'cash') as 'cash' | 'card' | 'pix' | 'mixed',
         payment_details: {
-          payments,
+          payments_count: payments.length,
           cash_received: cashReceived,
           change_amount: changeAmount
-        },
+        } as Record<string, string | number | boolean>,
+        status: 'completed' as const,
         notes: '',
-        items: items.map(item => ({
+        sale_items: items.map(item => ({
           product_id: item.product.id,
           quantity: item.quantity,
           unit_price: item.unit_price,

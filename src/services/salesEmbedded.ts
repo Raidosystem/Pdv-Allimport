@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { Product, Customer, Sale, CashRegister, SaleSearchParams } from '../types/sales'
+import type { Product, Customer, Sale, CashRegister, SaleSearchParams, SaleItem } from '../types/sales'
 import { EMBEDDED_PRODUCTS, searchEmbeddedProducts } from '../data/products'
 
 // Serviços de Produtos
@@ -173,9 +173,30 @@ export const customerService = {
   }
 };
 
+// Tipos auxiliares para criação de venda
+interface SaleItemInput {
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
+interface SaleInput {
+  customer_id?: string;
+  cash_register_id: string;
+  user_id: string;
+  total_amount: number;
+  discount_amount: number;
+  payment_method: 'cash' | 'card' | 'pix' | 'mixed';
+  payment_details?: Record<string, string | number | boolean>;
+  status: 'pending' | 'completed' | 'cancelled';
+  notes?: string;
+  sale_items?: SaleItemInput[];
+}
+
 // Serviços de Vendas
 export const saleService = {
-  async create(sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>): Promise<Sale> {
+  async create(sale: SaleInput): Promise<Sale> {
     try {
       const { data, error } = await supabase
         .from('vendas')
@@ -193,9 +214,10 @@ export const saleService = {
       if (error) throw error;
       
       // Inserir itens da venda
+      const saleItems: SaleItem[] = [];
       if (sale.sale_items) {
         for (const item of sale.sale_items) {
-          await supabase
+          const { data: itemData, error: itemError } = await supabase
             .from('vendas_itens')
             .insert({
               venda_id: data.id,
@@ -203,7 +225,21 @@ export const saleService = {
               quantidade: item.quantity,
               preco_unitario: item.unit_price,
               subtotal: item.total_price
-            });
+            })
+            .select()
+            .single();
+            
+          if (itemError) throw itemError;
+          
+          saleItems.push({
+            id: itemData.id,
+            sale_id: itemData.venda_id,
+            product_id: itemData.produto_id,
+            quantity: itemData.quantidade,
+            unit_price: itemData.preco_unitario,
+            total_price: itemData.subtotal,
+            created_at: itemData.criado_em
+          });
         }
       }
       
@@ -217,7 +253,7 @@ export const saleService = {
         status: data.status,
         payment_method: data.metodo_pagamento,
         notes: data.observacoes || '',
-        sale_items: sale.sale_items,
+        sale_items: saleItems,
         created_at: data.criado_em,
         updated_at: data.atualizado_em
       };
@@ -325,3 +361,6 @@ export const cashRegisterService = {
     }
   }
 };
+
+// Alias para compatibilidade
+export const salesService = saleService;

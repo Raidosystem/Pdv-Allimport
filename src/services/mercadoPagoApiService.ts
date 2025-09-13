@@ -327,6 +327,36 @@ class MercadoPagoApiService {
     }
   }
 
+  private async checkPaymentStatusDirect(paymentId: string): Promise<{ status: string; approved: boolean }> {
+    try {
+      console.log(`🔍 Verificando status direto no MP: ${paymentId}`);
+      
+      const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.getAccessToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('❌ Erro na consulta MP:', response.status);
+        return { status: 'pending', approved: false };
+      }
+
+      const paymentData = await response.json();
+      console.log('✅ Status recebido do MP:', paymentData.status);
+
+      return {
+        status: paymentData.status || 'unknown',
+        approved: paymentData.status === 'approved'
+      };
+    } catch (error) {
+      console.error('❌ Erro na verificação direta:', error);
+      return { status: 'error', approved: false };
+    }
+  }
+
   async checkPaymentStatus(paymentId: string): Promise<{ status: string; approved: boolean }> {
     try {
       const paymentIdStr = String(paymentId);
@@ -343,14 +373,13 @@ class MercadoPagoApiService {
         return { status: 'pending', approved: false };
       }
 
-      // Verificar se a API está disponível
-      const apiAvailable = await this.isApiAvailable();
-      
-      if (!apiAvailable) {
-        return { status: 'pending', approved: false };
+      // Em desenvolvimento local, usar chamada direta ao Mercado Pago
+      if (this.isLocalDev) {
+        console.log('🔍 Verificando status diretamente no Mercado Pago...');
+        return await this.checkPaymentStatusDirect(paymentIdStr);
       }
 
-      const response = await this.makeApiCall(`/api/payment-status/${paymentIdStr}`);
+      const response = await this.makeApiCall(`/api/payment-status?paymentId=${paymentIdStr}`);
       
       return {
         status: response.status || 'unknown',

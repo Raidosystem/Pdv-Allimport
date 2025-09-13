@@ -90,11 +90,32 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
   // Preencher valores formatados se editando cliente existente
   useEffect(() => {
     if (cliente) {
+      // Campos básicos
+      setValue('nome', cliente.nome || '')
+      setValue('email', cliente.email || '')
+      setValue('telefone', cliente.telefone || '')
+      setValue('cpf_cnpj', cliente.cpf_cnpj || '')
+      setValue('tipo', cliente.tipo || 'Física')
+      setValue('observacoes', cliente.observacoes || '')
+      setValue('endereco', cliente.endereco || '')
+      
+      // Campos específicos de endereço
+      setValue('tipo_logradouro', cliente.tipo_logradouro || '')
+      setValue('logradouro', cliente.logradouro || '')
+      setValue('numero', cliente.numero || '')
+      setValue('complemento', cliente.complemento || '')
+      setValue('bairro', cliente.bairro || '')
+      setValue('cidade', cliente.cidade || '')
+      setValue('estado', cliente.estado || '')
+      setValue('cep', cliente.cep || '')
+      setValue('ponto_referencia', cliente.ponto_referencia || '')
+      
+      // Valores formatados para os states
       setTelefoneValue(formatarTelefone(cliente.telefone || ''))
       setCpfCnpjValue(cliente.cpf_cnpj || '')
       setCepValue(cliente.cep || '')
     }
-  }, [cliente])
+  }, [cliente, setValue])
 
   // Atualizar endereço completo automaticamente
   useEffect(() => {

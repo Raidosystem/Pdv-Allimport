@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
 import { Button } from '../ui/Button'
@@ -31,17 +31,29 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [componentMounted, setComponentMounted] = useState(false)
+  
+  // Ref para controlar se o componente ainda está montado
+  const isMountedRef = useRef(true)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
 
   // Garantir que o componente foi montado
   useEffect(() => {
+    isMountedRef.current = true
     setComponentMounted(true)
     console.log('📱 PaymentPage montada', { user: user?.email, daysRemaining });
     
     return () => {
       console.log('🧹 PaymentPage desmontada');
+      isMountedRef.current = false
       setComponentMounted(false);
+    }
+  }, [])
+
+  // Função segura para setState apenas se montado
+  const safeSetState = useCallback((setter: () => void) => {
+    if (isMountedRef.current) {
+      setter()
     }
   }, [])
 
@@ -63,72 +75,62 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
     setPaymentMethod(method)
   }
 
-  // Verificar status do pagamento PIX periodicamente
+  // Verificar status do pagamento PIX periodicamente - VERSÃO SIMPLIFICADA
   useEffect(() => {
-    if (!pixData || paymentStatus !== 'waiting' || String(pixData.payment_id).startsWith('mock-')) {
+    // Não fazer nada se não temos dados ou não está esperando
+    if (!pixData?.payment_id || paymentStatus !== 'waiting') {
+      return;
+    }
+
+    // Não verificar se é mock
+    if (String(pixData.payment_id).startsWith('mock-')) {
       return;
     }
 
     console.log('🔄 Iniciando verificação periódica do PIX:', pixData.payment_id);
     
+    const paymentId = String(pixData.payment_id); // Capturar valor atual
+    
     const interval = setInterval(async () => {
+      // Verificar se ainda está montado
+      if (!isMountedRef.current) {
+        clearInterval(interval);
+        return;
+      }
+
       try {
-        setCheckingPayment(true)
-        console.log('🔍 Verificando status do PIX automaticamente:', pixData.payment_id);
+        console.log('🔍 Verificando status do PIX automaticamente:', paymentId);
         
-        const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id))
+        const status = await mercadoPagoService.checkPaymentStatus(paymentId)
         console.log('📊 Status recebido:', status);
         
+        // Verificar se ainda está montado antes de atualizar estado
+        if (!isMountedRef.current) {
+          clearInterval(interval);
+          return;
+        }
+        
         if (status.approved) {
-          console.log('✅ PIX APROVADO! Iniciando ativação da assinatura...');
-          setPaymentStatus('success')
-          toast.success('🎉 Pagamento confirmado! Ativando assinatura...')
+          console.log('✅ PIX APROVADO! Parando verificação automática.');
+          clearInterval(interval);
           
-          // Ativar assinatura após pagamento
-          try {
-            console.log('💳 Ativando assinatura após pagamento PIX:', {
-              paymentId: pixData.payment_id,
-              userEmail: user?.email
-            })
-            
-            if (user?.email) {
-              const activationResult = await activateAfterPayment(String(pixData.payment_id), 'pix')
-              console.log('🎯 Resultado da ativação:', activationResult);
-              toast.success('✅ Assinatura ativada com sucesso!')
-              
-              // Aguardar e atualizar dados
-              setTimeout(async () => {
-                try {
-                  await refresh()
-                  setPaymentStatus('success')
-                  console.log('🔄 Dados da assinatura atualizados');
-                } catch (refreshError) {
-                  console.error('❌ Erro ao atualizar dados:', refreshError);
-                }
-              }, 2000)
-            }
-          } catch (activationError) {
-            console.error('❌ Erro ao ativar assinatura:', activationError)
-            toast.error('Pagamento confirmado, mas houve erro na ativação. Contate o suporte.')
+          // Só continuar se ainda está montado
+          if (isMountedRef.current) {
+            toast.success('🎉 Pagamento confirmado! Clique em "Verificar Status" para ativar.');
           }
-          
-          onPaymentSuccess?.()
-          clearInterval(interval)
         } else {
           console.log('⏳ PIX ainda pendente, status:', status.status);
         }
       } catch (error) {
         console.error('❌ Erro ao verificar status do pagamento:', error)
-      } finally {
-        setCheckingPayment(false)
       }
-    }, 5000) // Verificar a cada 5 segundos
+    }, 10000) // Verificar a cada 10 segundos (menos frequente)
 
     return () => {
       console.log('🧹 Limpando interval de verificação PIX');
       clearInterval(interval);
     }
-  }, [pixData?.payment_id, paymentStatus]) // Dependências mínimas para evitar loops
+  }, []) // SEM DEPENDÊNCIAS para evitar loops
 
   const generatePixPayment = async () => {
     if (!user?.email) {

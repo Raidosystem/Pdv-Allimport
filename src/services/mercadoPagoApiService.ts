@@ -1,19 +1,30 @@
 // API Backend Service para integração com Mercado Pago
-const isDevelopment = import.meta.env.DEV && import.meta.env.VITE_DEV_MODE !== 'false';
-const isProduction = window.location.hostname.includes('vercel.app') || 
-                    window.location.hostname.includes('pdv-allimport') ||
-                    import.meta.env.VITE_DEV_MODE === 'false';
+const isDevelopment = import.meta.env.DEV;
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isVercelProduction = window.location.hostname.includes('vercel.app') || 
+                          window.location.hostname.includes('pdv-allimport');
 
-// Em desenvolvimento local, usar origem atual. Em produção, usar Vercel.
-const API_BASE_URL = isProduction 
-  ? window.location.origin 
-  : window.location.origin; // Sempre usar a mesma origem
+// URLs das APIs baseadas no ambiente
+const getApiBaseUrl = () => {
+  if (isLocalhost) {
+    // Em desenvolvimento local, usar diretamente as APIs do Mercado Pago
+    return 'https://api.mercadopago.com';
+  } else if (isVercelProduction) {
+    // Em produção no Vercel, usar as APIs locais
+    return window.location.origin;
+  } else {
+    // Fallback para outras situações
+    return window.location.origin;
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 console.log('🔧 Configuração de ambiente:', {
   isDevelopment,
-  isProduction,
+  isLocalhost,
+  isVercelProduction,
   hostname: window.location.hostname,
-  VITE_DEV_MODE: import.meta.env.VITE_DEV_MODE,
   API_BASE_URL
 });
 
@@ -36,9 +47,8 @@ export interface PaymentResponse {
 }
 
 class MercadoPagoApiService {
-  private isProduction = window.location.hostname.includes('vercel.app') || 
-                        window.location.hostname.includes('pdv-allimport') ||
-                        import.meta.env.VITE_DEV_MODE === 'false';
+  private isProduction = isVercelProduction;
+  private isLocalDev = isLocalhost;
   
   // Credenciais de produção do Mercado Pago
   private readonly PRODUCTION_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
@@ -56,6 +66,11 @@ class MercadoPagoApiService {
 
   private async makeApiCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
     try {
+      // Em desenvolvimento local, chamar diretamente o Mercado Pago para algumas APIs
+      if (this.isLocalDev) {
+        return await this.makeDirectMercadoPagoCall(endpoint, method, body);
+      }
+
       console.log(`🌐 API Call: ${method} ${API_BASE_URL}${endpoint}`);
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
@@ -76,6 +91,125 @@ class MercadoPagoApiService {
       console.error(`❌ Erro na API (${endpoint}):`, error);
       throw error;
     }
+  }
+
+  private async makeDirectMercadoPagoCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
+    try {
+      console.log(`🌐 Direct MP Call: ${method} para ${endpoint}`);
+      
+      if (endpoint === '/api/pix') {
+        return await this.createDirectPixPayment(body);
+      } else if (endpoint === '/api/preference') {
+        return await this.createDirectPaymentPreference(body);
+      }
+      
+      throw new Error(`Endpoint não suportado em desenvolvimento: ${endpoint}`);
+    } catch (error) {
+      console.error(`❌ Erro na chamada direta MP:`, error);
+      throw error;
+    }
+  }
+
+  private async createDirectPixPayment(data: any) {
+    const pixData = {
+      transaction_amount: Number(data.amount),
+      description: data.description || 'Assinatura PDV Allimport',
+      payment_method_id: 'pix',
+      payer: {
+        email: data.email,
+        first_name: data.email ? data.email.split('@')[0] : 'Cliente',
+        last_name: 'PDV'
+      }
+    };
+
+    console.log('📤 Enviando PIX direto para Mercado Pago:', pixData);
+
+    const response = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.getAccessToken()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pixData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
+      throw new Error(`Mercado Pago API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ PIX criado diretamente:', result);
+
+    return {
+      success: true,
+      payment_id: result.id,
+      status: result.status,
+      qr_code: result.point_of_interaction?.transaction_data?.qr_code || '',
+      qr_code_base64: result.point_of_interaction?.transaction_data?.qr_code_base64 || '',
+      ticket_url: result.point_of_interaction?.transaction_data?.ticket_url || ''
+    };
+  }
+
+  private async createDirectPaymentPreference(data: any) {
+    const preferenceData = {
+      items: [
+        {
+          title: data.description,
+          unit_price: Number(data.amount),
+          quantity: 1,
+          currency_id: 'BRL'
+        }
+      ],
+      payer: {
+        email: data.email || 'cliente@pdvallimport.com',
+        name: data.email ? data.email.split('@')[0] : 'Cliente',
+        surname: 'PDV'
+      },
+      payment_methods: {
+        excluded_payment_types: [],
+        excluded_payment_methods: [],
+        installments: 12
+      },
+      back_urls: {
+        success: window.location.origin + '/payment/success',
+        failure: window.location.origin + '/payment/failure',
+        pending: window.location.origin + '/payment/pending'
+      },
+      auto_return: 'approved',
+      external_reference: `preference_${Date.now()}`,
+      expires: true,
+      expiration_date_from: new Date().toISOString(),
+      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    };
+
+    console.log('📤 Enviando preferência direto para Mercado Pago:', preferenceData);
+
+    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.getAccessToken()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(preferenceData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
+      throw new Error(`Mercado Pago API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Preferência criada diretamente:', result);
+
+    return {
+      success: true,
+      preference_id: result.id,
+      init_point: result.init_point,
+      sandbox_init_point: result.sandbox_init_point
+    };
   }
 
   private async isApiAvailable(): Promise<boolean> {

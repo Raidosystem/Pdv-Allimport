@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../modules/auth/AuthContext'
 import { SubscriptionService } from '../services/subscriptionService'
-import { supabase } from '../lib/supabase'
 import type { SubscriptionStatus, Subscription } from '../types/subscription'
 
 export function useSubscription() {
@@ -38,40 +37,10 @@ export function useSubscription() {
     }
   }
 
-  // Carregar dados quando o usuário mudar e configurar Realtime
+  // Carregar dados quando o usuário mudar
   useEffect(() => {
     if (user?.email) {
       loadSubscriptionData()
-      
-      // Configurar escuta em tempo real para mudanças na tabela subscriptions
-      console.log('🔄 Configurando Realtime para assinatura:', user.email);
-      
-      const subscription = supabase
-        .channel('subscription_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*', // Escutar INSERT, UPDATE, DELETE
-            schema: 'public',
-            table: 'subscriptions',
-            filter: `user_email=eq.${user.email}`
-          },
-          (payload) => {
-            console.log('🔔 Mudança detectada na assinatura via Realtime:', payload);
-            
-            // Recarregar dados quando houver mudanças
-            loadSubscriptionData();
-          }
-        )
-        .subscribe((status) => {
-          console.log('📡 Status do Realtime:', status);
-        });
-
-      // Cleanup quando o componente for desmontado ou usuário mudar
-      return () => {
-        console.log('🧹 Removendo escuta Realtime');
-        subscription.unsubscribe();
-      };
     } else {
       // Reset state quando não há usuário
       setSubscriptionStatus(null)

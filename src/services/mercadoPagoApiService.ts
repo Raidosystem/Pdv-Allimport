@@ -9,12 +9,9 @@ const getApiBaseUrl = () => {
   if (isLocalhost) {
     // Em desenvolvimento local, usar diretamente as APIs do Mercado Pago
     return 'https://api.mercadopago.com';
-  } else if (isVercelProduction) {
-    // Em produção no Vercel, usar as APIs locais
-    return window.location.origin;
   } else {
-    // Fallback para outras situações
-    return window.location.origin;
+    // SEMPRE usar APIs do Vercel em produção
+    return 'https://pdv-allimport.vercel.app';
   }
 };
 
@@ -249,7 +246,9 @@ class MercadoPagoApiService {
         const response = await this.makeApiCall('/api/pix', 'POST', {
           amount: data.amount,
           description: data.description,
-          email: data.userEmail
+          email: data.userEmail,
+          company_id: data.userEmail, // Usar email completo para buscar na tabela subscriptions
+          user_id: data.userName || data.userEmail?.split('@')[0] || 'user'
         });
 
         console.log('🔍 Resposta da API PIX:', response);
@@ -295,7 +294,9 @@ class MercadoPagoApiService {
         const response = await this.makeApiCall('/api/preference', 'POST', {
           amount: data.amount,
           description: data.description || 'Assinatura PDV Allimport',
-          email: data.userEmail
+          email: data.userEmail,
+          company_id: data.userEmail, // Usar email completo para buscar na tabela subscriptions
+          user_id: data.userName || data.userEmail?.split('@')[0] || 'user'
         });
 
         console.log('🔍 Resposta da API Preference:', response);

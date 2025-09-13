@@ -18,6 +18,7 @@ import { OrdensServicoPage } from './pages/OrdensServicoPageNew'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
+import { CacheErrorBoundary } from './utils/cacheBuster'
 import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPageNew'
 import ImportBackupPage from './pages/ImportBackupPage'
 import ImportacaoPrivadaPage from './pages/ImportacaoPrivadaPage'
@@ -107,16 +108,17 @@ function App() {
   }
 
   return (
-    <AuthProvider>
-      <Router>
-        {/* PWA Install Banner */}
-        {showInstallBanner && deferredPrompt && (
-          <div className="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
-            <div className="flex items-center gap-3">
-              <span role="img" aria-label="mobile">📱</span>
-              <div className="flex-1">
-                <div className="font-bold text-sm">Instalar PDV Allimport</div>
-                <div className="text-xs opacity-90">Acesso rápido + offline</div>
+    <CacheErrorBoundary>
+      <AuthProvider>
+        <Router>
+          {/* PWA Install Banner */}
+          {showInstallBanner && deferredPrompt && (
+            <div className="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+              <div className="flex items-center gap-3">
+                <span role="img" aria-label="mobile">📱</span>
+                <div className="flex-1">
+                  <div className="font-bold text-sm">Instalar PDV Allimport</div>
+                  <div className="text-xs opacity-90">Acesso rápido + offline</div>
               </div>
               <div className="flex gap-1">
                 <button
@@ -412,6 +414,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </CacheErrorBoundary>
   )
 }
 

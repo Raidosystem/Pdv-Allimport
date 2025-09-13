@@ -196,7 +196,16 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
     try {
       setLoading(true)
+      setError(null) // Limpar erros anteriores
+      
       const userName = user.user_metadata?.name || user.email.split('@')[0]
+      
+      console.log('🚀 Iniciando geração de preferência para cartão:', {
+        userEmail: user.email,
+        userName,
+        amount: plan.price,
+        description: plan.name
+      })
       
       const preference = await mercadoPagoService.createPaymentPreference({
         userEmail: user.email,
@@ -205,61 +214,28 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
         description: plan.name
       })
 
-      if (preference.success) {
-        // Verificar se há erro ou se deve usar PIX
-        if (preference.error || !preference.checkoutUrl) {
-          toast.error(preference.error || 'Pagamento com cartão não disponível. Use PIX.')
-          // Alternar automaticamente para PIX
-          setPaymentMethod('pix')
-          return
-        }
+      console.log('✅ Resposta da preferência:', preference)
+
+      if (preference.success && preference.checkoutUrl) {
+        // Redirecionar para checkout do Mercado Pago
+        toast.success('Redirecionando para checkout do Mercado Pago...')
+        window.open(preference.checkoutUrl, '_blank')
         
-        // Verificar se é modo demo
-        if (preference.paymentId?.startsWith('demo_')) {
-          setIsDemoMode(true)
-          toast.success('Redirecionando para checkout...')
-          // Em modo demo, simular sucesso após 3 segundos
-          setTimeout(async () => {
-            setPaymentStatus('success')
-            toast.success('🎉 Pagamento simulado com sucesso!')
-            
-            // Ativar assinatura em modo demo
-            try {
-              if (user?.email) {
-                await activateAfterPayment(preference.paymentId!, 'card')
-                toast.success('✅ Assinatura ativada com sucesso!')
-              }
-            } catch (activationError) {
-              console.error('❌ Erro ao ativar assinatura demo:', activationError)
-            }
-            
-            setTimeout(() => {
-              onPaymentSuccess?.()
-              window.location.reload()
-            }, 2000)
-          }, 3000)
-        } else {
-          setIsDemoMode(false)
-          // Redirecionar para checkout do Mercado Pago
-          if (preference.checkoutUrl) {
-            window.open(preference.checkoutUrl, '_blank')
-            toast.success('Redirecionando para checkout do Mercado Pago...')
-            toast('💡 Após o pagamento, retorne a esta página para ativar sua assinatura', {
-              duration: 5000,
-              icon: 'ℹ️'
-            })
-          } else {
-            toast.error('Erro: URL de checkout não foi gerada')
-          }
-        }
+        toast('💡 Após o pagamento, retorne a esta página para ativar sua assinatura', {
+          duration: 8000,
+          icon: 'ℹ️'
+        })
       } else {
-        toast.error(preference.error || 'Erro ao gerar checkout. Use o método PIX.')
-        // Alternar automaticamente para PIX se cartão falhar
-        setPaymentMethod('pix')
+        const errorMessage = preference.error || 'Erro ao processar pagamento com cartão'
+        setError(errorMessage)
+        toast.error(errorMessage)
       }
+      
     } catch (error) {
-      console.error('Erro ao gerar checkout:', error)
-      toast.error('Erro ao gerar checkout. Tente novamente.')
+      console.error('❌ Erro ao gerar pagamento com cartão:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao processar cartão'
+      setError(errorMessage)
+      toast.error('Erro ao processar pagamento. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -534,13 +510,13 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-colors relative ${
                       paymentMethod === 'card'
                         ? 'border-primary-500 bg-primary-50'
-                        : 'border-secondary-200 hover:border-secondary-300 opacity-75'
+                        : 'border-secondary-200 hover:border-secondary-300'
                     }`}
                     onClick={() => handlePaymentMethodChange('card')}
                   >
-                    {/* Badge indisponível */}
-                    <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
-                      ⚠️ Limitado
+                    {/* Badge disponível */}
+                    <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                      💳 Disponível
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className={`w-5 h-5 rounded-full border-2 ${
@@ -555,7 +531,7 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
                       <CreditCard className="w-6 h-6 text-primary-600" />
                       <div>
                         <p className="font-semibold text-secondary-900">Cartão de Crédito/Débito</p>
-                        <p className="text-sm text-secondary-600">Temporariamente com limitações</p>
+                        <p className="text-sm text-secondary-600">Parcelamento em até 12x • Checkout seguro</p>
                       </div>
                     </div>
                   </div>

@@ -204,48 +204,40 @@ class MercadoPagoApiService {
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // Tentar usar API do Vercel primeiro (se disponível)
-      if (this.isProduction) {
-        console.log('🎯 Tentando API do Vercel para preference...');
-        try {
-          const response = await this.makeApiCall('/api/preference', 'POST', {
-            amount: data.amount,
-            description: data.description || 'Assinatura PDV Allimport',
-            email: data.userEmail
-          });
+      // Usar API do Vercel para preference (cartão de crédito)
+      console.log('🎯 Fazendo requisição de preferência via API Vercel...');
+      try {
+        const response = await this.makeApiCall('/api/preference', 'POST', {
+          amount: data.amount,
+          description: data.description || 'Assinatura PDV Allimport',
+          email: data.userEmail
+        });
 
-          if (response && (response.init_point || response.sandbox_init_point)) {
-            return {
-              success: true,
-              paymentId: response.preference_id || response.id,
-              checkoutUrl: response.init_point || response.sandbox_init_point
-            };
-          }
-        } catch (error) {
-          console.log('⚠️ API Vercel não disponível:', error);
+        console.log('🔍 Resposta da API Preference:', response);
+
+        if (response && response.success && (response.init_point || response.sandbox_init_point)) {
+          return {
+            success: true,
+            paymentId: response.preference_id,
+            checkoutUrl: response.init_point || response.sandbox_init_point,
+            status: 'pending'
+          };
+        } else {
+          throw new Error('Resposta inválida da API de preferência');
         }
+      } catch (error) {
+        console.error('❌ Erro na API de preferência:', error);
+        return {
+          success: false,
+          error: 'Erro ao criar preferência de pagamento. Tente novamente.'
+        };
       }
-      
-      // Fallback: Criar uma experiência de pagamento local
-      console.log('🔄 Criando experiência de pagamento local...');
-      
-      // Gerar um ID de preferência único
-      const preferenceId = `local_pref_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Em vez de tentar criar um checkout externo, vamos retornar um indicador
-      // para que o frontend saiba que deve usar o método PIX
-      return {
-        success: true,
-        paymentId: preferenceId,
-        checkoutUrl: '', // URL vazia indica que deve usar PIX
-        error: 'Para pagamentos com cartão, use o método PIX que está funcionando corretamente.'
-      };
       
     } catch (error) {
       console.error('❌ Erro ao criar preferência:', error);
       return {
         success: false,
-        error: 'Para pagamentos, use o método PIX que está disponível.'
+        error: 'Erro ao processar pagamento. Tente novamente.'
       };
     }
   }

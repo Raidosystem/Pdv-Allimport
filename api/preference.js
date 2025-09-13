@@ -1,4 +1,7 @@
-// Preference endpoint for Vercel
+// Preference Payment endpoint for Vercel (Cartão de Crédito)
+// Credenciais de produção do Mercado Pago
+const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,6 +21,8 @@ export default async function handler(req, res) {
   try {
     const { amount, description, email } = req.body;
 
+    console.log('🚀 Criando preferência de pagamento:', { amount, description, email });
+
     if (!amount || !description) {
       res.status(400).json({ error: 'Amount and description are required' });
       return;
@@ -28,45 +33,56 @@ export default async function handler(req, res) {
       items: [
         {
           title: description,
-          quantity: 1,
           unit_price: Number(amount),
+          quantity: 1,
           currency_id: 'BRL'
         }
       ],
       payer: {
-        email: email || 'cliente@pdvallimport.com'
+        email: email || 'cliente@pdvallimport.com',
+        name: email ? email.split('@')[0] : 'Cliente',
+        surname: 'PDV'
       },
-      back_urls: {
-        success: `${process.env.FRONTEND_URL}/success`,
-        failure: `${process.env.FRONTEND_URL}/failure`,
-        pending: `${process.env.FRONTEND_URL}/pending`
-      },
-      auto_return: 'approved',
       payment_methods: {
-        excluded_payment_methods: [],
         excluded_payment_types: [],
+        excluded_payment_methods: [],
         installments: 12
       },
-      notification_url: `${process.env.FRONTEND_URL}/api/notifications`,
-      statement_descriptor: 'PDV ALLIMPORT'
+      back_urls: {
+        success: 'https://pdv-allimport.vercel.app/payment/success',
+        failure: 'https://pdv-allimport.vercel.app/payment/failure',
+        pending: 'https://pdv-allimport.vercel.app/payment/pending'
+      },
+      auto_return: 'approved',
+      external_reference: `preference_${Date.now()}`,
+      notification_url: 'https://pdv-allimport.vercel.app/api/webhook',
+      expires: true,
+      expiration_date_from: new Date().toISOString(),
+      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
     };
+
+    console.log('📤 Enviando preferência para Mercado Pago:', preferenceData);
 
     // Fazer chamada para API do Mercado Pago
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(preferenceData)
+      body: JSON.stringify(preferenceData),
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
       throw new Error(`Mercado Pago API error: ${response.status}`);
     }
 
     const preferenceResponse = await response.json();
+    console.log('✅ Preferência criada:', preferenceResponse);
 
+    // Retornar resposta com URLs de checkout
     res.status(200).json({
       success: true,
       preference_id: preferenceResponse.id,
@@ -75,8 +91,9 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Preference creation error:', error);
+    console.error('❌ Erro ao criar preferência:', error);
     res.status(500).json({ 
+      success: false,
       error: 'Failed to create payment preference',
       details: error.message 
     });

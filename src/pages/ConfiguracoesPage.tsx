@@ -8,18 +8,30 @@ import {
   Bell, 
   Palette,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  Crown
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import BackupManager from '../components/BackupManager'
+import { useSubscription } from '../hooks/useSubscription'
+import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
+import { SubscriptionCountdown } from '../components/subscription/SubscriptionCountdown'
 
-type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance'
+type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription'
 
 export function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState<ConfigSection>('dashboard')
+  const { isActive, isInTrial, daysRemaining } = useSubscription()
 
   const configSections = [
+    {
+      id: 'subscription' as ConfigSection,
+      title: 'Assinatura',
+      description: 'Gerenciar plano e pagamentos',
+      icon: Crown,
+      color: 'bg-yellow-500'
+    },
     {
       id: 'backup' as ConfigSection,
       title: 'Backup e Restauração',
@@ -66,6 +78,60 @@ export function ConfiguracoesPage() {
 
   const renderSectionContent = () => {
     switch (activeSection) {
+      case 'subscription':
+        return (
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                  <Crown className="w-8 h-8 text-yellow-600" />
+                </div>
+                <h3 className="text-xl font-semibold">Gerenciar Assinatura</h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  Acesse sua área de assinatura para visualizar status, renovar plano ou gerenciar pagamentos.
+                </p>
+              </div>
+
+              {/* Status da Assinatura */}
+              <div className="flex justify-center space-x-4">
+                <SubscriptionStatus />
+                <SubscriptionCountdown />
+              </div>
+
+              {/* Informações detalhadas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">📊 Status Atual</h4>
+                  <p className="text-sm text-blue-700">
+                    {isActive ? 'Assinatura ativa e funcionando' : 
+                     isInTrial ? `Período de teste - ${daysRemaining} dias restantes` : 
+                     'Assinatura inativa'}
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">✅ Benefícios Ativos</h4>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Sistema PDV completo</li>
+                    <li>• Backup automático</li>
+                    <li>• Suporte técnico</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Botão principal */}
+              <div className="text-center">
+                <Link to="/assinatura">
+                  <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 gap-2">
+                    <Crown className="w-5 h-5" />
+                    {isActive ? 'Gerenciar Assinatura' : 'Assinar Agora'}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </Card>
+        )
+      
       case 'backup':
         return <BackupManager />
       

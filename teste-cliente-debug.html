@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Debug Cliente</title>
+    <script src="http://localhost:5175/@vite/client" type="module"></script>
+</head>
+<body>
+    <h1>Teste Cliente Debug</h1>
+    <button onclick="testarBusca()">Testar Busca de Cliente</button>
+    <div id="resultado"></div>
+
+    <script type="module">
+        import { ClienteService } from './src/services/clienteService.ts';
+        
+        window.testarBusca = async function() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = 'Buscando...';
+            
+            try {
+                const clientes = await ClienteService.buscarClientes({
+                    search: 'ANTONIO',
+                    ativo: true
+                });
+                
+                console.log('Clientes encontrados:', clientes);
+                
+                if (clientes.length > 0) {
+                    const cliente = clientes[0];
+                    resultado.innerHTML = `
+                        <h3>Cliente Encontrado:</h3>
+                        <p><strong>Nome:</strong> ${cliente.nome}</p>
+                        <p><strong>CPF/CNPJ:</strong> ${cliente.cpf_cnpj}</p>
+                        <p><strong>Telefone:</strong> ${cliente.telefone}</p>
+                        <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+                        <p><strong>Email:</strong> ${cliente.email}</p>
+                        <hr>
+                        <h4>Objeto completo:</h4>
+                        <pre>${JSON.stringify(cliente, null, 2)}</pre>
+                    `;
+                } else {
+                    resultado.innerHTML = '<p>Nenhum cliente encontrado!</p>';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                resultado.innerHTML = `<p style="color: red;">Erro: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

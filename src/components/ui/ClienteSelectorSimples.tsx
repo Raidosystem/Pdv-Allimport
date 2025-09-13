@@ -11,7 +11,8 @@ import {
   Plus,
   Check,
   X,
-  FileText
+  CreditCard,
+  MapPin
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -186,6 +187,12 @@ export function ClienteSelector({
 
   const selecionarCliente = (cliente: Cliente) => {
     console.log('👤 Cliente selecionado no selector:', cliente)
+    console.log('📋 Dados do cliente selecionado:')
+    console.log('  - Nome:', cliente.nome)
+    console.log('  - CPF/CNPJ:', cliente.cpf_cnpj)
+    console.log('  - Telefone:', cliente.telefone)
+    console.log('  - Endereço:', cliente.endereco)
+    console.log('  - Email:', cliente.email)
     onClienteSelect(cliente)
     setBusca(cliente.nome)
     setMostrarSugestoes(false)
@@ -323,6 +330,12 @@ export function ClienteSelector({
               <Phone className="w-4 h-4" />
               <span>{formatarTelefone(clienteSelecionado.telefone)}</span>
             </div>
+            {clienteSelecionado.cpf_cnpj && (
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                <span>{clienteSelecionado.cpf_cnpj}</span>
+              </div>
+            )}
             {clienteSelecionado.email && (
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
@@ -331,7 +344,7 @@ export function ClienteSelector({
             )}
             {clienteSelecionado.endereco && (
               <div className="flex items-start gap-2">
-                <FileText className="w-4 h-4 mt-0.5" />
+                <MapPin className="w-4 h-4 mt-0.5" />
                 <span>{clienteSelecionado.endereco}</span>
               </div>
             )}

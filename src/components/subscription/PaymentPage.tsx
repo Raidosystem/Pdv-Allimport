@@ -30,8 +30,32 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'checking' | 'success' | 'failed'>('waiting')
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [componentMounted, setComponentMounted] = useState(false)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
+
+  // Garantir que o componente foi montado
+  useEffect(() => {
+    setComponentMounted(true)
+    console.log('📱 PaymentPage montada', { user: user?.email, daysRemaining });
+    
+    return () => {
+      console.log('🧹 PaymentPage desmontada');
+      setComponentMounted(false);
+    }
+  }, [])
+
+  // Proteção contra renderização prematura
+  if (!componentMounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-secondary-600">Carregando página de pagamento...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Reset error when changing payment method
   const handlePaymentMethodChange = (method: 'pix' | 'card') => {
@@ -41,61 +65,70 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
   // Verificar status do pagamento PIX periodicamente
   useEffect(() => {
-    if (pixData && paymentStatus === 'waiting' && !String(pixData.payment_id).startsWith('mock-')) {
-      console.log('🔄 Iniciando verificação periódica do PIX:', pixData.payment_id);
-      
-      const interval = setInterval(async () => {
-        try {
-          setCheckingPayment(true)
-          console.log('🔍 Verificando status do PIX automaticamente:', pixData.payment_id);
+    if (!pixData || paymentStatus !== 'waiting' || String(pixData.payment_id).startsWith('mock-')) {
+      return;
+    }
+
+    console.log('🔄 Iniciando verificação periódica do PIX:', pixData.payment_id);
+    
+    const interval = setInterval(async () => {
+      try {
+        setCheckingPayment(true)
+        console.log('🔍 Verificando status do PIX automaticamente:', pixData.payment_id);
+        
+        const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id))
+        console.log('📊 Status recebido:', status);
+        
+        if (status.approved) {
+          console.log('✅ PIX APROVADO! Iniciando ativação da assinatura...');
+          setPaymentStatus('success')
+          toast.success('🎉 Pagamento confirmado! Ativando assinatura...')
           
-          const status = await mercadoPagoService.checkPaymentStatus(String(pixData.payment_id))
-          console.log('📊 Status recebido:', status);
-          
-          if (status.approved) {
-            console.log('✅ PIX APROVADO! Iniciando ativação da assinatura...');
-            setPaymentStatus('success')
-            toast.success('🎉 Pagamento confirmado! Ativando assinatura...')
+          // Ativar assinatura após pagamento
+          try {
+            console.log('💳 Ativando assinatura após pagamento PIX:', {
+              paymentId: pixData.payment_id,
+              userEmail: user?.email
+            })
             
-            // Ativar assinatura após pagamento
-            try {
-              console.log('💳 Ativando assinatura após pagamento PIX:', {
-                paymentId: pixData.payment_id,
-                userEmail: user?.email
-              })
+            if (user?.email) {
+              const activationResult = await activateAfterPayment(String(pixData.payment_id), 'pix')
+              console.log('🎯 Resultado da ativação:', activationResult);
+              toast.success('✅ Assinatura ativada com sucesso!')
               
-              if (user?.email) {
-                const activationResult = await activateAfterPayment(String(pixData.payment_id), 'pix')
-                console.log('🎯 Resultado da ativação:', activationResult);
-                toast.success('✅ Assinatura ativada com sucesso!')
-                
-                // Aguardar e atualizar dados
-                setTimeout(async () => {
+              // Aguardar e atualizar dados
+              setTimeout(async () => {
+                try {
                   await refresh()
                   setPaymentStatus('success')
                   console.log('🔄 Dados da assinatura atualizados');
-                }, 2000)
-              }
-            } catch (activationError) {
-              console.error('❌ Erro ao ativar assinatura:', activationError)
-              toast.error('Pagamento confirmado, mas houve erro na ativação. Contate o suporte.')
+                } catch (refreshError) {
+                  console.error('❌ Erro ao atualizar dados:', refreshError);
+                }
+              }, 2000)
             }
-            
-            onPaymentSuccess?.()
-            clearInterval(interval)
-          } else {
-            console.log('⏳ PIX ainda pendente, status:', status.status);
+          } catch (activationError) {
+            console.error('❌ Erro ao ativar assinatura:', activationError)
+            toast.error('Pagamento confirmado, mas houve erro na ativação. Contate o suporte.')
           }
-        } catch (error) {
-          console.error('Erro ao verificar status do pagamento:', error)
-        } finally {
-          setCheckingPayment(false)
+          
+          onPaymentSuccess?.()
+          clearInterval(interval)
+        } else {
+          console.log('⏳ PIX ainda pendente, status:', status.status);
         }
-      }, 5000) // Verificar a cada 5 segundos
+      } catch (error) {
+        console.error('❌ Erro ao verificar status do pagamento:', error)
+      } finally {
+        setCheckingPayment(false)
+      }
+    }, 5000) // Verificar a cada 5 segundos
 
-      return () => clearInterval(interval)
+    return () => {
+      console.log('🧹 Limpando interval de verificação PIX');
+      clearInterval(interval);
     }
-  }, [pixData, paymentStatus, refresh, onPaymentSuccess, user?.email])
+  }, [pixData?.payment_id, paymentStatus]) // Dependências mínimas para evitar loops
 
   const generatePixPayment = async () => {
     if (!user?.email) {
@@ -361,19 +394,34 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
 
   const isTrialExpired = subscription?.status === 'expired' || daysRemaining === 0
 
-  // Fallback em caso de erro crítico
-  if (error) {
+  // Fallback em caso de erro crítico ou usuário não encontrado
+  if (error || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
             <div className="p-8 text-center">
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-red-600 mb-4">Erro no Sistema de Pagamento</h2>
-              <p className="text-secondary-600 mb-6">{error}</p>
-              <Button onClick={() => refresh()} className="bg-primary-600 hover:bg-primary-700">
-                Tentar Novamente
-              </Button>
+              <h2 className="text-2xl font-bold text-red-600 mb-4">
+                {!user ? 'Usuário não encontrado' : 'Erro no Sistema de Pagamento'}
+              </h2>
+              <p className="text-secondary-600 mb-6">
+                {!user ? 'Faça login para acessar esta página' : error}
+              </p>
+              <div className="space-x-3">
+                <Button 
+                  onClick={() => !user ? navigate('/login') : setError(null)} 
+                  className="bg-primary-600 hover:bg-primary-700"
+                >
+                  {!user ? 'Fazer Login' : 'Tentar Novamente'}
+                </Button>
+                <Button 
+                  onClick={() => navigate('/dashboard')} 
+                  variant="outline"
+                >
+                  Voltar ao Dashboard
+                </Button>
+              </div>
             </div>
           </Card>
         </div>
@@ -381,7 +429,9 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
     )
   }
 
-  return (
+  // Renderização principal protegida
+  try {
+    return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Header */}
@@ -678,4 +728,38 @@ export function PaymentPage({ onPaymentSuccess }: PaymentPageProps) {
       </div>
     </div>
   )
+  } catch (renderError) {
+    console.error('❌ Erro na renderização da PaymentPage:', renderError);
+    
+    // Fallback de emergência
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-red-600 mb-4">Erro de Renderização</h2>
+              <p className="text-secondary-600 mb-6">
+                Ocorreu um erro inesperado. Tente recarregar a página.
+              </p>
+              <div className="space-x-3">
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-primary-600 hover:bg-primary-700"
+                >
+                  Recarregar Página
+                </Button>
+                <Button 
+                  onClick={() => navigate('/dashboard')} 
+                  variant="outline"
+                >
+                  Voltar ao Dashboard
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 }

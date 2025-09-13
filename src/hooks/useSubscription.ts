@@ -39,8 +39,16 @@ export function useSubscription() {
 
   // Carregar dados quando o usuário mudar
   useEffect(() => {
-    loadSubscriptionData()
-  }, [user?.email, user?.id])
+    if (user?.email) {
+      loadSubscriptionData()
+    } else {
+      // Reset state quando não há usuário
+      setSubscriptionStatus(null)
+      setSubscription(null)
+      setLoading(false)
+      setError(null)
+    }
+  }, [user?.email]) // Remover user?.id para evitar loops
 
   // Verificar se o usuário tem acesso
   const hasAccess = subscriptionStatus?.access_allowed || false

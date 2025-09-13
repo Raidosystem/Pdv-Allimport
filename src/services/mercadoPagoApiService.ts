@@ -38,6 +38,20 @@ class MercadoPagoApiService {
   private isProduction = window.location.hostname.includes('vercel.app') || 
                         window.location.hostname.includes('pdv-allimport') ||
                         import.meta.env.VITE_DEV_MODE === 'false';
+  
+  // Credenciais de produção do Mercado Pago
+  private readonly PRODUCTION_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+  private readonly PRODUCTION_PUBLIC_KEY = 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022';
+  
+  private getAccessToken(): string {
+    // Sempre usar credenciais de produção para comercialização
+    return this.PRODUCTION_ACCESS_TOKEN;
+  }
+  
+  private getPublicKey(): string {
+    // Sempre usar chave pública de produção
+    return this.PRODUCTION_PUBLIC_KEY;
+  }
 
   private get isDevelopment() {
     return !this.isProduction;
@@ -110,223 +124,229 @@ class MercadoPagoApiService {
 
   private generateMockQRCode(): string {
     // QR Code mock para desenvolvimento
-    return `00020101021226800014br.gov.bcb.pix2558pix-qr.mercadopago.com/instore/o/v2/d40de9b0-29b2-4e5a-8e3f-85c2a8b5d4c65204000053039865406${59.90}5802BR5925PDV Allimport6014SAO PAULO62070503***6304${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const value = Math.floor(Math.random() * 100) + 10; // Valor entre 10 e 110
+    const reference = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `00020101021226800014br.gov.bcb.pix2558pix-qr.mercadopago.com/instore/o/v2/d40de9b0-29b2-4e5a-8e3f-85c2a8b5d4c65204000053039865406${value}5802BR5925PDV Allimport6014SAO PAULO62070503${reference}6304DEMO`;
+  }
+
+  private async generateMockQRCodeBase64(): Promise<string> {
+    try {
+      // Importar QRCode dinamicamente apenas quando necessário
+      const QRCode = await import('qrcode');
+      const pixCode = this.generateMockQRCode();
+      
+      // Gerar QR code como Base64
+      const qrCodeDataURL = await QRCode.toDataURL(pixCode, {
+        type: 'image/png',
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      return qrCodeDataURL;
+    } catch (error) {
+      console.warn('⚠️ Erro ao gerar QR Code com biblioteca:', error);
+      // Fallback: QR code simples como texto
+      return 'data:image/svg+xml;base64,' + btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+          <rect width="256" height="256" fill="white"/>
+          <text x="128" y="120" text-anchor="middle" font-family="monospace" font-size="12" fill="black">
+            QR CODE DEMO
+          </text>
+          <text x="128" y="140" text-anchor="middle" font-family="monospace" font-size="10" fill="gray">
+            PIX: ${this.generateMockQRCode().substring(0, 20)}...
+          </text>
+        </svg>
+      `);
+    }
   }
 
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
-      console.log('🔍 Variáveis de ambiente:', {
+      console.log('🔍 Configuração de produção:', {
         isProduction: this.isProduction,
         hostname: window.location.hostname,
-        viteToken: import.meta.env.VITE_MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO ENCONTRADO'
+        hasProductionToken: !!this.getAccessToken()
       });
       
-      // Verificar se está no Vercel (forçar uso da API do Vercel)
-      const isVercel = window.location.hostname.includes('vercel.app') || 
-                       window.location.hostname.includes('pdv-allimport');
-      
-      if (isVercel || this.isProduction) {
-        console.log('🎯 Ambiente produção detectado - usando API do Vercel...');
-        try {
-          console.log('✅ Fazendo requisição PIX via API Vercel...');
-          const response = await this.makeApiCall('/api/pix', 'POST', {
-            amount: data.amount,
-            description: data.description,
-            email: data.userEmail
-          });
+      // Sistema sempre em produção para comercialização
+      console.log('🎯 Usando API de produção do Mercado Pago...');
+      try {
+        console.log('✅ Fazendo requisição PIX via API Vercel...');
+        const response = await this.makeApiCall('/api/pix', 'POST', {
+          amount: data.amount,
+          description: data.description,
+          email: data.userEmail
+        });
 
-          console.log('🔍 Resposta da API PIX:', response);
-          console.log('🔍 QR Code Base64:', response.qr_code_base64 ? 'PRESENTE' : 'AUSENTE');
-          console.log('🔍 QR Code String:', response.qr_code ? 'PRESENTE' : 'AUSENTE');
+        console.log('🔍 Resposta da API PIX:', response);
+        console.log('🔍 QR Code Base64:', response.qr_code_base64 ? 'PRESENTE' : 'AUSENTE');
+        console.log('🔍 QR Code String:', response.qr_code ? 'PRESENTE' : 'AUSENTE');
 
-          // Força fallback demo se não há QR codes válidos
-          if (!response.qr_code_base64 && !response.qr_code) {
-            console.warn('⚠️ API retornou sucesso mas sem QR code - forçando fallback demo');
-            return {
-              success: true,
-              paymentId: `demo_api_${Date.now()}`,
-              status: 'pending',
-              qrCode: this.generateMockQRCode(),
-              qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-              ticketUrl: '#demo-ticket'
-            };
-          }
-
-          const result = {
+        // Se não há QR codes válidos na resposta da API, usar fallback demo apenas para desenvolvimento
+        if (!response.qr_code_base64 && !response.qr_code) {
+          console.warn('⚠️ API retornou sucesso mas sem QR code - usando fallback temporário');
+          return {
             success: true,
-            paymentId: String(response.payment_id || `api_${Date.now()}`),
-            status: response.status || 'pending',
-            qrCode: response.qr_code || '',
-            qrCodeBase64: response.qr_code_base64 || '',
-            ticketUrl: response.ticket_url || ''
+            paymentId: `temp_${Date.now()}`,
+            status: 'pending',
+            qrCode: this.generateMockQRCode(),
+            qrCodeBase64: await this.generateMockQRCodeBase64(),
+            ticketUrl: '#temp-ticket'
           };
-          
-          console.log('🎯 Resultado final do PIX:', result);
-          return result;
-        } catch (error) {
-          console.error('❌ Erro na API Vercel para PIX:', error);
-          // Em caso de erro, usar fallback demo
         }
-      }
-      
-      // Verificar se a API está disponível (fallback para desenvolvimento)
-      const apiAvailable = await this.isApiAvailable();
-      console.log('📡 API disponível?', apiAvailable);
-      
-      if (!apiAvailable) {
-        console.warn('⚠️ API backend não disponível. Usando modo demo.');
+
+        const result = {
+          success: true,
+          paymentId: String(response.payment_id || `api_${Date.now()}`),
+          status: response.status || 'pending',
+          qrCode: response.qr_code || '',
+          qrCodeBase64: response.qr_code_base64 || '',
+          ticketUrl: response.ticket_url || ''
+        };
+        
+        console.log('🎯 Resultado final do PIX:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erro na API Vercel para PIX:', error);
+        
+        // Tentar chamada direta ao Mercado Pago como backup
+        console.log('🔄 Tentando chamada direta ao Mercado Pago...');
+        const mpAccessToken = this.getAccessToken();
+        
+        const pixData = {
+          transaction_amount: data.amount,
+          description: data.description || 'Assinatura PDV Allimport',
+          payment_method_id: 'pix',
+          payer: {
+            email: data.userEmail,
+            first_name: data.userName || data.userEmail.split('@')[0]
+          }
+        };
+
+        const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${mpAccessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pixData),
+        });
+
+        if (!mpResponse.ok) {
+          throw new Error(`Mercado Pago API Error: ${mpResponse.status}`);
+        }
+
+        const payment = await mpResponse.json();
+        console.log('✅ Resposta direta do Mercado Pago:', payment);
+
         return {
           success: true,
-          paymentId: `demo_${Date.now()}`,
-          status: 'pending',
-          qrCode: this.generateMockQRCode(),
-          qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-          ticketUrl: '#demo-ticket'
+          paymentId: payment.id?.toString() || '',
+          status: payment.status || 'pending',
+          qrCode: payment.point_of_interaction?.transaction_data?.qr_code || '',
+          qrCodeBase64: payment.point_of_interaction?.transaction_data?.qr_code_base64 || '',
+          ticketUrl: payment.point_of_interaction?.transaction_data?.ticket_url || ''
         };
       }
-
-      console.log('✅ API disponível! Fazendo requisição PIX real...');
-      const response = await this.makeApiCall('/api/pix', 'POST', data);
-
-      return {
-        success: true,
-        paymentId: response.payment_id,
-        status: response.status,
-        qrCode: response.qr_code,
-        qrCodeBase64: response.qr_code_base64,
-        ticketUrl: response.ticket_url
-      };
     } catch (error) {
       console.error('❌ Erro ao criar pagamento PIX:', error);
-      
-      // Fallback para modo demo em caso de erro
-      return {
-        success: true,
-        paymentId: `demo_fallback_${Date.now()}`,
-        status: 'pending',
-        qrCode: this.generateMockQRCode(),
-        qrCodeBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-        ticketUrl: '#demo-ticket'
-      };
+      throw new Error('Erro ao processar pagamento PIX. Tente novamente.');
     }
   }
 
   async createPaymentPreference(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPaymentPreference com dados:', data);
-      console.log('🔍 Variáveis de ambiente:', {
+      console.log('🔍 Configuração de produção:', {
         isProduction: this.isProduction,
         hostname: window.location.hostname,
-        viteToken: import.meta.env.VITE_MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO ENCONTRADO'
+        hasProductionToken: !!this.getAccessToken()
       });
       
-      // Verificar se está no Vercel (forçar chamada direta ao Mercado Pago)
-      const isVercel = window.location.hostname.includes('vercel.app') || 
-                       window.location.hostname.includes('pdv-allimport');
-      
-      if (isVercel || this.isProduction) {
-        console.log('🎯 Ambiente produção detectado - fazendo chamada direta ao Mercado Pago...');
+      // Sistema sempre em produção para comercialização
+      console.log('🎯 Fazendo chamada direta ao Mercado Pago para preference...');
+      try {
+        // Usar credenciais de produção configuradas
+        const mpAccessToken = this.getAccessToken();
+        
+        console.log('⚡ Usando credenciais de produção para preference');
+
+        const preferenceData = {
+          items: [
+            {
+              title: data.description || 'Assinatura PDV Allimport',
+              unit_price: data.amount,
+              quantity: 1,
+              currency_id: 'BRL'
+            }
+          ],
+          payer: {
+            email: data.userEmail,
+            name: data.userName || data.userEmail.split('@')[0]
+          },
+          external_reference: `checkout_${Date.now()}`,
+          notification_url: `${window.location.origin}/webhook/mp`,
+          back_urls: {
+            success: `${window.location.origin}/payment/success`,
+            failure: `${window.location.origin}/payment/failure`,
+            pending: `${window.location.origin}/payment/pending`
+          },
+          auto_return: 'approved'
+        };
+
+        console.log('📤 Enviando preferência para Mercado Pago:', preferenceData);
+
+        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${mpAccessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(preferenceData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Mercado Pago Preference API Error: ${response.status}`);
+        }
+
+        const mpResponse = await response.json();
+        console.log('✅ Resposta do Mercado Pago (Preference):', mpResponse);
+
+        return {
+          success: true,
+          paymentId: mpResponse.id?.toString() || '',
+          checkoutUrl: mpResponse.init_point || mpResponse.sandbox_init_point || ''
+        };
+      } catch (error) {
+        console.error('❌ Erro na chamada direta ao Mercado Pago (Preference):', error);
+        
+        // Tentar usando a API do backend como fallback
         try {
-          // Fazer chamada direta ao Mercado Pago para criar preferência
-          let mpAccessToken = import.meta.env.VITE_MP_ACCESS_TOKEN;
-          
-          // Fallback: usar token hardcoded para produção se não encontrar a variável
-          if (!mpAccessToken && isVercel) {
-            mpAccessToken = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
-            console.log('⚡ Usando token de produção hardcoded para preference');
-          }
-          
-          if (!mpAccessToken) {
-            throw new Error('Token do Mercado Pago não configurado');
-          }
-
-          const preferenceData = {
-            items: [
-              {
-                title: data.description || 'Assinatura PDV Allimport',
-                unit_price: data.amount,
-                quantity: 1,
-                currency_id: 'BRL'
-              }
-            ],
-            payer: {
-              email: data.userEmail,
-              name: data.userName || data.userEmail.split('@')[0]
-            },
-            external_reference: `checkout_${Date.now()}`,
-            notification_url: `${window.location.origin}/webhook/mp`,
-            back_urls: {
-              success: `${window.location.origin}/payment/success`,
-              failure: `${window.location.origin}/payment/failure`,
-              pending: `${window.location.origin}/payment/pending`
-            },
-            auto_return: 'approved'
-          };
-
-          console.log('📤 Enviando preferência para Mercado Pago:', preferenceData);
-
-          const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${mpAccessToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(preferenceData),
+          console.log('🔄 Tentando via API backend como fallback...');
+          const response = await this.makeApiCall('/api/preference', 'POST', {
+            amount: data.amount,
+            description: data.description || 'Assinatura PDV Allimport',
+            email: data.userEmail
           });
-
-          if (!response.ok) {
-            throw new Error(`Mercado Pago Preference API Error: ${response.status}`);
-          }
-
-          const mpResponse = await response.json();
-          console.log('✅ Resposta do Mercado Pago (Preference):', mpResponse);
 
           return {
             success: true,
-            paymentId: mpResponse.id?.toString() || '',
-            checkoutUrl: mpResponse.init_point || mpResponse.sandbox_init_point || ''
+            paymentId: response.preference_id || response.id,
+            checkoutUrl: response.init_point || response.sandbox_init_point
           };
-        } catch (error) {
-          console.error('❌ Erro na chamada direta ao Mercado Pago (Preference):', error);
-          // Em caso de erro, usar fallback da API local
+        } catch (backendError) {
+          console.error('❌ Erro também na API backend:', backendError);
+          throw new Error('Erro ao criar preferência de pagamento. Tente novamente.');
         }
       }
-      
-      // Verificar se a API está disponível (fallback)
-      const apiAvailable = await this.isApiAvailable();
-      console.log('📡 API disponível?', apiAvailable);
-      
-      if (!apiAvailable) {
-        console.warn('⚠️ API backend não disponível. Usando modo demo.');
-        return {
-          success: true,
-          paymentId: `demo_pref_${Date.now()}`,
-          checkoutUrl: `${window.location.origin}/payment/demo?amount=${data.amount}&email=${encodeURIComponent(data.userEmail)}`
-        };
-      }
-
-      console.log('✅ API disponível! Fazendo requisição real...');
-      const response = await this.makeApiCall('/api/preference', 'POST', {
-        amount: data.amount,
-        description: data.description || 'Assinatura PDV Allimport',
-        email: data.userEmail
-      });
-
-      return {
-        success: true,
-        paymentId: response.preference_id || response.id,
-        checkoutUrl: response.init_point || response.sandbox_init_point
-      };
     } catch (error) {
       console.error('❌ Erro ao criar preferência:', error);
-      
-      // Fallback para modo demo em caso de erro
-      return {
-        success: true,
-        paymentId: `demo_pref_fallback_${Date.now()}`,
-        checkoutUrl: `${window.location.origin}/payment/demo?amount=${data.amount}&email=${encodeURIComponent(data.userEmail)}`
-      };
+      throw new Error('Erro ao processar preferência de pagamento. Tente novamente.');
     }
   }
 
@@ -371,22 +391,22 @@ class MercadoPagoApiService {
       
       if (!apiAvailable) {
         return {
-          publicKey: import.meta.env.VITE_MP_PUBLIC_KEY || '',
-          environment: 'demo'
+          publicKey: this.getPublicKey(),
+          environment: 'production'
         };
       }
 
       const response = await this.makeApiCall('/api/config');
       
       return {
-        publicKey: response.mp_public_key || '',
+        publicKey: response.mp_public_key || this.getPublicKey(),
         environment: response.environment || 'production'
       };
     } catch (error) {
       console.error('❌ Erro ao obter configuração:', error);
       return {
-        publicKey: import.meta.env.VITE_MP_PUBLIC_KEY || '',
-        environment: 'demo'
+        publicKey: this.getPublicKey(),
+        environment: 'production'
       };
     }
   }

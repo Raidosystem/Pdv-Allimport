@@ -234,55 +234,6 @@ class MercadoPagoApiService {
     }
   }
 
-  private generateMockQRCode(): string {
-    // Gerar código PIX mais realístico baseado no padrão brasileiro
-    const pixCode = `00020126580014br.gov.bcb.pix0136${this.PRODUCTION_ACCESS_TOKEN.substring(8, 44)}5204000053039865802BR5925PDV ALLIMPORT LTDA ME6009SAO PAULO62070503***6304`;
-    
-    // Calcular checksum simples para o código
-    const checksum = Array.from(pixCode)
-      .reduce((sum, char) => sum + char.charCodeAt(0), 0)
-      .toString(16)
-      .toUpperCase()
-      .substring(0, 4);
-    
-    return pixCode + checksum;
-  }
-
-  private async generateMockQRCodeBase64(): Promise<string> {
-    try {
-      // Importar QRCode dinamicamente apenas quando necessário
-      const QRCode = await import('qrcode');
-      const pixCode = this.generateMockQRCode();
-      
-      // Gerar QR code como Base64
-      const qrCodeDataURL = await QRCode.toDataURL(pixCode, {
-        type: 'image/png',
-        width: 256,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
-      
-      return qrCodeDataURL;
-    } catch (error) {
-      console.warn('⚠️ Erro ao gerar QR Code com biblioteca:', error);
-      // Fallback: QR code simples como texto
-      return 'data:image/svg+xml;base64,' + btoa(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-          <rect width="256" height="256" fill="white"/>
-          <text x="128" y="120" text-anchor="middle" font-family="monospace" font-size="12" fill="black">
-            QR CODE DEMO
-          </text>
-          <text x="128" y="140" text-anchor="middle" font-family="monospace" font-size="10" fill="gray">
-            PIX: ${this.generateMockQRCode().substring(0, 20)}...
-          </text>
-        </svg>
-      `);
-    }
-  }
-
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);

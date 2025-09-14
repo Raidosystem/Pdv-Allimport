@@ -16,40 +16,21 @@ BEGIN
       ALTER TABLE public.payments_processed ALTER COLUMN payment_id TYPE TEXT;
       RAISE NOTICE 'payments_processed.payment_id alterado para TEXT';
     END IF;
-  ELSE
-    -- Criar tabela se não existir
-    CREATE TABLE public.payments_processed (
-      payment_id TEXT PRIMARY KEY,
-      company_id UUID,
-      order_id UUID,
-      processed_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    RAISE NOTICE 'Tabela payments_processed criada';
-  END IF;
-END
-$$;
-
--- 0. VERIFICAR/CORRIGIR ESTRUTURA DA TABELA payments_processed
-DO $$
-BEGIN
-  -- Verificar se a tabela existe e ajustar tipos se necessário
-  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'payments_processed') THEN
-    -- Alterar payment_id para TEXT se for BIGINT
-    IF EXISTS (
-      SELECT FROM information_schema.columns 
-      WHERE table_name = 'payments_processed' 
-      AND column_name = 'payment_id' 
-      AND data_type IN ('bigint', 'integer')
-    ) THEN
-      ALTER TABLE public.payments_processed ALTER COLUMN payment_id TYPE TEXT;
-      RAISE NOTICE 'payments_processed.payment_id alterado para TEXT';
+    
+    -- Remover colunas desnecessárias se existirem
+    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'payments_processed' AND column_name = 'company_id') THEN
+      ALTER TABLE public.payments_processed DROP COLUMN company_id;
+      RAISE NOTICE 'Coluna company_id removida de payments_processed';
+    END IF;
+    
+    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'payments_processed' AND column_name = 'order_id') THEN
+      ALTER TABLE public.payments_processed DROP COLUMN order_id;
+      RAISE NOTICE 'Coluna order_id removida de payments_processed';
     END IF;
   ELSE
-    -- Criar tabela se não existir
+    -- Criar tabela se não existir (estrutura simples)
     CREATE TABLE public.payments_processed (
       payment_id TEXT PRIMARY KEY,
-      company_id UUID,
-      order_id UUID,
       processed_at TIMESTAMPTZ DEFAULT NOW()
     );
     RAISE NOTICE 'Tabela payments_processed criada';

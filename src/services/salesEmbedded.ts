@@ -197,48 +197,73 @@ interface SaleInput {
 // Serviços de Vendas
 export const saleService = {
   async create(sale: SaleInput): Promise<Sale> {
+    console.log('🔄 Iniciando criação de venda...', sale);
+    
     try {
+      // ✅ CORREÇÃO: Incluir user_id obrigatório para RLS
+      const vendaData = {
+        cliente_id: sale.customer_id,
+        total: sale.total_amount,
+        desconto: sale.discount_amount || 0,
+        status: sale.status,
+        metodo_pagamento: sale.payment_method,
+        observacoes: sale.notes || '',
+        user_id: sale.user_id  // ✅ Campo obrigatório adicionado
+      };
+      
+      console.log('📝 Inserindo venda:', vendaData);
+      
       const { data, error } = await supabase
         .from('vendas')
-        .insert({
-          cliente_id: sale.customer_id,
-          total: sale.total_amount,
-          desconto: sale.discount_amount || 0,
-          status: sale.status,
-          metodo_pagamento: sale.payment_method,
-          observacoes: sale.notes || ''
-        })
+        .insert(vendaData)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao inserir venda:', error);
+        throw error;
+      }
+
+      console.log('✅ Venda criada:', data);
       
       // Inserir itens da venda
       const saleItems: SaleItem[] = [];
-      if (sale.sale_items) {
+      if (sale.sale_items && sale.sale_items.length > 0) {
+        console.log(`📦 Inserindo ${sale.sale_items.length} itens da venda...`);
+        
         for (const item of sale.sale_items) {
-          const { data: itemData, error: itemError } = await supabase
+          const itemData = {
+            venda_id: data.id,
+            produto_id: item.product_id,
+            quantidade: item.quantity,
+            preco_unitario: item.unit_price,
+            subtotal: item.total_price
+            // user_id será setado automaticamente pelo trigger
+          };
+          
+          console.log('📝 Inserindo item:', itemData);
+          
+          const { data: itemResult, error: itemError } = await supabase
             .from('vendas_itens')
-            .insert({
-              venda_id: data.id,
-              produto_id: item.product_id,
-              quantidade: item.quantity,
-              preco_unitario: item.unit_price,
-              subtotal: item.total_price
-            })
+            .insert(itemData)
             .select()
             .single();
             
-          if (itemError) throw itemError;
+          if (itemError) {
+            console.error('❌ Erro ao inserir item:', itemError);
+            throw itemError;
+          }
+          
+          console.log('✅ Item inserido:', itemResult);
           
           saleItems.push({
-            id: itemData.id,
-            sale_id: itemData.venda_id,
-            product_id: itemData.produto_id,
-            quantity: itemData.quantidade,
-            unit_price: itemData.preco_unitario,
-            total_price: itemData.subtotal,
-            created_at: itemData.criado_em
+            id: itemResult.id,
+            sale_id: itemResult.venda_id,
+            product_id: itemResult.produto_id,
+            quantity: itemResult.quantidade,
+            unit_price: itemResult.preco_unitario,
+            total_price: itemResult.subtotal,
+            created_at: itemResult.created_at
           });
         }
       }
@@ -254,14 +279,22 @@ export const saleService = {
         payment_method: data.metodo_pagamento,
         notes: data.observacoes || '',
         sale_items: saleItems,
-        created_at: data.criado_em,
-        updated_at: data.atualizado_em
+        created_at: data.created_at,
+        updated_at: data.updated_at
       };
       
+      console.log('🎉 Venda completa criada:', adaptedSale);
       return adaptedSale;
       
     } catch (error) {
-      console.error('Erro ao criar venda:', error);
+      console.error('💥 Erro completo ao criar venda:', error);
+      
+      // Log mais detalhado para debug
+      if (error instanceof Error) {
+        console.error('📋 Mensagem do erro:', error.message);
+        console.error('📊 Stack do erro:', error.stack);
+      }
+      
       throw error;
     }
   }

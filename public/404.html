@@ -4,13 +4,11 @@
     <meta charset="utf-8">
     <title>PDV Allimport</title>
     <script>
-        // Redirect para a página inicial se for uma rota do SPA
+        // Redirect para a página inicial - VERCEL VERSION
         var path = window.location.pathname;
-        if (path !== '/' && path.indexOf('/Pdv-Allimport') === -1) {
-            window.location.replace('/Pdv-Allimport/#' + path);
-        } else if (path.indexOf('/Pdv-Allimport') !== -1 && path !== '/Pdv-Allimport/') {
-            var newPath = path.replace('/Pdv-Allimport', '');
-            window.location.replace('/Pdv-Allimport/#' + newPath);
+        if (path !== '/') {
+            // Para Vercel, apenas redirecionar para raiz com hash
+            window.location.replace('/#' + path);
         }
     </script>
 </head>

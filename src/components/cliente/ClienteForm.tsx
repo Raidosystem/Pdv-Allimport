@@ -2,11 +2,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState, useEffect } from 'react'
-import { User, Phone, Mail, MapPin, FileText, Save, X } from 'lucide-react'
+import { User, Phone, Mail, MapPin, Save, X } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
-import { formatarTelefone, formatarCpfCnpj, validarCpfCnpj } from '../../utils/formatacao'
+import { CpfSearchInput } from '../ui/CpfSearchInput'
+import { formatarTelefone, validarCpfCnpj } from '../../utils/formatacao'
 import type { Cliente, ClienteInput } from '../../types/cliente'
 
 // Schema de validação
@@ -84,12 +85,6 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
     setValue('telefone', formatted.replace(/\D/g, ''))
   }
 
-  const handleCpfCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatarCpfCnpj(e.target.value)
-    setCpfCnpjValue(formatted)
-    setValue('cpf_cnpj', formatted)
-  }
-
   const onFormSubmit = async (data: ClienteFormData) => {
     try {
       await onSubmit(data)
@@ -162,12 +157,29 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
             <label className="block text-sm font-medium text-gray-700 mb-2">
               CPF/CNPJ
             </label>
-            <Input
+            <CpfSearchInput
               value={cpfCnpjValue}
-              onChange={handleCpfCnpjChange}
+              onChange={(value) => {
+                setCpfCnpjValue(value)
+                setValue('cpf_cnpj', value)
+              }}
+              onClienteEncontrado={(clienteEncontrado) => {
+                // Preencher formulário com dados do cliente encontrado
+                setValue('nome', clienteEncontrado.nome)
+                setValue('telefone', clienteEncontrado.telefone || '')
+                setTelefoneValue(clienteEncontrado.telefone || '')
+                setValue('email', clienteEncontrado.email || '')
+                setValue('endereco', clienteEncontrado.endereco || '')
+                setValue('tipo', clienteEncontrado.tipo || 'Física')
+                setValue('observacoes', clienteEncontrado.observacoes || '')
+              }}
+              onEditarCliente={(clienteParaEditar) => {
+                // Aqui você pode abrir um modal de edição ou navegar para edição
+                console.log('Editar cliente:', clienteParaEditar)
+                // TODO: Implementar modal de edição
+              }}
               placeholder={tipoSelecionado === 'Física' ? '000.000.000-00' : '00.000.000/0000-00'}
               error={errors.cpf_cnpj?.message}
-              icon={<FileText className="w-4 h-4 text-gray-400" />}
             />
           </div>
 

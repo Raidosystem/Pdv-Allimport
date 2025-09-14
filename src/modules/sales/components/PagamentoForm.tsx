@@ -36,8 +36,10 @@ export function PagamentoForm({
   const [installments, setInstallments] = useState<number>(1)
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0) + cashReceived
-  const remainingAmount = Math.max(0, totalAmount - totalPaid)
-  const isPaymentComplete = totalPaid >= totalAmount
+  // ✅ CORREÇÃO: Usar tolerância para precisão numérica
+  const rawRemainingAmount = totalAmount - totalPaid
+  const remainingAmount = Math.max(0, rawRemainingAmount)
+  const isPaymentComplete = rawRemainingAmount <= 0.01 // Tolerância de 1 centavo
 
   const handleAddPayment = () => {
     const amount = parseFloat(paymentAmount)
@@ -103,7 +105,7 @@ export function PagamentoForm({
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Pago: {formatCurrency(totalPaid)}</span>
             <span className="font-medium text-gray-900">
-              {remainingAmount > 0 ? `Falta: ${formatCurrency(remainingAmount)}` : 'Pago'}
+              {remainingAmount > 0.01 ? `Falta: ${formatCurrency(remainingAmount)}` : 'Pago'}
             </span>
           </div>
         </div>
@@ -151,7 +153,7 @@ export function PagamentoForm({
         </div>
 
         {/* Formulário de Pagamento */}
-        {remainingAmount > 0 && (
+        {remainingAmount > 0.01 && (
           <div className={`p-5 rounded-xl border-2 ${selectedMethodConfig.bgLight} ${selectedMethodConfig.borderColor}`}>
             <h4 className={`text-lg font-semibold mb-4 ${selectedMethodConfig.textColor}`}>
               Adicionar Pagamento - {selectedMethodConfig.name}
@@ -328,12 +330,21 @@ export function PagamentoForm({
                 </span>
               </div>
             </div>
-          ) : (
+          ) : remainingAmount > 0.01 ? (
             <div className="p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
               <div className="flex items-center justify-center space-x-2 text-orange-700">
                 <AlertCircle className="w-6 h-6" />
                 <span className="text-lg font-semibold">
                   ⚠️ Falta pagar: {formatCurrency(remainingAmount)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-green-50 rounded-xl border-2 border-green-200">
+              <div className="flex items-center justify-center space-x-2 text-green-700">
+                <CheckCircle className="w-6 h-6" />
+                <span className="text-lg font-semibold">
+                  ✅ Pagamento Finalizado - Pronto para Finalizar!
                 </span>
               </div>
             </div>

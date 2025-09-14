@@ -265,4 +265,96 @@ export class ClienteService {
 
     return data && data.length > 0
   }
+
+  // Buscar clientes por CPF/CNPJ em tempo real
+  static async buscarPorCpf(cpf: string): Promise<Cliente[]> {
+    const cpfLimpo = cpf.replace(/\D/g, '')
+    
+    if (cpfLimpo.length < 8) {
+      return []
+    }
+
+    try {
+      console.log('🔍 [CLIENTE SERVICE] Buscando por CPF:', cpfLimpo)
+      
+      // Primeiro tentar buscar no Supabase
+      let query = supabase
+        .from('clientes')
+        .select('*')
+        .order('criado_em', { ascending: false })
+
+      // Busca parcial ou exata dependendo do tamanho
+      if (cpfLimpo.length === 11 || cpfLimpo.length === 14) {
+        // Busca exata para CPF ou CNPJ completo
+        query = query.eq('cpf_cnpj', cpfLimpo)
+      } else {
+        // Busca parcial para dígitos iniciais
+        query = query.like('cpf_cnpj', `${cpfLimpo}%`)
+      }
+
+      const { data, error } = await query
+
+      let clientesSupabase = data || []
+      
+      if (error) {
+        console.warn('[CLIENTE SERVICE] Erro no Supabase para busca CPF:', error)
+      }
+
+      console.log(`📊 [CLIENTE SERVICE] Encontrados ${clientesSupabase.length} clientes no Supabase por CPF`)
+
+      // Se não encontrou no Supabase ou temos poucos resultados, buscar no backup
+      if (clientesSupabase.length === 0) {
+        try {
+          const response = await fetch('/backup-allimport.json')
+          const backupData = await response.json()
+          
+          const clients = backupData.data?.clients || []
+          
+          // Filtrar por CPF no backup
+          const clientesFiltrados = clients.filter((client: any) => {
+            const cpfClient = String(client.cpf_cnpj || '').replace(/\D/g, '')
+            
+            if (cpfLimpo.length === 11 || cpfLimpo.length === 14) {
+              // Busca exata
+              return cpfClient === cpfLimpo
+            } else {
+              // Busca parcial
+              return cpfClient.startsWith(cpfLimpo)
+            }
+          })
+          
+          // Converter para formato do cliente
+          const clientesBackup = clientesFiltrados.map((client: any) => ({
+            id: client.id || `backup-${Date.now()}-${Math.random()}`,
+            user_id: 'backup-user',
+            nome: client.name || '',
+            cpf_cnpj: client.cpf_cnpj || '',
+            telefone: client.phone || '',
+            email: client.email || '',
+            endereco: client.address || '',
+            cidade: client.city || '',
+            estado: client.state || '',
+            cep: client.zip_code || '',
+            tipo: String(client.cpf_cnpj || '').replace(/\D/g, '').length === 11 ? 'fisica' : 'juridica',
+            observacoes: '',
+            ativo: true,
+            criado_em: new Date().toISOString(),
+            atualizado_em: new Date().toISOString()
+          }))
+
+          console.log(`📦 [CLIENTE SERVICE] Encontrados ${clientesBackup.length} clientes no backup por CPF`)
+          
+          return clientesBackup
+        } catch (backupError) {
+          console.warn('[CLIENTE SERVICE] Erro ao buscar no backup:', backupError)
+        }
+      }
+
+      return clientesSupabase
+
+    } catch (error) {
+      console.error('❌ [CLIENTE SERVICE] Erro ao buscar por CPF:', error)
+      throw new Error(`Erro ao buscar cliente por CPF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    }
+  }
 }

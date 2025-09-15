@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Busca de Telefone</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        input {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .resultado {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .sucesso {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .erro {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>📞 Teste de Busca por Telefone</h1>
+    
+    <div class="container">
+        <h3>Exemplos de Busca por Telefone</h3>
+        <p>Teste diferentes formatos de telefone:</p>
+        
+        <div>
+            <input type="text" id="telefone-busca" placeholder="Digite telefone para buscar...">
+            <button onclick="buscarPorTelefone()">🔍 Buscar</button>
+        </div>
+        
+        <div style="margin: 10px 0;">
+            <strong>Formatos para testar:</strong><br>
+            <button onclick="testarTelefone('11999887766')">11999887766</button>
+            <button onclick="testarTelefone('(11) 99988-7766')">(11) 99988-7766</button>
+            <button onclick="testarTelefone('11 99988-7766')">11 99988-7766</button>
+            <button onclick="testarTelefone('99988')">99988 (parcial)</button>
+            <button onclick="testarTelefone('11')">11 (DDD)</button>
+        </div>
+        
+        <div id="resultado-telefone" class="resultado" style="display: none;"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        
+        // Configuração do Supabase
+        const SUPABASE_URL = "https://kmcaaqetxtwkdcczdomw.supabase.co"
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjY1MTMsImV4cCI6MjA3MjAwMjUxM30.sBOHwFeZ2e558puxCN7-h2nkRvuz2srxdb2LNGS9Ny4"
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        
+        window.testarTelefone = function(telefone) {
+            document.getElementById('telefone-busca').value = telefone
+            buscarPorTelefone()
+        }
+        
+        window.buscarPorTelefone = async function() {
+            const input = document.getElementById('telefone-busca')
+            const resultado = document.getElementById('resultado-telefone')
+            const telefone = input.value.trim()
+            
+            if (!telefone) {
+                alert('Digite um telefone para buscar')
+                return
+            }
+            
+            resultado.style.display = 'block'
+            resultado.innerHTML = `⏳ Buscando por telefone: "${telefone}"...`
+            resultado.className = 'resultado'
+            
+            try {
+                // Normalizar para busca (apenas dígitos)
+                const telefoneNormalizado = telefone.replace(/\D/g, '')
+                
+                console.log('🔍 Buscando telefone:', { original: telefone, normalizado: telefoneNormalizado })
+                
+                // Buscar usando a mesma lógica do sistema
+                const searchConditions = [
+                    `nome.ilike.%${telefone}%`,
+                    `telefone.ilike.%${telefone}%`,
+                    `cpf_cnpj.ilike.%${telefone}%`,
+                    `endereco.ilike.%${telefone}%`
+                ]
+                
+                // Se tem dígitos, buscar também em campos numéricos
+                if (telefoneNormalizado.length > 0) {
+                    searchConditions.push(`cpf_digits.ilike.%${telefoneNormalizado}%`)
+                    searchConditions.push(`telefone.ilike.%${telefoneNormalizado}%`)
+                }
+                
+                const finalQuery = searchConditions.join(',')
+                console.log('📋 Query construída:', finalQuery)
+                
+                const { data, error } = await supabase
+                    .from('clientes')
+                    .select('id, nome, telefone, cpf_cnpj, email, endereco, criado_em')
+                    .or(finalQuery)
+                    .order('criado_em', { ascending: false })
+                
+                if (error) {
+                    throw error
+                }
+                
+                let html = `🔍 Busca por telefone: "${telefone}"\n`
+                html += `📱 Dígitos normalizados: "${telefoneNormalizado}"\n\n`
+                
+                if (data && data.length > 0) {
+                    html += `✅ Encontrados ${data.length} resultado(s):\n\n`
+                    data.forEach((cliente, index) => {
+                        // Destacar correspondências
+                        const telefoneCliente = cliente.telefone || 'N/A'
+                        const telefoneMatch = telefoneCliente.includes(telefone) || 
+                                            telefoneCliente.replace(/\D/g, '').includes(telefoneNormalizado)
+                        
+                        html += `${index + 1}. ${cliente.nome}\n`
+                        html += `   📱 Telefone: ${telefoneCliente} ${telefoneMatch ? '🎯' : ''}\n`
+                        html += `   📧 Email: ${cliente.email || 'N/A'}\n`
+                        html += `   🆔 CPF/CNPJ: ${cliente.cpf_cnpj || 'N/A'}\n`
+                        html += `   📍 Endereço: ${cliente.endereco || 'N/A'}\n`
+                        html += `   📅 Criado: ${new Date(cliente.criado_em).toLocaleString('pt-BR')}\n`
+                        html += '   ' + '─'.repeat(50) + '\n\n'
+                    })
+                    resultado.className = 'resultado sucesso'
+                } else {
+                    html += '⚠️ Nenhum cliente encontrado com esse telefone'
+                    resultado.className = 'resultado erro'
+                }
+                
+                resultado.innerHTML = html
+                
+            } catch (error) {
+                resultado.innerHTML = `❌ Erro na busca: ${error.message}`
+                resultado.className = 'resultado erro'
+            }
+        }
+        
+        // Buscar alguns clientes para mostrar telefones disponíveis
+        setTimeout(async () => {
+            try {
+                const { data } = await supabase
+                    .from('clientes')
+                    .select('nome, telefone')
+                    .not('telefone', 'is', null)
+                    .limit(5)
+                
+                if (data && data.length > 0) {
+                    console.log('📱 Telefones disponíveis para teste:')
+                    data.forEach(cliente => {
+                        console.log(`- ${cliente.nome}: ${cliente.telefone}`)
+                    })
+                }
+            } catch (error) {
+                console.error('Erro ao listar telefones:', error)
+            }
+        }, 1000)
+    </script>
+</body>
+</html>

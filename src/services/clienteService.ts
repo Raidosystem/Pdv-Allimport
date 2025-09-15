@@ -15,7 +15,43 @@ export class ClienteService {
 
       // Aplicar filtro de busca
       if (filtros.search) {
-        query = query.or(`nome.ilike.%${filtros.search}%,telefone.ilike.%${filtros.search}%,cpf_cnpj.ilike.%${filtros.search}%,endereco.ilike.%${filtros.search}%`)
+        console.log(`🔍 [CLIENTE SERVICE] Busca iniciada com termo: "${filtros.search}"`)
+        console.log(`🎯 [CLIENTE SERVICE] Tipo de busca: "${filtros.searchType || 'geral'}"`)
+        
+        // Normalizar o termo de busca para números (CPF/telefone)
+        const searchNormalized = filtros.search.replace(/\D/g, '')
+        console.log(`🔢 [CLIENTE SERVICE] Termo normalizado (só dígitos): "${searchNormalized}"`)
+        
+        // Definir condições de busca baseadas no tipo
+        let searchConditions: string[] = []
+        
+        switch (filtros.searchType) {
+          case 'telefone':
+            searchConditions = [`telefone.ilike.%${searchNormalized}%`]
+            break
+            
+          default: // 'geral' - busca por nome e CPF/CNPJ
+            // Buscar em nome, telefone, endereço, cpf_cnpj e cpf_digits
+            searchConditions = [
+              `nome.ilike.%${filtros.search}%`,
+              `telefone.ilike.%${filtros.search}%`,
+              `cpf_cnpj.ilike.%${filtros.search}%`,
+              `endereco.ilike.%${filtros.search}%`
+            ]
+            
+            // Se o termo de busca contém dígitos, também buscar em campos numéricos
+            if (searchNormalized.length > 0) {
+              searchConditions.push(`cpf_digits.ilike.%${searchNormalized}%`)
+              // Buscar telefone apenas pelos dígitos (para encontrar independente da formatação)
+              searchConditions.push(`telefone.ilike.%${searchNormalized}%`)
+            }
+            break
+        }
+        
+        console.log(`📋 [CLIENTE SERVICE] Condições de busca (${filtros.searchType || 'geral'}):`, searchConditions)
+        const finalQuery = searchConditions.join(',')
+        console.log(`🔗 [CLIENTE SERVICE] Query final: .or("${finalQuery}")`)
+        query = query.or(finalQuery)
       }
 
       // Aplicar filtro de status
@@ -37,10 +73,23 @@ export class ClienteService {
 
       if (error) {
         console.warn('[CLIENTE SERVICE] Erro ao buscar clientes no Supabase, tentando backup:', error)
+      } else {
+        console.log(`✅ [CLIENTE SERVICE] Query executada com sucesso`)
       }
 
       let clientesSupabase = data || []
       console.log(`📊 [CLIENTE SERVICE] Encontrados ${clientesSupabase.length} clientes no Supabase`)
+      
+      // Log detalhado dos primeiros clientes encontrados para debug
+      if (filtros.search && clientesSupabase.length > 0) {
+        console.log(`🔍 [CLIENTE SERVICE] Primeiros clientes encontrados:`)
+        clientesSupabase.slice(0, 3).forEach((cliente, index) => {
+          console.log(`  ${index + 1}. ${cliente.nome} - CPF_CNPJ: "${cliente.cpf_cnpj}" - CPF_DIGITS: "${cliente.cpf_digits}"`)
+        })
+      } else if (filtros.search) {
+        console.log(`❌ [CLIENTE SERVICE] Nenhum cliente encontrado com o termo: "${filtros.search}"`)
+        console.log(`🔧 [CLIENTE SERVICE] Termo normalizado era: "${filtros.search.replace(/\D/g, '')}"`)
+      }
 
       // Buscar também no backup
       let clientesBackup: Cliente[] = []
@@ -114,21 +163,24 @@ export class ClienteService {
             const nome = cliente.nome.toLowerCase()
             const telefone = cliente.telefone || ''
             const cpf_cnpj = String(cliente.cpf_cnpj || '')
+            const cpf_digits = String(cliente.cpf_digits || '')
             const endereco = (cliente.endereco || '').toLowerCase()
             
             // Buscar em diferentes campos
             const matchNome = nome.includes(search)
-            const matchTelefone = telefone.includes(search)
+            const matchTelefone = telefone.includes(search) || telefone.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
             const matchCpfCnpj = cpf_cnpj.includes(search) || cpf_cnpj.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
+            const matchCpfDigits = cpf_digits.includes(search.replace(/\D/g, ''))
             const matchEndereco = endereco.includes(search)
             
-            const match = matchNome || matchTelefone || matchCpfCnpj || matchEndereco
+            const match = matchNome || matchTelefone || matchCpfCnpj || matchCpfDigits || matchEndereco
             
             if (match) {
               console.log(`✅ [BACKUP FILTER] Match encontrado: ${cliente.nome}`)
               console.log(`    - Nome: ${matchNome ? '✓' : '✗'}`)
               console.log(`    - Telefone: ${matchTelefone ? '✓' : '✗'}`)
               console.log(`    - CPF/CNPJ: ${matchCpfCnpj ? '✓' : '✗'} (${cpf_cnpj})`)
+              console.log(`    - CPF Digits: ${matchCpfDigits ? '✓' : '✗'} (${cpf_digits})`)
               console.log(`    - Endereço: ${matchEndereco ? '✓' : '✗'}`)
             }
             
@@ -180,7 +232,15 @@ export class ClienteService {
       })
 
       console.log(`📋 Clientes encontrados: ${clientesSupabase.length} do Supabase + ${clientesBackup.length} do backup = ${todosClientes.length} total`)
-      return todosClientes
+      
+      // Aplicar limite final se especificado (após combinar Supabase + backup)
+      let clientesFinais = todosClientes
+      if (filtros.limit && filtros.limit > 0) {
+        clientesFinais = todosClientes.slice(0, filtros.limit)
+        console.log(`📊 [CLIENTE SERVICE] Aplicando limite final: ${todosClientes.length} → ${clientesFinais.length} clientes`)
+      }
+      
+      return clientesFinais
 
     } catch (error) {
       console.error('Erro geral ao buscar clientes:', error)

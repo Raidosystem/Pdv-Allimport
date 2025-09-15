@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste: Busca por Nome em OS</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .success { border-color: #28a745; background-color: #d4edda; }
+        .error { border-color: #dc3545; background-color: #f8d7da; }
+        .code {
+            font-family: 'Courier New', monospace;
+            background-color: #f8f8f8;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background-color: #0056b3; }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste: Busca por Nome em Ordens de Serviço</h1>
+        <p>Testando se a busca "Geral" encontra ordens de serviço por nome do cliente.</p>
+
+        <div class="test-case">
+            <h3>Simulação da Função de Busca</h3>
+            <input type="text" id="searchInput" placeholder="Digite o nome para buscar..." value="João">
+            <button onclick="testSearch()">Testar Busca</button>
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Dados de Teste</h3>
+            <div class="code" id="testData"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Lógica de Busca Atual</h3>
+            <div class="code">
+const nomeCliente = (ordem.cliente?.nome?.toLowerCase() || '')<br>
+const cpfCnpj = (ordem.cliente?.cpf_cnpj || '').replace(/\\D/g, '')<br>
+<br>
+// Busca geral<br>
+return nomeCliente.includes(searchTerm.toLowerCase()) ||<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpfCnpj.includes(searchNormalized) ||<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpfCnpj.includes(searchTerm.toLowerCase())
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados de teste simulando ordens de serviço
+        const ordensServico = [
+            {
+                id: "1",
+                numero_os: "OS-001",
+                cliente: { nome: "João Silva", telefone: "11999999999", cpf_cnpj: "123.456.789-01" },
+                tipo: "Smartphone",
+                marca: "Samsung",
+                modelo: "Galaxy S21",
+                status: "Em análise"
+            },
+            {
+                id: "2",
+                numero_os: "OS-002",
+                cliente: { nome: "Maria Santos", telefone: "11888888888", cpf_cnpj: "987.654.321-09" },
+                tipo: "Notebook",
+                marca: "Dell",
+                modelo: "Inspiron",
+                status: "Em conserto"
+            },
+            {
+                id: "3",
+                numero_os: "OS-003",
+                cliente: { nome: "Pedro Oliveira", telefone: "11777777777", cpf_cnpj: "456.789.123-45" },
+                tipo: "Tablet",
+                marca: "Apple",
+                modelo: "iPad",
+                status: "Pronto"
+            }
+        ];
+
+        // Função de busca simulada
+        function filterOrdens(searchTerm, searchType = 'geral') {
+            if (!searchTerm || searchTerm.trim() === '') {
+                return ordensServico;
+            }
+
+            return ordensServico.filter(ordem => {
+                const searchNormalized = searchTerm.toLowerCase().replace(/\D/g, '');
+                const nomeCliente = (ordem.cliente?.nome?.toLowerCase() || '');
+                const cpfCnpj = (ordem.cliente?.cpf_cnpj || '').replace(/\D/g, '');
+                const telefone = (ordem.cliente?.telefone || '').replace(/\D/g, '');
+
+                switch (searchType) {
+                    case 'telefone':
+                        return telefone.includes(searchNormalized);
+                    case 'geral':
+                    default:
+                        return nomeCliente.includes(searchTerm.toLowerCase()) ||
+                               cpfCnpj.includes(searchNormalized) ||
+                               cpfCnpj.includes(searchTerm.toLowerCase());
+                }
+            });
+        }
+
+        function testSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const results = filterOrdens(searchTerm);
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h4>Resultado da busca por "${searchTerm}":</h4>
+                <p><strong>${results.length}</strong> ordem(ns) encontrada(s)</p>
+                ${results.map(ordem => `
+                    <div style="margin: 10px 0; padding: 10px; background: #fff; border-radius: 4px;">
+                        <strong>${ordem.numero_os}</strong> - ${ordem.cliente.nome}<br>
+                        <small>CPF: ${ordem.cliente.cpf_cnpj} | Tel: ${ordem.cliente.telefone}</small><br>
+                        <small>${ordem.marca} ${ordem.modelo} - Status: ${ordem.status}</small>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Mostrar dados de teste na tela
+        document.getElementById('testData').innerHTML = JSON.stringify(ordensServico, null, 2);
+
+        // Executar teste inicial
+        testSearch();
+    </script>
+</body>
+</html>

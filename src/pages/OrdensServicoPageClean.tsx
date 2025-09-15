@@ -64,30 +64,41 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
 
 export function OrdensServicoPage() {
   console.log('🔥 OrdensServicoPage carregando...')
-  const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [todasOrdens, setTodasOrdens] = useState<OrdemServico[]>([]) // Lista completa
+  const [ordens, setOrdens] = useState<OrdemServico[]>([]) // Lista exibida
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null)
   const [viewingOrdem, setViewingOrdem] = useState<OrdemServico | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [mostrarTodos, setMostrarTodos] = useState(false) // Iniciar mostrando apenas 10
 
   useEffect(() => {
     // Carregar todas as ordens de serviço do backup
     const loadOrdens = async () => {
       try {
         const allOrdens = await loadAllServiceOrders()
-        setOrdens(allOrdens)
-        console.log(`✅ Carregadas ${allOrdens.length} ordens de serviço do backup`)
+        setTodasOrdens(allOrdens) // Guardar todas para estatísticas
+        setOrdens(allOrdens.slice(0, 10)) // Mostrar apenas as primeiras 10
+        setMostrarTodos(false)
+        console.log(`✅ Carregadas ${allOrdens.length} ordens de serviço do backup (mostrando 10)`)
       } catch (error) {
         console.error('Erro ao carregar ordens:', error)
-        setOrdens(sampleOrdens)
+        setTodasOrdens(sampleOrdens)
+        setOrdens(sampleOrdens.slice(0, 10))
+        setMostrarTodos(false)
       } finally {
         setLoading(false)
       }
     }
-    
+
     loadOrdens()
   }, [])
+
+  const verTodos = () => {
+    setOrdens(todasOrdens)
+    setMostrarTodos(true)
+  }
 
   const handleNovaOrdem = () => {
     setEditingOrdem(null)
@@ -139,9 +150,10 @@ export function OrdensServicoPage() {
     ordem.numero_os?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const activeOrdens = ordens.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado')
-  const prontas = ordens.filter(o => o.status === 'Pronto')
-  const emAndamento = ordens.filter(o => o.status === 'Em conserto')
+  // Usar todas as ordens para estatísticas
+  const activeOrdens = todasOrdens.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado')
+  const prontas = todasOrdens.filter(o => o.status === 'Pronto')
+  const emAndamento = todasOrdens.filter(o => o.status === 'Em conserto')
 
   // View de formulário (nova/editar ordem)
   if (viewMode === 'form') {
@@ -352,7 +364,7 @@ export function OrdensServicoPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg border">
-          <div className="text-2xl font-bold text-blue-600">{ordens.length}</div>
+          <div className="text-2xl font-bold text-blue-600">{todasOrdens.length}</div>
           <div className="text-sm text-gray-600">Total de OS</div>
         </div>
         <div className="bg-white p-4 rounded-lg border">
@@ -387,7 +399,7 @@ export function OrdensServicoPage() {
       <div className="bg-white rounded-lg border">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold">
-            Ordens de Serviço ({filteredOrdens.length})
+            Ordens de Serviço ({todasOrdens.length})
           </h2>
         </div>
         
@@ -484,9 +496,15 @@ export function OrdensServicoPage() {
           </table>
         </div>
         
-        {filteredOrdens.length > 50 && (
-          <div className="p-4 border-t text-center text-sm text-gray-600">
-            Mostrando 50 de {filteredOrdens.length} ordens de serviço
+        {/* Botão Ver mais ordens */}
+        {!mostrarTodos && todasOrdens.length > 10 && (
+          <div className="p-4 border-t text-center">
+            <button
+              onClick={verTodos}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium"
+            >
+              Ver mais ordens ({todasOrdens.length - 10} restantes)
+            </button>
           </div>
         )}
         

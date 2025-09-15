@@ -5,6 +5,8 @@ import type { Cliente, ClienteInput, ClienteFilters } from '../types/cliente'
 
 export function useClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [todosClientesCache, setTodosClientesCache] = useState<Cliente[]>([]) // Cache para estatísticas
+  const [totalClientes, setTotalClientes] = useState(0) // Total real de clientes
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mostrarTodos, setMostrarTodos] = useState(false)
@@ -16,6 +18,8 @@ export function useClientes() {
       setError(null)
       const data = await ClienteService.buscarClientes(filtros)
       setClientes(data)
+      setTodosClientesCache(data) // Guardar todos para estatísticas
+      setTotalClientes(data.length)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
       setError(errorMessage)
@@ -25,13 +29,20 @@ export function useClientes() {
     }
   }
 
-  // Carregar apenas os últimos 10 clientes
+  // Carregar apenas os últimos 10 clientes (mas manter total correto)
   const carregarClientesLimitados = async (filtros: ClienteFilters = {}) => {
     try {
       setLoading(true)
       setError(null)
-      const data = await ClienteService.buscarClientes({ ...filtros, limit: 10 })
-      setClientes(data)
+      
+      // Primeiro buscar todos para ter o total correto
+      const todosClientes = await ClienteService.buscarClientes(filtros)
+      setTodosClientesCache(todosClientes) // Guardar todos para estatísticas
+      setTotalClientes(todosClientes.length)
+      
+      // Depois aplicar limite apenas na exibição
+      const clientesLimitados = todosClientes.slice(0, 10)
+      setClientes(clientesLimitados)
       setMostrarTodos(false)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
@@ -42,14 +53,10 @@ export function useClientes() {
     }
   }
 
-  // Alternar entre mostrar todos ou apenas 10
-  const toggleMostrarTodos = async (filtros: ClienteFilters = {}) => {
-    if (mostrarTodos) {
-      await carregarClientesLimitados(filtros)
-    } else {
-      await carregarClientes(filtros)
-      setMostrarTodos(true)
-    }
+  // Função simples para ver todos
+  const verTodos = () => {
+    setClientes(todosClientesCache)
+    setMostrarTodos(true)
   }
 
   // Criar cliente
@@ -148,17 +155,20 @@ export function useClientes() {
 
   // Carregar clientes na inicialização
   useEffect(() => {
-    carregarClientesLimitados() // Iniciar mostrando apenas os últimos 10
+    // Iniciar mostrando apenas os clientes ativos e limitados aos primeiros 10
+    carregarClientesLimitados({ ativo: true })
   }, [])
 
   return {
     clientes,
+    todosClientesCache, // Expor o cache completo para estatísticas
+    totalClientes,
     loading,
     error,
     mostrarTodos,
     carregarClientes,
     carregarClientesLimitados,
-    toggleMostrarTodos,
+    toggleMostrarTodos: verTodos,
     criarCliente,
     atualizarCliente,
     deletarCliente,

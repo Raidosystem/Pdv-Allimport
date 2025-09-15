@@ -15,6 +15,8 @@ import {
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
+import { formatarCpfCnpj } from '../../utils/formatacao'
+import { onlyDigits } from '../../lib/cpf'
 import type { Cliente, ClienteFilters } from '../../types/cliente'
 
 interface ClienteTableProps {
@@ -38,15 +40,55 @@ export function ClienteTable({
 }: ClienteTableProps) {
   const [filtros, setFiltros] = useState<ClienteFilters>({
     search: '',
-    ativo: null,
+    searchType: 'geral',
+    ativo: true, // Mostrar apenas clientes ativos por padrão
     tipo: null
   })
   const [showFilters, setShowFilters] = useState(false)
 
-  const handleSearchChange = (value: string) => {
-    const novosFiltros = { ...filtros, search: value }
+  const handleSearchTypeChange = (newSearchType: NonNullable<ClienteFilters['searchType']>) => {
+    console.log('🎯 [CLIENTE TABLE] Mudando tipo de busca para:', newSearchType)
+    const novosFiltros = { ...filtros, searchType: newSearchType }
     setFiltros(novosFiltros)
-    onFiltersChange(novosFiltros)
+    
+    // Se há busca ativa, reprocessar com o novo tipo
+    if (filtros.search && filtros.search.trim() !== '') {
+      onFiltersChange(novosFiltros)
+    }
+  }
+
+  const handleSearchChange = (value: string) => {
+    console.log('🔍 [CLIENTE TABLE] handleSearchChange chamado com valor:', `"${value}"`)
+    console.log('🎯 [CLIENTE TABLE] Tipo de busca selecionado:', filtros.searchType)
+    
+    // Aplicar formatação automática apenas se for busca geral (que inclui CPF/CNPJ)
+    let formattedValue = value
+    if (filtros.searchType === 'geral') {
+      const digits = onlyDigits(value)
+      // Se tem apenas dígitos ou formatação de CPF/CNPJ, aplicar formatação automática
+      if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(value)) {
+        formattedValue = formatarCpfCnpj(value)
+        console.log('🎭 [CLIENTE TABLE] Aplicando formatação automática:', `"${value}" → "${formattedValue}"`)
+      }
+    }
+    
+    if (formattedValue.trim() === '') {
+      // Se o campo está vazio, manter search vazio mas não remover da estrutura
+      console.log('🧹 [CLIENTE TABLE] Campo vazio - definindo busca como vazia')
+      const novosFiltros = { ...filtros, search: '' }
+      console.log('📋 [CLIENTE TABLE] Novos filtros (busca vazia):', novosFiltros)
+      setFiltros(novosFiltros)
+      
+      // Para o callback, remover search se estiver vazio para voltar ao modo limitado
+      const { search, ...filtrosSemBusca } = novosFiltros
+      onFiltersChange(filtrosSemBusca)
+    } else {
+      // Campo tem conteúdo, aplicar filtro normalmente
+      const novosFiltros = { ...filtros, search: formattedValue }
+      console.log('📋 [CLIENTE TABLE] Novos filtros (com busca):', novosFiltros)
+      setFiltros(novosFiltros)
+      onFiltersChange(novosFiltros)
+    }
   }
 
   const handleFilterChange = (key: keyof ClienteFilters, value: string | boolean | null) => {
@@ -77,9 +119,37 @@ export function ClienteTable({
         <div className="flex flex-col md:flex-row gap-4">
           {/* Busca */}
           <div className="flex-1">
+            {/* Seletor de Tipo de Busca */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                onClick={() => handleSearchTypeChange('geral')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'geral'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Geral (Nome e CPF/CNPJ)
+              </button>
+              <button
+                onClick={() => handleSearchTypeChange('telefone')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'telefone'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Telefone
+              </button>
+            </div>
+            
+            {/* Campo de Busca */}
             <div className="relative">
               <Input
-                placeholder="Buscar por nome, telefone ou CPF/CNPJ..."
+                placeholder={
+                  filtros.searchType === 'telefone' ? "Buscar por telefone..." :
+                  "Buscar por nome ou CPF/CNPJ..."
+                }
                 value={filtros.search}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10"

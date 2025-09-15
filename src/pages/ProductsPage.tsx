@@ -23,54 +23,12 @@ interface Product {
 
 type ViewMode = 'list' | 'form' | 'view'
 
-// Dados de exemplo do backup - carregando alguns produtos inicialmente
-const sampleProducts: Product[] = [
-  {
-    id: "a2d4691b-ab4d-4aba-a1e6-a1e69f57a3b0",
-    name: "WIRELESS MICROPHONE",
-    barcode: "",
-    sale_price: 160,
-    cost_price: 0,
-    current_stock: 1,
-    minimum_stock: 1,
-    unit_measure: "un",
-    active: true,
-    created_at: "2025-06-17T09:37:11.163625-03:00",
-    updated_at: "2025-06-17T09:37:11.163625-03:00"
-  },
-  {
-    id: "17fd37b4-b9f0-484c-aeb1-6702b8b80b5f",
-    name: "MINI MICROFONE DE LAPELA",
-    barcode: "7898594127486",
-    sale_price: 24.99,
-    cost_price: 0,
-    current_stock: 4,
-    minimum_stock: 2,
-    unit_measure: "un",
-    active: true,
-    created_at: "2025-06-17T09:38:30.078078-03:00",
-    updated_at: "2025-06-17T09:38:30.078078-03:00"
-  },
-  {
-    id: "1b843d2d-263a-4333-8bba-c2466a1bad27",
-    name: "CARTÃO DE MEMORIA A GOLD 64GB",
-    barcode: "7219452780313",
-    sale_price: 75,
-    cost_price: 0,
-    current_stock: 2,
-    minimum_stock: 1,
-    unit_measure: "un",
-    active: true,
-    created_at: "2025-06-17T09:41:19.19484-03:00",
-    updated_at: "2025-06-17T09:41:19.19484-03:00"
-  }
-]
-
 export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
   
   const {
     produtos: products,
+    todosProdutos: allProducts,
     loading,
     mostrarTodos,
     toggleMostrarTodos
@@ -120,14 +78,21 @@ export function ProductsPage() {
     })
   }
 
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = allProducts.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.barcode.includes(searchTerm)
   )
 
-  const activeProducts = products.filter(p => p.active)
-  const lowStockProducts = products.filter(p => p.current_stock <= p.minimum_stock)
-  const totalValue = products.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
+  // Se há busca, mostrar todos os resultados filtrados
+  // Se não há busca, aplicar lógica de paginação (limitados ou todos)
+  const produtosParaExibir = searchTerm.trim() !== '' 
+    ? filteredProducts 
+    : (mostrarTodos ? allProducts : products)
+
+  // Usar todos os produtos para estatísticas
+  const activeProducts = allProducts.filter(p => p.active)
+  const lowStockProducts = allProducts.filter(p => p.current_stock <= p.minimum_stock)
+  const totalValue = allProducts.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
 
   // View de formulário (nova/editar produto)
   if (viewMode === 'form') {
@@ -342,7 +307,7 @@ export function ProductsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg border">
-          <div className="text-2xl font-bold text-blue-600">{products.length}</div>
+          <div className="text-2xl font-bold text-blue-600">{allProducts.length}</div>
           <div className="text-sm text-gray-600">Total de Produtos</div>
         </div>
         <div className="bg-white p-4 rounded-lg border">
@@ -378,25 +343,13 @@ export function ProductsPage() {
         <div className="p-4 border-b">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">
-              Produtos ({filteredProducts.length})
+              Produtos ({allProducts.length})
             </h2>
             
             <div className="flex items-center space-x-3">
               <div className="text-sm text-gray-600">
-                {mostrarTodos 
-                  ? `Mostrando todos os ${products.length} produtos`
-                  : `Mostrando os últimos ${products.length} produtos`
-                }
+                Mostrando {products.length} de {allProducts.length} produtos
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleMostrarTodos()}
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-              >
-                {mostrarTodos ? 'Mostrar últimos 10' : 'Ver todos'}
-              </Button>
             </div>
           </div>
         </div>
@@ -414,7 +367,7 @@ export function ProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredProducts.slice(0, 50).map((product) => (
+              {produtosParaExibir.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-900 truncate max-w-xs">{product.name}</div>
@@ -494,13 +447,19 @@ export function ProductsPage() {
           </table>
         </div>
         
-        {filteredProducts.length > 50 && (
-          <div className="p-4 border-t text-center text-sm text-gray-600">
-            Mostrando 50 de {filteredProducts.length} produtos
+        {/* Botão Ver mais produtos - só mostrar se não há busca ativa */}
+        {!mostrarTodos && searchTerm.trim() === '' && allProducts.length > 10 && (
+          <div className="p-4 border-t text-center">
+            <button
+              onClick={toggleMostrarTodos}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium"
+            >
+              Ver mais produtos ({allProducts.length - 10} restantes)
+            </button>
           </div>
         )}
         
-        {filteredProducts.length === 0 && (
+        {produtosParaExibir.length === 0 && (
           <div className="text-center py-12">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">

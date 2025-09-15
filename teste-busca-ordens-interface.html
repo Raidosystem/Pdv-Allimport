@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Interface de Busca - Ordens de Serviço</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .buttons { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .button { padding: 4px 12px; border: 1px solid #ccc; border-radius: 15px; cursor: pointer; font-size: 12px; }
+        .button.active { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        .button:hover { background: #f3f4f6; }
+        input { padding: 8px; margin: 5px; width: 300px; border: 1px solid #ccc; border-radius: 4px; }
+        .result { margin: 5px 0; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Teste da Nova Interface de Busca - Ordens de Serviço</h1>
+    
+    <div class="test">
+        <h3>Simulação da Interface</h3>
+        
+        <!-- Botões de Tipo de Busca -->
+        <div class="buttons">
+            <button class="button active" onclick="changeSearchType('geral')">Geral</button>
+            <button class="button" onclick="changeSearchType('cliente')">Cliente</button>
+            <button class="button" onclick="changeSearchType('cpf_cnpj')">CPF/CNPJ</button>
+            <button class="button" onclick="changeSearchType('telefone')">Telefone</button>
+            <button class="button" onclick="changeSearchType('equipamento')">Equipamento</button>
+            <button class="button" onclick="changeSearchType('numero_os')">Nº OS</button>
+        </div>
+        
+        <!-- Campo de Busca -->
+        <input type="text" id="searchInput" placeholder="Buscar ordens de serviço..." onkeyup="testSearch()" />
+        
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        let currentSearchType = 'geral';
+        
+        // Função de formatação de CPF/CNPJ (cópia da implementação)
+        function formatarCpfCnpj(value) {
+            const digits = value.replace(/\D/g, '');
+            
+            if (digits.length <= 11) {
+                // CPF: 000.000.000-00
+                return digits
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{2})$/, '$1-$2');
+            } else {
+                // CNPJ: 00.000.000/0000-00
+                return digits
+                    .replace(/(\d{2})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1/$2')
+                    .replace(/(\d{4})(\d{2})$/, '$1-$2');
+            }
+        }
+        
+        function onlyDigits(value) {
+            return value.replace(/\D/g, '');
+        }
+        
+        function changeSearchType(type) {
+            currentSearchType = type;
+            
+            // Atualizar botões
+            document.querySelectorAll('.button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Atualizar placeholder
+            const input = document.getElementById('searchInput');
+            const placeholders = {
+                'cliente': 'Buscar por nome do cliente...',
+                'cpf_cnpj': 'Buscar por CPF/CNPJ...',
+                'telefone': 'Buscar por telefone...',
+                'equipamento': 'Buscar por marca/modelo...',
+                'numero_os': 'Buscar por número da OS...',
+                'geral': 'Buscar ordens de serviço...'
+            };
+            input.placeholder = placeholders[type];
+            
+            console.log('Tipo de busca alterado para:', type);
+            testSearch();
+        }
+        
+        function testSearch() {
+            const input = document.getElementById('searchInput');
+            const value = input.value;
+            
+            // Aplicar formatação automática para CPF/CNPJ
+            if (currentSearchType === 'cpf_cnpj' || currentSearchType === 'geral') {
+                const digits = onlyDigits(value);
+                if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(value)) {
+                    const formatted = formatarCpfCnpj(value);
+                    if (formatted !== value) {
+                        input.value = formatted;
+                        console.log(`Formatação aplicada: "${value}" → "${formatted}"`);
+                    }
+                }
+            }
+            
+            // Mostrar resultado da busca
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="result">
+                    <strong>Tipo de busca:</strong> ${currentSearchType}<br>
+                    <strong>Valor digitado:</strong> "${value}"<br>
+                    <strong>Valor formatado:</strong> "${input.value}"<br>
+                    <strong>Apenas dígitos:</strong> "${onlyDigits(input.value)}"
+                </div>
+            `;
+        }
+        
+        // Teste inicial
+        testSearch();
+    </script>
+</body>
+</html>

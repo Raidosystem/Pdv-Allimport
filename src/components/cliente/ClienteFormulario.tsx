@@ -12,8 +12,9 @@ import {
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
+import { CpfInput } from '../CpfInput'
 import { ClienteService } from '../../services/clienteService'
-import { formatarTelefone, formatarCpfCnpj, validarCpfCnpj } from '../../utils/formatacao'
+import { formatarTelefone, validarCpfCnpj } from '../../utils/formatacao'
 import type { Cliente, ClienteInput } from '../../types/cliente'
 
 // Schema de validação para o formulário de cliente completo
@@ -155,12 +156,6 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
     const formatted = formatarTelefone(e.target.value)
     setTelefoneValue(formatted)
     setValue('telefone', formatted.replace(/\D/g, ''))
-  }
-
-  const handleCpfCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatarCpfCnpj(e.target.value)
-    setCpfCnpjValue(formatted)
-    setValue('cpf_cnpj', formatted)
   }
 
   const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -328,13 +323,15 @@ export function ClienteFormulario({ cliente, onSuccess, onCancel }: ClienteFormu
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {tipoSelecionado === 'Física' ? 'CPF' : 'CNPJ'}
               </label>
-              <input
+              <CpfInput
                 value={cpfCnpjValue}
-                onChange={handleCpfCnpjChange}
-                type="text"
-                maxLength={tipoSelecionado === 'Física' ? 14 : 18}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(value) => {
+                  setCpfCnpjValue(value)
+                  setValue('cpf_cnpj', value)
+                }}
                 placeholder={tipoSelecionado === 'Física' ? '000.000.000-00' : '00.000.000/0000-00'}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                excludeId={cliente?.id} // Excluir o próprio cliente da verificação de duplicata
               />
               {errors.cpf_cnpj && (
                 <span className="text-red-500 text-sm">{errors.cpf_cnpj.message}</span>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busca Corrigida - Ordens de Serviço</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .buttons { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .button { 
+            padding: 6px 16px; 
+            border: 1px solid #ccc; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            background: #f3f4f6;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+        .button.active { 
+            background: #dbeafe; 
+            color: #1e40af; 
+            border-color: #93c5fd; 
+        }
+        .button:hover { background: #e5e7eb; }
+        .input-container { position: relative; margin: 15px 0; }
+        input { 
+            padding: 10px 10px 10px 40px; 
+            width: 100%; 
+            max-width: 500px;
+            border: 1px solid #d1d5db; 
+            border-radius: 6px; 
+            font-size: 14px;
+        }
+        .search-icon { 
+            position: absolute; 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #9ca3af;
+        }
+        .result { margin: 10px 0; padding: 10px; background: #f8fafc; border-radius: 4px; }
+        .success { color: #059669; background: #ecfdf5; border-left: 4px solid #059669; }
+        .info { color: #0369a1; background: #f0f9ff; border-left: 4px solid #0369a1; }
+        .change { color: #d97706; background: #fffbeb; border-left: 4px solid #d97706; }
+    </style>
+</head>
+<body>
+    <h1>✅ Busca de Ordens de Serviço - Corrigida!</h1>
+    
+    <div class="test change">
+        <h3>🔧 Alterações Implementadas</h3>
+        <ul>
+            <li><strong>Removidos botões</strong>: "Cliente" e "CPF/CNPJ" (conforme solicitado)</li>
+            <li><strong>Busca "Geral" otimizada</strong>: Agora busca apenas por Nome e CPF/CNPJ</li>
+            <li><strong>Formatação automática</strong>: CPF/CNPJ formatado em tempo real no "Geral"</li>
+            <li><strong>Interface simplificada</strong>: 4 botões em vez de 6</li>
+        </ul>
+    </div>
+    
+    <div class="test">
+        <h3>🎯 Nova Interface de Busca</h3>
+        
+        <!-- Simulação da Interface -->
+        <div class="buttons">
+            <button class="button active" onclick="changeSearchType('geral', this)">Geral</button>
+            <button class="button" onclick="changeSearchType('telefone', this)">Telefone</button>
+            <button class="button" onclick="changeSearchType('equipamento', this)">Equipamento</button>
+            <button class="button" onclick="changeSearchType('numero_os', this)">Nº OS</button>
+        </div>
+        
+        <div class="input-container">
+            <span class="search-icon">🔍</span>
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Buscar por nome do cliente ou CPF/CNPJ..." 
+                onkeyup="testSearch()" 
+            />
+        </div>
+        
+        <div id="results"></div>
+    </div>
+    
+    <div class="test success">
+        <h3>✅ Funcionalidades dos Botões</h3>
+        <ul>
+            <li><strong>Geral</strong>: Busca por Nome do Cliente + CPF/CNPJ (com formatação automática)</li>
+            <li><strong>Telefone</strong>: Busca apenas por telefone do cliente</li>
+            <li><strong>Equipamento</strong>: Busca por marca e modelo do equipamento</li>
+            <li><strong>Nº OS</strong>: Busca pelo número da ordem de serviço</li>
+        </ul>
+    </div>
+    
+    <div class="test info">
+        <h3>🧪 Como Testar</h3>
+        <ol>
+            <li><strong>Selecione "Geral"</strong> e digite um nome (ex: "João") ou CPF</li>
+            <li><strong>Teste CPF/CNPJ</strong>: Digite apenas números - formatação automática</li>
+            <li><strong>Selecione "Telefone"</strong> e digite um número de telefone</li>
+            <li><strong>Selecione "Equipamento"</strong> e digite marca/modelo (ex: "Samsung")</li>
+            <li><strong>Selecione "Nº OS"</strong> e digite número da ordem</li>
+        </ol>
+    </div>
+    
+    <script>
+        let currentSearchType = 'geral';
+        
+        function formatarCpfCnpj(value) {
+            const digits = value.replace(/\D/g, '');
+            
+            if (digits.length <= 11) {
+                return digits
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{2})$/, '$1-$2');
+            } else {
+                return digits
+                    .replace(/(\d{2})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1/$2')
+                    .replace(/(\d{4})(\d{2})$/, '$1-$2');
+            }
+        }
+        
+        function onlyDigits(value) {
+            return value.replace(/\D/g, '');
+        }
+        
+        function changeSearchType(type, button) {
+            currentSearchType = type;
+            
+            // Atualizar botões
+            document.querySelectorAll('.button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Atualizar placeholder
+            const input = document.getElementById('searchInput');
+            const placeholders = {
+                'telefone': 'Buscar por telefone...',
+                'equipamento': 'Buscar por marca/modelo...',
+                'numero_os': 'Buscar por número da OS...',
+                'geral': 'Buscar por nome do cliente ou CPF/CNPJ...'
+            };
+            input.placeholder = placeholders[type];
+            
+            console.log('Tipo de busca alterado para:', type);
+            testSearch();
+        }
+        
+        function testSearch() {
+            const input = document.getElementById('searchInput');
+            const value = input.value;
+            
+            // Aplicar formatação automática para CPF/CNPJ apenas em "Geral"
+            if (currentSearchType === 'geral') {
+                const digits = onlyDigits(value);
+                if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(value)) {
+                    const formatted = formatarCpfCnpj(value);
+                    if (formatted !== value) {
+                        input.value = formatted;
+                        console.log(`Formatação aplicada: "${value}" → "${formatted}"`);
+                    }
+                }
+            }
+            
+            // Mostrar resultado da busca
+            const resultsDiv = document.getElementById('results');
+            if (value.trim()) {
+                let searchScope = '';
+                switch (currentSearchType) {
+                    case 'geral':
+                        searchScope = 'Nome do Cliente + CPF/CNPJ';
+                        break;
+                    case 'telefone':
+                        searchScope = 'Telefone do Cliente';
+                        break;
+                    case 'equipamento':
+                        searchScope = 'Marca/Modelo do Equipamento';
+                        break;
+                    case 'numero_os':
+                        searchScope = 'Número da OS';
+                        break;
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="result">
+                        <strong>Tipo de busca:</strong> ${currentSearchType}<br>
+                        <strong>Buscando em:</strong> ${searchScope}<br>
+                        <strong>Termo:</strong> "${input.value}"<br>
+                        <strong>Apenas dígitos:</strong> "${onlyDigits(input.value)}"
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = '';
+            }
+        }
+        
+        // Teste inicial
+        testSearch();
+    </script>
+</body>
+</html>

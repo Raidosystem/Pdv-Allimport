@@ -382,6 +382,7 @@ export function SalesPage() {
                 onRemovePayment={removePayment}
                 cashReceived={cashReceived}
                 changeAmount={changeAmount}
+                hasItems={items.length > 0}
               />
 
               {/* Botões de ação */}

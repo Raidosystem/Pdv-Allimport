@@ -7,6 +7,7 @@ export function useClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mostrarTodos, setMostrarTodos] = useState(false)
 
   // Carregar clientes
   const carregarClientes = async (filtros: ClienteFilters = {}) => {
@@ -21,6 +22,33 @@ export function useClientes() {
       toast.error(errorMessage)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Carregar apenas os últimos 10 clientes
+  const carregarClientesLimitados = async (filtros: ClienteFilters = {}) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await ClienteService.buscarClientes({ ...filtros, limit: 10 })
+      setClientes(data)
+      setMostrarTodos(false)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Alternar entre mostrar todos ou apenas 10
+  const toggleMostrarTodos = async (filtros: ClienteFilters = {}) => {
+    if (mostrarTodos) {
+      await carregarClientesLimitados(filtros)
+    } else {
+      await carregarClientes(filtros)
+      setMostrarTodos(true)
     }
   }
 
@@ -120,14 +148,17 @@ export function useClientes() {
 
   // Carregar clientes na inicialização
   useEffect(() => {
-    carregarClientes()
+    carregarClientesLimitados() // Iniciar mostrando apenas os últimos 10
   }, [])
 
   return {
     clientes,
     loading,
     error,
+    mostrarTodos,
     carregarClientes,
+    carregarClientesLimitados,
+    toggleMostrarTodos,
     criarCliente,
     atualizarCliente,
     deletarCliente,

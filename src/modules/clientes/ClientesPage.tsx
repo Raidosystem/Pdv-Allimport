@@ -13,7 +13,9 @@ export function ClientesPage() {
   const {
     clientes,
     loading,
+    mostrarTodos,
     carregarClientes,
+    toggleMostrarTodos,
     deletarCliente,
     alternarStatus
   } = useClientes()
@@ -221,6 +223,26 @@ export function ClientesPage() {
         </div>
 
         {/* Tabela de clientes */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {mostrarTodos 
+                ? `Mostrando todos os ${clientes.length} clientes`
+                : `Mostrando os últimos ${clientes.length} clientes`
+              }
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toggleMostrarTodos()}
+              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+            >
+              {mostrarTodos ? 'Mostrar últimos 10' : 'Ver todos'}
+            </Button>
+          </div>
+        </div>
+
         <ClienteTable
           clientes={clientes}
           loading={loading}

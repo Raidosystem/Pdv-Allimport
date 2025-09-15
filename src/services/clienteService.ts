@@ -28,6 +28,11 @@ export class ClienteService {
         query = query.eq('tipo', filtros.tipo)
       }
 
+      // Aplicar limite se especificado
+      if (filtros.limit && filtros.limit > 0) {
+        query = query.limit(filtros.limit)
+      }
+
       const { data, error } = await query
 
       if (error) {

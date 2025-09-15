@@ -6,8 +6,9 @@ export function useOrdensServico(filtros?: FiltrosOS) {
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mostrarTodos, setMostrarTodos] = useState(false)
 
-  const carregarOrdens = async () => {
+  const carregarOrdens = async (limit?: number) => {
     const timestamp = Date.now()
     console.log('🔄 [Hook] Carregando ordens de serviço... Timestamp:', timestamp)
     setLoading(true)
@@ -21,7 +22,10 @@ export function useOrdensServico(filtros?: FiltrosOS) {
         status: o.status,
         data_entrega: o.data_entrega
       })))
-      setOrdens(dados)
+      
+      // Aplicar limite se especificado
+      const ordensLimitadas = limit && limit > 0 ? dados.slice(0, limit) : dados
+      setOrdens(ordensLimitadas)
     } catch (err: unknown) {
       console.error('❌ [Hook] Erro ao carregar ordens:', err)
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar ordens de serviço'
@@ -32,19 +36,39 @@ export function useOrdensServico(filtros?: FiltrosOS) {
     }
   }
 
+  const carregarOrdensLimitadas = async () => {
+    await carregarOrdens(10)
+    setMostrarTodos(false)
+  }
+
+  const toggleMostrarTodos = async () => {
+    if (mostrarTodos) {
+      await carregarOrdensLimitadas()
+    } else {
+      await carregarOrdens()
+      setMostrarTodos(true)
+    }
+  }
+
   useEffect(() => {
-    carregarOrdens()
+    carregarOrdensLimitadas() // Iniciar mostrando apenas as últimas 10
   }, [filtros])
 
   const recarregar = () => {
-    carregarOrdens()
+    if (mostrarTodos) {
+      carregarOrdens()
+    } else {
+      carregarOrdensLimitadas()
+    }
   }
 
   return {
     ordens,
     loading,
     error,
-    recarregar
+    mostrarTodos,
+    recarregar,
+    toggleMostrarTodos
   }
 }
 

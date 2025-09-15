@@ -47,4 +47,5 @@ export interface ClienteFilters {
   search?: string
   ativo?: boolean | null
   tipo?: 'Física' | 'Jurídica' | null
+  limit?: number
 }

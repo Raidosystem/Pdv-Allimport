@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Package, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import ProductForm from '../components/product/ProductForm'
+import { useProdutos } from '../hooks/useProdutos'
 
 interface Product {
   id: string
@@ -65,44 +66,20 @@ const sampleProducts: Product[] = [
   }
 ]
 
-// Função para carregar todos os produtos do backup
-const loadAllProducts = async (): Promise<Product[]> => {
-  try {
-    const response = await fetch('/backup-products.json')
-    const backupData = await response.json()
-    return backupData.data || []
-  } catch (error) {
-    console.error('Erro ao carregar backup:', error)
-    return sampleProducts
-  }
-}
-
 export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
-  const [products, setProducts] = useState<Product[]>([])
+  
+  const {
+    produtos: products,
+    loading,
+    mostrarTodos,
+    toggleMostrarTodos
+  } = useProdutos()
+  
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Carregar todos os produtos do backup
-    const loadProducts = async () => {
-      try {
-        const allProducts = await loadAllProducts()
-        setProducts(allProducts)
-        console.log(`✅ Carregados ${allProducts.length} produtos do backup`)
-      } catch (error) {
-        console.error('Erro ao carregar produtos:', error)
-        setProducts(sampleProducts)
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    loadProducts()
-  }, [])
 
   const handleNovoProduto = () => {
     setEditingProduct(null)
@@ -399,9 +376,29 @@ export function ProductsPage() {
       {/* Products Table */}
       <div className="bg-white rounded-lg border">
         <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">
-            Produtos ({filteredProducts.length})
-          </h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">
+              Produtos ({filteredProducts.length})
+            </h2>
+            
+            <div className="flex items-center space-x-3">
+              <div className="text-sm text-gray-600">
+                {mostrarTodos 
+                  ? `Mostrando todos os ${products.length} produtos`
+                  : `Mostrando os últimos ${products.length} produtos`
+                }
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toggleMostrarTodos()}
+                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              >
+                {mostrarTodos ? 'Mostrar últimos 10' : 'Ver todos'}
+              </Button>
+            </div>
+          </div>
         </div>
         
         <div className="overflow-x-auto">

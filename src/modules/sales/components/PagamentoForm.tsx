@@ -13,6 +13,7 @@ interface PagamentoFormProps {
   onRemovePayment: (index: number) => void
   cashReceived?: number
   changeAmount: number
+  hasItems?: boolean
 }
 
 const paymentMethods = [
@@ -29,7 +30,8 @@ export function PagamentoForm({
   onAddPayment,
   onRemovePayment,
   cashReceived = 0,
-  changeAmount
+  changeAmount,
+  hasItems = false
 }: PagamentoFormProps) {
   const [selectedMethod, setSelectedMethod] = useState<string>('cash')
   const [paymentAmount, setPaymentAmount] = useState<string>('')
@@ -39,7 +41,8 @@ export function PagamentoForm({
   // ✅ CORREÇÃO: Usar tolerância para precisão numérica
   const rawRemainingAmount = totalAmount - totalPaid
   const remainingAmount = Math.max(0, rawRemainingAmount)
-  const isPaymentComplete = rawRemainingAmount <= 0.01 // Tolerância de 1 centavo
+  // ⭐ CORREÇÃO: Só mostrar como completo se há itens no carrinho E pagamento está completo
+  const isPaymentComplete = hasItems && rawRemainingAmount <= 0.01 // Tolerância de 1 centavo
 
   const handleAddPayment = () => {
     const amount = parseFloat(paymentAmount)
@@ -330,7 +333,7 @@ export function PagamentoForm({
                 </span>
               </div>
             </div>
-          ) : remainingAmount > 0.01 ? (
+          ) : remainingAmount > 0.01 && hasItems ? (
             <div className="p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
               <div className="flex items-center justify-center space-x-2 text-orange-700">
                 <AlertCircle className="w-6 h-6" />
@@ -339,7 +342,7 @@ export function PagamentoForm({
                 </span>
               </div>
             </div>
-          ) : (
+          ) : hasItems && remainingAmount <= 0.01 ? (
             <div className="p-4 bg-green-50 rounded-xl border-2 border-green-200">
               <div className="flex items-center justify-center space-x-2 text-green-700">
                 <CheckCircle className="w-6 h-6" />
@@ -348,7 +351,16 @@ export function PagamentoForm({
                 </span>
               </div>
             </div>
-          )}
+          ) : !hasItems ? (
+            <div className="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div className="flex items-center justify-center space-x-2 text-gray-600">
+                <Calculator className="w-6 h-6" />
+                <span className="text-lg font-medium">
+                  💳 Adicione produtos para iniciar o pagamento
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </Card>

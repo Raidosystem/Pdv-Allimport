@@ -3,12 +3,13 @@ import { ordemServicoService } from '../services/ordemServicoService'
 import type { OrdemServico, FiltrosOS } from '../types/ordemServico'
 
 export function useOrdensServico(filtros?: FiltrosOS) {
-  const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [todasOrdens, setTodasOrdens] = useState<OrdemServico[]>([]) // Lista completa
+  const [ordens, setOrdens] = useState<OrdemServico[]>([]) // Lista exibida
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [mostrarTodos, setMostrarTodos] = useState(false)
+  const [mostrarTodos, setMostrarTodos] = useState(false) // Iniciar mostrando apenas 10
 
-  const carregarOrdens = async (limit?: number) => {
+  const carregarTodasOrdens = async () => {
     const timestamp = Date.now()
     console.log('🔄 [Hook] Carregando ordens de serviço... Timestamp:', timestamp)
     setLoading(true)
@@ -23,9 +24,10 @@ export function useOrdensServico(filtros?: FiltrosOS) {
         data_entrega: o.data_entrega
       })))
       
-      // Aplicar limite se especificado
-      const ordensLimitadas = limit && limit > 0 ? dados.slice(0, limit) : dados
-      setOrdens(ordensLimitadas)
+      setTodasOrdens(dados)
+      // Inicialmente mostrar apenas as primeiras 10 ordens
+      setOrdens(dados.slice(0, 10))
+      setMostrarTodos(false)
     } catch (err: unknown) {
       console.error('❌ [Hook] Erro ao carregar ordens:', err)
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar ordens de serviço'
@@ -36,39 +38,28 @@ export function useOrdensServico(filtros?: FiltrosOS) {
     }
   }
 
-  const carregarOrdensLimitadas = async () => {
-    await carregarOrdens(10)
-    setMostrarTodos(false)
-  }
-
-  const toggleMostrarTodos = async () => {
-    if (mostrarTodos) {
-      await carregarOrdensLimitadas()
-    } else {
-      await carregarOrdens()
-      setMostrarTodos(true)
-    }
+  // Função simples para ver todas
+  const verTodos = () => {
+    setOrdens(todasOrdens)
+    setMostrarTodos(true)
   }
 
   useEffect(() => {
-    carregarOrdensLimitadas() // Iniciar mostrando apenas as últimas 10
+    carregarTodasOrdens() // Carregar e mostrar todas as ordens
   }, [filtros])
 
   const recarregar = () => {
-    if (mostrarTodos) {
-      carregarOrdens()
-    } else {
-      carregarOrdensLimitadas()
-    }
+    carregarTodasOrdens()
   }
 
   return {
     ordens,
+    todasOrdens, // Para estatísticas
     loading,
     error,
     mostrarTodos,
     recarregar,
-    toggleMostrarTodos
+    toggleMostrarTodos: verTodos
   }
 }
 

@@ -15,9 +15,11 @@ import {
   MapPin
 } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
 import { ClienteService } from '../../services/clienteService'
 import { formatarTelefone, formatarCpfCnpj, validarCpfCnpj } from '../../utils/formatacao'
+import { onlyDigits } from '../../lib/cpf'
 import type { Cliente, ClienteInput } from '../../types/cliente'
 
 // Schema simples para ClienteSelector (usado em OS e Vendas)
@@ -36,6 +38,8 @@ const novoClienteSchema = z.object({
 
 type NovoClienteData = z.infer<typeof novoClienteSchema>
 
+type SearchType = 'geral' | 'telefone'
+
 interface ClienteSelectorProps {
   onClienteSelect: (cliente: Cliente | null) => void
   clienteSelecionado?: Cliente | null
@@ -50,6 +54,7 @@ export function ClienteSelector({
   showCard = true 
 }: ClienteSelectorProps) {
   const [busca, setBusca] = useState('')
+  const [searchType, setSearchType] = useState<SearchType>('geral')
   const [clientesEncontrados, setClientesEncontrados] = useState<Cliente[]>([])
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false)
   const [mostrarFormCadastro, setMostrarFormCadastro] = useState(false)
@@ -247,6 +252,29 @@ export function ClienteSelector({
     setMostrarSugestoes(false)
   }
 
+  const handleSearchTypeChange = (newSearchType: SearchType) => {
+    console.log('🎯 [CLIENTE SELECTOR] Mudando tipo de busca para:', newSearchType)
+    setSearchType(newSearchType)
+  }
+
+  const handleSearchChange = (value: string) => {
+    console.log('🔍 [CLIENTE SELECTOR] handleSearchChange chamado com valor:', `"${value}"`)
+    console.log('🎯 [CLIENTE SELECTOR] Tipo de busca selecionado:', searchType)
+    
+    // Aplicar formatação automática apenas se for busca geral (que inclui CPF/CNPJ)
+    let formattedValue = value
+    if (searchType === 'geral') {
+      const digits = onlyDigits(value)
+      // Se tem apenas dígitos ou formatação de CPF/CNPJ, aplicar formatação automática
+      if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(value)) {
+        formattedValue = formatarCpfCnpj(value)
+        console.log('🎭 [CLIENTE SELECTOR] Aplicando formatação automática:', `"${value}" → "${formattedValue}"`)
+      }
+    }
+    
+    setBusca(formattedValue)
+  }
+
   const abrirFormCadastro = () => {
     setMostrarFormCadastro(true)
     setMostrarSugestoes(false)
@@ -399,23 +427,53 @@ export function ClienteSelector({
       {!clienteSelecionado && !mostrarFormCadastro && (
         <div className="space-y-4">
           {/* Campo de busca */}
-          <div className="relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Buscar cliente por nome, telefone, CPF, CNPJ ou endereço..."
-              />
-              {loadingBusca && (
-                <div className="absolute right-3 top-3">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                </div>
-              )}
+          <div className="space-y-3">
+            {/* Seletor de Tipo de Busca */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleSearchTypeChange('geral')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  searchType === 'geral'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Geral (Nome e CPF/CNPJ)
+              </button>
+              <button
+                onClick={() => handleSearchTypeChange('telefone')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  searchType === 'telefone'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Telefone
+              </button>
             </div>
+            
+            {/* Campo de Busca */}
+            <div className="relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  value={busca}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full pl-10 pr-3 py-2"
+                  placeholder={
+                    searchType === 'telefone' ? "Buscar por telefone..." :
+                    "Buscar cliente por nome ou CPF/CNPJ..."
+                  }
+                />
+                {loadingBusca && (
+                  <div className="absolute right-3 top-3">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  </div>
+                )}
+              </div>
+          </div>
 
             {/* Sugestões */}
             {mostrarSugestoes && clientesEncontrados.length > 0 && (

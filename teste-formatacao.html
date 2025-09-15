@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Formatação CPF/CNPJ</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input { padding: 10px; margin: 10px 0; width: 300px; font-size: 16px; }
+        .exemplo { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Formatação Automática CPF/CNPJ</h1>
+    
+    <div class="exemplo">
+        <h3>Digite um CPF ou CNPJ para testar:</h3>
+        <input type="text" id="testInput" placeholder="Digite apenas números..." />
+        <div id="resultado"></div>
+    </div>
+    
+    <div class="exemplo">
+        <h3>Exemplos para testar:</h3>
+        <p><strong>CPF:</strong> 11144477735 → 111.444.777-35</p>
+        <p><strong>CNPJ:</strong> 11222333000181 → 11.222.333/0001-81</p>
+    </div>
+
+    <script>
+        // Função para remover caracteres não numéricos
+        function onlyDigits(value) {
+            return value.replace(/\D/g, '');
+        }
+
+        // Função para formatar CPF
+        function formatarCPF(valor) {
+            const apenasNumeros = onlyDigits(valor);
+            
+            if (apenasNumeros.length <= 3) {
+                return apenasNumeros;
+            } else if (apenasNumeros.length <= 6) {
+                return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3)}`;
+            } else if (apenasNumeros.length <= 9) {
+                return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3, 6)}.${apenasNumeros.slice(6)}`;
+            } else {
+                return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3, 6)}.${apenasNumeros.slice(6, 9)}-${apenasNumeros.slice(9, 11)}`;
+            }
+        }
+
+        // Função para formatar CNPJ
+        function formatarCNPJ(valor) {
+            const apenasNumeros = onlyDigits(valor);
+            
+            if (apenasNumeros.length <= 2) {
+                return apenasNumeros;
+            } else if (apenasNumeros.length <= 5) {
+                return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(2)}`;
+            } else if (apenasNumeros.length <= 8) {
+                return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(2, 5)}.${apenasNumeros.slice(5)}`;
+            } else if (apenasNumeros.length <= 12) {
+                return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(2, 5)}.${apenasNumeros.slice(5, 8)}/${apenasNumeros.slice(8)}`;
+            } else {
+                return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(2, 5)}.${apenasNumeros.slice(5, 8)}/${apenasNumeros.slice(8, 12)}-${apenasNumeros.slice(12, 14)}`;
+            }
+        }
+
+        // Função para formatação automática
+        function formatarCpfCnpj(valor) {
+            const apenasNumeros = onlyDigits(valor);
+            
+            if (apenasNumeros.length <= 11) {
+                return formatarCPF(valor);
+            } else {
+                return formatarCNPJ(valor);
+            }
+        }
+
+        // Event listener para o input
+        document.getElementById('testInput').addEventListener('input', function(e) {
+            const originalValue = e.target.value;
+            const digits = onlyDigits(originalValue);
+            
+            // Se tem apenas dígitos ou formatação de CPF/CNPJ, aplicar formatação automática
+            if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(originalValue)) {
+                const formattedValue = formatarCpfCnpj(originalValue);
+                e.target.value = formattedValue;
+                
+                document.getElementById('resultado').innerHTML = `
+                    <p><strong>Original:</strong> "${originalValue}"</p>
+                    <p><strong>Formatado:</strong> "${formattedValue}"</p>
+                    <p><strong>Apenas dígitos:</strong> "${digits}"</p>
+                    <p><strong>Tipo:</strong> ${digits.length <= 11 ? 'CPF' : 'CNPJ'}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

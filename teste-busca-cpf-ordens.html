@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Busca CPF - Ordens de Serviço</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .result { margin: 5px 0; }
+        .pass { color: green; }
+        .fail { color: red; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        button { padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Busca por CPF - Ordens de Serviço</h1>
+    
+    <div>
+        <input type="text" id="searchInput" placeholder="Digite CPF, nome, marca..." />
+        <button onclick="testSearch()">Buscar</button>
+        <button onclick="clearResults()">Limpar</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        // Dados de exemplo para teste
+        const ordens = [
+            {
+                id: "1",
+                cliente: {
+                    nome: "ANTONIO CLAUDIO FIGUEIRA",
+                    cpf_cnpj: "33393732803",
+                    telefone: "17999740896"
+                },
+                marca: "Samsung",
+                modelo: "Galaxy S21",
+                numero_os: "OS-001"
+            },
+            {
+                id: "2", 
+                cliente: {
+                    nome: "EDVANIA DA SILVA",
+                    cpf_cnpj: "37511773885",
+                    telefone: "17999790061"
+                },
+                marca: "Motorola",
+                modelo: "Moto E13",
+                numero_os: "OS-002"
+            },
+            {
+                id: "3",
+                cliente: {
+                    nome: "JOÃO SILVA",
+                    cpf_cnpj: "12345678901",
+                    telefone: "11987654321"
+                },
+                marca: "Apple",
+                modelo: "iPhone 12",
+                numero_os: "OS-003"
+            }
+        ];
+
+        function filteredOrdens(searchTerm) {
+            return ordens.filter(ordem => {
+                const searchNormalized = searchTerm.toLowerCase().replace(/\D/g, '')
+                const nomeCliente = (ordem.cliente?.nome?.toLowerCase() || '')
+                const cpfCnpj = (ordem.cliente?.cpf_cnpj || '').replace(/\D/g, '')
+                const telefone = (ordem.cliente?.telefone || '').replace(/\D/g, '')
+                const marca = (ordem.marca?.toLowerCase() || '')
+                const modelo = (ordem.modelo?.toLowerCase() || '')
+                const numeroOs = (ordem.numero_os?.toLowerCase() || '')
+                
+                return nomeCliente.includes(searchTerm.toLowerCase()) ||
+                       cpfCnpj.includes(searchNormalized) ||
+                       telefone.includes(searchNormalized) ||
+                       marca.includes(searchTerm.toLowerCase()) ||
+                       modelo.includes(searchTerm.toLowerCase()) ||
+                       numeroOs.includes(searchTerm.toLowerCase())
+            });
+        }
+
+        function testSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const results = filteredOrdens(searchTerm);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Resultados para: "${searchTerm}"</h3>
+                <p>Encontradas ${results.length} ordens:</p>
+                ${results.map(ordem => `
+                    <div class="test">
+                        <strong>OS ${ordem.numero_os}</strong><br>
+                        Cliente: ${ordem.cliente.nome}<br>
+                        CPF: ${ordem.cliente.cpf_cnpj}<br>
+                        Telefone: ${ordem.cliente.telefone}<br>
+                        Equipamento: ${ordem.marca} ${ordem.modelo}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('searchInput').value = '';
+        }
+
+        // Testes automáticos
+        function runTests() {
+            const tests = [
+                { search: "333", expected: 1, description: "Busca por 3 primeiros dígitos do CPF" },
+                { search: "33393732803", expected: 1, description: "Busca por CPF completo" },
+                { search: "333.937.328-03", expected: 1, description: "Busca por CPF formatado" },
+                { search: "375", expected: 1, description: "Busca por 3 primeiros dígitos do segundo CPF" },
+                { search: "37511773885", expected: 1, description: "Busca por segundo CPF completo" },
+                { search: "123", expected: 1, description: "Busca por 3 primeiros dígitos do terceiro CPF" },
+                { search: "12345678901", expected: 1, description: "Busca por terceiro CPF completo" },
+                { search: "ANTONIO", expected: 1, description: "Busca por nome" },
+                { search: "Samsung", expected: 1, description: "Busca por marca" },
+                { search: "999", expected: 0, description: "Busca que não deveria encontrar nada" }
+            ];
+
+            console.log("=== EXECUTANDO TESTES ===");
+            tests.forEach(test => {
+                const results = filteredOrdens(test.search);
+                const passed = results.length === test.expected;
+                console.log(`${passed ? '✅' : '❌'} ${test.description}: ${results.length} encontradas (esperado: ${test.expected})`);
+            });
+        }
+
+        // Executar testes ao carregar a página
+        window.onload = () => {
+            runTests();
+            console.log("\n=== DADOS DE TESTE ===");
+            ordens.forEach(ordem => {
+                console.log(`OS ${ordem.numero_os}: ${ordem.cliente.nome} - CPF: ${ordem.cliente.cpf_cnpj}`);
+            });
+        };
+    </script>
+</body>
+</html>

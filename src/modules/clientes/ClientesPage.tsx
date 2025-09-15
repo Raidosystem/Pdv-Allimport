@@ -5,16 +5,19 @@ import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
 import { ClienteView } from '../../components/cliente/ClienteView'
 import { useClientes } from '../../hooks/useClientes'
-import type { Cliente } from '../../types/cliente'
+import type { Cliente, ClienteFilters } from '../../types/cliente'
 
 type ViewMode = 'list' | 'form' | 'view'
 
 export function ClientesPage() {
   const {
     clientes,
+    totalClientes,
+    todosClientesCache,
     loading,
     mostrarTodos,
     carregarClientes,
+    carregarClientesLimitados,
     toggleMostrarTodos,
     deletarCliente,
     alternarStatus
@@ -24,10 +27,10 @@ export function ClientesPage() {
   const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null)
   const [clienteVisualizando, setClienteVisualizando] = useState<Cliente | null>(null)
 
-  // Estatísticas dos clientes
-  const clientesAtivos = clientes.filter(c => c.ativo).length
-  const pessoasFisicas = clientes.filter(c => c.tipo === 'Física').length
-  const pessoasJuridicas = clientes.filter(c => c.tipo === 'Jurídica').length
+  // Estatísticas dos clientes - usar o cache completo em vez dos clientes exibidos
+  const clientesAtivos = todosClientesCache.filter((c: Cliente) => c.ativo).length
+  const pessoasFisicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'Física').length
+  const pessoasJuridicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'Jurídica').length
 
   const handleNovoCliente = () => {
     setClienteEditando(null)
@@ -78,6 +81,30 @@ export function ClientesPage() {
       await alternarStatus(id, ativo)
     } catch (error) {
       console.error('Erro ao alterar status:', error)
+    }
+  }
+
+  // Função para aplicar filtros (incluindo busca)
+  const handleFiltersChange = async (filtros: ClienteFilters) => {
+    console.log('🎯 [CLIENTES PAGE] handleFiltersChange chamado com filtros:', filtros)
+    
+    // Se há filtros aplicados (busca, status, etc.), usar carregarClientes
+    // Considerar que há filtros se pelo menos um valor não está vazio/null/undefined
+    const hasFiltros = Object.entries(filtros).some(([key, value]) => {
+      if (key === 'search') {
+        // Para busca, considerar qualquer string não vazia
+        return typeof value === 'string' && value.trim() !== ''
+      }
+      // Para outros filtros, verificar se não é null/undefined
+      return value !== null && value !== undefined && value !== ''
+    })
+    
+    if (hasFiltros) {
+      console.log('📋 [CLIENTES PAGE] Há filtros - carregando todos os resultados')
+      await carregarClientes(filtros)
+    } else {
+      console.log('📋 [CLIENTES PAGE] Sem filtros - voltando ao modo limitado (10 clientes)')
+      await carregarClientesLimitados()
     }
   }
 
@@ -180,7 +207,7 @@ export function ClientesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{clientes.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{totalClientes}</p>
               </div>
             </div>
           </div>
@@ -222,27 +249,6 @@ export function ClientesPage() {
           </div>
         </div>
 
-        {/* Tabela de clientes */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              {mostrarTodos 
-                ? `Mostrando todos os ${clientes.length} clientes`
-                : `Mostrando os últimos ${clientes.length} clientes`
-              }
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleMostrarTodos()}
-              className="text-orange-600 border-orange-600 hover:bg-orange-50"
-            >
-              {mostrarTodos ? 'Mostrar últimos 10' : 'Ver todos'}
-            </Button>
-          </div>
-        </div>
-
         <ClienteTable
           clientes={clientes}
           loading={loading}
@@ -250,8 +256,21 @@ export function ClientesPage() {
           onView={handleVisualizarCliente}
           onDelete={handleDeleteCliente}
           onToggleStatus={handleToggleStatus}
-          onFiltersChange={() => {}}
+          onFiltersChange={handleFiltersChange}
         />
+
+        {/* Botão Ver Mais - Simples */}
+        {!mostrarTodos && totalClientes > 10 && (
+          <div className="text-center mt-4">
+            <Button
+              variant="outline"
+              onClick={() => toggleMostrarTodos()}
+              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            >
+              Ver mais clientes
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Wrench, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Card } from '../components/ui/Card'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
+import { formatarCpfCnpj } from '../utils/formatacao'
+import { onlyDigits } from '../lib/cpf'
 
 interface OrdemServico {
   id: string
@@ -10,6 +14,7 @@ interface OrdemServico {
   cliente?: {
     nome: string
     telefone?: string
+    cpf_cnpj?: string
   }
   tipo: string
   marca: string
@@ -31,6 +36,13 @@ interface OrdemServico {
 }
 
 type ViewMode = 'list' | 'form' | 'view'
+
+type SearchType = 'geral' | 'telefone' | 'equipamento' | 'numero_os'
+
+interface OrdemServicoFilters {
+  search: string
+  searchType: SearchType
+}
 
 // Dados de exemplo - carregando algumas ordens inicialmente
 const sampleOrdens: OrdemServico[] = [
@@ -61,9 +73,21 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     const backupData = await response.json()
     // Corrigir o caminho dos dados - está em data.service_orders
     const orders = backupData.data?.service_orders || []
+    const clients = backupData.data?.clients || []
+    
+    // Criar um mapa de clientes por ID para busca rápida
+    const clientsMap = new Map()
+    clients.forEach((client: any) => {
+      clientsMap.set(client.id, client)
+    })
+    
+    console.log(`📊 Carregados ${clients.length} clientes e ${orders.length} ordens de serviço`)
     
     // Validar e limpar dados
     const validOrders = orders.map((order: any) => {
+      // Buscar dados do cliente pelo ID
+      const clientData = clientsMap.get(order.client_id)
+      
       // Normalizar status para o padrão do sistema
       let status = order.status || 'aberta';
       if (status === 'fechada' || status === 'fechado' || status === 'concluida' || status === 'pago') {
@@ -80,8 +104,9 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
         id: order.id || Date.now().toString(),
         cliente: {
           id: order.client_id || '',
-          nome: order.client_name || 'Cliente não informado',
-          telefone: order.client_phone || ''
+          nome: order.client_name || clientData?.name || 'Cliente não informado',
+          telefone: order.client_phone || clientData?.phone || '',
+          cpf_cnpj: clientData?.cpf_cnpj || ''
         },
         marca: order.device_model?.split(' ')[0] || 'Marca não informada',
         modelo: order.device_model || 'Modelo não informado',
@@ -104,6 +129,8 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     console.log('📋 Primeira ordem com cliente:', {
       id: validOrders[0]?.id?.slice(-6),
       cliente: validOrders[0]?.cliente?.nome,
+      cpf_cnpj: validOrders[0]?.cliente?.cpf_cnpj,
+      telefone: validOrders[0]?.cliente?.telefone,
       marca: validOrders[0]?.marca,
       modelo: validOrders[0]?.modelo,
       defeito: validOrders[0]?.defeito_relatado,
@@ -111,6 +138,13 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       data_entrega: validOrders[0]?.data_entrega,
       garantia: validOrders[0]?.garantia_meses
     })
+    
+    // Log específico dos nomes dos clientes para debug da busca
+    console.log('🔍 [DEBUG NOMES] Nomes dos clientes das primeiras 5 ordens:')
+    validOrders.slice(0, 5).forEach((ordem: OrdemServico, index: number) => {
+      console.log(`  ${index + 1}. "${ordem.cliente?.nome}" (ID: ${ordem.id})`)
+    })
+    
     return validOrders
   } catch (error) {
     console.error('❌ Erro ao carregar backup de ordens:', error)
@@ -120,24 +154,37 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
 
 export function OrdensServicoPage() {
   console.log('🔥 OrdensServicoPage carregando...')
-  const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [todasOrdens, setTodasOrdens] = useState<OrdemServico[]>([]) // Lista completa
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null)
   const [viewingOrdem, setViewingOrdem] = useState<OrdemServico | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [filtros, setFiltros] = useState<OrdemServicoFilters>({
+    search: '',
+    searchType: 'geral'
+  })
   const [loading, setLoading] = useState(true)
+  const [mostrarTodos, setMostrarTodos] = useState(false) // Iniciar mostrando apenas 10
 
   useEffect(() => {
     // Carregar todas as ordens de serviço do backup
     const loadOrdens = async () => {
       try {
+        console.log('🔄 Iniciando carregamento das ordens...')
         const allOrdens = await loadAllServiceOrders()
         console.log(`✅ Carregadas ${allOrdens.length} ordens de serviço do backup`)
         console.log('📋 Primeira ordem de exemplo:', allOrdens[0])
-        setOrdens(allOrdens)
+        console.log('📊 Resumo das ordens:', allOrdens.slice(0, 3).map(o => ({
+          id: o.id,
+          cliente: o.cliente?.nome,
+          marca: o.marca,
+          modelo: o.modelo
+        })))
+        setTodasOrdens(allOrdens) // Guardar todas para estatísticas e busca
+        setMostrarTodos(false)
       } catch (error) {
         console.error('Erro ao carregar ordens:', error)
-        setOrdens(sampleOrdens)
+        setTodasOrdens(sampleOrdens)
+        setMostrarTodos(false)
       } finally {
         setLoading(false)
       }
@@ -145,6 +192,33 @@ export function OrdensServicoPage() {
     
     loadOrdens()
   }, [])
+
+  const handleSearchTypeChange = (newSearchType: SearchType) => {
+    console.log('🎯 [ORDEM SERVIÇO] Mudando tipo de busca para:', newSearchType)
+    const novosFiltros = { ...filtros, searchType: newSearchType }
+    setFiltros(novosFiltros)
+  }
+
+  const handleSearchChange = (value: string) => {
+    console.log('🔍 [ORDEM SERVIÇO] handleSearchChange chamado com valor:', `"${value}"`)
+    
+    // Aplicar formatação automática apenas se for busca geral (que inclui CPF/CNPJ)
+    let formattedValue = value
+    if (filtros.searchType === 'geral') {
+      const digits = onlyDigits(value)
+      // Se tem apenas dígitos ou formatação de CPF/CNPJ, aplicar formatação automática
+      if (digits.length > 0 && /^[\d\.\-\/\s]*$/.test(value)) {
+        formattedValue = formatarCpfCnpj(value)
+      }
+    }
+    
+    const novosFiltros = { ...filtros, search: formattedValue }
+    setFiltros(novosFiltros)
+  }
+
+  const verTodos = () => {
+    setMostrarTodos(true)
+  }
 
   const handleNovaOrdem = () => {
     setEditingOrdem(null)
@@ -189,16 +263,56 @@ export function OrdensServicoPage() {
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
-  const filteredOrdens = ordens.filter(ordem =>
-    (ordem.cliente?.nome?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.marca?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.modelo?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (ordem.numero_os?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-  )
+  const filteredOrdens = todasOrdens.filter(ordem => {
+    const searchTerm = filtros.search
+    
+    // Se não há busca, retornar true para mostrar todos
+    if (!searchTerm || searchTerm.trim() === '') {
+      return true
+    }
+    
+    const searchNormalized = searchTerm.toLowerCase().replace(/\D/g, '')
+    const nomeCliente = (ordem.cliente?.nome?.toLowerCase() || '')
+    const cpfCnpj = (ordem.cliente?.cpf_cnpj || '').replace(/\D/g, '')
+    const telefone = (ordem.cliente?.telefone || '').replace(/\D/g, '')
+    const marca = (ordem.marca?.toLowerCase() || '')
+    const modelo = (ordem.modelo?.toLowerCase() || '')
+    const numeroOs = (ordem.numero_os?.toLowerCase() || '')
+    
+    // Busca específica por tipo
+    switch (filtros.searchType) {
+      case 'telefone':
+        return searchNormalized.length > 0 && telefone.includes(searchNormalized)
+      case 'equipamento':
+        return marca.includes(searchTerm.toLowerCase()) || modelo.includes(searchTerm.toLowerCase())
+      case 'numero_os':
+        return numeroOs.includes(searchTerm.toLowerCase())
+      default: // 'geral' - inclui nome e CPF/CNPJ
+        const matchNome = nomeCliente.includes(searchTerm.toLowerCase())
+        const matchCpfNormalized = searchNormalized.length > 0 && cpfCnpj.includes(searchNormalized)
+        const matchCpfOriginal = cpfCnpj.includes(searchTerm.toLowerCase())
+        return matchNome || matchCpfNormalized || matchCpfOriginal
+    }
+  })
 
-  const activeOrdens = ordens.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado')
-  const prontas = ordens.filter(o => o.status === 'Pronto')
-  const emAndamento = ordens.filter(o => o.status === 'Em conserto')
+  // Se há busca, mostrar todos os resultados filtrados
+  // Se não há busca, aplicar lógica de paginação (10 primeiros ou todos)
+  const ordensParaExibir = filtros.search.trim() !== '' 
+    ? filteredOrdens 
+    : (mostrarTodos ? todasOrdens : todasOrdens.slice(0, 10))
+
+  // Log do resultado da busca
+  if (filtros.search.trim() !== '') {
+    console.log(`🎯 [OS SEARCH] Busca por "${filtros.search}" (${filtros.searchType}): ${filteredOrdens.length} resultados de ${todasOrdens.length} ordens`)
+    if (filteredOrdens.length > 0 && filteredOrdens.length <= 5) {
+      console.log('📋 Ordens encontradas:', filteredOrdens.map(o => `${o.numero_os} - ${o.cliente?.nome}`))
+    }
+  }
+
+  // Usar todas as ordens para estatísticas
+  const activeOrdens = todasOrdens.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado')
+  const prontas = todasOrdens.filter(o => o.status === 'Pronto')
+  const emAndamento = todasOrdens.filter(o => o.status === 'Em conserto')
 
   // View de formulário (nova/editar ordem)
   if (viewMode === 'form') {
@@ -409,7 +523,7 @@ export function OrdensServicoPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg border">
-          <div className="text-2xl font-bold text-blue-600">{ordens.length}</div>
+          <div className="text-2xl font-bold text-blue-600">{todasOrdens.length}</div>
           <div className="text-sm text-gray-600">Total de OS</div>
         </div>
         <div className="bg-white p-4 rounded-lg border">
@@ -427,24 +541,78 @@ export function OrdensServicoPage() {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg border p-4">
-        <div className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar ordens de serviço..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 border-0 focus:ring-0 focus:outline-none"
-          />
+      <Card className="p-6">
+        <div className="flex flex-col gap-4">
+          {/* Busca */}
+          <div className="flex-1">
+            {/* Seletor de Tipo de Busca */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                onClick={() => handleSearchTypeChange('geral')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'geral'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Geral (Nome e CPF/CNPJ)
+              </button>
+              <button
+                onClick={() => handleSearchTypeChange('telefone')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'telefone'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Telefone
+              </button>
+              <button
+                onClick={() => handleSearchTypeChange('equipamento')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'equipamento'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Equipamento
+              </button>
+              <button
+                onClick={() => handleSearchTypeChange('numero_os')}
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  filtros.searchType === 'numero_os'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                Nº OS
+              </button>
+            </div>
+            
+            {/* Campo de Busca */}
+            <div className="relative">
+              <Input
+                placeholder={
+                  filtros.searchType === 'telefone' ? "Buscar por telefone..." :
+                  filtros.searchType === 'equipamento' ? "Buscar por marca/modelo..." :
+                  filtros.searchType === 'numero_os' ? "Buscar por número da OS..." :
+                  "Buscar por nome do cliente ou CPF/CNPJ..."
+                }
+                value={filtros.search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Orders Table */}
       <div className="bg-white rounded-lg border">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold">
-            Ordens de Serviço ({filteredOrdens.length})
+            Ordens de Serviço ({todasOrdens.length})
           </h2>
         </div>
         
@@ -464,7 +632,7 @@ export function OrdensServicoPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredOrdens.slice(0, 50).map((ordem) => (
+              {ordensParaExibir.map((ordem) => (
                 <tr key={ordem.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-900">
@@ -549,22 +717,28 @@ export function OrdensServicoPage() {
           </table>
         </div>
         
-        {filteredOrdens.length > 50 && (
-          <div className="p-4 border-t text-center text-sm text-gray-600">
-            Mostrando 50 de {filteredOrdens.length} ordens de serviço
+        {/* Botão Ver mais ordens - só mostrar se não há busca ativa */}
+        {!mostrarTodos && filtros.search.trim() === '' && todasOrdens.length > 10 && (
+          <div className="p-4 border-t text-center">
+            <button
+              onClick={verTodos}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium"
+            >
+              Ver mais ordens ({todasOrdens.length - 10} restantes)
+            </button>
           </div>
         )}
         
-        {filteredOrdens.length === 0 && (
+        {ordensParaExibir.length === 0 && (
           <div className="text-center py-12">
             <Wrench className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? 'Nenhuma ordem encontrada' : 'Nenhuma ordem cadastrada'}
+              {filtros.search ? 'Nenhuma ordem encontrada' : 'Nenhuma ordem cadastrada'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm ? 'Tente buscar com outros termos' : 'Comece criando sua primeira ordem de serviço'}
+              {filtros.search ? 'Tente buscar com outros termos' : 'Comece criando sua primeira ordem de serviço'}
             </p>
-            {!searchTerm && (
+            {!filtros.search && (
               <Button onClick={handleNovaOrdem} className="flex items-center gap-2 mx-auto">
                 <Plus className="w-4 h-4" />
                 Criar Primeira OS

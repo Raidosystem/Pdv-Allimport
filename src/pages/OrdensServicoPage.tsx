@@ -49,7 +49,7 @@ export function OrdensServicoPage() {
 
   console.log('Estado atual mostrarFormulario:', mostrarFormulario);
 
-  const { ordens, loading, recarregar, mostrarTodos, toggleMostrarTodos } = useOrdensServico(filtros)
+  const { ordens, loading, recarregar } = useOrdensServico(filtros)
   const { empresa } = useEmpresa()
 
   // Sistema simples de refresh após encerramento
@@ -518,20 +518,8 @@ export function OrdensServicoPage() {
           <div className="p-4 border-b bg-gray-50">
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">
-                {mostrarTodos 
-                  ? `Mostrando todas as ${ordens.length} ordens`
-                  : `Mostrando as últimas ${ordens.length} ordens`
-                }
+                Mostrando todas as {ordens.length} ordens de serviço
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleMostrarTodos()}
-                className="text-orange-600 border-orange-600 hover:bg-orange-50"
-              >
-                {mostrarTodos ? 'Mostrar últimas 10' : 'Ver todas'}
-              </Button>
             </div>
           </div>
 

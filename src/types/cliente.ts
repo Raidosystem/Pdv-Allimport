@@ -3,6 +3,7 @@ export interface Cliente {
   nome: string
   telefone: string
   cpf_cnpj?: string
+  cpf_digits?: string       // Nova coluna para CPF apenas dígitos
   email?: string
   endereco?: string
   // Campos específicos de endereço
@@ -26,6 +27,7 @@ export interface ClienteInput {
   nome: string
   telefone: string
   cpf_cnpj?: string
+  cpf_digits?: string       // Nova coluna para CPF apenas dígitos
   email?: string
   endereco?: string
   // Campos específicos de endereço
@@ -45,6 +47,7 @@ export interface ClienteInput {
 
 export interface ClienteFilters {
   search?: string
+  searchType?: 'geral' | 'telefone' // Tipo de busca específica
   ativo?: boolean | null
   tipo?: 'Física' | 'Jurídica' | null
   limit?: number

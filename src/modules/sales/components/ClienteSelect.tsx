@@ -4,7 +4,7 @@ import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { Input } from '../../../components/ui/Input'
 import { useDebounce } from '../../../hooks/useSales'
-import { customerService } from '../../../services/salesNew'
+import { customerService } from '../../../services/sales'
 import type { Customer } from '../../../types/sales'
 import { formatPhone } from '../../../utils/format'
 import InputMask from 'react-input-mask'
@@ -115,7 +115,7 @@ export function ClienteSelect({ selectedCustomer, onCustomerSelect }: ClienteSel
         email: newCustomer.email || undefined,
         phone: newCustomer.phone || undefined,
         document: newCustomer.document || undefined,
-        active: true
+        address: undefined
       })
 
       handleCustomerSelect(customer)

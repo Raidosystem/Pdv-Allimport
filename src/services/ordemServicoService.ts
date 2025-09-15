@@ -48,8 +48,6 @@ class OrdemServicoService {
   async buscarOrdens(filtros?: FiltrosOS): Promise<OrdemServico[]> {
     const user = await requireAuth()
 
-    console.log('🔍 Buscando ordens no banco - timestamp:', Date.now())
-
     let query = supabase
       .from('ordens_servico')
       .select(`
@@ -57,7 +55,7 @@ class OrdemServicoService {
         cliente:clientes(*)
       `)
       .eq('usuario_id', user.id)
-      .order('data_entrada', { ascending: false })
+      .order('created_at', { ascending: false }) // ✅ Mudança: usar created_at ao invés de data_entrada
 
     // Aplicar filtros
     if (filtros?.status && filtros.status.length > 0) {
@@ -88,13 +86,6 @@ class OrdemServicoService {
       console.error('Erro ao buscar ordens:', error)
       throw new Error(`Erro ao buscar ordens de serviço: ${error.message}`)
     }
-
-    console.log('✅ Ordens retornadas do banco:', data?.length || 0)
-    console.log('📊 Status detalhados encontrados:', data?.map(o => ({ 
-      id: o.id.slice(-6), 
-      status: o.status,
-      data_entrega: o.data_entrega 
-    })) || [])
 
     return data || []
   }
@@ -155,10 +146,9 @@ class OrdemServicoService {
       checklist: dadosForm.checklist,
       observacoes: dadosForm.observacoes,
       defeito_relatado: dadosForm.defeito_relatado,
-      // Mapeamento adicional para compatibilidade com schema existente
-      descricao_problema: dadosForm.defeito_relatado || 'Não informado',
+      descricao_problema: dadosForm.defeito_relatado || 'Não informado', // Campo obrigatório
       equipamento: `${dadosForm.tipo || ''} ${dadosForm.marca || ''} ${dadosForm.modelo || ''}`.trim(),
-      status: 'Aberta',
+      status: 'Em análise', // ✅ Corrigido: usar status válido da enum
       data_previsao: dadosForm.data_previsao || null,
       valor_orcamento: dadosForm.valor_orcamento,
       usuario_id: user.id
@@ -316,7 +306,9 @@ class OrdemServicoService {
     const novoCliente = {
       nome,
       telefone,
-      email: email || null
+      email: email || null,
+      tipo: 'Física',
+      ativo: true
     }
 
     const { data, error } = await supabase

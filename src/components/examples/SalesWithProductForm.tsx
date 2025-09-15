@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { ProductSearch } from '../../modules/sales/components/ProductSearch'
-import { ProductModal } from '../product/ProductModal'
+import { ProductFormModal } from '../product/ProductFormModal'
 import type { Product } from '../../types/sales'
 
 export function SalesWithProductForm() {
@@ -73,7 +73,7 @@ export function SalesWithProductForm() {
         )}
 
         {/* Modal de Cadastro de Produto */}
-        <ProductModal
+        <ProductFormModal
           isOpen={isProductModalOpen}
           onClose={() => setIsProductModalOpen(false)}
           onSuccess={handleProductCreated}

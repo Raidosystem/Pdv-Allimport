@@ -42,7 +42,7 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
     
     // Expor estado através do ref
     React.useImperativeHandle(ref, () => ({
-      isCpfOk: status === 'ok',
+      isCpfOk: status === 'ok' || status === 'idle', // Campo vazio (idle) também é considerado válido
       status,
       clienteEncontrado
     }))
@@ -212,40 +212,8 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
           </p>
         )}
         
-        {/* Card com dados do cliente encontrado */}
-        {status === 'duplicate' && clienteEncontrado && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h4 className="text-sm font-semibold text-red-800 mb-2">
-                  Cliente já cadastrado:
-                </h4>
-                <div className="space-y-1 text-sm text-red-700">
-                  <p><strong>Nome:</strong> {clienteEncontrado.nome}</p>
-                  {clienteEncontrado.telefone && (
-                    <p><strong>Telefone:</strong> {clienteEncontrado.telefone}</p>
-                  )}
-                  {clienteEncontrado.email && (
-                    <p><strong>E-mail:</strong> {clienteEncontrado.email}</p>
-                  )}
-                  {clienteEncontrado.endereco && (
-                    <p><strong>Endereço:</strong> {clienteEncontrado.endereco}</p>
-                  )}
-                  <p className="text-xs text-red-600">
-                    <strong>Cadastrado em:</strong> {new Date(clienteEncontrado.criado_em).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              </div>
-              <div className="ml-3">
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Card com dados do cliente encontrado - REMOVIDO para evitar duplicação */}
+        {/* O ClienteFormUnificado já exibe essas informações */}
       </div>
     )
   }

@@ -4,7 +4,7 @@ import { Input } from '../../../components/ui/Input'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { useDebounce } from '../../../hooks/useSales'
-import { productService } from '../../../services/salesNew'
+import { productService } from '../../../services/sales'
 import type { Product } from '../../../types/sales'
 import { formatCurrency } from '../../../utils/format'
 
@@ -52,18 +52,31 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
         return
       }
 
+      console.log('🔍 Buscando produtos para:', debouncedSearchTerm);
+      console.log('🔍 Usando productService.search...');
       setLoading(true)
       try {
+        // Se o termo é só números, busca por código de barras
+        // Senão, busca por nome/descrição
+        const isBarcode = /^\d+$/.test(debouncedSearchTerm.trim())
+        
         const data = await productService.search({
-          search: debouncedSearchTerm,
-          barcode: debouncedSearchTerm // Busca também por código de barras
+          search: isBarcode ? '' : debouncedSearchTerm,
+          barcode: isBarcode ? debouncedSearchTerm : ''
         })
+        console.log('📦 Produtos encontrados:', data.length, data);
+        console.log('📦 Primeiro produto (se houver):', data[0]);
+        console.log('📦 Tipo de data:', typeof data, Array.isArray(data));
+        
         setProducts(data)
         setShowResults(true)
         setSelectedIndex(-1)
         
+        console.log('✅ Estado atualizado - showResults:', true, 'products.length:', data.length);
+        
         // Se encontrou apenas 1 produto e o termo parece ser código de barras (só números), seleciona automaticamente
         if (data.length === 1 && /^\d+$/.test(debouncedSearchTerm.trim())) {
+          console.log('🔍 Auto-selecionando produto por código de barras');
           onProductSelect(data[0])
           setSearchTerm('')
           setShowResults(false)
@@ -72,10 +85,11 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
           setTimeout(() => searchInputRef.current?.focus(), 100)
         }
       } catch (error) {
-        console.error('Erro ao buscar produtos:', error)
+        console.error('❌ Erro ao buscar produtos:', error)
         setProducts([])
       } finally {
         setLoading(false)
+        console.log('🏁 Busca finalizada - loading:', false);
       }
     }
 
@@ -185,6 +199,10 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
         {/* Resultados da busca */}
         {showResults && (
           <div className="border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden bg-white">
+            {(() => {
+              console.log('🎯 Renderizando resultados - showResults:', showResults, 'loading:', loading, 'products.length:', products.length);
+              return null;
+            })()}
             {loading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
@@ -198,7 +216,9 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                   </h4>
                 </div>
                 <div className="divide-y divide-gray-100">
-                  {products.map((product, index) => (
+                  {products.map((product, index) => {
+                    console.log(`🔍 Renderizando produto ${index}:`, product.name, product);
+                    return (
                     <div
                       key={product.id}
                       onClick={() => handleProductSelect(product)}
@@ -251,7 +271,8 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -266,20 +287,20 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
           </div>
         )}
 
-        {/* Botão Cadastrar Produto */}
+        {/* Botão Venda Rápida */}
         <div className="flex justify-center">
           <Button 
             onClick={() => {
               if (onCreateProduct) {
                 onCreateProduct()
               } else {
-                alert('Funcionalidade de cadastro de produto será implementada')
+                alert('Funcionalidade de venda rápida será implementada')
               }
             }}
-            className="w-full max-w-sm h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all"
+            className="w-full max-w-sm h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Cadastrar Novo Produto
+            Venda Rápida
           </Button>
         </div>
       </div>

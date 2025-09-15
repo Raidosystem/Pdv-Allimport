@@ -13,8 +13,9 @@ import { PagamentoForm } from './components/PagamentoForm'
 import { ClienteSelector } from '../../components/ui/ClienteSelectorSimples'
 import { CashRegisterModal } from './components/CashRegisterModal'
 import { ProductFormModal } from '../../components/product/ProductFormModal'
+import { QuickSaleModal } from './components/QuickSaleModal'
 import PrintConfirmationModal from '../../components/PrintConfirmationModal'
-import { salesService } from '../../services/salesEmbedded'
+import { salesService } from '../../services/sales'
 import type { Product, Customer } from '../../types/sales'
 import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
@@ -29,6 +30,7 @@ export function SalesPage() {
   const [cashReceived, setCashReceived] = useState<number>(0)
   const [showCashModal, setShowCashModal] = useState(false)
   const [showProductFormModal, setShowProductFormModal] = useState(false)
+  const [showQuickSaleModal, setShowQuickSaleModal] = useState(false)
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [pendingSaleData, setPendingSaleData] = useState<any>(null)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
@@ -98,9 +100,9 @@ export function SalesPage() {
     }
   }
 
-  // Função para abrir modal de cadastro de produtos
+  // Função para abrir modal de venda rápida
   const handleCreateProduct = () => {
-    setShowProductFormModal(true)
+    setShowQuickSaleModal(true)
   }
 
   // Atalhos de teclado
@@ -145,7 +147,7 @@ export function SalesPage() {
     setLoading(true)
 
     try {
-      // Preparar dados da venda
+      // Preparar dados da venda - produtos de venda rápida ficam apenas na memória
       const saleData = {
         customer_id: customer?.id,
         cash_register_id: caixaAtual.id,
@@ -161,7 +163,8 @@ export function SalesPage() {
         status: 'completed' as const,
         notes: '',
         sale_items: items.map(item => ({
-          product_id: item.product.id,
+          product_id: item.product.id.startsWith('quick-') ? null : item.product.id,
+          product_name: item.product.name,
           quantity: item.quantity,
           unit_price: item.unit_price,
           total_price: item.total_price
@@ -381,6 +384,7 @@ export function SalesPage() {
                 onAddPayment={addPayment}
                 onRemovePayment={removePayment}
                 cashReceived={cashReceived}
+                onCashReceivedChange={setCashReceived}
                 changeAmount={changeAmount}
                 hasItems={items.length > 0}
               />
@@ -475,6 +479,55 @@ export function SalesPage() {
         saleTotal={totalAmount}
         customerName={customer?.name || clienteSelecionado?.nome}
       />
+
+      {/* Modal de Venda Rápida */}
+      {showQuickSaleModal && (
+        <QuickSaleModal
+          isOpen={showQuickSaleModal}
+          onClose={() => setShowQuickSaleModal(false)}
+          onSubmit={(data) => {
+            try {
+              // Criar produto temporário apenas para o carrinho (não salva no banco)
+              const productId = `quick-${Date.now()}`
+              
+              const quickProduct: Product = {
+                id: productId,
+                name: data.productName,
+                price: data.productPrice,
+                cost: data.productPrice * 0.7,
+                stock_quantity: 999999,
+                min_stock: 0,
+                unit: 'un',
+                active: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+              addItem(quickProduct, data.quantity)
+              
+              // Se cliente rápido foi informado, selecionar
+              if (data.customerName) {
+                const quickCustomer: Customer = {
+                  id: `quick-customer-${Date.now()}`,
+                  name: data.customerName,
+                  email: '',
+                  phone: '',
+                  active: true,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                }
+                setCustomer(quickCustomer)
+              }
+              
+              setShowQuickSaleModal(false)
+              toast.success('Item adicionado à venda!')
+              
+            } catch (error) {
+              console.error('Erro na venda rápida:', error)
+              toast.error('Erro ao processar venda rápida. Tente novamente.')
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

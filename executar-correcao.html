@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executar Correção - PDV Allimport</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #00ff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        #resultado {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        h1 { color: #00ff00; text-align: center; }
+        h2 { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 CORREÇÃO FORÇADA - OS-20250915-003</h1>
+        
+        <h2>📋 Status Atual</h2>
+        <p>Esta ferramenta vai corrigir a ordem de serviço que não está aparecendo.</p>
+        
+        <div>
+            <button onclick="fazerLogin()">1. 🔑 Fazer Login</button>
+            <button onclick="diagnosticar()">2. 🔍 Diagnosticar Problema</button>
+            <button onclick="executarCorrecao()">3. 🔥 EXECUTAR CORREÇÃO</button>
+            <button onclick="verificarResultado()">4. ✅ Verificar Resultado</button>
+        </div>
+        
+        <div id="resultado">Aguardando ação...</div>
+    </div>
+
+    <script>
+        // Configuração do Supabase (usando as mesmas variáveis do projeto)
+        const SUPABASE_URL = 'https://qcwovwjsmacszjxtqicp.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjd292d2pzbWFjc3pqeHRxaWNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY0MjU4MDYsImV4cCI6MjA0MjAwMTgwNn0.gH-mEUK8xqI1AEzz2G5q1aH2JK3IfEJdPsJz_tLxYQs'
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        
+        function log(message, type = 'info') {
+            const resultado = document.getElementById('resultado')
+            const timestamp = new Date().toLocaleTimeString()
+            const className = type
+            resultado.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`
+            resultado.scrollTop = resultado.scrollHeight
+        }
+        
+        async function fazerLogin() {
+            log('🔑 Iniciando processo de login...', 'info')
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'assistenciaallimport10@gmail.com',
+                    password: '123456'
+                })
+                
+                if (error) {
+                    log(`❌ Erro no login: ${error.message}`, 'error')
+                    return
+                }
+                
+                log('✅ Login realizado com sucesso!', 'success')
+                log(`👤 Usuário: ${data.user.email}`, 'info')
+                log(`🆔 User ID: ${data.user.id}`, 'info')
+                
+            } catch (err) {
+                log(`❌ Erro inesperado: ${err.message}`, 'error')
+            }
+        }
+        
+        async function diagnosticar() {
+            log('🔍 Iniciando diagnóstico...', 'info')
+            
+            try {
+                // Verificar se está logado
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    log('❌ Usuário não está logado. Faça login primeiro!', 'error')
+                    return
+                }
+                
+                log(`✅ Usuário logado: ${user.email} (${user.id})`, 'success')
+                
+                // Buscar a ordem problemática
+                const { data: ordem, error: errorOrdem } = await supabase
+                    .from('ordens_servico')
+                    .select(`
+                        numero_os,
+                        usuario_id,
+                        cliente_id,
+                        marca,
+                        modelo,
+                        clientes:cliente_id(nome, telefone, usuario_id)
+                    `)
+                    .eq('numero_os', 'OS-20250915-003')
+                    .single()
+                
+                if (errorOrdem) {
+                    log(`❌ Erro ao buscar ordem: ${errorOrdem.message}`, 'error')
+                    return
+                }
+                
+                if (ordem) {
+                    log('📋 ORDEM ENCONTRADA:', 'info')
+                    log(`   Número: ${ordem.numero_os}`, 'info')
+                    log(`   User ID da Ordem: ${ordem.usuario_id}`, 'warning')
+                    log(`   User ID Correto: ${user.id}`, 'success')
+                    log(`   Cliente: ${ordem.clientes?.nome || 'N/A'}`, 'info')
+                    log(`   Tel Cliente: ${ordem.clientes?.telefone || 'N/A'}`, 'info')
+                    log(`   User ID do Cliente: ${ordem.clientes?.usuario_id || 'N/A'}`, 'warning')
+                    
+                    if (ordem.usuario_id !== user.id) {
+                        log('⚠️ PROBLEMA IDENTIFICADO: User ID da ordem está diferente!', 'warning')
+                        log('🔧 Correção necessária.', 'warning')
+                    } else {
+                        log('✅ User ID da ordem está correto!', 'success')
+                    }
+                } else {
+                    log('❌ Ordem OS-20250915-003 não encontrada!', 'error')
+                }
+                
+            } catch (err) {
+                log(`❌ Erro no diagnóstico: ${err.message}`, 'error')
+            }
+        }
+        
+        async function executarCorrecao() {
+            log('🔥 INICIANDO CORREÇÃO FORÇADA...', 'warning')
+            
+            try {
+                // Verificar se está logado
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    log('❌ Usuário não está logado. Faça login primeiro!', 'error')
+                    return
+                }
+                
+                const userIdCorreto = user.id
+                log(`🎯 User ID correto: ${userIdCorreto}`, 'info')
+                
+                // 1. Corrigir a ordem de serviço
+                log('🔧 Corrigindo ordem de serviço...', 'info')
+                const { data: ordemAtualizada, error: errorOrdem } = await supabase
+                    .from('ordens_servico')
+                    .update({ usuario_id: userIdCorreto })
+                    .eq('numero_os', 'OS-20250915-003')
+                    .select()
+                
+                if (errorOrdem) {
+                    log(`❌ Erro ao corrigir ordem: ${errorOrdem.message}`, 'error')
+                    return
+                }
+                
+                if (ordemAtualizada && ordemAtualizada.length > 0) {
+                    log('✅ Ordem de serviço corrigida!', 'success')
+                    log(`   Número: ${ordemAtualizada[0].numero_os}`, 'success')
+                    log(`   Novo User ID: ${ordemAtualizada[0].usuario_id}`, 'success')
+                } else {
+                    log('⚠️ Nenhuma ordem foi atualizada', 'warning')
+                }
+                
+                // 2. Corrigir o cliente (telefone 17999784438)
+                log('🔧 Corrigindo cliente...', 'info')
+                const { data: clienteAtualizado, error: errorCliente } = await supabase
+                    .from('clientes')
+                    .update({ usuario_id: userIdCorreto })
+                    .eq('telefone', '17999784438')
+                    .select()
+                
+                if (errorCliente) {
+                    log(`❌ Erro ao corrigir cliente: ${errorCliente.message}`, 'error')
+                } else if (clienteAtualizado && clienteAtualizado.length > 0) {
+                    log('✅ Cliente corrigido!', 'success')
+                    log(`   Nome: ${clienteAtualizado[0].nome}`, 'success')
+                    log(`   Telefone: ${clienteAtualizado[0].telefone}`, 'success')
+                    log(`   Novo User ID: ${clienteAtualizado[0].usuario_id}`, 'success')
+                } else {
+                    log('⚠️ Nenhum cliente foi atualizado', 'warning')
+                }
+                
+                log('🎉 CORREÇÃO CONCLUÍDA!', 'success')
+                log('📝 Execute a verificação para confirmar.', 'info')
+                
+            } catch (err) {
+                log(`❌ Erro na correção: ${err.message}`, 'error')
+            }
+        }
+        
+        async function verificarResultado() {
+            log('✅ Verificando resultado da correção...', 'info')
+            
+            try {
+                // Verificar se está logado
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    log('❌ Usuário não está logado. Faça login primeiro!', 'error')
+                    return
+                }
+                
+                // Buscar a ordem exatamente como o sistema faz
+                const { data: ordens, error } = await supabase
+                    .from('ordens_servico')
+                    .select(`
+                        numero_os,
+                        status,
+                        tipo,
+                        marca,
+                        modelo,
+                        usuario_id,
+                        created_at,
+                        clientes:cliente_id(nome, telefone)
+                    `)
+                    .eq('usuario_id', user.id)
+                    .eq('numero_os', 'OS-20250915-003')
+                
+                if (error) {
+                    log(`❌ Erro na verificação: ${error.message}`, 'error')
+                    return
+                }
+                
+                if (ordens && ordens.length > 0) {
+                    const ordem = ordens[0]
+                    log('🎉 SUCESSO! A ordem agora aparece corretamente:', 'success')
+                    log(`   Número: ${ordem.numero_os}`, 'success')
+                    log(`   Status: ${ordem.status}`, 'success')
+                    log(`   Equipamento: ${ordem.marca} ${ordem.modelo}`, 'success')
+                    log(`   Cliente: ${ordem.clientes?.nome || 'N/A'}`, 'success')
+                    log(`   Data: ${new Date(ordem.created_at).toLocaleString()}`, 'success')
+                    log('', 'info')
+                    log('✅ A ordem OS-20250915-003 deve aparecer no sistema agora!', 'success')
+                } else {
+                    log('❌ A ordem ainda não está aparecendo. Pode ser necessário executar a correção novamente.', 'error')
+                }
+                
+                // Mostrar todas as ordens do usuário
+                const { data: todasOrdens } = await supabase
+                    .from('ordens_servico')
+                    .select('numero_os, status, marca, modelo, created_at')
+                    .eq('usuario_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10)
+                
+                if (todasOrdens && todasOrdens.length > 0) {
+                    log('', 'info')
+                    log('📋 Últimas ordens do usuário:', 'info')
+                    todasOrdens.forEach(ordem => {
+                        log(`   ${ordem.numero_os} - ${ordem.marca} ${ordem.modelo} (${ordem.status})`, 'info')
+                    })
+                }
+                
+            } catch (err) {
+                log(`❌ Erro na verificação: ${err.message}`, 'error')
+            }
+        }
+        
+        // Verificar status inicial
+        window.onload = async () => {
+            log('🚀 Ferramenta de correção carregada!', 'success')
+            log('📝 Siga os passos na ordem:', 'info')
+            log('   1. Fazer Login', 'info')
+            log('   2. Diagnosticar', 'info')
+            log('   3. Executar Correção', 'info')
+            log('   4. Verificar Resultado', 'info')
+            log('', 'info')
+        }
+    </script>
+</body>
+</html>

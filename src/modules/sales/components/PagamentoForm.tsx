@@ -12,8 +12,10 @@ interface PagamentoFormProps {
   onAddPayment: (payment: PaymentDetails) => void
   onRemovePayment: (index: number) => void
   cashReceived?: number
+  onCashReceivedChange?: (amount: number) => void
   changeAmount: number
   hasItems?: boolean
+  showCashControl?: boolean
 }
 
 const paymentMethods = [
@@ -30,8 +32,10 @@ export function PagamentoForm({
   onAddPayment,
   onRemovePayment,
   cashReceived = 0,
+  onCashReceivedChange,
   changeAmount,
-  hasItems = false
+  hasItems = false,
+  showCashControl = false
 }: PagamentoFormProps) {
   const [selectedMethod, setSelectedMethod] = useState<string>('cash')
   const [paymentAmount, setPaymentAmount] = useState<string>('')
@@ -112,6 +116,62 @@ export function PagamentoForm({
             </span>
           </div>
         </div>
+
+        {/* Controle de Dinheiro Recebido - apenas quando habilitado */}
+        {showCashControl && (
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-5">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-white" />
+              </div>
+              <h4 className="text-lg font-semibold text-green-700">💰 Dinheiro Recebido</h4>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              <Input
+                label="Valor Recebido"
+                type="number"
+                value={cashReceived || ''}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0
+                  onCashReceivedChange?.(value)
+                }}
+                placeholder="0,00"
+                step="0.01"
+                min="0"
+                className="h-12 text-base"
+                icon={<DollarSign className="w-5 h-5" />}
+              />
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onCashReceivedChange?.(totalAmount)}
+                className="h-12 border-green-300 text-green-700 hover:bg-green-100"
+              >
+                💵 Valor Exato
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onCashReceivedChange?.(0)}
+                className="h-12 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                🗑️ Limpar
+              </Button>
+            </div>
+
+            {cashReceived > 0 && changeAmount > 0 && (
+              <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-yellow-800 font-medium">💰 Troco a dar:</span>
+                <span className="text-xl font-bold text-yellow-900">{formatCurrency(changeAmount)}</span>
+              </div>
+            </div>
+          )}
+          </div>
+        )}
 
         {/* Seleção de Método de Pagamento */}
         <div className="space-y-4">

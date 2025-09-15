@@ -6,6 +6,7 @@ export class ClienteService {
   static async buscarClientes(filtros: ClienteFilters = {}) {
     try {
       console.log('🚀 [CLIENTE SERVICE] Iniciando busca com filtros:', filtros)
+      console.log('🔍 [CLIENTE SERVICE] Contexto de chamada:', (new Error().stack || '').split('\n')[2]?.trim())
       
       // Primeiro tentar buscar no Supabase
       let query = supabase

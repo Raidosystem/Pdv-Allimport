@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Users, Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
-import { ClienteFormulario } from '../../components/cliente/ClienteFormulario'
+import { ClienteFormUnificado } from '../../components/cliente/ClienteFormUnificado'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
 import { ClienteView } from '../../components/cliente/ClienteView'
 import { useClientes } from '../../hooks/useClientes'
@@ -146,10 +146,12 @@ export function ClientesPage() {
             </Button>
           </div>
 
-          <ClienteFormulario
+          <ClienteFormUnificado
             cliente={clienteEditando || undefined}
             onSuccess={handleSalvarCliente}
             onCancel={handleCancelar}
+            showToastOnSelect={false}
+            showUseClientButton={false}
           />
         </main>
       </div>

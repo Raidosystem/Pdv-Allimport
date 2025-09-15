@@ -6,6 +6,7 @@ import { Card } from '../components/ui/Card'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
 import { formatarCpfCnpj } from '../utils/formatacao'
 import { onlyDigits } from '../lib/cpf'
+import { supabase } from '../lib/supabase'
 
 interface OrdemServico {
   id: string
@@ -65,28 +66,156 @@ const sampleOrdens: OrdemServico[] = [
 // Função para carregar todas as ordens de serviço do backup
 const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
   try {
-    console.log('🔄 Carregando ordens de serviço do backup...')
+    console.log('🔄 Carregando ordens de serviço do backup e Supabase...')
+    
+    // 1. Carregar dados do backup
     const response = await fetch('/backup-allimport.json')
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const backupData = await response.json()
-    // Corrigir o caminho dos dados - está em data.service_orders
-    const orders = backupData.data?.service_orders || []
-    const clients = backupData.data?.clients || []
+    const backupOrders = backupData.data?.service_orders || []
+    const backupClients = backupData.data?.clients || []
     
-    // Criar um mapa de clientes por ID para busca rápida
+    console.log(`📋 Backup: ${backupOrders.length} ordens e ${backupClients.length} clientes`)
+    if (backupOrders.length > 0) {
+      console.log('🔍 Estrutura da primeira ordem do backup:', Object.keys(backupOrders[0]))
+    }
+    
+    // 2. Carregar ordens do Supabase
+    let supabaseOrders: any[] = []
+    try {
+      const { data: ordensSupabase, error: orderError } = await supabase
+        .from('ordens_servico')
+        .select('*')
+        .order('criado_em', { ascending: false })
+      
+      if (!orderError && ordensSupabase) {
+        supabaseOrders = ordensSupabase
+        console.log(`� Supabase: ${supabaseOrders.length} ordens carregadas`)
+        if (supabaseOrders.length > 0) {
+          console.log('🔍 Estrutura da primeira ordem do Supabase:', Object.keys(supabaseOrders[0]))
+        }
+      }
+    } catch (err) {
+      console.warn('⚠️ Erro ao carregar ordens do Supabase:', err)
+    }
+    
+    // 3. Carregar clientes do Supabase
+    let supabaseClients: any[] = []
+    try {
+      const { data: clientesSupabase, error: clientError } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('criado_em', { ascending: false })
+      
+      if (!clientError && clientesSupabase) {
+        supabaseClients = clientesSupabase
+        console.log(`📊 ${supabaseClients.length} clientes do Supabase carregados`)
+      }
+    } catch (err) {
+      console.warn('⚠️ Erro ao carregar clientes do Supabase:', err)
+    }
+    
+    // 4. Combinar todos os clientes
+    const allClients = [...backupClients, ...supabaseClients]
     const clientsMap = new Map()
-    clients.forEach((client: any) => {
-      clientsMap.set(client.id, client)
+    allClients.forEach((client: any) => {
+      // Mapear estrutura unificada
+      clientsMap.set(client.id, {
+        id: client.id,
+        name: client.name || client.nome,
+        phone: client.phone || client.telefone,
+        cpf_cnpj: client.cpf_cnpj,
+        email: client.email
+      })
     })
     
-    console.log(`📊 Carregados ${clients.length} clientes e ${orders.length} ordens de serviço`)
+    // 5. Combinar e deduplicar ordens (evitar duplicatas avançado)
+    const ordersMap = new Map()
+    const duplicateCheckMap = new Map() // Para detectar possíveis duplicatas por conteúdo
     
-    // Validar e limpar dados
-    const validOrders = orders.map((order: any) => {
-      // Buscar dados do cliente pelo ID
-      const clientData = clientsMap.get(order.client_id)
+    console.log('🔍 Analisando duplicação avançada...')
+    
+    // Função para criar chave de deduplicação baseada no conteúdo (sem data)
+    const createContentKey = (order: any) => {
+      const clientId = order.client_id || order.cliente_id || ''
+      const clientName = (order.client_name || order.cliente_nome || '').trim().toLowerCase()
+      const deviceModel = (order.device_model || order.equipamento_modelo || '').trim().toLowerCase()
+      const deviceType = (order.device_name || order.equipamento_tipo || '').trim().toLowerCase()
+      
+      // Chave baseada em cliente + equipamento (sem data para detectar duplicatas temporais)
+      return `${clientId}-${clientName}-${deviceModel}-${deviceType}`.replace(/\s+/g, '-')
+    }
+    
+    // Primeiro adicionar ordens do backup
+    backupOrders.forEach((order: any) => {
+      if (order.id) {
+        const contentKey = createContentKey(order)
+        ordersMap.set(order.id, { ...order, source: 'backup' })
+        duplicateCheckMap.set(contentKey, order.id)
+      }
+    })
+    
+    console.log(`📋 Após backup: ${ordersMap.size} ordens únicas no Map`)
+    
+    // Depois adicionar ordens do Supabase (verificar por ID e conteúdo)
+    let supabaseAdded = 0
+    let supabaseDuplicates = 0
+    let contentDuplicates = 0
+    
+    supabaseOrders.forEach((order: any) => {
+      if (order.id) {
+        const contentKey = createContentKey(order)
+        
+        // Verificar duplicação por ID
+        if (ordersMap.has(order.id)) {
+          supabaseDuplicates++
+          console.log(`⚠️ Ordem duplicada por ID: ${order.id}`)
+          return
+        }
+        
+        // Verificar duplicação por conteúdo
+        if (duplicateCheckMap.has(contentKey)) {
+          contentDuplicates++
+          console.log(`⚠️ Possível duplicata por conteúdo: ${order.id} similar a ${duplicateCheckMap.get(contentKey)}`)
+          console.log(`   Cliente: ${order.client_name || order.cliente_nome}, Equipamento: ${order.device_model || order.equipamento_modelo}`)
+          return
+        }
+        
+        // Adicionar ordem única
+        ordersMap.set(order.id, { ...order, source: 'supabase' })
+        duplicateCheckMap.set(contentKey, order.id)
+        supabaseAdded++
+      }
+    })
+    
+    console.log(`📋 Supabase: ${supabaseAdded} adicionadas, ${supabaseDuplicates} duplicatas por ID, ${contentDuplicates} duplicatas por conteúdo`)
+    
+    const allOrders = Array.from(ordersMap.values())
+    
+    console.log(`📊 Total após deduplicação: ${clientsMap.size} clientes e ${allOrders.length} ordens únicas`)
+    console.log(`📊 Ordens por fonte: ${backupOrders.length} backup, ${supabaseOrders.length} Supabase, ${allOrders.length} final`)
+    
+    // 6. Validar e limpar dados de todas as ordens
+    const validOrders = allOrders.map((order: any) => {
+      // Buscar dados do cliente pelo ID (pode vir do backup ou Supabase)
+      const clientData = clientsMap.get(order.client_id || order.cliente_id)
+      
+      // Log para debugging dos campos do equipamento
+      if (order.source === 'supabase') {
+        console.log('🔧 Ordem Supabase - Campos disponíveis:', {
+          id: order.id,
+          equipamento_tipo: order.equipamento_tipo,
+          equipamento_modelo: order.equipamento_modelo,
+          equipamento_marca: order.equipamento_marca,
+          marca: order.marca,
+          modelo: order.modelo,
+          tipo: order.tipo,
+          device_name: order.device_name,
+          device_model: order.device_model
+        })
+      }
       
       // Normalizar status para o padrão do sistema
       let status = order.status || 'aberta';
@@ -100,17 +229,22 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
         status = 'Em análise';
       }
 
+      // Mapear equipamento com múltiplas tentativas de campos
+      const equipamentoModelo = order.equipamento_modelo || order.device_model || order.modelo || 'Modelo não informado'
+      const equipamentoMarca = order.equipamento_marca || order.marca || equipamentoModelo?.split(' ')[0] || 'Marca não informada'
+      const equipamentoTipo = order.equipamento_tipo || order.device_name || order.tipo || 'Tipo não informado'
+
       return {
         id: order.id || Date.now().toString(),
         cliente: {
-          id: order.client_id || '',
-          nome: order.client_name || clientData?.name || 'Cliente não informado',
-          telefone: order.client_phone || clientData?.phone || '',
+          id: order.client_id || order.cliente_id || '',
+          nome: order.client_name || order.cliente_nome || clientData?.name || 'Cliente não informado',
+          telefone: order.client_phone || order.cliente_telefone || clientData?.phone || '',
           cpf_cnpj: clientData?.cpf_cnpj || ''
         },
-        marca: order.device_model?.split(' ')[0] || 'Marca não informada',
-        modelo: order.device_model || 'Modelo não informado',
-        tipo: order.device_name || 'Tipo não informado',
+        marca: equipamentoMarca,
+        modelo: equipamentoModelo,
+        tipo: equipamentoTipo,
         numero_os: order.id?.slice(-6) || '',
         status: status as any,
         defeito_relatado: order.defect || 'Defeito não informado',
@@ -180,6 +314,7 @@ export function OrdensServicoPage() {
           modelo: o.modelo
         })))
         setTodasOrdens(allOrdens) // Guardar todas para estatísticas e busca
+        console.log(`📋 Estado atualizado: ${allOrdens.length} ordens armazenadas no estado`)
         setMostrarTodos(false)
       } catch (error) {
         console.error('Erro ao carregar ordens:', error)
@@ -300,6 +435,8 @@ export function OrdensServicoPage() {
   const ordensParaExibir = filtros.search.trim() !== '' 
     ? filteredOrdens 
     : (mostrarTodos ? todasOrdens : todasOrdens.slice(0, 10))
+
+  console.log(`🎬 [RENDER] Exibindo ${ordensParaExibir.length} ordens (total no estado: ${todasOrdens.length}, busca: "${filtros.search}", mostrarTodos: ${mostrarTodos})`)
 
   // Log do resultado da busca
   if (filtros.search.trim() !== '') {

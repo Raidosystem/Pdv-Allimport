@@ -11,7 +11,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { AuthDiagnostic } from '../components/admin/AuthDiagnostic';
-import { SystemCheck } from '../components/admin/SystemCheck';
+import { SystemCheck } from '../components/admin/debug/SystemCheck';
 
 export function DiagnosticPage() {
   const [activeTab, setActiveTab] = useState<'auth' | 'system'>('auth');

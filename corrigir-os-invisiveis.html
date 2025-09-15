@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Correção de OSs Invisíveis</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .problema {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 5px solid #ff6b6b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .solucao {
+            background: rgba(0, 255, 0, 0.2);
+            border-left: 5px solid #4ecdc4;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+        .sql-code {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .etapa {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .urgente {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Correção de OSs Invisíveis</h1>
+        
+        <div class="problema urgente">
+            <h2>🚨 PROBLEMA IDENTIFICADO</h2>
+            <p><strong>Situação:</strong> Ordens de Serviço de clientes específicos não aparecem no sistema</p>
+            <p><strong>Casos Afetados:</strong></p>
+            <ul>
+                <li>Juliano Ramos (Tel: 17999784438) - Motorola g200</li>
+                <li>Cristiano Ramos Mendes (CPF: 28219618809, Tel: 17999783012) - iPhone 15 Pro Max</li>
+            </ul>
+            <p><strong>Causa:</strong> user_id inconsistente para assistenciaallimport10@gmail.com</p>
+        </div>
+
+        <div class="solucao">
+            <h2>✅ SOLUÇÃO DESENVOLVIDA</h2>
+            <p>Scripts SQL criados para diagnosticar e corrigir o problema automaticamente.</p>
+        </div>
+
+        <div class="etapa">
+            <h3>📋 ETAPA 1: Abrir SQL Editor</h3>
+            <p>Clique no botão abaixo para abrir o Supabase SQL Editor:</p>
+            <button class="btn" onclick="abrirSupabase()">
+                🗄️ Abrir Supabase SQL Editor
+            </button>
+        </div>
+
+        <div class="etapa">
+            <h3>🔍 ETAPA 2: Executar Diagnóstico</h3>
+            <p>Cole e execute este SQL primeiro para ver o problema:</p>
+            <div class="sql-code" id="diagnostico">-- DIAGNÓSTICO RÁPIDO
+SELECT 'CLIENTES PROBLEMÁTICOS' as info;
+
+SELECT 
+  c.nome,
+  c.telefone,
+  c.cpf_cnpj,
+  c.usuario_id,
+  COUNT(os.id) as total_os
+FROM clientes c
+LEFT JOIN ordens_servico os ON c.id = os.cliente_id
+WHERE c.telefone IN ('17999784438', '17999783012')
+   OR c.cpf_cnpj = '28219618809'
+GROUP BY c.id, c.nome, c.telefone, c.cpf_cnpj, c.usuario_id;</div>
+            <button class="btn" onclick="copiarSQL('diagnostico')">📋 Copiar SQL</button>
+        </div>
+
+        <div class="etapa">
+            <h3>🔧 ETAPA 3: Executar Correção</h3>
+            <p>Se o diagnóstico mostrar user_ids diferentes, execute esta correção:</p>
+            <div class="sql-code" id="correcao">-- CORREÇÃO DIRETA
+WITH user_ativo AS (
+  SELECT id 
+  FROM auth.users 
+  WHERE email = 'assistenciaallimport10@gmail.com'
+  ORDER BY last_sign_in_at DESC NULLS LAST
+  LIMIT 1
+)
+UPDATE clientes 
+SET usuario_id = (SELECT id FROM user_ativo)
+WHERE telefone IN ('17999784438', '17999783012')
+   OR cpf_cnpj = '28219618809';
+
+WITH user_ativo AS (
+  SELECT id 
+  FROM auth.users 
+  WHERE email = 'assistenciaallimport10@gmail.com'
+  ORDER BY last_sign_in_at DESC NULLS LAST
+  LIMIT 1
+)
+UPDATE ordens_servico 
+SET usuario_id = (SELECT id FROM user_ativo)
+WHERE cliente_id IN (
+  SELECT id FROM clientes 
+  WHERE telefone IN ('17999784438', '17999783012')
+     OR cpf_cnpj = '28219618809'
+);</div>
+            <button class="btn btn-danger" onclick="copiarSQL('correcao')">⚡ Copiar Correção</button>
+        </div>
+
+        <div class="etapa">
+            <h3>✅ ETAPA 4: Verificar Resultado</h3>
+            <p>Execute este SQL para confirmar que funcionou:</p>
+            <div class="sql-code" id="verificacao">-- VERIFICAÇÃO PÓS-CORREÇÃO
+SELECT 'RESULTADO DA CORREÇÃO' as info;
+
+SELECT 
+  os.numero_os,
+  c.nome as cliente,
+  os.tipo,
+  os.marca,
+  os.modelo,
+  os.status,
+  os.data_entrada
+FROM ordens_servico os
+JOIN clientes c ON os.cliente_id = c.id
+WHERE c.telefone IN ('17999784438', '17999783012')
+   OR c.cpf_cnpj = '28219618809'
+ORDER BY os.created_at DESC;</div>
+            <button class="btn" onclick="copiarSQL('verificacao')">📋 Copiar Verificação</button>
+        </div>
+
+        <div class="etapa">
+            <h3>🎯 ETAPA 5: Testar no Sistema</h3>
+            <p>Após executar a correção:</p>
+            <ol>
+                <li>Faça login com <strong>assistenciaallimport10@gmail.com</strong></li>
+                <li>Vá para a página de Ordens de Serviço</li>
+                <li>Verifique se as OSs de Juliano e Cristiano aparecem</li>
+                <li>Teste criar uma nova OS para confirmar</li>
+            </ol>
+            <button class="btn" onclick="abrirSistema()">🚀 Abrir Sistema PDV</button>
+        </div>
+
+        <div class="problema">
+            <h3>⚠️ IMPORTANTE</h3>
+            <ul>
+                <li>Execute apenas com o usuário <strong>assistenciaallimport10@gmail.com</strong></li>
+                <li>Faça backup antes de executar a correção</li>
+                <li>Execute em horário de menor uso</li>
+                <li>Teste uma OS por vez após a correção</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function abrirSupabase() {
+            window.open('https://supabase.com/dashboard/project/qcwovwjsmacszjxtqicp/sql/new', '_blank');
+        }
+
+        function abrirSistema() {
+            window.open('http://localhost:5187', '_blank');
+        }
+
+        function copiarSQL(elementId) {
+            const elemento = document.getElementById(elementId);
+            const texto = elemento.textContent;
+            
+            navigator.clipboard.writeText(texto).then(() => {
+                // Feedback visual
+                const botao = event.target;
+                const textoOriginal = botao.textContent;
+                botao.textContent = '✅ Copiado!';
+                botao.style.background = 'linear-gradient(45deg, #4ecdc4, #44a08d)';
+                
+                setTimeout(() => {
+                    botao.textContent = textoOriginal;
+                    botao.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                alert('Erro ao copiar. Cole manualmente:\n\n' + texto);
+            });
+        }
+
+        // Mostrar instruções de uso
+        window.onload = function() {
+            console.log('🔧 Correção de OSs Invisíveis carregada');
+            console.log('📋 Instruções:');
+            console.log('1. Clique em "Abrir Supabase SQL Editor"');
+            console.log('2. Execute o diagnóstico primeiro');
+            console.log('3. Se necessário, execute a correção');
+            console.log('4. Verifique o resultado');
+            console.log('5. Teste no sistema');
+        };
+    </script>
+</body>
+</html>

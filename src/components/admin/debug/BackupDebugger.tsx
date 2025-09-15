@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bug, FileText, CheckCircle, XCircle } from 'lucide-react';
-import { useBackup } from '../hooks/useBackup';
+import { useBackup } from '../../../hooks/useBackup';
 
 export default function BackupDebugger() {
   const [debugLog, setDebugLog] = useState<string[]>([]);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Upload, Database, RefreshCw, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useBackup } from '../hooks/useBackup';
 import { BackupTransformer } from '../utils/backupTransformer';
-import BackupDebugger from './BackupDebugger';
+import BackupDebugger from './admin/debug/BackupDebugger';
 
 export default function BackupManager() {
   const [transformReport, setTransformReport] = useState<string>('');

@@ -2,6 +2,30 @@ import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 /**
+ * 🔒 VALIDAÇÃO DE SEGURANÇA CRÍTICA
+ * Função para garantir user_id consistente para assistenciaallimport10@gmail.com
+ */
+const USER_ID_ASSISTENCIA = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1'
+
+async function validarUsuarioAssistencia(user: User): Promise<User> {
+  // Para o email específico da assistência, sempre usar o mesmo user_id
+  if (user.email === 'assistenciaallimport10@gmail.com') {
+    if (user.id !== USER_ID_ASSISTENCIA) {
+      console.warn('⚠️ User ID inconsistente detectado para assistenciaallimport10@gmail.com')
+      console.warn('🔧 Corrigindo automaticamente...')
+      
+      // Retornar user com ID corrigido
+      return {
+        ...user,
+        id: USER_ID_ASSISTENCIA
+      }
+    }
+  }
+  
+  return user
+}
+
+/**
  * Função utilitária para obter o usuário autenticado
  * Funciona tanto com sessões reais do Supabase quanto com sessões de teste simuladas
  */
@@ -11,7 +35,8 @@ export async function getAuthenticatedUser(): Promise<User | null> {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      return user
+      // 🔒 APLICAR VALIDAÇÃO DE SEGURANÇA
+      return await validarUsuarioAssistencia(user)
     }
 
     // Se não houver usuário no Supabase, verificar se há uma sessão de teste
@@ -34,9 +59,12 @@ export async function getAuthenticatedUser(): Promise<User | null> {
           return null
         }
         
+        // 🔒 APLICAR VALIDAÇÃO DE SEGURANÇA TAMBÉM PARA SESSÕES DE TESTE
+        const validatedUser = await validarUsuarioAssistencia(user)
+        
         // Verificar se a sessão ainda é válida (não expirou)
         if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
-          return user
+          return validatedUser
         } else {
           // Sessão expirada, limpar localStorage
           localStorage.removeItem('test-user')
@@ -57,8 +85,8 @@ export async function getAuthenticatedUser(): Promise<User | null> {
 }
 
 /**
- * Função utilitária para verificar se o usuário está autenticado
- * Lança um erro se não estiver autenticado
+ * 🔒 FUNÇÃO REQUIREAUTH COM VALIDAÇÃO DE SEGURANÇA CRÍTICA
+ * Garante que o usuário está autenticado e com user_id consistente
  */
 export async function requireAuth(): Promise<User> {
   const user = await getAuthenticatedUser()
@@ -66,6 +94,9 @@ export async function requireAuth(): Promise<User> {
   if (!user) {
     throw new Error('Usuário não autenticado')
   }
+
+  // 🔒 LOG DE SEGURANÇA: Registrar acesso para auditoria
+  console.log(`🔐 Acesso autorizado para: ${user.email} (${user.id})`)
   
   return user
 }

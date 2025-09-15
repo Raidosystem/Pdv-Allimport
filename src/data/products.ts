@@ -102,17 +102,25 @@ export const EMBEDDED_PRODUCTS = [
   }
 ];
 
+// Função para normalizar texto (remove acentos)
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+}
+
 // Função para buscar produtos
 export function searchEmbeddedProducts(searchTerm?: string) {
   if (!searchTerm) {
     return EMBEDDED_PRODUCTS;
   }
   
-  const search = searchTerm.toLowerCase();
+  const search = normalizeText(searchTerm);
   return EMBEDDED_PRODUCTS.filter(product => 
-    product.name.toLowerCase().includes(search) ||
-    product.sku.toLowerCase().includes(search) ||
-    product.barcode.includes(search) ||
-    product.category.toLowerCase().includes(search)
+    normalizeText(product.name).includes(search) ||
+    normalizeText(product.sku).includes(search) ||
+    product.barcode.includes(searchTerm) || // Código de barras sem normalização
+    normalizeText(product.category).includes(search)
   );
 }

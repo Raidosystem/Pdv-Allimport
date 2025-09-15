@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Ordem de Serviço - Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug - Teste de Ordem de Serviço</h1>
+    
+    <div class="debug-section">
+        <h3>📋 Instruções para Debug:</h3>
+        <ol>
+            <li><strong>Abra o Console do Navegador</strong> (F12 → Console)</li>
+            <li><strong>Vá para:</strong> <a href="http://localhost:5186/ordens-servico" target="_blank">http://localhost:5186/ordens-servico</a></li>
+            <li><strong>Clique em:</strong> "Nova Ordem de Serviço"</li>
+            <li><strong>Preencha os campos:</strong>
+                <ul>
+                    <li>Cliente: Selecione ou crie um cliente</li>
+                    <li>Tipo: Celular</li>
+                    <li>Marca: Samsung</li>
+                    <li>Modelo: Galaxy A10</li>
+                    <li>Defeito Relatado: Não liga</li>
+                </ul>
+            </li>
+            <li><strong>Clique em "Salvar"</strong></li>
+            <li><strong>Observe os logs no console que devem aparecer assim:</strong></li>
+        </ol>
+    </div>
+
+    <div class="debug-section">
+        <h3>🐛 Logs Esperados no Console:</h3>
+        <pre>
+📝 [DEBUG FORM] Dados recebidos do formulário: {tipo: "Celular", marca: "Samsung", ...}
+👤 [DEBUG FORM] Cliente selecionado: {id: "...", nome: "...", telefone: "..."}
+✅ [DEBUG FORM] Checklist: {aparelho_liga: true, ...}
+🚀 [DEBUG FORM] Enviando para o serviço: {cliente_nome: "...", tipo: "Celular", ...}
+
+🚀 [DEBUG] Iniciando criação de ordem: {cliente_nome: "...", tipo: "Celular", ...}
+🧑 [DEBUG] Criando/buscando cliente: {nome: "...", telefone: "..."}
+✅ [DEBUG] Cliente processado: {id: "...", nome: "..."}
+📋 [DEBUG] Número OS gerado: OS-20240915-001
+📦 [DEBUG] Dados da nova ordem preparados: {numero_os: "...", cliente_id: "...", ...}
+💾 [DEBUG] Resultado da inserção: {data: {...}, error: null}
+✅ [DEBUG] Ordem criada com sucesso: {id: "...", numero_os: "...", ...}
+        </pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>❌ Se houver erro, você verá:</h3>
+        <pre>
+❌ [DEBUG] Erro ao criar ordem: {message: "...", details: "...", ...}
+        </pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>🔧 Checklist de Problemas Comuns:</h3>
+        <ul>
+            <li>✅ Cliente está sendo selecionado/criado?</li>
+            <li>✅ Campos obrigatórios estão preenchidos?</li>
+            <li>✅ Defeito relatado tem pelo menos 5 caracteres?</li>
+            <li>✅ Conexão com o Supabase está funcionando?</li>
+            <li>✅ Usuário está autenticado?</li>
+            <li>✅ Políticas RLS permitem inserção?</li>
+        </ul>
+    </div>
+
+    <div class="debug-section">
+        <h3>🗄️ Para testar diretamente no banco:</h3>
+        <p>Execute no SQL Editor do Supabase o conteúdo do arquivo: <code>teste-insercao-rapida.sql</code></p>
+    </div>
+
+    <script>
+        console.log('🚀 Página de debug carregada - pronta para testar ordem de serviço');
+        console.log('📍 Vá para http://localhost:5186/ordens-servico e tente criar uma OS');
+        console.log('👀 Observe os logs que aparecem aqui no console');
+    </script>
+</body>
+</html>

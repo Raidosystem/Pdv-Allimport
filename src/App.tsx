@@ -40,6 +40,7 @@ import { OfflineIndicator } from './components/OfflineIndicator'
 // import { InstallPWA } from './components/InstallPWA'
 import './App.css'
 import { useState, useEffect } from 'react'
+import { initVersionCheck } from './utils/version-check'
 
 function App() {
   // PWA Install Hook
@@ -49,6 +50,9 @@ function App() {
 
   useEffect(() => {
     try {
+      // Inicializar sistema de detecção de versão
+      initVersionCheck()
+      
       const handleBeforeInstallPrompt = (e: Event) => {
         console.log('🎯 PWA install prompt captured!');
         e.preventDefault();

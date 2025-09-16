@@ -14,7 +14,6 @@ import {
   X
 } from 'lucide-react'
 import { Button } from '../ui/Button'
-import { BackButton } from '../ui/BackButton'
 import { Card } from '../ui/Card'
 import { ClienteSelector } from '../ui/ClienteSelectorSimples'
 import { ordemServicoService } from '../../services/ordemServicoService'
@@ -335,18 +334,6 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Nova Ordem de Serviço</h1>
-        <div className="flex gap-2">
-          <BackButton />
-          {onCancel && (
-            <Button variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
-          )}
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         
         {/* Seção: Cliente */}

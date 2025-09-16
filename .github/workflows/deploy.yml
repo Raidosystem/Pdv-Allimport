@@ -1,0 +1,58 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [ "vercel-version", "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set build version
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "${SHORT_SHA}" > public/version.txt
+          echo "VITE_APP_VERSION=${SHORT_SHA}" >> $GITHUB_ENV
+          echo "📝 Version set to: ${SHORT_SHA}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Build project
+        run: |
+          VITE_APP_VERSION=${{ env.VITE_APP_VERSION }} npm run build
+        env:
+          VITE_APP_VERSION: ${{ env.VITE_APP_VERSION }}
+
+      - name: List build output
+        run: |
+          echo "📦 Build completed successfully!"
+          echo "📁 Build directory contents:"
+          ls -la dist/
+          echo "📄 Version file content:"
+          cat public/version.txt
+
+      # Deploy automático só se for o branch principal
+      - name: Deploy to Vercel
+        if: github.ref == 'refs/heads/vercel-version' && github.event_name == 'push'
+        run: |
+          echo "🚀 Deploy seria executado aqui"
+          echo "💡 Para ativar, configure VERCEL_TOKEN nos secrets"
+          # npm i -g vercel@latest
+          # vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          # vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}

@@ -70,8 +70,8 @@ export default async function handler(req, res) {
       if (payment.status === 'approved') {
         console.log("🎉 Payment approved!");
         
-        // Buscar email do pagador
-        const userEmail = payment.payer?.email || payment.metadata?.email;
+        // Buscar email do pagador (primeiro metadata, depois payer)
+        const userEmail = payment.metadata?.user_email || payment.payer?.email;
         
         if (userEmail) {
           console.log("📧 Processando assinatura para:", userEmail);

@@ -1,8 +1,8 @@
 {
   "version": 2,
   "env": {
-    "VITE_SUPABASE_URL": "https://YOUR_SUPABASE_PROJECT.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
+    "VITE_SUPABASE_URL": "https://kmcaaqetxtwkdcczdomw.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjY1MTMsImV4cCI6MjA3MjAwMjUxM30.sBOHwFeZ2e558puxCN7-h2nkRvuz2srxdb2LNGS9Ny4",
     "VITE_APP_NAME": "PDV Allimport",
     "VITE_APP_URL": "https://pdv.crmvsystem.com",
     "VITE_MP_ACCESS_TOKEN": "APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193",

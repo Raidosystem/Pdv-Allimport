@@ -9,8 +9,8 @@ const getApiBaseUrl = () => {
     // Em desenvolvimento local, retornar erro para forçar modo demo
     return '';
   } else {
-    // Usar URL específica do deployment mais recente
-    return 'https://pdv-allimport-f2wf4zlph-radiosystem.vercel.app';
+    // Em produção, usar API do Vercel
+    return 'https://pdv-allimport.vercel.app';
   }
 };
 
@@ -140,45 +140,80 @@ class MercadoPagoApiService {
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // TEMPORÁRIO: Usar modo demonstração em todos os ambientes devido ao problema de CORS/Auth no Vercel
-      console.log('🎯 Usando modo demonstração temporário devido às configurações do Vercel...');
+      // SEMPRE usar modo demonstração em desenvolvimento local
+      if (this.isLocalDev) {
+        console.log('🎯 Ambiente local detectado - usando modo demonstração...');
+        
+        // Simular um delay de rede
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Criar SVG do QR Code sem caracteres especiais
+        const cleanEmail = data.userEmail.replace(/[^a-zA-Z0-9@._-]/g, '');
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+          <rect width="256" height="256" fill="white"/>
+          <g fill="black">
+            <rect x="20" y="20" width="40" height="40"/>
+            <rect x="80" y="20" width="20" height="20"/>
+            <rect x="120" y="20" width="20" height="20"/>
+            <rect x="160" y="20" width="40" height="40"/>
+            <rect x="220" y="20" width="20" height="20"/>
+            <rect x="20" y="80" width="20" height="20"/>
+            <rect x="60" y="80" width="20" height="20"/>
+            <rect x="120" y="80" width="40" height="20"/>
+            <rect x="180" y="80" width="20" height="20"/>
+            <rect x="220" y="80" width="20" height="20"/>
+          </g>
+          <text x="128" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="black">PIX DEMO</text>
+          <text x="128" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">Desenvolvimento</text>
+          <text x="128" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">R$ ${data.amount.toFixed(2)}</text>
+          <text x="128" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="blue">${cleanEmail}</text>
+        </svg>`;
+        
+        const result = {
+          success: true,
+          paymentId: 'demo_' + Date.now(),
+          status: 'pending',
+          qrCode: `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${data.amount.toFixed(2)}5802BR5925PDV ALLIMPORT LTDA6009SAO PAULO62070503***6304`,
+          qrCodeBase64: 'data:image/svg+xml;base64,' + btoa(svgContent),
+          ticketUrl: ''
+        };
+        
+        console.log('🎯 PIX demo criado com sucesso:', result);
+        return result;
+      }
       
-      // Simular um delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Criar SVG do QR Code sem caracteres especiais
-      const cleanEmail = data.userEmail.replace(/[^a-zA-Z0-9@._-]/g, '');
-      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-        <rect width="256" height="256" fill="white"/>
-        <g fill="black">
-          <rect x="20" y="20" width="40" height="40"/>
-          <rect x="80" y="20" width="20" height="20"/>
-          <rect x="120" y="20" width="20" height="20"/>
-          <rect x="160" y="20" width="40" height="40"/>
-          <rect x="220" y="20" width="20" height="20"/>
-          <rect x="20" y="80" width="20" height="20"/>
-          <rect x="60" y="80" width="20" height="20"/>
-          <rect x="120" y="80" width="40" height="20"/>
-          <rect x="180" y="80" width="20" height="20"/>
-          <rect x="220" y="80" width="20" height="20"/>
-        </g>
-        <text x="128" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="black">PIX DEMO</text>
-        <text x="128" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">Sistema em produção</text>
-        <text x="128" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">R$ ${data.amount.toFixed(2)}</text>
-        <text x="128" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="blue">${cleanEmail}</text>
-      </svg>`;
-      
-      const result = {
-        success: true,
-        paymentId: 'demo_prod_' + Date.now(),
-        status: 'pending',
-        qrCode: `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${data.amount.toFixed(2)}5802BR5925PDV ALLIMPORT LTDA6009SAO PAULO62070503***6304`,
-        qrCodeBase64: 'data:image/svg+xml;base64,' + btoa(svgContent),
-        ticketUrl: ''
-      };
-      
-      console.log('🎯 PIX demo criado com sucesso:', result);
-      return result;
+      // Para produção, usar a API do Vercel
+      console.log('🎯 Ambiente de produção - usando API Vercel...');
+      try {
+        const response = await this.makeApiCall('/api/pix', 'POST', {
+          amount: data.amount,
+          description: data.description,
+          email: data.userEmail,
+          company_id: data.userEmail, // Usar email completo para buscar na tabela subscriptions
+          user_id: data.userName || data.userEmail?.split('@')[0] || 'user'
+        });
+
+        console.log('🔍 Resposta da API PIX:', response);
+        
+        if (response && response.success && (response.qr_code || response.qr_code_base64)) {
+          const result = {
+            success: true,
+            paymentId: String(response.payment_id),
+            status: response.status || 'pending',
+            qrCode: response.qr_code || '',
+            qrCodeBase64: response.qr_code_base64 || '',
+            ticketUrl: response.ticket_url || ''
+          };
+          
+          console.log('🎯 PIX criado com sucesso:', result);
+          return result;
+        } else {
+          throw new Error('Resposta inválida da API');
+        }
+      } catch (error) {
+        console.error('❌ Erro na API PIX:', error);
+        throw new Error(`Erro ao gerar PIX: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      }
       
     } catch (error) {
       console.error('❌ Erro ao criar pagamento PIX:', error);

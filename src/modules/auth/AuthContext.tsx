@@ -306,7 +306,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const resendConfirmation = async (email: string) => {
     // URL base para produção e desenvolvimento
-    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv.crmvsystem.com'
     
     const { data, error } = await supabase.auth.resend({
       type: 'signup',
@@ -320,7 +320,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const resetPassword = async (email: string) => {
     // URL base para produção e desenvolvimento
-    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv-allimport.vercel.app'
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv.crmvsystem.com'
     
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${baseUrl}/reset-password`

@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         last_name: 'PDV'
       },
       external_reference: `pix_${Date.now()}`,
-      notification_url: `${req.headers.origin || 'https://pdv-allimport.vercel.app'}/api/mp/webhook`,
+      notification_url: `${req.headers.origin || 'https://pdv.crmvsystem.com'}/api/mp/webhook`,
       metadata: {
         company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`, // Usar email como company_id
         user_email: email,

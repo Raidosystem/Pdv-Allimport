@@ -68,13 +68,13 @@ export default async function handler(req, res) {
         installments: 12
       },
       back_urls: {
-        success: 'https://pdv-allimport.vercel.app/payment/success',
-        failure: 'https://pdv-allimport.vercel.app/payment/failure',
-        pending: 'https://pdv-allimport.vercel.app/payment/pending'
+        success: 'https://pdv.crmvsystem.com/payment/success',
+        failure: 'https://pdv.crmvsystem.com/payment/failure',
+        pending: 'https://pdv.crmvsystem.com/payment/pending'
       },
       auto_return: 'approved',
       external_reference: `preference_${Date.now()}`,
-      notification_url: 'https://pdv-allimport.vercel.app/api/mp/webhook',
+      notification_url: 'https://pdv.crmvsystem.com/api/mp/webhook',
       metadata: {
         company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`, // Usar email como company_id
         user_email: email,

@@ -70,7 +70,7 @@ class MercadoPagoApiService {
       }
 
       // Para produção, usar a API do Vercel
-      const baseUrl = 'https://pdv-allimport.vercel.app';
+      const baseUrl = 'https://pdv.crmvsystem.com';
       const url = `${baseUrl}${endpoint}`;
       
       console.log(`🌐 API Call: ${method} ${url}`);

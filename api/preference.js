@@ -47,26 +47,15 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Configuração da preferência de pagamento (corrigida para evitar erros ND)
+    // Configuração minimalista da preferência (conforme docs oficiais MP)
     const preferenceData = {
       items: [
         {
           title: description || 'Assinatura PDV Allimport',
           unit_price: Number(amount),
-          quantity: 1,
-          currency_id: 'BRL',
-          category_id: 'services'
+          quantity: 1
         }
       ],
-      payer: {
-        email: email || 'cliente@pdvallimport.com'
-      },
-      payment_methods: {
-        excluded_payment_types: [],
-        excluded_payment_methods: [],
-        installments: 12,
-        default_installments: 1
-      },
       back_urls: {
         success: 'https://pdv.crmvsystem.com/payment/success',
         failure: 'https://pdv.crmvsystem.com/payment/failure',
@@ -74,15 +63,23 @@ export default async function handler(req, res) {
       },
       auto_return: 'approved',
       external_reference: `pref_${Date.now()}`,
-      notification_url: 'https://pdv.crmvsystem.com/api/mp/webhook',
-      statement_descriptor: 'PDV ALLIMPORT',
-      metadata: {
-        company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`,
-        user_email: email,
-        payment_type: 'subscription',
-        integration: 'pdv_allimport'
-      }
+      notification_url: 'https://pdv.crmvsystem.com/api/mp/webhook'
     };
+
+    // Adicionar payer apenas se email foi fornecido
+    if (email && email.includes('@')) {
+      preferenceData.payer = {
+        email: email
+      };
+    }
+
+    // Adicionar metadata apenas se necessário
+    if (company_id || user_id || email) {
+      preferenceData.metadata = {
+        company_id: email || company_id || user_id || `user_${Date.now()}`,
+        integration: 'pdv_allimport'
+      };
+    }
 
     console.log('📤 Enviando preferência para Mercado Pago:', JSON.stringify(preferenceData, null, 2));
 

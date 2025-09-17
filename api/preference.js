@@ -47,25 +47,25 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Configuração da preferência de pagamento
+    // Configuração da preferência de pagamento (corrigida para evitar erros ND)
     const preferenceData = {
       items: [
         {
-          title: description,
+          title: description || 'Assinatura PDV Allimport',
           unit_price: Number(amount),
           quantity: 1,
-          currency_id: 'BRL'
+          currency_id: 'BRL',
+          category_id: 'services'
         }
       ],
       payer: {
-        email: email || 'cliente@pdvallimport.com',
-        name: email ? email.split('@')[0] : 'Cliente',
-        surname: 'PDV'
+        email: email || 'cliente@pdvallimport.com'
       },
       payment_methods: {
         excluded_payment_types: [],
         excluded_payment_methods: [],
-        installments: 12
+        installments: 12,
+        default_installments: 1
       },
       back_urls: {
         success: 'https://pdv.crmvsystem.com/payment/success',
@@ -73,19 +73,18 @@ export default async function handler(req, res) {
         pending: 'https://pdv.crmvsystem.com/payment/pending'
       },
       auto_return: 'approved',
-      external_reference: `preference_${Date.now()}`,
+      external_reference: `pref_${Date.now()}`,
       notification_url: 'https://pdv.crmvsystem.com/api/mp/webhook',
+      statement_descriptor: 'PDV ALLIMPORT',
       metadata: {
-        company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`, // Usar email como company_id
+        company_id: email || company_id || user_id || `user_${email?.split('@')[0]}`,
         user_email: email,
-        payment_type: 'subscription'
-      },
-      expires: true,
-      expiration_date_from: new Date().toISOString(),
-      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
+        payment_type: 'subscription',
+        integration: 'pdv_allimport'
+      }
     };
 
-    console.log('📤 Enviando preferência para Mercado Pago:', preferenceData);
+    console.log('📤 Enviando preferência para Mercado Pago:', JSON.stringify(preferenceData, null, 2));
 
     // Fazer chamada para API do Mercado Pago
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -97,14 +96,26 @@ export default async function handler(req, res) {
       body: JSON.stringify(preferenceData),
     });
 
+    const responseText = await response.text();
+    console.log('🔍 Resposta MP (status):', response.status);
+    console.log('🔍 Resposta MP (body):', responseText);
+
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
-      throw new Error(`Mercado Pago API error: ${response.status}`);
+      console.error('❌ Erro detalhado do Mercado Pago:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      throw new Error(`Mercado Pago API error: ${response.status} - ${responseText}`);
     }
 
-    const preferenceResponse = await response.json();
-    console.log('✅ Preferência criada:', preferenceResponse);
+    const preferenceResponse = JSON.parse(responseText);
+    console.log('✅ Preferência criada com sucesso:', {
+      id: preferenceResponse.id,
+      init_point: preferenceResponse.init_point,
+      date_created: preferenceResponse.date_created
+    });
 
     // Retornar resposta com URLs de checkout
     res.status(200).json({

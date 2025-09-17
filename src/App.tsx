@@ -12,6 +12,7 @@ import { SalesPage } from './modules/sales/SalesPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
 import { ProductsPage } from './pages/ProductsPage'
 import { TestePage } from './pages/TestePage'
+import { TestPage } from './pages/TestPage'
 import { CaixaPage } from './pages/CaixaPageNew'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPageNew'
@@ -24,6 +25,7 @@ import ImportBackupPage from './pages/ImportBackupPage'
 import ImportacaoPrivadaPage from './pages/ImportacaoPrivadaPage'
 import ImportacaoAutomaticaPage from './pages/ImportacaoAutomaticaPage'
 import RelatoriosPage from './pages/RelatoriosPage'
+import RelatoriosPageAdvanced from './pages/RelatoriosPageAdvanced'
 import ResumoDiarioPage from './pages/RelatoriosResumoDiarioPage'
 import RelatoriosPeriodoPage from './pages/RelatoriosPeriodoPage'
 import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
@@ -187,6 +189,9 @@ function App() {
           {/* Página de Teste de Pagamento */}
           <Route path="/payment-test" element={<PaymentTest />} />
           
+          {/* Página de Teste do Sistema */}
+          <Route path="/test" element={<TestPage />} />
+          
           {/* Página de Assinatura */}
           <Route 
             path="/assinatura" 
@@ -347,6 +352,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <SubscriptionGuard>
+                  <RelatoriosPageAdvanced />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/classico" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
                   <RelatoriosPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
@@ -408,6 +423,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <RelatoriosExportacoesPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/relatorios/analytics" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <RelatoriosPageAdvanced />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

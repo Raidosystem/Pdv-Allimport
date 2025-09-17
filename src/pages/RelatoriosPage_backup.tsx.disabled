@@ -1,0 +1,898 @@
+import React, { useState } from 'react';
+import { 
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  ArrowLeft,
+  RefreshCw,
+  Download,
+  Filter,
+  Calendar,
+  Package,
+  ShoppingCart,
+  Clock,
+  Target,
+  BarChart3,
+  PieChart,
+  Activity
+} from 'lucide-react';
+import {
+  ComposedChart,
+  Bar,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Brush,
+  ReferenceLine
+} from 'recharts';
+import { formatCurrency } from '../utils/format';
+
+// 🎯 RELATÓRIOS MODERNOS COM GRÁFICOS AVANÇADOS - MANTENDO COMPATIBILIDADE
+
+const RelatoriosPage: React.FC = () => {
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  // Estados para dados dos relatórios
+  const [financialReport, setFinancialReport] = useState<SalesMovementReport | null>(null);
+  const [clientReport, setClientReport] = useState<ClientReport | null>(null);
+  const [cashReport, setCashReport] = useState<CashMovementReport | null>(null);
+  const [serviceOrderReport, setServiceOrderReport] = useState<ServiceOrderReport | null>(null);
+  // const [salesChartData, setSalesChartData] = useState<any[]>([]);
+
+  // Cores para gráficos
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+
+  // Preparar dados para gráficos
+  const prepareSalesChartData = () => {
+    if (!financialReport) return [];
+    
+    // Dados fictícios para últimos 6 dias (pode ser substituído por dados reais)
+    const today = new Date();
+    const days = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      days.push({
+        day: date.toLocaleDateString('pt-BR', { weekday: 'short' }),
+        date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        vendas: i === 0 ? (financialReport.valor_hoje || 0) : Math.random() * 2000 + 500,
+        quantidade: i === 0 ? (financialReport.vendas_hoje || 0) : Math.floor(Math.random() * 20 + 5)
+      });
+    }
+    return days;
+  };
+
+  const preparePaymentMethodData = () => {
+    if (!financialReport?.metodos_pagamento.length) return [];
+    
+    return financialReport.metodos_pagamento.map(method => ({
+      name: method.method,
+      value: method.total,
+      percentage: method.percentage
+    }));
+  };
+
+  // Carregar dados dos relatórios
+  const loadReports = async () => {
+    setLoading(true);
+    try {
+      const [financial, clients, cash, serviceOrders] = await Promise.all([
+        reportsService.getFinancialMovementReport('hoje'),
+        reportsService.getClientReport(),
+        reportsService.getCashMovementReport(),
+        reportsService.getServiceOrderReport()
+      ]);
+
+      setFinancialReport(financial);
+      setClientReport(clients);
+      setCashReport(cash);
+      setServiceOrderReport(serviceOrders);
+      setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Erro ao carregar relatórios:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const renderResumoDiario = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-blue-500" />
+          Resumo Diário - {new Date().toLocaleDateString('pt-BR')}
+        </h2>
+        <button
+          onClick={loadReports}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total de Vendas Hoje</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {formatCurrency(financialReport?.valor_hoje || 0)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {financialReport?.vendas_hoje || 0} vendas
+              </p>
+            </div>
+            <DollarSign className="w-8 h-8 text-blue-500" />
+          </div>
+        </div>
+        
+        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Ticket Médio</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(financialReport?.ticket_medio || 0)}
+              </p>
+              <p className="text-xs text-gray-500">Por venda</p>
+            </div>
+            <TrendingUp className="w-8 h-8 text-green-500" />
+          </div>
+        </div>
+        
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Ordens de Serviço</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {serviceOrderReport?.total_os || 0}
+              </p>
+              <p className="text-xs text-gray-500">
+                {serviceOrderReport?.abertas || 0} abertas
+              </p>
+            </div>
+            <FileX className="w-8 h-8 text-purple-500" />
+          </div>
+        </div>
+        
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Saldo em Caixa</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {formatCurrency(cashReport?.saldo_atual || 0)}
+              </p>
+              <p className="text-xs text-gray-500">Atual</p>
+            </div>
+            <DollarSign className="w-8 h-8 text-yellow-500" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded-lg border">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <PieChart className="w-5 h-5" />
+            Formas de Pagamento (Hoje)
+          </h3>
+          <div className="space-y-3">
+            {financialReport?.metodos_pagamento.length ? (
+              financialReport.metodos_pagamento.map((method, index) => (
+                <div key={index} className="flex justify-between items-center p-2 bg-white rounded">
+                  <span className="font-medium">{method.method}</span>
+                  <div className="text-right">
+                    <div className="font-bold text-green-600">
+                      {formatCurrency(method.total)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {method.count} vendas ({method.percentage.toFixed(1)}%)
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                Nenhuma venda registrada hoje
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg border">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Clientes (Estatísticas)
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-2 bg-white rounded">
+              <span>Total Cadastrados</span>
+              <span className="font-bold text-blue-600">
+                {clientReport?.total_cadastrados || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-white rounded">
+              <span>Novos Hoje</span>
+              <span className="font-bold text-green-600">
+                {clientReport?.novos_hoje || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-white rounded">
+              <span>Novos Esta Semana</span>
+              <span className="font-bold text-purple-600">
+                {clientReport?.novos_semana || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-white rounded">
+              <span>Novos Este Mês</span>
+              <span className="font-bold text-yellow-600">
+                {clientReport?.novos_mes || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Movimentação de Caixa */}
+      <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
+        <h3 className="font-semibold mb-3 flex items-center gap-2">
+          <DollarSign className="w-5 h-5" />
+          Movimentação de Caixa (Hoje)
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="bg-green-100 p-3 rounded text-center">
+            <div className="text-sm text-gray-600">Entradas</div>
+            <div className="text-xl font-bold text-green-600">
+              {formatCurrency(cashReport?.entradas_hoje || 0)}
+            </div>
+          </div>
+          <div className="bg-red-100 p-3 rounded text-center">
+            <div className="text-sm text-gray-600">Saídas</div>
+            <div className="text-xl font-bold text-red-600">
+              {formatCurrency(cashReport?.saidas_hoje || 0)}
+            </div>
+          </div>
+          <div className="bg-blue-100 p-3 rounded text-center">
+            <div className="text-sm text-gray-600">Saldo</div>
+            <div className="text-xl font-bold text-blue-600">
+              {formatCurrency(cashReport?.saldo_atual || 0)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Últimas movimentações */}
+        <div className="max-h-40 overflow-y-auto">
+          {cashReport?.movimentacoes.length ? (
+            cashReport.movimentacoes.slice(0, 5).map((mov, index) => (
+              <div key={index} className="flex justify-between items-center p-2 bg-white rounded mb-1 text-sm">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  mov.tipo === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                  {mov.tipo.toUpperCase()}
+                </span>
+                <span className="flex-1 mx-2 truncate">{mov.descricao}</span>
+                <span className={`font-bold ${
+                  mov.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {formatCurrency(mov.valor)}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-4">
+              Nenhuma movimentação hoje
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 text-xs text-gray-500 text-center">
+        Última atualização: {lastUpdate.toLocaleString('pt-BR')}
+      </div>
+    </div>
+  );
+
+  const renderGraficos = () => {
+    const salesData = prepareSalesChartData();
+    const paymentData = preparePaymentMethodData();
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-purple-500" />
+            Gráficos e Análises
+          </h2>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Gráfico de Vendas dos Últimos 6 Dias */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-4 text-center">Vendas dos Últimos 6 Dias</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `R$ ${value.toFixed(0)}`}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatCurrency(value), 'Vendas']}
+                  labelFormatter={(label) => `Data: ${label}`}
+                />
+                <Bar dataKey="vendas" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Gráfico de Pizza - Métodos de Pagamento */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-4 text-center">Métodos de Pagamento (Hoje)</h3>
+            {paymentData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <RechartsPieChart>
+                  <Pie
+                    data={paymentData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percentage }: any) => `${name}: ${percentage.toFixed(1)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {paymentData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500">
+                <div className="text-center">
+                  <PieChart className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p>Nenhuma venda hoje</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Gráfico de Linha - Crescimento de Clientes */}
+        <div className="bg-gray-50 p-4 rounded-lg mt-6">
+          <h3 className="font-semibold mb-4 text-center">Crescimento de Clientes (Últimos 5 Meses)</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={[
+                { mes: 'Ago', clientes: 45 },
+                { mes: 'Set', clientes: 52 },
+                { mes: 'Out', clientes: 67 },
+                { mes: 'Nov', clientes: 78 },
+                { mes: 'Dez', clientes: clientReport?.total_cadastrados || 85 }
+              ]}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="mes" />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: number) => [value, 'Clientes']}
+                labelFormatter={(label) => `Mês: ${label}`}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="clientes" 
+                stroke="#10B981" 
+                strokeWidth={3}
+                dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFiltroPeriodo = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <BarChart3 className="w-6 h-6 text-green-500" />
+        Filtro por Período
+      </h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div>
+          <label className="block text-sm font-medium mb-2">Data Inicial</label>
+          <input 
+            type="date" 
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Data Final</label>
+          <input 
+            type="date" 
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Funcionário</label>
+          <select className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block text-sm font-medium mb-2">Forma de Pagamento</label>
+          <select className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Todas</option>
+            <option value="pix">PIX</option>
+            <option value="cartao">Cartão</option>
+            <option value="dinheiro">Dinheiro</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Tipo de Venda</label>
+          <select className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Todas</option>
+            <option value="cliente">Com Cliente</option>
+            <option value="avulsa">Avulsa</option>
+          </select>
+        </div>
+      </div>
+      
+      <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">
+        Gerar Relatório
+      </button>
+    </div>
+  );
+
+  const renderRanking = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <Trophy className="w-6 h-6 text-yellow-500" />
+        Ranking de Produtos e Clientes
+      </h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Package className="w-5 h-5" />
+            Produtos Mais Vendidos
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span>Smartphone XYZ</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">45 vendas</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Fone Bluetooth</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">32 vendas</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Cabo USB-C</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">28 vendas</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Clientes que Mais Compram
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span>Carlos Silva</span>
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">R$ 2.450</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Ana Santos</span>
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">R$ 1.890</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Pedro Costa</span>
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">R$ 1.650</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <FileX className="w-5 h-5" />
+            Serviços Mais Solicitados
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span>Troca de Tela</span>
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">23 OS</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Reparo de Placa</span>
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">18 OS</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Limpeza</span>
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">15 OS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDetalhado = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <FileText className="w-6 h-6 text-purple-500" />
+        Relatório Detalhado
+      </h2>
+      
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-2">
+          <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            PDF
+          </button>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            Excel
+          </button>
+        </div>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="border border-gray-300 p-2 text-left">Data</th>
+              <th className="border border-gray-300 p-2 text-left">Cliente</th>
+              <th className="border border-gray-300 p-2 text-left">Tipo</th>
+              <th className="border border-gray-300 p-2 text-left">Total</th>
+              <th className="border border-gray-300 p-2 text-left">Pagamento</th>
+              <th className="border border-gray-300 p-2 text-left">Funcionário</th>
+              <th className="border border-gray-300 p-2 text-left">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan={7} className="border border-gray-300 p-4 text-center text-gray-500">
+                Nenhum dado disponível
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderExportacoes = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <Download className="w-6 h-6 text-indigo-500" />
+        Exportações
+      </h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-red-50 p-6 rounded-lg text-center">
+          <FileText className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Exportar PDF</h3>
+          <p className="text-sm text-gray-600 mb-4">Relatórios formatados para impressão</p>
+          <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">
+            Gerar PDF
+          </button>
+        </div>
+        
+        <div className="bg-green-50 p-6 rounded-lg text-center">
+          <BarChart3 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Exportar Excel</h3>
+          <p className="text-sm text-gray-600 mb-4">Planilhas para análise avançada</p>
+          <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
+            Gerar XLSX
+          </button>
+        </div>
+        
+        <div className="bg-blue-50 p-6 rounded-lg text-center">
+          <FileText className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Exportar CSV</h3>
+          <p className="text-sm text-gray-600 mb-4">Dados simples para integração</p>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
+            Gerar CSV
+          </button>
+        </div>
+        
+        <div className="bg-purple-50 p-6 rounded-lg text-center">
+          <Mail className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Enviar por E-mail</h3>
+          <p className="text-sm text-gray-600 mb-4">Relatórios automáticos por e-mail</p>
+          <button className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors">
+            Configurar
+          </button>
+        </div>
+        
+        <div className="bg-yellow-50 p-6 rounded-lg text-center">
+          <Printer className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Impressão Direta</h3>
+          <p className="text-sm text-gray-600 mb-4">Imprimir relatórios instantaneamente</p>
+          <button className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors">
+            Imprimir
+          </button>
+        </div>
+        
+        <div className="bg-indigo-50 p-6 rounded-lg text-center">
+          <DollarSign className="w-12 h-12 text-indigo-500 mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Fechamento de Caixa</h3>
+          <p className="text-sm text-gray-600 mb-4">Relatório completo do caixa</p>
+          <button className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition-colors">
+            Ver Fechamento
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'resumo-diario':
+        return renderResumoDiario();
+      case 'filtro-periodo':
+        return renderFiltroPeriodo();
+      case 'ranking':
+        return renderRanking();
+      case 'detalhado':
+        return renderDetalhado();
+      case 'graficos':
+        return renderGraficos();
+      case 'exportacoes':
+        return renderExportacoes();
+      default:
+        return null;
+    }
+  };
+
+  // Se há seção ativa, mostrar o conteúdo específico
+  if (activeSection) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <button
+          onClick={() => setActiveSection(null)}
+          className="mb-4 text-blue-500 hover:text-blue-700 flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar aos Relatórios
+        </button>
+        
+        {renderContent()}
+      </div>
+    );
+  }
+
+  const relatoriosModules = [
+    {
+      id: 'resumo',
+      title: 'Resumo Diário',
+      description: 'Visão geral das vendas e movimentações do dia',
+      icon: BarChart3,
+      color: 'bg-blue-500',
+      onClick: () => setActiveSection('resumo-diario')
+    },
+    {
+      id: 'periodo',
+      title: 'Filtro por Período',
+      description: 'Relatórios customizados por data e filtros',
+      icon: Calendar,
+      color: 'bg-green-500',
+      onClick: () => setActiveSection('filtro-periodo')
+    },
+    {
+      id: 'ranking',
+      title: 'Ranking de Produtos e Clientes',
+      description: 'Produtos mais vendidos e melhores clientes',
+      icon: Trophy,
+      color: 'bg-yellow-500',
+      onClick: () => setActiveSection('ranking')
+    },
+    {
+      id: 'detalhado',
+      title: 'Relatório Detalhado',
+      description: 'Listagem completa de vendas e OS',
+      icon: FileText,
+      color: 'bg-purple-500',
+      onClick: () => setActiveSection('detalhado')
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics Avançado',
+      description: 'Dashboard moderno com insights e métricas em tempo real',
+      icon: TrendingUp,
+      color: 'bg-gradient-to-br from-blue-500 to-purple-600',
+      onClick: () => window.location.href = '/relatorios/analytics'
+    },
+    {
+      id: 'graficos',
+      title: 'Gráficos e Dashboards',
+      description: 'Visualizações interativas e análises',
+      icon: PieChart,
+      color: 'bg-pink-500',
+      onClick: () => setActiveSection('graficos')
+    },
+    {
+      id: 'exportacoes',
+      title: 'Exportações',
+      description: 'Exportar relatórios em PDF, Excel e CSV',
+      icon: Download,
+      color: 'bg-indigo-500',
+      onClick: () => setActiveSection('exportacoes')
+    }
+  ];
+
+  const quickStats = [
+    { 
+      title: 'Vendas Hoje', 
+      value: 'R$ 2.340,50', 
+      icon: DollarSign, 
+      change: '+12%',
+      color: 'text-green-600'
+    },
+    { 
+      title: 'Pedidos Hoje', 
+      value: '28', 
+      icon: TrendingUp, 
+      change: '+5',
+      color: 'text-blue-600'
+    },
+    { 
+      title: 'Clientes Ativos', 
+      value: '156', 
+      icon: Users, 
+      change: '+8',
+      color: 'text-purple-600'
+    },
+    { 
+      title: 'OS Abertas', 
+      value: '12', 
+      icon: Clock, 
+      change: '+3',
+      color: 'text-orange-600'
+    }
+  ];
+
+  const handleModuleClick = (onClick: () => void) => {
+    onClick();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              Voltar
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <BarChart3 className="h-8 w-8 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Relatórios</h1>
+              <p className="text-gray-600">Análises detalhadas e insights do seu negócio</p>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {quickStats.map((stat, index) => (
+              <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    <p className={`text-sm ${stat.color}`}>{stat.change} hoje</p>
+                  </div>
+                  <div className={`p-3 rounded-full bg-gray-100`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Módulos de Relatórios */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {relatoriosModules.map((module) => (
+            <div
+              key={module.id}
+              onClick={() => handleModuleClick(module.onClick)}
+              className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className={`p-3 ${module.color} rounded-lg group-hover:scale-110 transition-transform`}>
+                  <module.icon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {module.title}
+                  </h3>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 text-sm leading-relaxed">
+                {module.description}
+              </p>
+
+              <div className="mt-4 flex items-center text-sm text-blue-600 group-hover:text-blue-700">
+                <span>Acessar relatório</span>
+                <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Ações Rápidas */}
+        <div className="mt-8 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ações Rápidas</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button 
+              onClick={() => setActiveSection('resumo-diario')}
+              className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <span className="text-blue-700 font-medium">Ver Resumo de Hoje</span>
+            </button>
+            
+            <button 
+              onClick={() => setActiveSection('exportacoes')}
+              className="flex items-center gap-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            >
+              <Download className="h-5 w-5 text-green-600" />
+              <span className="text-green-700 font-medium">Exportar Relatórios</span>
+            </button>
+            
+            <button 
+              onClick={() => setActiveSection('graficos')}
+              className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+            >
+              <PieChart className="h-5 w-5 text-purple-600" />
+              <span className="text-purple-700 font-medium">Ver Gráficos</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo Principal - Resumo Diário sempre visível */}
+        <div className="space-y-6">
+          {renderResumoDiario()}
+          {renderGraficos()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RelatoriosPage;

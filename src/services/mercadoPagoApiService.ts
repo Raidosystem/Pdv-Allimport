@@ -63,22 +63,41 @@ class MercadoPagoApiService {
 
   private async makeApiCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
     try {
-      // Em desenvolvimento local, chamar diretamente o Mercado Pago para algumas APIs
+      // Em desenvolvimento local, retornar erro para forçar uso do modo demonstração
       if (this.isLocalDev) {
-        return await this.makeDirectMercadoPagoCall(endpoint, method, body);
+        console.warn(`⚠️ makeApiCall bloqueado em desenvolvimento local para endpoint: ${endpoint}`);
+        console.log('� Use apenas o modo demonstração em ambiente local.');
+        throw new Error('API calls not available in local development - use demo mode');
       }
 
-      console.log(`🌐 API Call: ${method} ${API_BASE_URL}${endpoint}`);
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      // Para produção, usar a API do Vercel
+      const baseUrl = 'https://pdv-allimport.vercel.app';
+      const url = `${baseUrl}${endpoint}`;
+      
+      console.log(`🌐 API Call: ${method} ${url}`);
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Adicionar token de autenticação se disponível
+      const token = this.getAccessToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: body ? JSON.stringify(body) : undefined,
+        mode: 'cors',
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ API Error ${response.status}:`, errorText);
+        throw new Error(`API Error: ${response.status} - ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -90,128 +109,9 @@ class MercadoPagoApiService {
     }
   }
 
-  private async makeDirectMercadoPagoCall(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) {
-    try {
-      console.log(`🌐 Direct MP Call: ${method} para ${endpoint}`);
-      
-      if (endpoint === '/api/pix') {
-        return await this.createDirectPixPayment(body);
-      } else if (endpoint === '/api/preference') {
-        return await this.createDirectPaymentPreference(body);
-      }
-      
-      throw new Error(`Endpoint não suportado em desenvolvimento: ${endpoint}`);
-    } catch (error) {
-      console.error(`❌ Erro na chamada direta MP:`, error);
-      throw error;
-    }
-  }
-
-  private async createDirectPixPayment(data: any) {
-    const pixData = {
-      transaction_amount: Number(data.amount),
-      description: data.description || 'Assinatura PDV Allimport',
-      payment_method_id: 'pix',
-      payer: {
-        email: data.email,
-        first_name: data.email ? data.email.split('@')[0] : 'Cliente',
-        last_name: 'PDV'
-      }
-    };
-
-    console.log('📤 Enviando PIX direto para Mercado Pago:', pixData);
-
-    const response = await fetch('https://api.mercadopago.com/v1/payments', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(pixData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
-      throw new Error(`Mercado Pago API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('✅ PIX criado diretamente:', result);
-
-    return {
-      success: true,
-      payment_id: result.id,
-      status: result.status,
-      qr_code: result.point_of_interaction?.transaction_data?.qr_code || '',
-      qr_code_base64: result.point_of_interaction?.transaction_data?.qr_code_base64 || '',
-      ticket_url: result.point_of_interaction?.transaction_data?.ticket_url || ''
-    };
-  }
-
-  private async createDirectPaymentPreference(data: any) {
-    const preferenceData = {
-      items: [
-        {
-          title: data.description,
-          unit_price: Number(data.amount),
-          quantity: 1,
-          currency_id: 'BRL'
-        }
-      ],
-      payer: {
-        email: data.email || 'cliente@pdvallimport.com',
-        name: data.email ? data.email.split('@')[0] : 'Cliente',
-        surname: 'PDV'
-      },
-      payment_methods: {
-        excluded_payment_types: [],
-        excluded_payment_methods: [],
-        installments: 12
-      },
-      back_urls: {
-        success: window.location.origin + '/payment/success',
-        failure: window.location.origin + '/payment/failure',
-        pending: window.location.origin + '/payment/pending'
-      },
-      auto_return: 'approved',
-      external_reference: `preference_${Date.now()}`,
-      expires: true,
-      expiration_date_from: new Date().toISOString(),
-      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    };
-
-    console.log('📤 Enviando preferência direto para Mercado Pago:', preferenceData);
-
-    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(preferenceData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('❌ Erro do Mercado Pago:', response.status, errorData);
-      throw new Error(`Mercado Pago API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('✅ Preferência criada diretamente:', result);
-
-    return {
-      success: true,
-      preference_id: result.id,
-      init_point: result.init_point,
-      sandbox_init_point: result.sandbox_init_point
-    };
-  }
-
   private async isApiAvailable(): Promise<boolean> {
     try {
-      console.log('🔍 Verificando disponibilidade da API:', API_BASE_URL);
+      console.log('🔍 Verificando disponibilidade da API...');
       
       // Verificar se está no Vercel (produção)
       const isVercel = window.location.hostname.includes('vercel.app') || 
@@ -234,14 +134,57 @@ class MercadoPagoApiService {
   async createPixPayment(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPixPayment com dados:', data);
-      console.log('🔍 Configuração de produção:', {
+      console.log('🔍 Configuração de ambiente:', {
         isProduction: this.isProduction,
+        isLocalDev: this.isLocalDev,
         hostname: window.location.hostname,
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // Sempre tentar usar a API do Vercel para PIX
-      console.log('🎯 Fazendo requisição PIX via API Vercel...');
+      // SEMPRE usar modo demonstração em desenvolvimento local
+      if (this.isLocalDev) {
+        console.log('🎯 Ambiente local detectado - usando modo demonstração...');
+        
+        // Simular um delay de rede
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Criar SVG do QR Code sem caracteres especiais
+        const cleanEmail = data.userEmail.replace(/[^a-zA-Z0-9@._-]/g, '');
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+          <rect width="256" height="256" fill="white"/>
+          <g fill="black">
+            <rect x="20" y="20" width="40" height="40"/>
+            <rect x="80" y="20" width="20" height="20"/>
+            <rect x="120" y="20" width="20" height="20"/>
+            <rect x="160" y="20" width="40" height="40"/>
+            <rect x="220" y="20" width="20" height="20"/>
+            <rect x="20" y="80" width="20" height="20"/>
+            <rect x="60" y="80" width="20" height="20"/>
+            <rect x="120" y="80" width="40" height="20"/>
+            <rect x="180" y="80" width="20" height="20"/>
+            <rect x="220" y="80" width="20" height="20"/>
+          </g>
+          <text x="128" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="black">PIX DEMO</text>
+          <text x="128" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">Desenvolvimento</text>
+          <text x="128" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="gray">R$ ${data.amount.toFixed(2)}</text>
+          <text x="128" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="blue">${cleanEmail}</text>
+        </svg>`;
+        
+        const result = {
+          success: true,
+          paymentId: 'demo_' + Date.now(),
+          status: 'pending',
+          qrCode: `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${data.amount.toFixed(2)}5802BR5925PDV ALLIMPORT LTDA6009SAO PAULO62070503***6304`,
+          qrCodeBase64: 'data:image/svg+xml;base64,' + btoa(svgContent),
+          ticketUrl: ''
+        };
+        
+        console.log('🎯 PIX demo criado com sucesso:', result);
+        return result;
+      }
+      
+      // Para produção, usar a API do Vercel
+      console.log('🎯 Ambiente de produção - usando API Vercel...');
       try {
         const response = await this.makeApiCall('/api/pix', 'POST', {
           amount: data.amount,
@@ -282,14 +225,33 @@ class MercadoPagoApiService {
   async createPaymentPreference(data: PaymentData): Promise<PaymentResponse> {
     try {
       console.log('🚀 Iniciando createPaymentPreference com dados:', data);
-      console.log('🔍 Configuração de produção:', {
+      console.log('🔍 Configuração de ambiente:', {
         isProduction: this.isProduction,
+        isLocalDev: this.isLocalDev,
         hostname: window.location.hostname,
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // Usar API do Vercel para preference (cartão de crédito)
-      console.log('🎯 Fazendo requisição de preferência via API Vercel...');
+      // SEMPRE usar modo demonstração em desenvolvimento local
+      if (this.isLocalDev) {
+        console.log('🎯 Ambiente local detectado - usando modo demonstração...');
+        
+        // Simular um delay de rede
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const result = {
+          success: true,
+          paymentId: 'pref_demo_' + Date.now(),
+          checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=demo',
+          status: 'pending'
+        };
+        
+        console.log('🎯 Preferência demo criada com sucesso:', result);
+        return result;
+      }
+      
+      // Para produção, usar a API do Vercel
+      console.log('🎯 Ambiente de produção - usando API Vercel...');
       try {
         const response = await this.makeApiCall('/api/preference', 'POST', {
           amount: data.amount,
@@ -313,18 +275,12 @@ class MercadoPagoApiService {
         }
       } catch (error) {
         console.error('❌ Erro na API de preferência:', error);
-        return {
-          success: false,
-          error: 'Erro ao criar preferência de pagamento. Tente novamente.'
-        };
+        throw new Error(`Erro ao criar preferência: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       }
       
     } catch (error) {
       console.error('❌ Erro ao criar preferência:', error);
-      return {
-        success: false,
-        error: 'Erro ao processar pagamento. Tente novamente.'
-      };
+      throw new Error('Erro ao processar pagamento. Verifique sua conexão e tente novamente.');
     }
   }
 

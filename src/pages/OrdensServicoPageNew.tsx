@@ -85,14 +85,20 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     // 2. Carregar ordens do Supabase
     let supabaseOrders: any[] = []
     try {
+      console.log('🔍 [OrdensServico] Iniciando consulta ao Supabase...')
       const { data: ordensSupabase, error: orderError } = await supabase
         .from('ordens_servico')
         .select('*')
         .order('criado_em', { ascending: false })
       
+      console.log('🔍 [OrdensServico] Resultado da consulta:', {
+        data: ordensSupabase?.length || 0,
+        error: orderError
+      })
+      
       if (!orderError && ordensSupabase) {
         supabaseOrders = ordensSupabase
-        console.log(`� Supabase: ${supabaseOrders.length} ordens carregadas`)
+        console.log(`✅ Supabase: ${supabaseOrders.length} ordens carregadas`)
         if (supabaseOrders.length > 0) {
           console.log('🔍 Estrutura da primeira ordem do Supabase:', Object.keys(supabaseOrders[0]))
         }

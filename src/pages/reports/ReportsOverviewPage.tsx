@@ -327,10 +327,10 @@ const ReportsOverviewPage: React.FC = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h4 className="font-semibold mb-4">⏰ Pico de Vendas</h4>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">14h - 16h</div>
-            <p className="text-gray-600 mb-3">Horário de maior movimento</p>
-            <div className="text-lg font-semibold text-green-600">
-              {formatCurrency(45680)} em vendas
+            <div className="text-3xl font-bold text-blue-600 mb-2">--:-- - --:--</div>
+            <p className="text-gray-600 mb-3">Nenhum movimento registrado</p>
+            <div className="text-lg font-semibold text-gray-600">
+              {formatCurrency(0)} em vendas
             </div>
           </div>
         </div>

@@ -539,10 +539,21 @@ export function PaymentPage({}: PaymentPageProps) {
                       onError={(e) => {
                         console.error('Erro ao carregar QR Code:', e);
                         console.log('QR Code Base64:', pixData.qr_code_base64);
-                        setError('Erro ao carregar QR Code. Tente gerar novamente.');
+                        // Não mostrar erro, apenas log para debug
+                        console.warn('QR Code não pôde ser carregado, mas código PIX está disponível');
                       }}
                       onLoad={() => console.log('QR Code carregado com sucesso')}
                     />
+                  </div>
+                ) : pixData.qr_code ? (
+                  <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">
+                    <div className="w-48 h-48 mx-auto flex items-center justify-center bg-gray-100 rounded">
+                      <div className="text-center">
+                        <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                        <p className="text-xs text-gray-500">QR Code disponível</p>
+                        <p className="text-xs text-gray-500">Use o código abaixo</p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-white p-4 rounded-lg border-2 border-dashed border-secondary-300 mb-6 inline-block">

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { OrdensServicoPage } from '../../pages/OrdensServicoPageNew'
 import { CaixaPage } from '../../pages/CaixaPageNew'
-import { RelatoriosPage } from '../../pages/RelatoriosPageNew'
+import RelatoriosPage from '../../pages/RelatoriosPage'
 import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
 import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
 import { useState, useEffect } from 'react'
@@ -150,9 +150,10 @@ export function DashboardPage() {
       color: 'info' as const,
       priority: true,
       options: [
-        { title: 'Vendas do Dia', path: '/relatorios', icon: Calendar, description: 'Resumo diário' },
+        { title: 'Vendas do Dia', path: '/relatorios/resumo-diario', icon: Calendar, description: 'Resumo diário' },
         { title: 'Período', path: '/relatorios/periodo', icon: TrendingUp, description: 'Análise por período' },
-        { title: 'Ranking', path: '/relatorios/ranking', icon: Crown, description: 'Produtos mais vendidos' }
+        { title: 'Ranking', path: '/relatorios/ranking', icon: Crown, description: 'Produtos mais vendidos' },
+        { title: 'Analytics Moderno', path: '/relatorios', icon: BarChart3, description: 'Dashboard com gráficos modernos' }
       ]
     }
   ]

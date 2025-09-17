@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   try {
     // Buscar informações no Supabase primeiro
-    const supabaseResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/company_subscriptions?select=*&payment_id=eq.${paymentId}`, {
+    const supabaseResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/subscriptions?select=*&payment_id=eq.${paymentId}`, {
       headers: {
         'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,

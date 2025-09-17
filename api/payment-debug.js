@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
       
       if (SUPABASE_ANON_KEY) {
-        const supabaseResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?mp_payment_id=eq.${paymentId}&select=*`, {
+        const supabaseResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?payment_id=eq.${paymentId}&select=*`, {
           headers: {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,

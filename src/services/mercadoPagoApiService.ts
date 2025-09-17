@@ -9,8 +9,8 @@ const getApiBaseUrl = () => {
     // Em desenvolvimento local, retornar erro para forçar modo demo
     return '';
   } else {
-    // Em produção, usar API do Vercel
-    return 'https://pdv-allimport.vercel.app';
+    // Em produção, usar o domínio personalizado que o Vercel está redirecionando
+    return 'https://pdv.crmvsystem.com';
   }
 };
 

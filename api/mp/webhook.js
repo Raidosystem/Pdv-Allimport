@@ -70,12 +70,17 @@ export default async function handler(req, res) {
       if (payment.status === 'approved') {
         console.log("🎉 Payment approved!");
         
-        // Chamar função RPC se tiver company_id
-        if (payment.metadata?.company_id) {
+        // Buscar email do pagador
+        const userEmail = payment.payer?.email || payment.metadata?.email;
+        
+        if (userEmail) {
+          console.log("📧 Processando assinatura para:", userEmail);
+          
           const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://kmcaaqetxtwkdcczdomw.supabase.co";
           const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
           
-          const rpcResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/extend_company_paid_until_v2`, {
+          // Chamar função de ativação de assinatura
+          const rpcResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/activate_subscription_after_payment`, {
             method: 'POST',
             headers: {
               apikey: SUPABASE_SERVICE_KEY,
@@ -83,9 +88,9 @@ export default async function handler(req, res) {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              p_mp_payment_id: parseInt(paymentId),
-              p_company_id: payment.metadata.company_id,
-              p_order_id: payment.metadata.order_id || null
+              user_email: userEmail,
+              payment_id: paymentId.toString(),
+              payment_method: payment.payment_method_id === 'pix' ? 'pix' : 'credit_card'
             })
           });
 
@@ -95,10 +100,11 @@ export default async function handler(req, res) {
             const errorText = await rpcResponse.text();
             console.error("❌ RPC error:", errorText);
           } else {
-            console.log("✅ Company period extended!");
+            const result = await rpcResponse.json();
+            console.log("✅ Subscription activated:", result);
           }
         } else {
-          console.log("⚠️ No company_id in metadata");
+          console.log("⚠️ No user email found in payment");
         }
       }
     }

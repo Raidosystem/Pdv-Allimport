@@ -1,16 +1,15 @@
 // API Backend Service para integração com Mercado Pago
 const isDevelopment = import.meta.env.DEV;
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const isVercelProduction = window.location.hostname.includes('vercel.app') || 
-                          window.location.hostname.includes('pdv-allimport');
+const isProduction = !isLocalhost && !isDevelopment;
 
 // URLs das APIs baseadas no ambiente
 const getApiBaseUrl = () => {
   if (isLocalhost) {
-    // Em desenvolvimento local, usar diretamente as APIs do Mercado Pago
-    return 'https://api.mercadopago.com';
+    // Em desenvolvimento local, retornar erro para forçar modo demo
+    return '';
   } else {
-    // SEMPRE usar APIs do Vercel em produção
+    // SEMPRE usar APIs do Vercel em qualquer produção
     return 'https://pdv-allimport.vercel.app';
   }
 };
@@ -20,7 +19,7 @@ const API_BASE_URL = getApiBaseUrl();
 console.log('🔧 Configuração de ambiente:', {
   isDevelopment,
   isLocalhost,
-  isVercelProduction,
+  isProduction,
   hostname: window.location.hostname,
   API_BASE_URL
 });
@@ -44,7 +43,7 @@ export interface PaymentResponse {
 }
 
 class MercadoPagoApiService {
-  private isProduction = isVercelProduction;
+  private isProduction = isProduction;
   private isLocalDev = isLocalhost;
   
   // Credenciais de produção do Mercado Pago

@@ -231,21 +231,54 @@ class MercadoPagoApiService {
         hasProductionToken: !!this.getAccessToken()
       });
       
-      // TEMPORÁRIO: Usar modo demonstração em todos os ambientes devido ao problema de CORS/Auth no Vercel
-      console.log('🎯 Usando modo demonstração temporário devido às configurações do Vercel...');
+      // SEMPRE usar modo demonstração em desenvolvimento local
+      if (this.isLocalDev) {
+        console.log('🎯 Ambiente local detectado - usando modo demonstração...');
+        
+        // Simular um delay de rede
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const result = {
+          success: true,
+          paymentId: 'pref_demo_' + Date.now(),
+          checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=demo_local',
+          status: 'pending'
+        };
+        
+        console.log('🎯 Preferência demo criada com sucesso:', result);
+        return result;
+      }
       
-      // Simular um delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const result = {
-        success: true,
-        paymentId: 'pref_demo_prod_' + Date.now(),
-        checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=demo_prod',
-        status: 'pending'
-      };
-      
-      console.log('🎯 Preferência demo criada com sucesso:', result);
-      return result;
+      // Para produção, usar a API real do Vercel
+      console.log('🎯 Ambiente de produção - usando API Vercel...');
+      try {
+        const response = await this.makeApiCall('/api/preference', 'POST', {
+          amount: data.amount,
+          description: data.description,
+          email: data.userEmail,
+          company_id: data.userEmail, // Usar email completo para buscar na tabela subscriptions
+          user_id: data.userName || data.userEmail?.split('@')[0] || 'user'
+        });
+
+        console.log('🔍 Resposta da API Preference:', response);
+        
+        if (response && response.success && response.init_point) {
+          const result = {
+            success: true,
+            paymentId: response.preference_id,
+            checkoutUrl: response.init_point,
+            status: 'pending'
+          };
+          
+          console.log('🎯 Preferência criada com sucesso:', result);
+          return result;
+        } else {
+          throw new Error('Resposta inválida da API');
+        }
+      } catch (error) {
+        console.error('❌ Erro na API Preference:', error);
+        throw new Error(`Erro ao gerar preferência: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      }
       
     } catch (error) {
       console.error('❌ Erro ao criar preferência:', error);

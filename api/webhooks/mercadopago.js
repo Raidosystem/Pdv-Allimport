@@ -14,14 +14,9 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     return res.status(200).json({ 
-      message: "Webhook Mercado Pago - Funcionando!",
+      message: "Webhook Mercado Pago - Path alternativo funcionando!",
       timestamp: new Date().toISOString(),
-      env: {
-        hasMP_TOKEN: !!(process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN),
-        hasMP_SECRET: !!process.env.MP_WEBHOOK_SECRET,
-        hasSUPABASE_URL: !!(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
-        hasSUPABASE_KEY: !!(process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)
-      }
+      path: "/api/webhooks/mercadopago"
     });
   }
 
@@ -30,9 +25,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log("🎯 Webhook POST recebido");
+    console.log("🎯 Webhook POST recebido em /api/webhooks/mercadopago");
     
-    // Ler body de forma simples
+    // Ler body
     let body = '';
     await new Promise((resolve, reject) => {
       req.on('data', chunk => body += chunk.toString());
@@ -67,6 +62,7 @@ export default async function handler(req, res) {
         metadata: payment.metadata 
       });
 
+      // Aceitar tanto approved (cartão) quanto accredited (PIX)
       if (payment.status === 'approved' || payment.status === 'accredited') {
         console.log("🎉 Payment approved/accredited!");
         

@@ -82,7 +82,7 @@ export default async function handler(req: any, res: any) {
     // Buscar detalhes do pagamento no MercadoPago
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: {
-        'Authorization': `Bearer ${process.env.VITE_MP_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
         'Accept': 'application/json'
       }
     })
@@ -108,7 +108,7 @@ export default async function handler(req: any, res: any) {
 
     // Inicializar cliente Supabase com SERVICE_ROLE_KEY
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Configuração Supabase ausente')

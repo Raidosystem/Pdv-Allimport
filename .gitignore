@@ -58,3 +58,8 @@ CREDENCIAIS_*
 *SECRET*
 *TOKEN*
 *KEYS*
+
+# Segurança reforçada
+.env
+.env.*
+!.env.example

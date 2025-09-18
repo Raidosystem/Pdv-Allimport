@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 interface CreatePixRequest {
-  empresa_id: string
-  payer_email: string
+  user_email: string
+  payer_email?: string
   amount?: number
   plan_days?: number
+  plan_id?: string
 }
 
 interface MercadoPagoPreference {
@@ -20,6 +21,7 @@ interface MercadoPagoPreference {
     user_email: string
     payment_type: string
     plan_days: string
+    plan_id?: string
   }
   notification_url: string
   payment_methods: {
@@ -47,18 +49,21 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { empresa_id, payer_email, amount = 59.90, plan_days = 31 } = req.body as CreatePixRequest
+    const { user_email, payer_email, amount = 59.90, plan_days = 31, plan_id } = req.body as CreatePixRequest
+    
+    // Se não informar payer_email, usar o user_email
+    const payerEmail = payer_email || user_email
 
-    if (!empresa_id || !payer_email) {
+    if (!user_email) {
       return res.status(400).json({ 
-        error: 'empresa_id and payer_email are required',
-        received: { empresa_id, payer_email }
+        error: 'user_email is required',
+        received: { user_email, payer_email }
       })
     }
 
     console.log('🆕 Criando pagamento PIX:', {
-      empresa_id,
-      payer_email,
+      user_email,
+      payer_email: payerEmail,
       amount,
       plan_days
     })
@@ -73,12 +78,13 @@ export default async function handler(req: any, res: any) {
           currency_id: 'BRL'
         }
       ],
-      external_reference: empresa_id, // CRUCIAL: identifica a empresa
+      external_reference: user_email, // CRUCIAL: identifica o usuário
       metadata: {
-        empresa_id,
-        user_email: payer_email,
+        empresa_id: user_email, // Compatibilidade com webhook antigo
+        user_email: user_email,
         payment_type: 'subscription',
-        plan_days: plan_days.toString()
+        plan_days: plan_days.toString(),
+        plan_id: plan_id || undefined
       },
       notification_url: 'https://pdv.crmvsystem.com/api/webhooks/mercadopago', // WEBHOOK!
       payment_methods: {
@@ -90,7 +96,7 @@ export default async function handler(req: any, res: any) {
         installments: 1
       },
       payer: {
-        email: payer_email
+        email: payerEmail
       }
     }
 
@@ -128,15 +134,15 @@ export default async function handler(req: any, res: any) {
         .from('payments')
         .insert({
           mp_payment_id: 0, // Será atualizado pelo webhook
-          empresa_id,
+          user_email,
           mp_status: 'pending',
           payment_method: 'pix',
           amount,
-          payer_email,
+          payer_email: payerEmail,
           mp_preference_id: mpPreference.id,
           webhook_data: {
             preference_created: true,
-            external_reference: empresa_id,
+            external_reference: user_email,
             metadata: preference.metadata
           }
         })
@@ -153,7 +159,7 @@ export default async function handler(req: any, res: any) {
       preference_id: mpPreference.id,
       init_point: mpPreference.init_point, // Link para checkout
       qr_code: mpPreference.sandbox_init_point || mpPreference.init_point, // Para desenvolvimento
-      empresa_id,
+      user_email,
       amount,
       plan_days,
       webhook_url: 'https://pdv.crmvsystem.com/api/webhooks/mercadopago',

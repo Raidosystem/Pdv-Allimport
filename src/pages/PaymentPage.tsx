@@ -3,10 +3,10 @@ import { QrCode, CreditCard, CheckCircle, AlertCircle } from 'lucide-react'
 import PaymentStatusMonitor from '../components/PaymentStatusMonitor'
 
 interface PaymentPageProps {
-  empresaId: string // Email da empresa/usuário
+  userEmail: string // Email do usuário
 }
 
-export const PaymentPage: React.FC<PaymentPageProps> = ({ empresaId }) => {
+export const PaymentPage: React.FC<PaymentPageProps> = ({ userEmail }) => {
   const [selectedMethod, setSelectedMethod] = useState<'pix' | 'card' | null>(null)
   const [loading, setLoading] = useState(false)
   const [paymentData, setPaymentData] = useState<any>(null)
@@ -23,8 +23,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ empresaId }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          empresa_id: empresaId,
-          payer_email: empresaId,
+          user_email: userEmail,
+          payer_email: userEmail,
           amount: 59.90,
           plan_days: 31
         })
@@ -61,8 +61,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ empresaId }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          empresa_id: empresaId,
-          payer_email: empresaId,
+          user_email: userEmail,
+          payer_email: userEmail,
           card_token: cardToken,
           amount: 59.90,
           plan_days: 31
@@ -108,7 +108,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ empresaId }) => {
 
         {/* Monitor de Status em Tempo Real */}
         <PaymentStatusMonitor
-          empresaId={empresaId}
+          userEmail={userEmail}
           paymentId={paymentData.payment_id}
           onPaymentApproved={onPaymentApproved}
         />

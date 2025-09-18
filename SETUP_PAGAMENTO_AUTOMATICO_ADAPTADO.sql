@@ -1,6 +1,6 @@
--- SISTEMA DE PAGAMENTO AUTOMÁTICO PDV ALLIMPORT
--- Execute este script no SQL Editor do Supabase
--- Implementa "aprova e libera na hora" conforme PDF
+-- VERSÃO ADAPTADA - SISTEMA DE PAGAMENTO AUTOMÁTICO PDV ALLIMPORT
+-- Esta versão se adapta à estrutura atual da tabela subscriptions
+-- Execute PRIMEIRO o VERIFICAR_ESTRUTURA_SUBSCRIPTIONS.sql para confirmar a estrutura
 
 -- ===============================================
 -- 1. TABELA PAYMENTS (com idempotência)
@@ -9,7 +9,7 @@
 CREATE TABLE IF NOT EXISTS public.payments (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     mp_payment_id bigint UNIQUE NOT NULL, -- ID do MercadoPago (único!)
-    empresa_id text NOT NULL, -- external_reference/metadata.empresa_id
+    user_email text NOT NULL, -- Email do usuário (corresponde ao campo email em subscriptions)
     mp_status text NOT NULL, -- approved, accredited, pending, etc
     mp_status_detail text, -- accredited, pending_waiting_transfer, etc
     payment_method text NOT NULL, -- pix, credit_card
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
 
 -- Índices para performance
 CREATE INDEX IF NOT EXISTS idx_payments_mp_payment_id ON public.payments(mp_payment_id);
-CREATE INDEX IF NOT EXISTS idx_payments_empresa_id ON public.payments(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_payments_user_email ON public.payments(user_email);
 CREATE INDEX IF NOT EXISTS idx_payments_status ON public.payments(mp_status);
 
 -- RLS Policies
@@ -52,7 +52,7 @@ CREATE POLICY "Payments update for service role" ON public.payments
 CREATE TABLE IF NOT EXISTS public.payment_receipts (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     mp_payment_id bigint UNIQUE NOT NULL, -- Uma vez processado, nunca mais
-    empresa_id text NOT NULL,
+    user_email text NOT NULL,
     subscription_days_credited integer NOT NULL,
     processed_at timestamp with time zone DEFAULT now(),
     webhook_signature text, -- Para validar origem
@@ -66,14 +66,14 @@ CREATE POLICY "Payment receipts read for authenticated" ON public.payment_receip
     FOR SELECT TO authenticated USING (true);
 
 -- ===============================================
--- 3. FUNÇÃO IDEMPOTENTE DE CRÉDITO DE DIAS
+-- 3. FUNÇÃO IDEMPOTENTE DE CRÉDITO DE DIAS (ADAPTADA)
 -- ===============================================
 
 DROP FUNCTION IF EXISTS public.credit_subscription_days(bigint, text, integer);
 
 CREATE OR REPLACE FUNCTION public.credit_subscription_days(
     p_mp_payment_id bigint,
-    p_empresa_id text,
+    p_user_email text,
     p_days_to_add integer DEFAULT 31
 )
 RETURNS json AS $$
@@ -99,15 +99,15 @@ BEGIN
         );
     END IF;
     
-    -- 2. BUSCAR ASSINATURA
+    -- 2. BUSCAR ASSINATURA PELO EMAIL
     SELECT * INTO v_subscription_record 
     FROM public.subscriptions 
-    WHERE email = p_empresa_id; -- empresa_id corresponde ao email do usuário
+    WHERE email = p_user_email;
     
     IF NOT FOUND THEN
         RETURN json_build_object(
             'success', false,
-            'error', 'Assinatura não encontrada para empresa: ' || p_empresa_id,
+            'error', 'Assinatura não encontrada para email: ' || p_user_email,
             'mp_payment_id', p_mp_payment_id
         );
     END IF;
@@ -137,12 +137,12 @@ BEGIN
     -- 5. REGISTRAR RECIBO (IDEMPOTÊNCIA)
     INSERT INTO public.payment_receipts (
         mp_payment_id,
-        empresa_id,
+        user_email,
         subscription_days_credited,
         processed_at
     ) VALUES (
         p_mp_payment_id,
-        p_empresa_id,
+        p_user_email,
         p_days_to_add,
         now()
     );
@@ -159,7 +159,7 @@ BEGIN
     RETURN json_build_object(
         'success', true,
         'already_processed', false,
-        'empresa_id', p_empresa_id,
+        'user_email', p_user_email,
         'days_added', p_days_to_add,
         'previous_end_date', v_current_end_date,
         'new_end_date', v_new_end_date,
@@ -181,14 +181,14 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ===============================================
--- 4. FUNÇÃO PARA WEBHOOK PROCESSAR PAGAMENTO
+-- 4. FUNÇÃO PARA WEBHOOK PROCESSAR PAGAMENTO (ADAPTADA)
 -- ===============================================
 
 DROP FUNCTION IF EXISTS public.process_payment_webhook(bigint, text);
 
 CREATE OR REPLACE FUNCTION public.process_payment_webhook(
     p_mp_payment_id bigint,
-    p_empresa_id text
+    p_user_email text
 )
 RETURNS json AS $$
 DECLARE
@@ -197,7 +197,7 @@ BEGIN
     -- Chamar função de crédito com 31 dias padrão
     SELECT public.credit_subscription_days(
         p_mp_payment_id,
-        p_empresa_id,
+        p_user_email,
         31 -- 31 dias padrão por pagamento
     ) INTO v_result;
     
@@ -258,42 +258,17 @@ WHERE EXISTS (
 );
 
 -- ===============================================
--- 7. TESTE OPCIONAL
+-- 7. TESTE COM DADOS REAIS
 -- ===============================================
-/*
--- Para testar, descomente e execute:
 
--- Inserir pagamento de teste
-INSERT INTO public.payments (
-    mp_payment_id,
-    empresa_id,
-    mp_status,
-    payment_method,
-    amount
-) VALUES (
-    999999999,
-    'teste@pdvallimport.com',
-    'approved',
-    'pix',
-    59.90
-) ON CONFLICT (mp_payment_id) DO NOTHING;
-
--- Testar função
+-- Testar com o seu email atual
 SELECT public.credit_subscription_days(
-    999999999,
-    'teste@pdvallimport.com',
+    126596009978::bigint,  -- Seu pagamento pendente
+    'novaradiosystem@outlook.com',  -- Seu email
     31
 );
 
 -- Verificar resultado
 SELECT email, status, subscription_end_date, payment_status 
 FROM public.subscriptions 
-WHERE email = 'teste@pdvallimport.com';
-
--- Testar idempotência (deve retornar already_processed = true)
-SELECT public.credit_subscription_days(
-    999999999,
-    'teste@pdvallimport.com',
-    31
-);
-*/
+WHERE email = 'novaradiosystem@outlook.com';

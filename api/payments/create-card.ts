@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 interface CreateCardRequest {
-  empresa_id: string
-  payer_email: string
+  user_email: string
+  payer_email?: string
   amount?: number
   plan_days?: number
   card_token: string // Token do Card Brick
@@ -42,18 +42,21 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { empresa_id, payer_email, card_token, amount = 59.90, plan_days = 31 } = req.body as CreateCardRequest
+    const { user_email, payer_email, card_token, amount = 59.90, plan_days = 31 } = req.body as CreateCardRequest
 
-    if (!empresa_id || !payer_email || !card_token) {
+    // Se não informar payer_email, usar o user_email
+    const payerEmail = payer_email || user_email
+
+    if (!user_email || !card_token) {
       return res.status(400).json({ 
-        error: 'empresa_id, payer_email and card_token are required',
-        received: { empresa_id, payer_email, has_card_token: !!card_token }
+        error: 'user_email and card_token are required',
+        received: { user_email, has_card_token: !!card_token }
       })
     }
 
     console.log('💳 Criando pagamento cartão:', {
-      empresa_id,
-      payer_email,
+      user_email,
+      payer_email: payerEmail,
       amount,
       plan_days,
       card_token: card_token.substring(0, 10) + '...'
@@ -66,12 +69,12 @@ export default async function handler(req: any, res: any) {
       installments: 1,
       payment_method_id: 'visa', // Será determinado pelo token
       payer: {
-        email: payer_email
+        email: payerEmail
       },
-      external_reference: empresa_id, // CRUCIAL: identifica a empresa
+      external_reference: user_email, // CRUCIAL: identifica o usuário
       metadata: {
-        empresa_id,
-        user_email: payer_email,
+        empresa_id: user_email, // Compatibilidade com webhook antigo
+        user_email: user_email,
         payment_type: 'subscription',
         plan_days: plan_days.toString()
       },
@@ -84,7 +87,7 @@ export default async function handler(req: any, res: any) {
       headers: {
         'Authorization': `Bearer ${process.env.VITE_MP_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
-        'X-Idempotency-Key': `card-${empresa_id}-${Date.now()}` // Evitar duplicação
+        'X-Idempotency-Key': `card-${user_email}-${Date.now()}` // Evitar duplicação
       },
       body: JSON.stringify(payment)
     })
@@ -117,15 +120,15 @@ export default async function handler(req: any, res: any) {
         .from('payments')
         .insert({
           mp_payment_id: mpPayment.id,
-          empresa_id,
+          user_email,
           mp_status: mpPayment.status,
           mp_status_detail: mpPayment.status_detail,
           payment_method: mpPayment.payment_method_id,
           amount,
-          payer_email,
+          payer_email: payerEmail,
           webhook_data: {
             payment_created: true,
-            external_reference: empresa_id,
+            external_reference: user_email,
             metadata: payment.metadata,
             card_payment: true
           }
@@ -143,7 +146,7 @@ export default async function handler(req: any, res: any) {
         const { data: creditResult, error: creditError } = await supabase
           .rpc('credit_subscription_days', {
             p_mp_payment_id: mpPayment.id,
-            p_empresa_id: empresa_id,
+            p_user_email: user_email,
             p_days_to_add: plan_days
           })
 
@@ -162,7 +165,7 @@ export default async function handler(req: any, res: any) {
       status: mpPayment.status,
       status_detail: mpPayment.status_detail,
       approved: mpPayment.status === 'approved',
-      empresa_id,
+      user_email,
       amount,
       plan_days,
       webhook_url: 'https://pdv.crmvsystem.com/api/webhooks/mercadopago',

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { CheckCircle, Clock, XCircle, CreditCard, Smartphone } from 'lucide-react'
 
 interface PaymentStatusProps {
-  empresaId: string
+  userEmail: string
   paymentId?: number
   onPaymentApproved?: (paymentData: any) => void
 }
@@ -11,7 +11,7 @@ interface PaymentStatusProps {
 interface Payment {
   id: string
   mp_payment_id: number
-  empresa_id: string
+  user_email: string
   mp_status: string
   mp_status_detail: string
   payment_method: string
@@ -28,7 +28,7 @@ const supabase = createClient(
 )
 
 export const PaymentStatusMonitor: React.FC<PaymentStatusProps> = ({
-  empresaId,
+  userEmail,
   paymentId,
   onPaymentApproved
 }) => {
@@ -43,7 +43,7 @@ export const PaymentStatusMonitor: React.FC<PaymentStatusProps> = ({
         let query = supabase
           .from('payments')
           .select('*')
-          .eq('empresa_id', empresaId)
+          .eq('user_email', userEmail)
           .order('created_at', { ascending: false })
 
         if (paymentId) {
@@ -72,7 +72,7 @@ export const PaymentStatusMonitor: React.FC<PaymentStatusProps> = ({
     }
 
     fetchPayment()
-  }, [empresaId, paymentId, onPaymentApproved])
+  }, [userEmail, paymentId, onPaymentApproved])
 
   // Configurar Realtime para atualizações ao vivo
   useEffect(() => {
@@ -84,7 +84,7 @@ export const PaymentStatusMonitor: React.FC<PaymentStatusProps> = ({
           event: '*', // INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'payments',
-          filter: `empresa_id=eq.${empresaId}`
+          filter: `user_email=eq.${userEmail}`
         },
         (payload) => {
           console.log('🔄 Atualização em tempo real:', payload)
@@ -106,7 +106,7 @@ export const PaymentStatusMonitor: React.FC<PaymentStatusProps> = ({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [empresaId, onPaymentApproved])
+  }, [userEmail, onPaymentApproved])
 
   const getStatusIcon = () => {
     if (!payment) return <Clock className="w-6 h-6 text-yellow-500" />

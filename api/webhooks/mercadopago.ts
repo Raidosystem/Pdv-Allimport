@@ -38,6 +38,7 @@ interface MercadoPagoPayment {
     user_email?: string
     payment_type?: string
     plan_days?: string
+    plan_id?: string
   }
   external_reference?: string
 }
@@ -116,13 +117,16 @@ export default async function handler(req: any, res: any) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Identificar empresa (external_reference ou metadata.empresa_id)
-    const empresaId = payment.external_reference || payment.metadata?.empresa_id || payment.metadata?.user_email
+    // Identificar usuário (external_reference, metadata.empresa_id ou metadata.user_email)
+    const userEmail = payment.external_reference || 
+                     payment.metadata?.empresa_id || 
+                     payment.metadata?.user_email ||
+                     payment.payer?.email
     
-    if (!empresaId) {
-      console.warn(`⚠️ Pagamento ${paymentId} sem empresa_id`)
+    if (!userEmail) {
+      console.warn(`⚠️ Pagamento ${paymentId} sem identificação de usuário`)
       return res.status(400).json({ 
-        error: 'Empresa ID not found in payment',
+        error: 'User email not found in payment',
         payment_id: paymentId
       })
     }
@@ -133,45 +137,14 @@ export default async function handler(req: any, res: any) {
 
     console.log(`🎯 Pagamento ${paymentId}: ${isApproved ? 'APROVADO' : 'PENDENTE'}`)
 
-    // 1. INSERIR/ATUALIZAR REGISTRO DE PAGAMENTO
-    const { data: paymentRecord, error: paymentError } = await supabase
-      .from('payments')
-      .upsert({
-        mp_payment_id: payment.id,
-        empresa_id: empresaId,
-        mp_status: payment.status,
-        mp_status_detail: payment.status_detail,
-        payment_method: payment.payment_method_id,
-        amount: payment.transaction_amount,
-        currency: payment.currency_id,
-        payer_email: payment.payer?.email,
-        payer_name: payment.payer?.first_name && payment.payer?.last_name 
-          ? `${payment.payer.first_name} ${payment.payer.last_name}` 
-          : null,
-        webhook_data: payment,
-        updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'mp_payment_id'
-      })
-      .select()
-      .single()
-
-    if (paymentError) {
-      console.error('❌ Erro ao salvar pagamento:', paymentError)
-      // Continuar mesmo com erro na inserção
-    } else {
-      console.log('✅ Pagamento salvo/atualizado:', paymentRecord?.id)
-    }
-
-    // 2. SE APROVADO, CREDITAR DIAS NA ASSINATURA
+    // SE APROVADO, CREDITAR DIAS NA ASSINATURA
     if (isApproved) {
-      console.log(`🚀 Creditando dias para empresa: ${empresaId}`)
+      console.log(`🚀 Creditando dias para usuário: ${userEmail}`)
       
       const { data: creditResult, error: creditError } = await supabase
-        .rpc('credit_subscription_days', {
-          p_mp_payment_id: payment.id,
-          p_empresa_id: empresaId,
-          p_days_to_add: 31 // Padrão: 31 dias
+        .rpc('credit_days_simple', {
+          p_user_email: userEmail,
+          p_days: 31
         })
 
       if (creditError) {
@@ -179,7 +152,7 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({
           error: 'Failed to credit subscription days',
           payment_id: paymentId,
-          empresa_id: empresaId,
+          user_email: userEmail,
           supabase_error: creditError.message
         })
       }
@@ -191,7 +164,7 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         payment_id: paymentId,
-        empresa_id: empresaId,
+        user_email: userEmail,
         status: payment.status,
         credit_result: creditResult,
         processing_time_ms: processingTime,
@@ -205,7 +178,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       success: true,
       payment_id: paymentId,
-      empresa_id: empresaId,
+      user_email: userEmail,
       status: payment.status,
       status_detail: payment.status_detail,
       message: 'Payment recorded, waiting for approval',

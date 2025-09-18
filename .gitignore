@@ -49,3 +49,12 @@ jest-coverage/
 .next
 .nuxt
 .vercel
+
+# Arquivos sensíveis - NUNCA versionados
+.env
+.env.*
+!.env.example
+CREDENCIAIS_*
+*SECRET*
+*TOKEN*
+*KEYS*

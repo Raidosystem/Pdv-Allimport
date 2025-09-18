@@ -1,0 +1,228 @@
+import { createClient } from '@supabase/supabase-js'
+
+interface MercadoPagoWebhookData {
+  action: string
+  api_version: string
+  data: {
+    id: string
+  }
+  date_created: string
+  id: number
+  live_mode: boolean
+  type: string
+  user_id: string
+}
+
+interface MercadoPagoPayment {
+  id: number
+  status: 'pending' | 'approved' | 'authorized' | 'in_process' | 'in_mediation' | 'rejected' | 'cancelled' | 'refunded' | 'charged_back' | 'accredited'
+  status_detail: string
+  payment_method_id: string
+  payment_type_id: string
+  transaction_amount: number
+  currency_id: string
+  date_created: string
+  date_approved: string | null
+  date_last_updated: string
+  payer: {
+    email?: string
+    first_name?: string
+    last_name?: string
+    identification?: {
+      type: string
+      number: string
+    }
+  }
+  metadata: {
+    empresa_id?: string
+    user_email?: string
+    payment_type?: string
+    plan_days?: string
+  }
+  external_reference?: string
+}
+
+export default async function handler(req: any, res: any) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, x-signature, x-request-id',
+  }
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).setHeader('Access-Control-Allow-Headers', 'Content-Type, x-signature, x-request-id').json({})
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const startTime = Date.now()
+  
+  try {
+    console.log('🎣 Webhook recebido:', {
+      headers: req.headers,
+      body: req.body,
+      timestamp: new Date().toISOString()
+    })
+
+    // Validar estrutura do webhook
+    const webhookData = req.body as MercadoPagoWebhookData
+    
+    if (!webhookData?.data?.id) {
+      console.warn('⚠️ Webhook sem ID de pagamento')
+      return res.status(400).json({ error: 'Webhook data.id is required' })
+    }
+
+    const paymentId = webhookData.data.id
+    console.log(`🔍 Processando pagamento: ${paymentId}`)
+
+    // Buscar detalhes do pagamento no MercadoPago
+    const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.VITE_MP_ACCESS_TOKEN}`,
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!mpResponse.ok) {
+      console.error(`❌ Erro ao buscar pagamento ${paymentId}: ${mpResponse.status}`)
+      return res.status(400).json({ 
+        error: 'Payment not found',
+        payment_id: paymentId,
+        mp_status: mpResponse.status
+      })
+    }
+
+    const payment = await mpResponse.json() as MercadoPagoPayment
+    console.log(`💳 Pagamento ${paymentId}:`, {
+      status: payment.status,
+      status_detail: payment.status_detail,
+      payment_method: payment.payment_method_id,
+      amount: payment.transaction_amount,
+      empresa_id: payment.metadata?.empresa_id || payment.external_reference,
+      payer_email: payment.payer?.email
+    })
+
+    // Inicializar cliente Supabase com SERVICE_ROLE_KEY
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Configuração Supabase ausente')
+      return res.status(500).json({ error: 'Supabase configuration missing' })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // Identificar empresa (external_reference ou metadata.empresa_id)
+    const empresaId = payment.external_reference || payment.metadata?.empresa_id || payment.metadata?.user_email
+    
+    if (!empresaId) {
+      console.warn(`⚠️ Pagamento ${paymentId} sem empresa_id`)
+      return res.status(400).json({ 
+        error: 'Empresa ID not found in payment',
+        payment_id: paymentId
+      })
+    }
+
+    // Verificar se é pagamento aprovado
+    const isApproved = payment.status === 'approved' || 
+                      (payment.status === 'accredited' && payment.status_detail === 'accredited')
+
+    console.log(`🎯 Pagamento ${paymentId}: ${isApproved ? 'APROVADO' : 'PENDENTE'}`)
+
+    // 1. INSERIR/ATUALIZAR REGISTRO DE PAGAMENTO
+    const { data: paymentRecord, error: paymentError } = await supabase
+      .from('payments')
+      .upsert({
+        mp_payment_id: payment.id,
+        empresa_id: empresaId,
+        mp_status: payment.status,
+        mp_status_detail: payment.status_detail,
+        payment_method: payment.payment_method_id,
+        amount: payment.transaction_amount,
+        currency: payment.currency_id,
+        payer_email: payment.payer?.email,
+        payer_name: payment.payer?.first_name && payment.payer?.last_name 
+          ? `${payment.payer.first_name} ${payment.payer.last_name}` 
+          : null,
+        webhook_data: payment,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'mp_payment_id'
+      })
+      .select()
+      .single()
+
+    if (paymentError) {
+      console.error('❌ Erro ao salvar pagamento:', paymentError)
+      // Continuar mesmo com erro na inserção
+    } else {
+      console.log('✅ Pagamento salvo/atualizado:', paymentRecord?.id)
+    }
+
+    // 2. SE APROVADO, CREDITAR DIAS NA ASSINATURA
+    if (isApproved) {
+      console.log(`🚀 Creditando dias para empresa: ${empresaId}`)
+      
+      const { data: creditResult, error: creditError } = await supabase
+        .rpc('credit_subscription_days', {
+          p_mp_payment_id: payment.id,
+          p_empresa_id: empresaId,
+          p_days_to_add: 31 // Padrão: 31 dias
+        })
+
+      if (creditError) {
+        console.error('❌ Erro ao creditar dias:', creditError)
+        return res.status(500).json({
+          error: 'Failed to credit subscription days',
+          payment_id: paymentId,
+          empresa_id: empresaId,
+          supabase_error: creditError.message
+        })
+      }
+
+      console.log('🎉 Resultado do crédito:', creditResult)
+      
+      const processingTime = Date.now() - startTime
+      
+      return res.status(200).json({
+        success: true,
+        payment_id: paymentId,
+        empresa_id: empresaId,
+        status: payment.status,
+        credit_result: creditResult,
+        processing_time_ms: processingTime,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    // Pagamento não aprovado ainda
+    const processingTime = Date.now() - startTime
+    
+    return res.status(200).json({
+      success: true,
+      payment_id: paymentId,
+      empresa_id: empresaId,
+      status: payment.status,
+      status_detail: payment.status_detail,
+      message: 'Payment recorded, waiting for approval',
+      processing_time_ms: processingTime,
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('❌ Webhook error:', error)
+    
+    const processingTime = Date.now() - startTime
+    
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      processing_time_ms: processingTime,
+      timestamp: new Date().toISOString()
+    })
+  }
+}

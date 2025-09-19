@@ -35,6 +35,7 @@ import { useAuth } from '../auth'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useUserHierarchy } from '../../hooks/useUserHierarchy'
 import { Button } from '../../components/ui/Button'
+import AccessFixer from '../../components/AccessFixer'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../../components/subscription/SubscriptionCountdown'
 import { SubscriptionBanner } from '../../components/subscription/SubscriptionBanner'
@@ -653,16 +654,21 @@ export function DashboardPage() {
 
         {/* Empty state para usuários sem permissões */}
         {allMenus.length === 0 && !isAdmin() && !isOwner() && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
+          <div className="py-12">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Nenhum módulo disponível
+              </h3>
+              <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                Você precisa de permissões administrativas para acessar os módulos do sistema.
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhum módulo disponível
-            </h3>
-            <p className="text-sm text-gray-600 max-w-md mx-auto">
-              Entre em contato com o administrador para liberar acesso aos módulos do sistema.
-            </p>
+            <div className="max-w-2xl mx-auto">
+              <AccessFixer onFixed={() => window.location.reload()} />
+            </div>
           </div>
         )}
       </main>

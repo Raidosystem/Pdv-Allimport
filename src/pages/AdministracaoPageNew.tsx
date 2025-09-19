@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, Users, Shield, Database, BarChart3, Crown } from 'lucide-react'
+import { Settings, Users, Shield, Database, BarChart3, Crown, Bug } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
@@ -8,8 +8,9 @@ import AdminBackupsPage from './admin/AdminBackupsPage'
 import AdminSystemSettingsPage from './admin/AdminSystemSettingsPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
+import PermissionsDebugger from '../components/PermissionsDebugger'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'super-admin' | 'debug'
+type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'super-admin' | 'debug' | 'permissions-debug'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -45,6 +46,12 @@ function AdministracaoContent() {
       label: 'Configurações',
       icon: Settings,
       description: 'Configurações gerais do sistema'
+    },
+    {
+      id: 'permissions-debug' as ViewMode,
+      label: 'Debug Permissões',
+      icon: Bug,
+      description: 'Diagnóstico de permissões e acesso'
     }
   ]
 
@@ -89,6 +96,8 @@ function AdministracaoContent() {
         return <AdminSystemSettingsPage />
       case 'debug':
         return <DebugPermissions />
+      case 'permissions-debug':
+        return <PermissionsDebugger />
       default:
         return <AdminDashboard />
     }

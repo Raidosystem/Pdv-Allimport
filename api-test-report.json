@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-09-19T03:07:02.047Z",
+  "summary": {
+    "sucessos": 5,
+    "falhas": 4,
+    "total": 9
+  },
+  "results": [
+    {
+      "test": "🏥 Health Check",
+      "url": "https://pdv.crmvsystem.com/api/health",
+      "status": 200,
+      "success": true,
+      "data": "{\"status\":\"OK\",\"timestamp\":\"2025-09-19T03:06:53.299Z\",\"service\":\"PDV Allimport API\",\"version\":\"1.0.0\"}"
+    },
+    {
+      "test": "📊 Test Endpoint",
+      "url": "https://pdv.crmvsystem.com/api/test",
+      "status": 200,
+      "success": true,
+      "data": "{\"success\":true,\"status\":\"ok\",\"message\":\"API de teste funcionando perfeitamente!\",\"timestamp\":\"2025-09-19T03:06:54.175Z\",\"requestInfo\":{\"method\":\"GET\",\"hasBody\":true,\"contentType\":\"application/json\"},\"environment\":{\"hasSupabaseUrl\":true,\"hasMPToken\":true,\"nodeEnv\":\"production\",\"vercelEnv\":\"production\"}}"
+    },
+    {
+      "test": "💳 MP Diagnostic",
+      "url": "https://pdv.crmvsystem.com/api/mp-diagnostic",
+      "status": 500,
+      "success": false,
+      "data": "{\"success\":false,\"error\":\"User API error: 403\",\"timestamp\":\"2025-09-19T03:06:55.203Z\"}"
+    },
+    {
+      "test": "🔗 PIX Endpoint",
+      "url": "https://pdv.crmvsystem.com/api/pix",
+      "status": 405,
+      "success": false,
+      "data": "{\"error\":\"Method not allowed\"}"
+    },
+    {
+      "test": "⚙️ Preference Basic",
+      "url": "https://pdv.crmvsystem.com/api/preference-basic",
+      "status": 405,
+      "success": false,
+      "data": "{\"error\":\"Method not allowed\"}"
+    },
+    {
+      "test": "📈 Payment Status",
+      "url": "https://pdv.crmvsystem.com/api/payment-status",
+      "status": 400,
+      "success": false,
+      "data": "{\"error\":\"Payment ID is required\"}"
+    },
+    {
+      "test": "🔍 Recent Payments",
+      "url": "https://pdv.crmvsystem.com/api/recent-payments",
+      "status": 200,
+      "success": true,
+      "data": "{\"total\":6,\"recentPayments\":[{\"id\":126730380508,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"2025-09-18T21:41:41.000-04:00\",\"date_approved\":null,\"metadata\":{\"company_id\":\"novaradiosystem@outlook.com\",\"payment_type\":\"subscription\",\"user_email\":\"novaradiosystem@outlook.com\"},\"payer_email\":null},{\"id\":126730338542,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"20"
+    },
+    {
+      "test": "📋 Subscription Status",
+      "url": "https://pdv.crmvsystem.com/api/subscription-status",
+      "status": 200,
+      "success": true,
+      "data": "{\"email\":\"novaradiosystem@outlook.com\",\"subscriptionStatus\":{\"has_subscription\":true,\"status\":\"active\",\"access_allowed\":true,\"subscription_end_date\":\"2025-12-19T22:03:27.408704+00:00\",\"days_remaining\":91},\"timestamp\":\"2025-09-19T03:07:00.294Z\"}"
+    },
+    {
+      "test": "🧹 Clear Cache",
+      "url": "https://pdv.crmvsystem.com/api/clear-cache",
+      "status": 200,
+      "success": true,
+      "data": "{\"success\":true,\"message\":\"Cache cleared successfully\",\"timestamp\":\"2025-09-19T03:07:01.212Z\",\"headers_set\":[\"Clear-Site-Data\",\"Cache-Control\",\"Pragma\",\"Expires\"]}"
+    }
+  ]
+}

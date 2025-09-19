@@ -1,6 +1,13 @@
 # Logs
 *.log
 
+# 🚨 SEGURANÇA: Bloquear deploy de arquivos de debug
+api/debug-*.js
+api/debug-*.ts
+api/test-*.js
+api/test-*.ts
+api/_security/
+
 # Arquivos de desenvolvimento
 .env.local
 .env.development

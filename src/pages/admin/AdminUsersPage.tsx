@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
+import AccessFixer from '../../components/AccessFixer';
 import type { Funcionario, Funcao } from '../../types/admin';
 
 interface FuncionarioWithDetails extends Funcionario {
@@ -306,19 +307,17 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  if (!isAdmin) {
+  // Verificar se tem acesso a área de usuários
+  if (!can('administracao.usuarios', 'read') && !isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">Gerenciamento de Usuários</h3>
-          <p className="text-blue-700">
-            {isAdminEmpresa 
-              ? 'Como administrador da empresa, você pode gerenciar todos os funcionários.'
-              : 'Esta área é restrita para administradores da empresa. Entre em contato com o administrador para solicitar acesso.'
-            }
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Gerenciamento de Usuários</h1>
+          <p className="text-gray-600">
+            Esta área é restrita para administradores da empresa.
           </p>
         </div>
+        <AccessFixer onFixed={() => window.location.reload()} />
       </div>
     );
   }

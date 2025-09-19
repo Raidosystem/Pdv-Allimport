@@ -15,10 +15,11 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
+import AccessFixer from '../../components/AccessFixer';
 import type { AdminDashboardStats, LogAuditoria } from '../../types/admin';
 
 const AdminDashboard: React.FC = () => {
-  const { can, isAdmin, tipoAdmin, loading: permissionsLoading } = usePermissions();
+  const { can, isAdmin, loading: permissionsLoading } = usePermissions();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [recentLogs, setRecentLogs] = useState<LogAuditoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,16 +272,13 @@ const AdminDashboard: React.FC = () => {
   if (!isAdmin) {
     return (
       <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">Área Administrativa</h3>
-          <p className="text-blue-700">
-            {tipoAdmin === 'funcionario' 
-              ? 'Esta área é restrita para administradores. Entre em contato com o administrador da sua empresa para solicitar acesso.'
-              : 'Carregando suas permissões administrativas...'
-            }
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Área Administrativa</h1>
+          <p className="text-gray-600">
+            Esta área é restrita para administradores da empresa.
           </p>
         </div>
+        <AccessFixer onFixed={() => window.location.reload()} />
       </div>
     );
   }

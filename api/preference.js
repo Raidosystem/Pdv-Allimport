@@ -1,6 +1,6 @@
 // Preference Payment endpoint for Vercel (Cartão de Crédito)
 // Credenciais corretas do Mercado Pago
-const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN';
+const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
 
 export default async function handler(req, res) {
   // CORS headers - permitir múltiplos domínios

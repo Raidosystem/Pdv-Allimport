@@ -31,8 +31,8 @@ export default async function handler(req, res) {
         contentType: req.headers['content-type']
       },
       environment: {
-        hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
-        hasMPToken: !!process.env.VITE_MP_ACCESS_TOKEN,
+        hasSupabaseUrl: !!process.env.SUPABASE_URL,
+        hasMPToken: !!process.env.MP_ACCESS_TOKEN,
         nodeEnv: process.env.NODE_ENV,
         vercelEnv: process.env.VERCEL_ENV
       }

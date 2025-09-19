@@ -13,10 +13,10 @@ export default async function handler(req, res) {
 
   try {
     // Buscar informações no Supabase primeiro
-    const supabaseResponse = await fetch(`${process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL}/rest/v1/subscriptions?select=*&payment_id=eq.${paymentId}`, {
+    const supabaseResponse = await fetch(`${process.env.SUPABASE_URL}/rest/v1/subscriptions?select=*&payment_id=eq.${paymentId}`, {
       headers: {
-        'apikey': process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY}`,
+        'apikey': process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       }
     });
@@ -24,10 +24,10 @@ export default async function handler(req, res) {
     const supabaseData = await supabaseResponse.json();
 
     // Verificar logs de webhook
-    const webhookResponse = await fetch(`${process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL}/rest/v1/webhook_logs?select=*&payment_id=eq.${paymentId}&order=created_at.desc&limit=5`, {
+    const webhookResponse = await fetch(`${process.env.SUPABASE_URL}/rest/v1/webhook_logs?select=*&payment_id=eq.${paymentId}&order=created_at.desc&limit=5`, {
       headers: {
-        'apikey': process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY}`,
+        'apikey': process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       }
     });

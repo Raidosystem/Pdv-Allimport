@@ -1,6 +1,6 @@
 // PIX Payment endpoint for Vercel
-// Credenciais corretas do Mercado Pago
-const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+// Credenciais corretas do Mercado Pago - FORÇANDO TOKEN CORRETO
+const MP_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
 
 export default async function handler(req, res) {
   // CORS headers mais permissivos para resolver problemas de redirecionamento

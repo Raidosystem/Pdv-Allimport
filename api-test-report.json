@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-19T03:20:57.382Z",
+  "timestamp": "2025-09-19T03:31:28.281Z",
   "summary": {
     "sucessos": 5,
     "falhas": 4,
@@ -11,21 +11,21 @@
       "url": "https://pdv.crmvsystem.com/api/health",
       "status": 200,
       "success": true,
-      "data": "{\"status\":\"OK\",\"timestamp\":\"2025-09-19T03:20:48.233Z\",\"service\":\"PDV Allimport API\",\"version\":\"1.0.0\"}"
+      "data": "{\"status\":\"OK\",\"timestamp\":\"2025-09-19T03:31:19.527Z\",\"service\":\"PDV Allimport API\",\"version\":\"1.0.0\"}"
     },
     {
       "test": "📊 Test Endpoint",
       "url": "https://pdv.crmvsystem.com/api/test",
       "status": 200,
       "success": true,
-      "data": "{\"success\":true,\"status\":\"ok\",\"message\":\"API de teste funcionando perfeitamente!\",\"timestamp\":\"2025-09-19T03:20:49.250Z\",\"requestInfo\":{\"method\":\"GET\",\"hasBody\":true,\"contentType\":\"application/json\"},\"environment\":{\"hasSupabaseUrl\":true,\"hasMPToken\":true,\"nodeEnv\":\"production\",\"vercelEnv\":\"production\"}}"
+      "data": "{\"success\":true,\"status\":\"ok\",\"message\":\"API de teste funcionando perfeitamente!\",\"timestamp\":\"2025-09-19T03:31:20.519Z\",\"requestInfo\":{\"method\":\"GET\",\"hasBody\":true,\"contentType\":\"application/json\"},\"environment\":{\"hasSupabaseUrl\":true,\"hasMPToken\":true,\"nodeEnv\":\"production\",\"vercelEnv\":\"production\"}}"
     },
     {
       "test": "💳 MP Diagnostic",
       "url": "https://pdv.crmvsystem.com/api/mp-diagnostic",
       "status": 500,
       "success": false,
-      "data": "{\"success\":false,\"error\":\"User API error: 403\",\"timestamp\":\"2025-09-19T03:20:50.389Z\"}"
+      "data": "{\"success\":false,\"error\":\"User API error: 403\",\"timestamp\":\"2025-09-19T03:31:21.623Z\"}"
     },
     {
       "test": "🔗 PIX Endpoint",
@@ -60,14 +60,14 @@
       "url": "https://pdv.crmvsystem.com/api/subscription-status",
       "status": 200,
       "success": true,
-      "data": "{\"email\":\"novaradiosystem@outlook.com\",\"subscriptionStatus\":{\"has_subscription\":true,\"status\":\"active\",\"access_allowed\":true,\"subscription_end_date\":\"2025-12-19T22:03:27.408704+00:00\",\"days_remaining\":91},\"timestamp\":\"2025-09-19T03:20:55.761Z\"}"
+      "data": "{\"email\":\"novaradiosystem@outlook.com\",\"subscriptionStatus\":{\"has_subscription\":true,\"status\":\"active\",\"access_allowed\":true,\"subscription_end_date\":\"2025-12-19T22:03:27.408704+00:00\",\"days_remaining\":91},\"timestamp\":\"2025-09-19T03:31:26.757Z\"}"
     },
     {
       "test": "🧹 Clear Cache",
       "url": "https://pdv.crmvsystem.com/api/clear-cache",
       "status": 200,
       "success": true,
-      "data": "{\"success\":true,\"message\":\"Cache cleared successfully\",\"timestamp\":\"2025-09-19T03:20:56.626Z\",\"headers_set\":[\"Clear-Site-Data\",\"Cache-Control\",\"Pragma\",\"Expires\"]}"
+      "data": "{\"success\":true,\"message\":\"Cache cleared successfully\",\"timestamp\":\"2025-09-19T03:31:27.579Z\",\"headers_set\":[\"Clear-Site-Data\",\"Cache-Control\",\"Pragma\",\"Expires\"]}"
     }
   ]
 }

@@ -9,7 +9,8 @@ import {
   Palette,
   ArrowLeft,
   ChevronRight,
-  Crown
+  Crown,
+  Wrench
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -17,8 +18,9 @@ import BackupManager from '../components/BackupManager'
 import { useSubscription } from '../hooks/useSubscription'
 import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { SubscriptionCountdown } from '../components/subscription/SubscriptionCountdown'
+import CacheResetButton from '../components/CacheResetButton'
 
-type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription'
+type ConfigSection = 'dashboard' | 'backup' | 'import' | 'security' | 'profile' | 'notifications' | 'appearance' | 'subscription' | 'support'
 
 export function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState<ConfigSection>('dashboard')
@@ -73,6 +75,13 @@ export function ConfiguracoesPage() {
       description: 'Gerenciar plano e pagamentos',
       icon: Crown,
       color: 'bg-yellow-500'
+    },
+    {
+      id: 'support' as ConfigSection,
+      title: 'Suporte e Debug',
+      description: 'Ferramentas de diagnóstico e suporte',
+      icon: Wrench,
+      color: 'bg-gray-500'
     }
   ]
 
@@ -239,6 +248,54 @@ export function ConfiguracoesPage() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Aparência</h3>
             <p className="text-gray-600">Configurações de aparência em desenvolvimento...</p>
+          </Card>
+        )
+
+      case 'support':
+        return (
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                  <Wrench className="w-8 h-8 text-gray-600" />
+                </div>
+                <h3 className="text-xl font-semibold">Suporte e Debug</h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  Ferramentas para resolver problemas comuns e diagnósticos.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h4 className="font-medium text-yellow-800 mb-2">🚨 Página em Branco?</h4>
+                  <p className="text-sm text-yellow-700 mb-3">
+                    Se o sistema está carregando uma página em branco ou versão antiga, 
+                    use o botão abaixo para limpar todo o cache do navegador.
+                  </p>
+                  <CacheResetButton className="w-full sm:w-auto" />
+                </div>
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">ℹ️ Informações do Sistema</h4>
+                  <div className="text-sm text-blue-700 space-y-1">
+                    <p><strong>Versão:</strong> 2.2.5</p>
+                    <p><strong>Última atualização:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
+                    <p><strong>Navegador:</strong> {navigator.userAgent.split(' ')[0]}</p>
+                    <p><strong>URL:</strong> {window.location.origin}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">✅ Dicas de Performance</h4>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• O sistema atualiza automaticamente quando há nova versão</li>
+                    <li>• Feche outras abas do navegador para melhor performance</li>
+                    <li>• Use Chrome ou Edge para melhor compatibilidade</li>
+                    <li>• Mantenha o navegador sempre atualizado</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </Card>
         )
       

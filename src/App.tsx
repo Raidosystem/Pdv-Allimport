@@ -44,6 +44,7 @@ import { UpdateToast } from './components/UpdateToast'
 import './App.css'
 import { useState, useEffect } from 'react'
 import { initVersionCheck } from './utils/version-check'
+import { startVersionChecking } from './utils/versionControl'
 
 function App() {
   // PWA Install Hook
@@ -55,6 +56,9 @@ function App() {
     try {
       // Inicializar sistema de detecção de versão
       initVersionCheck()
+      
+      // Inicializar sistema de controle de cache e versão
+      startVersionChecking()
       
       const handleBeforeInstallPrompt = (e: Event) => {
         console.log('🎯 PWA install prompt captured!');

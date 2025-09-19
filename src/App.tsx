@@ -39,6 +39,7 @@ import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
 import { PaymentTest } from './components/PaymentTest'
 import { OfflineIndicator } from './components/OfflineIndicator'
+import { UpdateToast } from './components/UpdateToast'
 // import { InstallPWA } from './components/InstallPWA'
 import './App.css'
 import { useState, useEffect } from 'react'
@@ -441,6 +442,10 @@ function App() {
           {/* Redirecionamento padrão */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        
+        {/* Componentes Globais */}
+        <OfflineIndicator />
+        <UpdateToast />
       </Router>
     </AuthProvider>
     </CacheErrorBoundary>

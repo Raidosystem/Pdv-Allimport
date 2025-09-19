@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run update-version && tsc -b && vite build",
+    "build:prod": "NODE_ENV=production npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "vercel --prod",
+    "deploy": "npm run build && vercel --prod",
     "deploy:dev": "vercel",
-    "build:prod": "NODE_ENV=production npm run build",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "update-version": "node scripts/update-version.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

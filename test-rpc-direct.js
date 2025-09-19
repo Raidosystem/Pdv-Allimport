@@ -5,7 +5,7 @@ console.log('🧪 Testando RPC diretamente com payment pending:', paymentId);
 
 async function testRPCDirect() {
   try {
-    const SUPABASE_URL = "https://kmcaaqetxtwkdcczdomw.supabase.co";
+    const SUPABASE_URL = "process.env.VITE_SUPABASE_URL";
     // Precisa da service key para testar RPC
     console.log('⚠️  Para testar RPC diretamente, precisaríamos da SUPABASE_SERVICE_KEY');
     console.log('Vamos simular o que aconteceria...');

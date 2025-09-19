@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   
   try {
     // Configuração do Supabase
-    const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://kmcaaqetxtwkdcczdomw.supabase.co";
+    const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "process.env.VITE_SUPABASE_URL";
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     const email = req.query.email;

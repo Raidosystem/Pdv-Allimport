@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'paymentId é obrigatório' });
     }
 
-    const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+    const MP_ACCESS_TOKEN = process.env.VITE_MP_ACCESS_TOKEN || 'process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN';
     
     console.log(`🔍 Verificando pagamento ${paymentId} no MP...`);
 
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     // Verificar se há dados no Supabase
     let supabaseData = null;
     try {
-      const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://kmcaaqetxtwkdcczdomw.supabase.co";
+      const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "process.env.VITE_SUPABASE_URL";
       const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
       
       if (SUPABASE_ANON_KEY) {

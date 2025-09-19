@@ -64,7 +64,7 @@ async function testSpecificPayment() {
 async function testSupabaseConnection() {
   console.log("\n🔌 Testando conectividade com Supabase...");
   
-  const SUPABASE_URL = "https://kmcaaqetxtwkdcczdomw.supabase.co";
+  const SUPABASE_URL = "process.env.VITE_SUPABASE_URL";
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "CHAVE_NAO_CONFIGURADA";
   
   try {

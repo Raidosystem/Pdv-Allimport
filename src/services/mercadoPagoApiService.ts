@@ -47,7 +47,7 @@ class MercadoPagoApiService {
   private isLocalDev = isLocalhost;
   
   // Credenciais de produção do Mercado Pago
-  private readonly PRODUCTION_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
+  private readonly PRODUCTION_ACCESS_TOKEN = 'process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN';
   private readonly PRODUCTION_PUBLIC_KEY = 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022';
   
   private getAccessToken(): string {

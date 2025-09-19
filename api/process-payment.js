@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     }
 
     // 3. Preparar dados para ativar assinatura
-    const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://kmcaaqetxtwkdcczdomw.supabase.co";
+    const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "process.env.VITE_SUPABASE_URL";
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     // 4. Chamar a função RPC existente para ativar a assinatura

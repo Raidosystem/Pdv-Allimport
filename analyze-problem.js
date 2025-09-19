@@ -2,7 +2,7 @@
 
 // const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = 'https://kmcaaqetxtwkdcczdomw.supabase.co';
+const supabaseUrl = 'process.env.VITE_SUPABASE_URL';
 // Para este teste, precisaríamos da service key, mas vamos simular...
 
 console.log('🔍 Verificando se email existe na tabela subscriptions...');

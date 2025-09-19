@@ -1,19 +1,22 @@
 import type { MercadoPagoPreference, MercadoPagoPayment } from '../types/subscription'
 
-// Credenciais de produção do Mercado Pago para comercialização
-const MP_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193'
-const MP_PUBLIC_KEY = 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022'
+// Configuração do Mercado Pago via variáveis de ambiente
+const MP_ACCESS_TOKEN = import.meta.env.VITE_MP_ACCESS_TOKEN || ''
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022'
 const MP_BASE_URL = 'https://api.mercadopago.com'
 
 export class MercadoPagoService {
   
   // Verificar se as credenciais estão configuradas
   static hasCredentials(): boolean {
-    return true // Credenciais de produção sempre configuradas
+    return !!MP_ACCESS_TOKEN && !!MP_PUBLIC_KEY
   }
 
-  // Obter credenciais de produção
+  // Obter credenciais
   static getCredentials() {
+    if (!MP_ACCESS_TOKEN) {
+      console.error('❌ VITE_MP_ACCESS_TOKEN não configurado')
+    }
     return {
       accessToken: MP_ACCESS_TOKEN,
       publicKey: MP_PUBLIC_KEY,

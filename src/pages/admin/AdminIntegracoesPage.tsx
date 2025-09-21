@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { 
   Settings, 
-  CreditCard, 
   Mail, 
   MessageCircle, 
   CheckCircle, 
@@ -18,15 +17,9 @@ import { Button } from '../../components/ui/Button'
  */
 export default function AdminIntegracoesPage() {
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('mercadopago')
+  const [activeTab, setActiveTab] = useState('smtp')
   
   const [configs, setConfigs] = useState({
-    mercadopago: {
-      ativo: false,
-      access_token: '',
-      public_key: '',
-      webhook_url: ''
-    },
     smtp: {
       ativo: false,
       host: '',
@@ -45,13 +38,6 @@ export default function AdminIntegracoesPage() {
   })
 
   const integracoes = [
-    {
-      id: 'mercadopago',
-      nome: 'Mercado Pago',
-      icon: <CreditCard className="w-5 h-5" />,
-      descricao: 'Processe pagamentos com cartão de crédito e PIX',
-      status: configs.mercadopago.ativo ? 'ativo' : 'inativo'
-    },
     {
       id: 'smtp',
       nome: 'Email (SMTP)',
@@ -116,58 +102,7 @@ export default function AdminIntegracoesPage() {
       : 'text-gray-600 bg-gray-100'
   }
 
-  const renderMercadoPagoForm = () => (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <input
-          type="checkbox"
-          checked={configs.mercadopago.ativo}
-          onChange={(e) => updateConfig('mercadopago', 'ativo', e.target.checked)}
-          className="w-4 h-4 text-blue-600"
-        />
-        <label className="text-sm font-medium">Ativar integração Mercado Pago</label>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Access Token
-        </label>
-        <input
-          type="password"
-          value={configs.mercadopago.access_token}
-          onChange={(e) => updateConfig('mercadopago', 'access_token', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="APP_USR-..."
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Public Key
-        </label>
-        <input
-          type="text"
-          value={configs.mercadopago.public_key}
-          onChange={(e) => updateConfig('mercadopago', 'public_key', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="APP_USR-..."
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Webhook URL
-        </label>
-        <input
-          type="url"
-          value={configs.mercadopago.webhook_url}
-          onChange={(e) => updateConfig('mercadopago', 'webhook_url', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="https://..."
-        />
-      </div>
-    </div>
-  )
+
 
   const renderSMTPForm = () => (
     <div className="space-y-4">
@@ -365,7 +300,6 @@ export default function AdminIntegracoesPage() {
           </h2>
         </div>
 
-        {activeTab === 'mercadopago' && renderMercadoPagoForm()}
         {activeTab === 'smtp' && renderSMTPForm()}
         {activeTab === 'whatsapp' && renderWhatsAppForm()}
 

@@ -275,7 +275,6 @@ export interface AdminDashboardStats {
     proxima_cobranca?: string;
   };
   integracao: {
-    mercado_pago: 'ok' | 'erro' | 'nao_configurado';
     email: 'ok' | 'erro' | 'nao_configurado';
     whatsapp: 'ok' | 'erro' | 'nao_configurado';
   };

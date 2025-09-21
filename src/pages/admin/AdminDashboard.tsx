@@ -140,7 +140,6 @@ const AdminDashboard: React.FC = () => {
     const config = empresa?.configuracoes || {};
 
     return {
-      mercado_pago: config.mercado_pago_access_token ? 'ok' : 'nao_configurado',
       email: config.email_smtp_host ? 'ok' : 'nao_configurado',
       whatsapp: config.whatsapp_api_url ? 'ok' : 'nao_configurado'
     } as const;
@@ -406,24 +405,6 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Status das Integrações</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  💳
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Mercado Pago</p>
-                  <p className="text-sm text-gray-500">Gateway de pagamento</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {getIntegrationIcon(stats.integracao.mercado_pago)}
-                <span className="text-sm text-gray-600">
-                  {getIntegrationText(stats.integracao.mercado_pago)}
-                </span>
-              </div>
-            </div>
-
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">

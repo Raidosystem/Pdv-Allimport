@@ -5,7 +5,6 @@ import {
   MessageSquare,
   CreditCard,
   Shield,
-  AlertTriangle,
   CheckCircle,
   RefreshCw,
   Save,

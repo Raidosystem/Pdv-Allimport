@@ -61,37 +61,43 @@ alter table public.integracoes enable row level security;
 -- $$;
 
 -- Convites: apenas admins da empresa podem gerenciar
-create policy p_convites_admin on public.convites for all
-  using (empresa_id = auth.empresa_do_usuario() and exists (
-    select 1 from funcionario_funcoes ff
-    join funcoes f on f.id = ff.funcao_id
-    join funcionarios func on func.id = ff.funcionario_id
-    where func.user_id = auth.uid() and f.nome in ('admin', 'administrador')
-  ));
+create policy p_convites_select on public.convites for select
+  using (empresa_id = auth.empresa_do_usuario());
+
+create policy p_convites_insert on public.convites for insert
+  with check (empresa_id = auth.empresa_do_usuario());
+
+create policy p_convites_update on public.convites for update
+  using (empresa_id = auth.empresa_do_usuario());
+
+create policy p_convites_delete on public.convites for delete
+  using (empresa_id = auth.empresa_do_usuario());
 
 -- Backups: visível por empresa, gerenciamento por admin/gerente
 create policy p_backups_select on public.backups for select
   using (empresa_id = auth.empresa_do_usuario());
 
-create policy p_backups_admin on public.backups for insert, update, delete
-  using (empresa_id = auth.empresa_do_usuario() and exists (
-    select 1 from funcionario_funcoes ff
-    join funcoes f on f.id = ff.funcao_id
-    join funcionarios func on func.id = ff.funcionario_id
-    where func.user_id = auth.uid() and f.nome in ('admin', 'administrador', 'gerente')
-  ));
+create policy p_backups_insert on public.backups for insert
+  with check (empresa_id = auth.empresa_do_usuario());
+
+create policy p_backups_update on public.backups for update
+  using (empresa_id = auth.empresa_do_usuario());
+
+create policy p_backups_delete on public.backups for delete
+  using (empresa_id = auth.empresa_do_usuario());
 
 -- Integrações: visível por empresa, gerenciamento por admin
 create policy p_integracoes_select on public.integracoes for select
   using (empresa_id = auth.empresa_do_usuario());
 
-create policy p_integracoes_admin on public.integracoes for insert, update, delete
-  using (empresa_id = auth.empresa_do_usuario() and exists (
-    select 1 from funcionario_funcoes ff
-    join funcoes f on f.id = ff.funcao_id
-    join funcionarios func on func.id = ff.funcionario_id
-    where func.user_id = auth.uid() and f.nome in ('admin', 'administrador')
-  ));
+create policy p_integracoes_insert on public.integracoes for insert
+  with check (empresa_id = auth.empresa_do_usuario());
+
+create policy p_integracoes_update on public.integracoes for update
+  using (empresa_id = auth.empresa_do_usuario());
+
+create policy p_integracoes_delete on public.integracoes for delete
+  using (empresa_id = auth.empresa_do_usuario());
 
 -- 5. NOVAS PERMISSÕES PROFISSIONAIS
 -- ========================================

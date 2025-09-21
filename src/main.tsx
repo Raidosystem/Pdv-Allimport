@@ -125,10 +125,11 @@ const showBasicError = (message: string) => {
   `
 }
 
-// Service Worker e PWA Install
+// Service Worker e PWA Install (Desabilitado em desenvolvimento)
 let deferredPrompt: any = null
 
-if ('serviceWorker' in navigator) {
+// Só registrar Service Worker em produção
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => {
       console.log('✅ SW ok')
@@ -136,21 +137,33 @@ if ('serviceWorker' in navigator) {
       setTimeout(setupPWAInstall, 2000)
     })
     .catch(() => console.log('⚠️ SW falhou'))
+} else if ('serviceWorker' in navigator && import.meta.env.DEV) {
+  // Em desenvolvimento, desregistrar qualquer SW existente
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (let registration of registrations) {
+      registration.unregister().then(() => {
+        console.log('🧹 Service Worker removido (desenvolvimento)')
+      })
+    }
+  })
+  console.log('⚙️ Service Worker desabilitado em desenvolvimento')
 }
 
-// Capturar evento de instalação PWA
-window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('🚀 PWA Install disponível!')
-  e.preventDefault()
-  deferredPrompt = e
-  showInstallButton()
-})
+// Capturar evento de instalação PWA (Só em produção)
+if (import.meta.env.PROD) {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('🚀 PWA Install disponível!')
+    e.preventDefault()
+    deferredPrompt = e
+    showInstallButton()
+  })
 
-// Verificar se já está instalado
-window.addEventListener('appinstalled', () => {
-  console.log('✅ PWA Instalado!')
-  hideInstallButton()
-})
+  // Verificar se já está instalado
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ PWA Instalado!')
+    hideInstallButton()
+  })
+}
 
 // Adicionar CSS para animações
 const addPWAStyles = () => {
@@ -186,8 +199,14 @@ const addPWAStyles = () => {
   document.head.appendChild(style)
 }
 
-// Setup do sistema PWA
+// Setup do sistema PWA (Só em produção)
 const setupPWAInstall = () => {
+  // Só mostrar PWA em produção
+  if (import.meta.env.DEV) {
+    console.log('⚙️ PWA desabilitado em desenvolvimento')
+    return
+  }
+  
   addPWAStyles()
   
   // Se não capturou o evento mas está em produção, mostrar botão

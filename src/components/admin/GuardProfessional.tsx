@@ -1,53 +1,26 @@
 import React from 'react'
-import { Shield, AlertTriangle } from 'lucide-react'
-import { hasPermissionProfessional } from '../../types/admin-professional'
 import type { PermissaoProfissional } from '../../types/admin-professional'
 
 interface GuardProfessionalProps {
-  perms: string[]
-  need: PermissaoProfissional | PermissaoProfissional[]
   children: React.ReactNode
+  perms?: string[]
+  need?: PermissaoProfissional | PermissaoProfissional[]
   fallback?: React.ReactNode
 }
 
 /**
  * Componente de proteção para funcionalidades administrativas profissionais
+ * REGRA: Todo cliente que comprou o sistema tem acesso total
  * Baseado no Blueprint Profissional do PDV Allimport
  */
 export function GuardProfessional({ 
-  perms, 
-  need, 
-  children, 
-  fallback 
+  children 
 }: GuardProfessionalProps) {
   
-  if (!hasPermissionProfessional(perms, need)) {
-    if (fallback) {
-      return <>{fallback}</>
-    }
-    
-    return (
-      <div className="p-6 rounded-xl bg-amber-50 border border-amber-200">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-amber-100 rounded-lg">
-            <Shield className="w-5 h-5 text-amber-700" />
-          </div>
-          <div>
-            <div className="text-amber-800 font-medium">Acesso Restrito</div>
-            <div className="text-amber-700 text-sm">
-              Esta área é restrita para administradores/gerentes autorizados.
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-100 p-2 rounded">
-          <AlertTriangle className="w-3 h-3" />
-          <span>Permissão necessária: {Array.isArray(need) ? need.join(', ') : need}</span>
-        </div>
-      </div>
-    )
-  }
-
+  // REGRA: Todo usuário logado tem acesso às funcionalidades profissionais
+  // O cliente define as permissões dos funcionários dentro do sistema
+  console.log('🔓 GuardProfessional: Acesso liberado - cliente é admin da empresa');
+  
   return <>{children}</>
 }
 
@@ -55,17 +28,30 @@ export function GuardProfessional({
  * Hook para verificar permissões profissionais
  */
 export function usePermissionProfessional() {
-  // Implementar hook de permissões quando integrar com sistema de auth
-  const userPermissions: string[] = [] // Temporário
+  // REGRA: Todo usuário logado tem acesso total às funcionalidades profissionais
+  // O cliente que comprou o sistema define as permissões dos funcionários
+  const userPermissions: string[] = [
+    'dashboard.admin.read',
+    'convites.create',
+    'convites.read', 
+    'convites.delete',
+    'backups.create',
+    'backups.read',
+    'backups.download',
+    'integracoes.read',
+    'integracoes.write',
+    'integracoes.test',
+    'auditoria.read'
+  ]
   
-  const hasPermission = (needed: PermissaoProfissional | PermissaoProfissional[]) => {
-    return hasPermissionProfessional(userPermissions, needed)
+  const hasPermission = () => {
+    return true // Liberar tudo para usuários logados
   }
   
-  const isAdmin = userPermissions.includes('dashboard.admin.read')
-  const canManageUsers = userPermissions.includes('convites.create')
-  const canManageBackups = userPermissions.includes('backups.create')
-  const canManageIntegrations = userPermissions.includes('integracoes.write')
+  const isAdmin = true // Todo usuário logado é admin da sua empresa
+  const canManageUsers = true
+  const canManageBackups = true
+  const canManageIntegrations = true
   
   return {
     hasPermission,

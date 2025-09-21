@@ -67,29 +67,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
   ];
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Acesso Restrito
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Apenas administradores podem acessar esta área.
-          </p>
-          <Link
-            to="/"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Voltar ao Sistema
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // REGRA: Todo cliente que comprou o sistema é admin da sua empresa
+  // Removido bloqueio - usuário logado tem acesso total
+  console.log('🔓 AdminLayout: Acesso liberado - cliente é admin da empresa');
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">

@@ -122,8 +122,8 @@ function App() {
     <CacheErrorBoundary>
       <AuthProvider>
         <Router>
-          {/* PWA Install Banner */}
-          {showInstallBanner && deferredPrompt && (
+          {/* PWA Install Banner - Removido */}
+          {false && showInstallBanner && deferredPrompt && (
             <div className="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
               <div className="flex items-center gap-3">
                 <span role="img" aria-label="mobile">📱</span>

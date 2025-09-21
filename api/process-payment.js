@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // 1. Buscar detalhes do pagamento no MercadoPago
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${payment_id}`, {
       headers: {
-        'Authorization': `Bearer ${process.env.VITE_MP_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN || process.env.VITE_MP_ACCESS_TOKEN}`,
         'Accept': 'application/json'
       }
     });

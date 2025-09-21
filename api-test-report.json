@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-19T04:20:05.286Z",
+  "timestamp": "2025-09-19T04:35:26.762Z",
   "summary": {
     "sucessos": 6,
     "falhas": 3,
@@ -11,14 +11,14 @@
       "url": "https://pdv.crmvsystem.com/api/health",
       "status": 200,
       "success": true,
-      "data": "{\"status\":\"OK\",\"timestamp\":\"2025-09-19T04:19:57.195Z\",\"service\":\"PDV Allimport API\",\"version\":\"1.0.0\"}"
+      "data": "{\"status\":\"OK\",\"timestamp\":\"2025-09-19T04:35:19.381Z\",\"service\":\"PDV Allimport API\",\"version\":\"1.0.0\"}"
     },
     {
       "test": "📊 Test Endpoint",
       "url": "https://pdv.crmvsystem.com/api/test",
       "status": 200,
       "success": true,
-      "data": "{\"success\":true,\"status\":\"ok\",\"message\":\"API de teste funcionando perfeitamente!\",\"timestamp\":\"2025-09-19T04:19:58.190Z\",\"requestInfo\":{\"method\":\"GET\",\"hasBody\":true,\"contentType\":\"application/json\"},\"environment\":{\"hasSupabaseUrl\":true,\"hasMPToken\":true,\"nodeEnv\":\"production\",\"vercelEnv\":\"production\"}}"
+      "data": "{\"success\":true,\"status\":\"ok\",\"message\":\"API de teste funcionando perfeitamente!\",\"timestamp\":\"2025-09-19T04:35:20.228Z\",\"requestInfo\":{\"method\":\"GET\",\"hasBody\":true,\"contentType\":\"application/json\"},\"environment\":{\"hasSupabaseUrl\":true,\"hasMPToken\":true,\"nodeEnv\":\"production\",\"vercelEnv\":\"production\"}}"
     },
     {
       "test": "💳 MP Diagnostic",
@@ -53,21 +53,21 @@
       "url": "https://pdv.crmvsystem.com/api/recent-payments",
       "status": 200,
       "success": true,
-      "data": "{\"total\":8,\"recentPayments\":[{\"id\":126730380508,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"2025-09-18T21:41:41.000-04:00\",\"date_approved\":null,\"metadata\":{\"company_id\":\"novaradiosystem@outlook.com\",\"payment_type\":\"subscription\",\"user_email\":\"novaradiosystem@outlook.com\"},\"payer_email\":null},{\"id\":126730338542,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"20"
+      "data": "{\"total\":10,\"recentPayments\":[{\"id\":126730380508,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"2025-09-18T21:41:41.000-04:00\",\"date_approved\":null,\"metadata\":{\"company_id\":\"novaradiosystem@outlook.com\",\"payment_type\":\"subscription\",\"user_email\":\"novaradiosystem@outlook.com\"},\"payer_email\":null},{\"id\":126730338542,\"status\":\"pending\",\"status_detail\":\"pending_waiting_transfer\",\"payment_method\":\"pix\",\"amount\":59.9,\"date_created\":\"2"
     },
     {
       "test": "📋 Subscription Status",
       "url": "https://pdv.crmvsystem.com/api/subscription-status",
       "status": 200,
       "success": true,
-      "data": "{\"email\":\"novaradiosystem@outlook.com\",\"subscriptionStatus\":{\"has_subscription\":true,\"status\":\"active\",\"access_allowed\":true,\"subscription_end_date\":\"2025-12-19T22:03:27.408704+00:00\",\"days_remaining\":91},\"timestamp\":\"2025-09-19T04:20:03.881Z\"}"
+      "data": "{\"email\":\"novaradiosystem@outlook.com\",\"subscriptionStatus\":{\"has_subscription\":true,\"status\":\"active\",\"access_allowed\":true,\"subscription_end_date\":\"2025-12-19T22:03:27.408704+00:00\",\"days_remaining\":91},\"timestamp\":\"2025-09-19T04:35:25.337Z\"}"
     },
     {
       "test": "🧹 Clear Cache",
       "url": "https://pdv.crmvsystem.com/api/clear-cache",
       "status": 200,
       "success": true,
-      "data": "{\"success\":true,\"message\":\"Cache cleared successfully\",\"timestamp\":\"2025-09-19T04:20:04.710Z\",\"headers_set\":[\"Clear-Site-Data\",\"Cache-Control\",\"Pragma\",\"Expires\"]}"
+      "data": "{\"success\":true,\"message\":\"Cache cleared successfully\",\"timestamp\":\"2025-09-19T04:35:26.211Z\",\"headers_set\":[\"Clear-Site-Data\",\"Cache-Control\",\"Pragma\",\"Expires\"]}"
     }
   ]
 }

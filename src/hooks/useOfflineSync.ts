@@ -31,20 +31,25 @@ export function useOfflineSync() {
   // Atualizar status de conexão
   const updateOnlineStatus = useCallback(() => {
     const online = navigator.onLine
+    const wasOffline = !isOnline
+    
     setIsOnline(online)
     setSyncStatus(prev => ({ ...prev, isOnline: online }))
     
-    if (online) {
+    if (online && wasOffline) {
+      console.log('🌐 [SYNC] Conexão restaurada - iniciando sincronização única')
       toast.success('🌐 Conexão restaurada! Sincronizando dados...', {
         duration: 3000
       })
-      startSync()
-    } else {
+      // Sincronizar apenas uma vez quando reconectar
+      setTimeout(startSync, 2000)
+    } else if (!online) {
+      console.log('📴 [SYNC] Conexão perdida - modo offline')
       toast.error('📴 Sem conexão. Modo offline ativado.', {
         duration: 4000
       })
     }
-  }, [])
+  }, [isOnline])
 
   // Salvar dados offline no localStorage com isolamento por usuário
   const saveOfflineData = useCallback(async (key: string, data: any) => {
@@ -134,15 +139,22 @@ export function useOfflineSync() {
 
   // Iniciar sincronização
   const startSync = useCallback(async () => {
-    if (!isOnline || syncStatus.isSyncing) return
+    if (!isOnline || syncStatus.isSyncing) {
+      console.log('🚫 [SYNC] Sync cancelado - isOnline:', isOnline, 'isSyncing:', syncStatus.isSyncing)
+      return
+    }
 
+    console.log('🔄 [SYNC] Iniciando verificação de sincronização...')
     setSyncStatus(prev => ({ ...prev, isSyncing: true }))
 
     try {
       const offlineData = await getOfflineData()
       const { syncQueue } = offlineData
       
+      console.log('📋 [SYNC] Fila de sincronização:', syncQueue.length, 'itens')
+      
       if (syncQueue.length === 0) {
+        console.log('✅ [SYNC] Nenhum item para sincronizar')
         setSyncStatus(prev => ({
           ...prev,
           isSyncing: false,
@@ -317,10 +329,10 @@ export function useOfflineSync() {
     
     initializeOfflineData()
 
-    // Sincronizar se estiver online
-    if (navigator.onLine) {
-      setTimeout(startSync, 1000)
-    }
+    // Sincronizar se estiver online (TEMPORARIAMENTE DESABILITADO)
+    // if (navigator.onLine) {
+    //   setTimeout(startSync, 1000)
+    // }
 
     return () => {
       window.removeEventListener('online', updateOnlineStatus)

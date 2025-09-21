@@ -46,6 +46,112 @@
   <body>
     <div id="root"></div>
     
+    <!-- Script Universal de Limpeza de Cache - Cross-Browser -->
+    <script>
+      (function () {
+        // evita executar 2x
+        if (window.__bootPatcherLoaded) return;
+        window.__bootPatcherLoaded = true;
+
+        // cache-buster para recarregar sem usar cache do navegador
+        function hardReload() {
+          var u = new URL(location.href);
+          u.searchParams.set("_v", Date.now().toString());
+          location.replace(u.toString());
+        }
+
+        async function deleteIndexedDBSafely() {
+          try {
+            if ('databases' in indexedDB && typeof indexedDB.databases === 'function') {
+              const dbs = await indexedDB.databases();
+              await Promise.all((dbs || []).map(db => {
+                try { return indexedDB.deleteDatabase(db.name); } catch(e) {}
+              }));
+            } else {
+              // Lista de DBs comuns (ajuste aos seus):
+              const known = [
+                // Supabase/LocalForage/etc.. ajuste se usar outros
+                "supabase-auth",
+                "supabase-cache",
+                "localforage",
+                "keyval-store"
+              ];
+              await Promise.all(known.map(name => {
+                try { return indexedDB.deleteDatabase(name); } catch(e) {}
+              }));
+            }
+          } catch(e) { /* ignora */ }
+        }
+
+        async function universalClean() {
+          try {
+            // 1) CacheStorage (SW caches)
+            if ('caches' in self) {
+              const keys = await caches.keys();
+              await Promise.all(keys.map(k => caches.delete(k).catch(()=>{})));
+            }
+
+            // 2) Service Workers
+            if ('serviceWorker' in navigator) {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map(r => r.unregister().catch(()=>{})));
+            }
+
+            // 3) IndexedDB
+            await deleteIndexedDBSafely();
+
+            // 4) local/session storage (só do seu domínio)
+            try { localStorage.clear(); } catch(e){}
+            try { sessionStorage.clear(); } catch(e){}
+
+          } catch (e) {
+            // passa
+          } finally {
+            hardReload();
+          }
+        }
+
+        // ------------- Detector de versão -------------
+        let currentVersion = null;
+        async function checkVersion() {
+          try {
+            const r = await fetch('/version.json', { cache: 'no-store' });
+            const j = await r.json();
+            if (!currentVersion) currentVersion = j.version;
+            else if (currentVersion !== j.version) {
+              // Nova versão disponível -> limpeza e reload garante pegar HTML/JS novos
+              await universalClean();
+            }
+          } catch (e) {
+            // offline? ignora
+          }
+        }
+
+        // Checa logo no início e depois a cada 60s (ajuste se quiser)
+        checkVersion();
+        setInterval(checkVersion, 60000);
+
+        // ------------- Auto-recovery: erro de chunk/bundle -------------
+        // Edge/Chrome/Safari: se algum script falhar (404 de asset antigo), limpa e recarrega
+        window.addEventListener('error', function (ev) {
+          const msg = (ev && ev.message || '').toLowerCase();
+          if (msg.includes('loading chunk') || msg.includes('chunk load') || msg.includes('failed to fetch') || msg.includes('script error')) {
+            universalClean();
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (ev) {
+          const msg = (ev && ev.reason && (ev.reason.message || ev.reason.toString()) || '').toLowerCase();
+          if (msg.includes('loading chunk') || msg.includes('chunk load') || msg.includes('failed to fetch') || msg.includes('import()')) {
+            universalClean();
+          }
+        });
+
+        // ------------- Botão/manual (exponha p/ debug da sua UI) -------------
+        window.__forceCleanAndReload = universalClean; // você pode chamar pelo console ou de um botão
+      })();
+    </script>
+    
     <script>
       // Registrar Service Worker apenas em produção
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {

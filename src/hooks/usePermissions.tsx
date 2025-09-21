@@ -65,32 +65,65 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       if (error || !funcionarioData) {
         console.error('Erro ao carregar permissões:', error);
-        console.log('Tentando criar funcionário padrão para o usuário...');
+        console.log('🔧 CRIANDO ADMIN AUTOMÁTICO: Todo usuário logado é admin da sua empresa');
         
-        // Se não existe funcionário, tentar criar um padrão como admin_empresa
-        if (!funcionarioData && user.email) {
+        // REGRA: Todo usuário que compra o sistema é automaticamente admin da sua empresa
+        if (user.email) {
           try {
-            const { data: novoFuncionario } = await supabase
+            // Tentar criar funcionário como admin_empresa
+            const { data: novoFuncionario, error: createError } = await supabase
               .from('funcionarios')
               .insert({
                 user_id: user.id,
                 nome: user.email.split('@')[0],
                 email: user.email,
-                tipo_admin: 'admin_empresa',
+                tipo_admin: 'admin_empresa', // SEMPRE admin da empresa
                 status: 'ativo',
-                empresa_id: '00000000-0000-0000-0000-000000000001' // Empresa padrão
+                empresa_id: user.id // Usar user.id como empresa_id (cada usuário = sua empresa)
               })
               .select()
               .single();
               
-            if (novoFuncionario) {
-              console.log('Funcionário criado com sucesso:', novoFuncionario);
-              // Recarregar após criar
-              setTimeout(() => loadPermissions(), 1000);
+            if (createError) {
+              console.log('⚠️ Erro ao criar na tabela, mas seguindo como admin:', createError);
+            } else {
+              console.log('✅ Admin criado com sucesso:', novoFuncionario);
             }
           } catch (createError) {
-            console.error('Erro ao criar funcionário padrão:', createError);
+            console.log('⚠️ Erro na criação, mas continuando como admin:', createError);
           }
+          
+          // SEMPRE continuar como admin, mesmo se falhar a criação no banco
+          const adminContext: PermissaoContext = {
+            empresa_id: user.id, // Cada usuário é sua própria empresa
+            user_id: user.id,
+            funcionario_id: user.id,
+            funcoes: ['admin_empresa'],
+            permissoes: [
+              'administracao.usuarios:create',
+              'administracao.usuarios:read', 
+              'administracao.usuarios:update',
+              'administracao.usuarios:delete',
+              'administracao.funcoes:create',
+              'administracao.funcoes:read',
+              'administracao.funcoes:update', 
+              'administracao.funcoes:delete',
+              'administracao.sistema:read',
+              'administracao.sistema:update',
+              'administracao.backup:create',
+              'administracao.backup:read',
+              'administracao.logs:read',
+              'admin.dashboard:read'
+            ],
+            is_admin: true,
+            is_super_admin: false,
+            is_admin_empresa: true,
+            tipo_admin: 'admin_empresa',
+            escopo_lojas: [] // Todas as lojas
+          };
+          
+          setContext(adminContext);
+          console.log('🎯 ADMIN DEFINIDO:', adminContext);
         }
         return;
       }
@@ -226,8 +259,10 @@ export const usePermissions = (): UsePermissionsReturn => {
     // Super admin pode tudo
     if (context.is_super_admin) return true;
     
-    // Admin da empresa pode gerenciar recursos administrativos da sua empresa
-    if (context.is_admin_empresa) {
+    // Admin da empresa SEMPRE pode gerenciar recursos administrativos
+    if (context.is_admin_empresa || context.is_admin) {
+      console.log(`🔑 Admin verificando: ${recurso}:${acao} - PERMITIDO`);
+      
       const adminResources = [
         'administracao.usuarios',
         'administracao.funcoes', 
@@ -237,13 +272,21 @@ export const usePermissions = (): UsePermissionsReturn => {
         'admin.dashboard'
       ];
       
+      // Admins podem gerenciar tudo relacionado à administração
       if (adminResources.some(resource => recurso.startsWith(resource))) {
+        return true;
+      }
+      
+      // Admins também podem acessar funcionalidades básicas do sistema
+      if (recurso.includes('vendas') || recurso.includes('produtos') || recurso.includes('clientes')) {
         return true;
       }
     }
     
     // Verificação normal de permissões para funcionários
-    return context.permissoes.includes(`${recurso}:${acao}`);
+    const hasPermission = context.permissoes.includes(`${recurso}:${acao}`);
+    console.log(`🔍 Permissão ${recurso}:${acao}: ${hasPermission ? 'PERMITIDO' : 'NEGADO'}`);
+    return hasPermission;
   }, [context]);
 
   const refresh = useCallback(async () => {

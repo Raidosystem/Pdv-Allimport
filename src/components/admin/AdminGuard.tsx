@@ -5,7 +5,6 @@ import { AlertTriangle, Loader } from 'lucide-react';
 
 interface AdminGuardProps {
   children: React.ReactNode;
-  fallback?: React.ReactNode;
 }
 
 interface PermissionGuardProps {
@@ -17,43 +16,35 @@ interface PermissionGuardProps {
 
 // Guarda para área administrativa - verifica se o usuário é admin
 export const AdminGuard: React.FC<AdminGuardProps> = ({ 
-  children, 
-  fallback 
+  children
 }) => {
-  const { isAdmin, loading } = usePermissions();
-  const location = useLocation();
+  const { loading } = usePermissions();
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader className="w-8 h-8 text-blue-600 mx-auto animate-spin mb-4" />
-          <p className="text-gray-600">Verificando permissões...</p>
+          <p className="text-gray-600">Carregando sistema...</p>
         </div>
       </div>
     );
   }
 
-  if (!isAdmin) {
-    if (fallback) {
-      return <>{fallback}</>;
-    }
-    
-    // Redirecionar para login se não autenticado
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
+  // REGRA: Todo usuário logado tem acesso administrativo à sua empresa
+  // Não bloquear mais com base em isAdmin
+  console.log('🔐 AdminGuard: Permitindo acesso - todo usuário é admin da sua empresa');
+  
   return <>{children}</>;
 };
 
-// Guarda para permissões específicas
+// Guarda para permissões específicas - também liberado
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({ 
   children, 
-  recurso, 
-  acao = 'read',
-  fallback 
+  recurso,
+  acao = 'read'
 }) => {
-  const { can, loading } = usePermissions();
+  const { loading } = usePermissions();
 
   if (loading) {
     return (
@@ -63,26 +54,9 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     );
   }
 
-  if (!can(recurso, acao)) {
-    if (fallback) {
-      return <>{fallback}</>;
-    }
-
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-900 mb-2">
-            Acesso Negado
-          </h3>
-          <p className="text-red-700">
-            Você não tem permissão para acessar este recurso.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+  // REGRA: Todo usuário logado pode usar qualquer recurso do sistema
+  console.log(`🔐 PermissionGuard: Permitindo acesso ao recurso ${recurso}:${acao}`);
+  
   return <>{children}</>;
 };
 
@@ -107,18 +81,18 @@ export const useAdminGuard = () => {
   const AccessDenied = () => (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-        <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+        <AlertTriangle className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Acesso Restrito
+          Sistema Configurado
         </h2>
         <p className="text-gray-600 mb-6">
-          Apenas administradores podem acessar esta área.
+          Seu sistema está configurado com acesso completo de administrador.
         </p>
         <button
-          onClick={() => window.history.back()}
+          onClick={() => window.location.reload()}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Voltar
+          Continuar
         </button>
       </div>
     </div>

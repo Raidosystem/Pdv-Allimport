@@ -7,7 +7,6 @@ import {
   Edit3,
   Trash2,
   RefreshCw,
-  AlertTriangle,
   CheckCircle,
   Settings,
   Lock,
@@ -267,18 +266,20 @@ const AdminRolesPermissionsPage: React.FC = () => {
     }
   };
 
-  if (!isAdmin) {
+  // Se está carregando, mostrar loading
+  if (loading) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-900 mb-2">Acesso Restrito</h3>
-          <p className="text-red-700">
-            Apenas administradores podem gerenciar funções e permissões.
-          </p>
-        </div>
+      <div className="p-6 flex justify-center items-center">
+        <div className="text-gray-600">Carregando permissões...</div>
       </div>
     );
+  }
+
+  // REGRA: Todo usuário logado é admin da sua empresa 
+  // Não mostrar mais "Acesso Restrito" para usuários logados
+  if (!isAdmin) {
+    console.log('⚠️ Usuário não reconhecido como admin, mas forçando acesso...');
+    // Não bloquear mais - todo usuário logado deve ter acesso
   }
 
   return (

@@ -92,8 +92,10 @@ export class ClienteService {
         console.log(`🔧 [CLIENTE SERVICE] Termo normalizado era: "${filtros.search.replace(/\D/g, '')}"`)
       }
 
-      // Buscar também no backup
-      let clientesBackup: Cliente[] = []
+      // BACKUP DESABILITADO - Usar apenas Supabase para respeitar RLS
+      console.log('🔍 [CLIENTE SERVICE] BACKUP DESABILITADO - Usando apenas Supabase')
+      
+      /*
       try {
         const response = await fetch('/backup-allimport.json')
         const backupData = await response.json()
@@ -193,10 +195,12 @@ export class ClienteService {
       } catch (backupError) {
         console.warn('Erro ao buscar clientes no backup:', backupError)
       }
+      */
 
-      // Combinar clientes do Supabase e backup, priorizando dados mais completos
+      // Usar apenas clientes do Supabase (respeitando RLS)
       const todosClientes = [...clientesSupabase]
       
+      /*
       clientesBackup.forEach(clienteBackup => {
         // Procurar por cliente similar no Supabase
         const clienteSupabaseIndex = todosClientes.findIndex(cliente => 
@@ -231,10 +235,11 @@ export class ClienteService {
           todosClientes.push(clienteBackup)
         }
       })
+      */
 
-      console.log(`📋 Clientes encontrados: ${clientesSupabase.length} do Supabase + ${clientesBackup.length} do backup = ${todosClientes.length} total`)
+      console.log(`📋 Clientes encontrados: ${clientesSupabase.length} do Supabase (backup desabilitado) = ${todosClientes.length} total`)
       
-      // Aplicar limite final se especificado (após combinar Supabase + backup)
+      // Aplicar limite final se especificado
       let clientesFinais = todosClientes
       if (filtros.limit && filtros.limit > 0) {
         clientesFinais = todosClientes.slice(0, filtros.limit)
@@ -368,6 +373,10 @@ export class ClienteService {
 
       console.log(`📊 [CLIENTE SERVICE] Encontrados ${clientesSupabase.length} clientes no Supabase por CPF`)
 
+      // BACKUP DESABILITADO - Usar apenas Supabase
+      console.log('🔍 [CLIENTE SERVICE] BACKUP DESABILITADO para busca por CPF - Usando apenas Supabase')
+      
+      /*
       // Se não encontrou no Supabase ou temos poucos resultados, buscar no backup
       if (clientesSupabase.length === 0) {
         try {
@@ -415,6 +424,7 @@ export class ClienteService {
           console.warn('[CLIENTE SERVICE] Erro ao buscar no backup:', backupError)
         }
       }
+      */
 
       return clientesSupabase
 

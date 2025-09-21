@@ -63,12 +63,13 @@ const sampleOrdens: OrdemServico[] = [
   }
 ]
 
-// Função para carregar todas as ordens de serviço do backup
+// Função para carregar todas as ordens de serviço - BACKUP DESABILITADO
 const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
   try {
-    console.log('🔄 Carregando ordens de serviço do backup e Supabase...')
+    console.log('🔄 BACKUP DESABILITADO - Carregando ordens apenas do Supabase...')
     
-    // 1. Carregar dados do backup
+    /*
+    // 1. Carregar dados do backup - DESABILITADO
     const response = await fetch('/backup-allimport.json')
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -81,8 +82,9 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     if (backupOrders.length > 0) {
       console.log('🔍 Estrutura da primeira ordem do backup:', Object.keys(backupOrders[0]))
     }
+    */
     
-    // 2. Carregar ordens do Supabase
+    // Carregar ordens apenas do Supabase (respeitando RLS)
     let supabaseOrders: any[] = []
     try {
       console.log('🔍 [OrdensServico] Iniciando consulta ao Supabase...')
@@ -123,8 +125,15 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       console.warn('⚠️ Erro ao carregar clientes do Supabase:', err)
     }
     
-    // 4. Combinar todos os clientes
+    // Usar apenas clientes do Supabase (respeitando RLS)
+    const allClients = [...supabaseClients]
+    console.log('🔍 [OS] BACKUP DESABILITADO - Usando apenas clientes do Supabase')
+    
+    /*
+    // 4. Combinar todos os clientes - BACKUP DESABILITADO
     const allClients = [...backupClients, ...supabaseClients]
+    */
+    
     const clientsMap = new Map()
     allClients.forEach((client: any) => {
       // Mapear estrutura unificada
@@ -137,7 +146,12 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       })
     })
     
-    // 5. Combinar e deduplicar ordens (evitar duplicatas avançado)
+    // Usar apenas ordens do Supabase (respeitando RLS)
+    const ordersMap = new Map()
+    console.log('🔍 [OS] BACKUP DESABILITADO - Usando apenas ordens do Supabase')
+    
+    /*
+    // 5. Combinar e deduplicar ordens (evitar duplicatas avançado) - BACKUP DESABILITADO
     const ordersMap = new Map()
     const duplicateCheckMap = new Map() // Para detectar possíveis duplicatas por conteúdo
     
@@ -197,11 +211,19 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     })
     
     console.log(`📋 Supabase: ${supabaseAdded} adicionadas, ${supabaseDuplicates} duplicatas por ID, ${contentDuplicates} duplicatas por conteúdo`)
+    */
+    
+    // Adicionar apenas ordens do Supabase
+    supabaseOrders.forEach((order: any) => {
+      if (order.id) {
+        ordersMap.set(order.id, { ...order, source: 'supabase' })
+      }
+    })
     
     const allOrders = Array.from(ordersMap.values())
     
-    console.log(`📊 Total após deduplicação: ${clientsMap.size} clientes e ${allOrders.length} ordens únicas`)
-    console.log(`📊 Ordens por fonte: ${backupOrders.length} backup, ${supabaseOrders.length} Supabase, ${allOrders.length} final`)
+    console.log(`📊 Total após usar apenas Supabase: ${clientsMap.size} clientes e ${allOrders.length} ordens`)
+    console.log(`📊 Ordens do Supabase: ${supabaseOrders.length} → ${allOrders.length} final`)
     
     // 6. Validar e limpar dados de todas as ordens
     const validOrders = allOrders.map((order: any) => {

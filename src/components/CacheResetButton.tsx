@@ -1,5 +1,4 @@
 import React from 'react';
-import { hardResetCaches } from '../utils/versionControl';
 
 interface CacheResetButtonProps {
   className?: string;
@@ -14,20 +13,39 @@ export const CacheResetButton: React.FC<CacheResetButtonProps> = ({ className })
     setIsResetting(true);
     
     try {
-      console.log('🚨 Reset manual de cache iniciado');
+      console.log('🚨 Reset universal de cache iniciado');
       
-      // Limpar tudo
-      await hardResetCaches();
-      
-      // Mostrar feedback
-      const confirmed = window.confirm(
-        '✅ Cache limpo com sucesso!\n\n' +
-        'A página será recarregada para aplicar as mudanças.\n\n' +
-        'Continuar?'
-      );
-      
-      if (confirmed) {
-        window.location.reload();
+      // Usar o limpador universal do index.html
+      if (typeof (window as any).__forceCleanAndReload === 'function') {
+        const confirmed = window.confirm(
+          '🧹 Resolver tela em branco?\n\n' +
+          'Isso vai limpar TODO o cache (Edge, Chrome, Safari) e recarregar.\n\n' +
+          'Continuar?'
+        );
+        
+        if (confirmed) {
+          (window as any).__forceCleanAndReload();
+        }
+      } else {
+        // Fallback manual
+        console.warn('⚠️ Função universal não encontrada, usando fallback');
+        
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (e) {
+          console.warn('Cache local não pôde ser limpo:', e);
+        }
+        
+        const confirmed = window.confirm(
+          '⚠️ Cache parcialmente limpo.\n\n' +
+          'A página será recarregada.\n\n' +
+          'Continuar?'
+        );
+        
+        if (confirmed) {
+          window.location.reload();
+        }
       }
       
     } catch (error) {

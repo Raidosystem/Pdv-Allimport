@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Users, Shield, Database, BarChart3, Crown, Zap, UserPlus, Plug } from 'lucide-react'
+import { Users, Shield, Database, BarChart3, Crown, UserPlus, Plug } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
-import DashboardAdminProfissional from './admin/DashboardAdminProfessional'
 import AdminUsersPage from './admin/AdminUsersPage'
 import AdminConvitesPage from './admin/AdminConvitesPage'
 import AdminIntegracoesPage from './admin/AdminIntegracoesPage'
@@ -12,7 +11,7 @@ import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 
-type ViewMode = 'dashboard' | 'dashboard-pro' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug'
+type ViewMode = 'dashboard' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -24,12 +23,6 @@ function AdministracaoContent() {
       label: 'Dashboard',
       icon: BarChart3,
       description: 'Visão geral do sistema'
-    },
-    {
-      id: 'dashboard-pro' as ViewMode,
-      label: 'Dashboard Pro',
-      icon: Zap,
-      description: 'Dashboard administrativo profissional'
     },
     {
       id: 'usuarios' as ViewMode,
@@ -103,8 +96,6 @@ function AdministracaoContent() {
         return <SuperAdminPage />
       case 'dashboard':
         return <AdminDashboard />
-      case 'dashboard-pro':
-        return <DashboardAdminProfissional />
       case 'usuarios':
         return <AdminUsersPage />
       case 'convites':

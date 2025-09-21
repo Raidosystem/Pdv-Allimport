@@ -88,15 +88,63 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const loadFuncoes = async () => {
-    const { data } = await supabase
-      .from('funcoes')
-      .select('*')
-      .order('nivel', { ascending: false });
+    try {
+      // Tentar carregar funções existentes
+      const { data } = await supabase
+        .from('funcoes')
+        .select('*')
+        .order('nome', { ascending: true });
 
-    setFuncoes(data || []);
+      if (data && data.length > 0) {
+        setFuncoes(data);
+      } else {
+        // Se não há funções, criar funções padrão
+        await createDefaultFuncoes();
+      }
+    } catch (error) {
+      console.error('Erro ao carregar funções:', error);
+      // Criar funções básicas como fallback
+      setFuncoes([
+        { id: 'admin', nome: 'Administrador', descricao: 'Acesso completo ao sistema' },
+        { id: 'vendedor', nome: 'Vendedor', descricao: 'Acesso a vendas e clientes' },
+        { id: 'caixa', nome: 'Caixa', descricao: 'Acesso ao caixa' }
+      ] as any);
+    }
   };
 
-  const handleInviteUser = async (email: string, funcaoIds: string[]) => {
+  const createDefaultFuncoes = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const defaultFuncoes = [
+        { empresa_id: user.user.id, nome: 'Administrador', descricao: 'Acesso completo ao sistema' },
+        { empresa_id: user.user.id, nome: 'Gerente', descricao: 'Acesso gerencial' },
+        { empresa_id: user.user.id, nome: 'Vendedor', descricao: 'Acesso a vendas e clientes' },
+        { empresa_id: user.user.id, nome: 'Caixa', descricao: 'Acesso ao caixa' },
+        { empresa_id: user.user.id, nome: 'Funcionário', descricao: 'Acesso básico' }
+      ];
+
+      const { data, error } = await supabase
+        .from('funcoes')
+        .insert(defaultFuncoes)
+        .select();
+
+      if (error) throw error;
+      
+      setFuncoes(data || []);
+    } catch (error) {
+      console.error('Erro ao criar funções padrão:', error);
+      // Fallback para funções temporárias
+      setFuncoes([
+        { id: 'temp-admin', nome: 'Administrador', descricao: 'Acesso completo' },
+        { id: 'temp-vendedor', nome: 'Vendedor', descricao: 'Vendas' },
+        { id: 'temp-funcionario', nome: 'Funcionário', descricao: 'Básico' }
+      ] as any);
+    }
+  };
+
+  const handleInviteUser = async (userData: { email: string; nome?: string; telefone?: string; funcaoIds: string[] }) => {
     if (!can('administracao.usuarios', 'create') && !isAdminEmpresa) return;
 
     try {
@@ -105,11 +153,17 @@ const AdminUsersPage: React.FC = () => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
 
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Usuário não autenticado');
+
       // Criar funcionário
       const { data: funcionario, error } = await supabase
         .from('funcionarios')
         .insert({
-          email,
+          empresa_id: user.user.id,
+          email: userData.email,
+          nome: userData.nome || null,
+          telefone: userData.telefone || null,
           status: 'pendente',
           convite_token: inviteToken,
           convite_expires_at: expiresAt.toISOString()
@@ -120,10 +174,11 @@ const AdminUsersPage: React.FC = () => {
       if (error) throw error;
 
       // Associar funções
-      if (funcaoIds.length > 0) {
-        const funcionarioFuncoes = funcaoIds.map(funcaoId => ({
+      if (userData.funcaoIds.length > 0) {
+        const funcionarioFuncoes = userData.funcaoIds.map((funcaoId: string) => ({
           funcionario_id: funcionario.id,
-          funcao_id: funcaoId
+          funcao_id: funcaoId,
+          empresa_id: user.user.id
         }));
 
         await supabase
@@ -132,7 +187,7 @@ const AdminUsersPage: React.FC = () => {
       }
 
       // Enviar e-mail de convite (implementar depois)
-      await sendInviteEmail(email, inviteToken);
+      await sendInviteEmail(userData.email, inviteToken);
 
       // Recarregar dados
       await loadFuncionarios();
@@ -144,7 +199,7 @@ const AdminUsersPage: React.FC = () => {
         acao: 'create',
         entidade_tipo: 'funcionario',
         entidade_id: funcionario.id,
-        detalhes: { email, funcoes: funcaoIds }
+        detalhes: { userData }
       });
 
     } catch (error) {
@@ -334,13 +389,20 @@ const AdminUsersPage: React.FC = () => {
         </div>
         
         {(can('administracao.usuarios', 'create') || isAdminEmpresa) && (
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus className="w-4 h-4" />
-            Convidar Usuário
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm text-gray-500">
+                {funcionarios.length} usuário(s) cadastrado(s)
+              </p>
+            </div>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span className="font-medium">Convidar Usuário</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -515,17 +577,31 @@ const AdminUsersPage: React.FC = () => {
             </table>
             
             {filteredFuncionarios.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhum usuário encontrado
-                </h3>
-                <p className="text-gray-500">
+              <div className="text-center py-16">
+                <div className="bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {searchTerm || statusFilter !== 'todos'
-                    ? 'Tente ajustar os filtros de busca'
-                    : 'Comece convidando o primeiro usuário'
+                    ? 'Nenhum usuário encontrado'
+                    : 'Sua equipe ainda está vazia'
+                  }
+                </h3>
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                  {searchTerm || statusFilter !== 'todos'
+                    ? 'Tente ajustar os filtros de busca ou remover termos específicos para ver mais resultados.'
+                    : 'Comece adicionando funcionários à sua empresa. Eles receberão um convite por e-mail para acessar o sistema.'
                   }
                 </p>
+                {(!searchTerm && statusFilter === 'todos') && (can('administracao.usuarios', 'create') || isAdminEmpresa) && (
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    Convidar Primeiro Usuário
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -559,12 +635,14 @@ const AdminUsersPage: React.FC = () => {
 // Modal de Convite de Usuário
 interface InviteUserModalProps {
   funcoes: Funcao[];
-  onInvite: (email: string, funcaoIds: string[]) => Promise<void>;
+  onInvite: (userData: { email: string; nome?: string; telefone?: string; funcaoIds: string[] }) => Promise<void>;
   onClose: () => void;
 }
 
 const InviteUserModal: React.FC<InviteUserModalProps> = ({ funcoes, onInvite, onClose }) => {
   const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [selectedFuncoes, setSelectedFuncoes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -574,7 +652,12 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({ funcoes, onInvite, on
 
     setLoading(true);
     try {
-      await onInvite(email, selectedFuncoes);
+      await onInvite({
+        email,
+        nome: nome || undefined,
+        telefone: telefone || undefined,
+        funcaoIds: selectedFuncoes
+      });
     } catch (error) {
       // Erro já tratado no componente pai
     } finally {
@@ -583,76 +666,175 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({ funcoes, onInvite, on
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Convidar Usuário
-        </h3>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              E-mail
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="usuario@exemplo.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Funções
-            </label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {funcoes.map((funcao) => (
-                <label key={funcao.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedFuncoes.includes(funcao.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedFuncoes([...selectedFuncoes, funcao.id]);
-                      } else {
-                        setSelectedFuncoes(selectedFuncoes.filter(id => id !== funcao.id));
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    {funcao.nome}
-                  </span>
-                </label>
-              ))}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-white">
+                Convidar Novo Funcionário
+              </h3>
+              <p className="text-blue-100 text-sm mt-1">
+                Adicione um novo membro à sua equipe
+              </p>
             </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
             <button
-              type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="text-white hover:text-gray-200 transition-colors"
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !email || selectedFuncoes.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Mail className="w-4 h-4" />
-              )}
-              Enviar Convite
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-        </form>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Informações Pessoais */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Informações Pessoais
+              </h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nome Completo
+                  </label>
+                  <input
+                    type="text"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Digite o nome completo"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Telefone
+                  </label>
+                  <input
+                    type="tel"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  E-mail de Acesso *
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="funcionario@empresa.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Será enviado um convite para este e-mail
+                </p>
+              </div>
+            </div>
+
+            {/* Permissões e Funções */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Funções e Permissões *
+              </h4>
+
+              {funcoes.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 max-h-40 overflow-y-auto">
+                  {funcoes.map((funcao) => (
+                    <label key={funcao.id} className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedFuncoes.includes(funcao.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedFuncoes([...selectedFuncoes, funcao.id]);
+                          } else {
+                            setSelectedFuncoes(selectedFuncoes.filter(id => id !== funcao.id));
+                          }
+                        }}
+                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-gray-900">
+                          {funcao.nome}
+                        </span>
+                        {funcao.descricao && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {funcao.descricao}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm">Nenhuma função disponível</p>
+                  <p className="text-xs mt-1">As funções serão criadas automaticamente</p>
+                </div>
+              )}
+
+              {selectedFuncoes.length > 0 && (
+                <div className="mt-3 p-2 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-700">
+                    ✓ {selectedFuncoes.length} função(ões) selecionada(s)
+                  </p>
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !email || selectedFuncoes.length === 0}
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <Mail className="w-4 h-4" />
+                Enviar Convite
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, Users, Shield, Database, BarChart3, Crown, Bug } from 'lucide-react'
+import { Settings, Users, Shield, Database, BarChart3, Crown } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
@@ -46,13 +46,14 @@ function AdministracaoContent() {
       label: 'Configurações',
       icon: Settings,
       description: 'Configurações gerais do sistema'
-    },
-    {
-      id: 'permissions-debug' as ViewMode,
-      label: 'Debug Permissões',
-      icon: Bug,
-      description: 'Diagnóstico de permissões e acesso'
     }
+    // Debug buttons hidden - removed from baseMenuItems
+    // {
+    //   id: 'permissions-debug' as ViewMode,
+    //   label: 'Debug Permissões',
+    //   icon: Bug,
+    //   description: 'Diagnóstico de permissões e acesso'
+    // }
   ]
 
   // Adicionar aba Super Admin se o usuário for super admin
@@ -63,21 +64,23 @@ function AdministracaoContent() {
       icon: Crown,
       description: 'Gerenciar todas as empresas'
     },
-    ...baseMenuItems,
-    {
-      id: 'debug' as ViewMode,
-      label: '🔍 Debug',
-      icon: Settings,
-      description: 'Debug de permissões'
-    }
+    ...baseMenuItems
+    // Debug button hidden - removed from super admin menuItems  
+    // {
+    //   id: 'debug' as ViewMode,
+    //   label: '🔍 Debug',
+    //   icon: Settings,
+    //   description: 'Debug de permissões'
+    // }
   ] : [
-    ...baseMenuItems,
-    {
-      id: 'debug' as ViewMode,
-      label: '🔍 Debug',
-      icon: Settings,
-      description: 'Debug de permissões'
-    }
+    ...baseMenuItems
+    // Debug button hidden - removed from menuItems
+    // {
+    //   id: 'debug' as ViewMode,
+    //   label: '🔍 Debug',
+    //   icon: Settings,
+    //   description: 'Debug de permissões'
+    // }
   ]
 
   const renderContent = () => {

@@ -97,7 +97,7 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleInviteUser = async (email: string, funcaoIds: string[]) => {
-    if (!can('administracao.usuarios', 'create')) return;
+    if (!can('administracao.usuarios', 'create') && !isAdminEmpresa) return;
 
     try {
       // Gerar token de convite
@@ -154,7 +154,7 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleEditUser = async (userId: string, data: Partial<Funcionario>, newFuncaoIds: string[]) => {
-    if (!can('administracao.usuarios', 'update')) return;
+    if (!can('administracao.usuarios', 'update') && !isAdminEmpresa) return;
 
     try {
       // Atualizar dados do funcionário
@@ -203,7 +203,7 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!can('administracao.usuarios', 'delete')) return;
+    if (!can('administracao.usuarios', 'delete') && !isAdminEmpresa) return;
 
     if (confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
       try {
@@ -232,7 +232,7 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleResendInvite = async (userId: string, email: string) => {
-    if (!can('administracao.usuarios', 'update')) return;
+    if (!can('administracao.usuarios', 'update') && !isAdminEmpresa) return;
 
     try {
       // Gerar novo token
@@ -308,7 +308,7 @@ const AdminUsersPage: React.FC = () => {
   };
 
   // Verificar se tem acesso a área de usuários
-  if (!can('administracao.usuarios', 'read') && !isAdmin) {
+  if (!can('administracao.usuarios', 'read') && !isAdmin && !isAdminEmpresa) {
     return (
       <div className="p-6">
         <div className="mb-6">
@@ -333,7 +333,7 @@ const AdminUsersPage: React.FC = () => {
           </p>
         </div>
         
-        {can('administracao.usuarios', 'create') && (
+        {(can('administracao.usuarios', 'create') || isAdminEmpresa) && (
           <button
             onClick={() => setShowInviteModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -475,7 +475,7 @@ const AdminUsersPage: React.FC = () => {
                     
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        {funcionario.convitePendente && can('administracao.usuarios', 'update') && (
+                        {funcionario.convitePendente && (can('administracao.usuarios', 'update') || isAdminEmpresa) && (
                           <button
                             onClick={() => handleResendInvite(funcionario.id, funcionario.email)}
                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
@@ -485,7 +485,7 @@ const AdminUsersPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {can('administracao.usuarios', 'update') && (
+                        {(can('administracao.usuarios', 'update') || isAdminEmpresa) && (
                           <button
                             onClick={() => {
                               setSelectedUser(funcionario);
@@ -498,7 +498,7 @@ const AdminUsersPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {can('administracao.usuarios', 'delete') && (
+                        {(can('administracao.usuarios', 'delete') || isAdminEmpresa) && (
                           <button
                             onClick={() => handleDeleteUser(funcionario.id)}
                             className="p-1 text-red-600 hover:text-red-800 transition-colors"

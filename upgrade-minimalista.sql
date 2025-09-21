@@ -66,6 +66,13 @@ create table if not exists public.funcionarios (
   created_at timestamptz not null default now()
 );
 
+-- Adicionar colunas se não existirem (para tabelas já criadas)
+alter table public.funcionarios 
+add column if not exists convite_token text;
+
+alter table public.funcionarios 
+add column if not exists convite_expires_at timestamptz;
+
 create table if not exists public.funcionario_funcoes (
   funcionario_id uuid not null references public.funcionarios(id) on delete cascade,
   funcao_id uuid not null references public.funcoes(id) on delete cascade,

@@ -137,8 +137,8 @@ export function OfflineIndicator() {
         </div>
       )}
 
-      {/* Prompt de Instalação PWA */}
-      {showInstallPrompt && isInstallable && (
+      {/* Prompt de Instalação PWA - Removido */}
+      {false && showInstallPrompt && isInstallable && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6 relative">
             <button

@@ -1,83 +1,104 @@
 import { supabase } from '../lib/supabase'
 import type { Product, Customer, Sale, CashRegister, SaleSearchParams, SaleItem } from '../types/sales'
-import { EMBEDDED_PRODUCTS, searchEmbeddedProducts } from '../data/products'
 
 // Serviços de Produtos
 export const productService = {
   async search(params: SaleSearchParams): Promise<Product[]> {
     console.log('🔍 ProductService.search chamado com:', params);
     
-    // Usa produtos embutidos diretamente (garantia de funcionamento)
-    console.log('📦 Usando produtos embutidos');
-    
-    const embeddedResults = searchEmbeddedProducts(params.search);
-    
-    // Adapta formato dos produtos embutidos para o frontend
-    const adaptedProducts: Product[] = embeddedResults.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: `${product.category} - ${product.name}`,
-      sku: product.sku,
-      barcode: product.barcode,
-      price: product.price,
-      stock_quantity: product.stock,
-      min_stock: 1,
-      unit: 'un',
-      active: product.active,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
-    
-    // Filtra por código de barras APENAS se fornecido
-    if (params.barcode && params.barcode.trim()) {
-      const filtered = adaptedProducts.filter(p => p.barcode === params.barcode);
-      console.log(`🔍 Filtrado por código de barras ${params.barcode}:`, filtered.length, 'produtos');
-      return filtered;
+    try {
+      console.log('📦 BUSCANDO PRODUTOS NO SUPABASE (respeitando RLS)');
+      
+      let query = supabase
+        .from('produtos')
+        .select('*')
+        .eq('ativo', true)
+        .order('nome');
+
+      // Filtrar por código de barras se fornecido
+      if (params.barcode && params.barcode.trim()) {
+        query = query.eq('codigo_barras', params.barcode.trim());
+        console.log(`🔍 Filtrando por código de barras: ${params.barcode}`);
+      }
+      
+      // Filtrar por texto de busca se fornecido
+      if (params.search && params.search.trim()) {
+        const searchTerm = params.search.trim();
+        query = query.or(`nome.ilike.%${searchTerm}%,descricao.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`);
+        console.log(`🔍 Filtrando por busca de texto: ${searchTerm}`);
+      }
+
+      const { data, error } = await query.limit(50);
+
+      if (error) {
+        console.error('❌ Erro ao buscar produtos no Supabase:', error);
+        return [];
+      }
+
+      console.log(`✅ Encontrados ${data?.length || 0} produtos no Supabase (respeitando RLS)`);
+
+      // Adaptar formato do Supabase para o frontend
+      const adaptedProducts: Product[] = (data || []).map(produto => ({
+        id: produto.id,
+        name: produto.nome,
+        description: produto.descricao || produto.nome,
+        sku: produto.sku || '',
+        barcode: produto.codigo_barras || '',
+        price: produto.preco || 0,
+        stock_quantity: produto.estoque || 0,
+        min_stock: produto.estoque_minimo || 0,
+        unit: produto.unidade || 'un',
+        active: produto.ativo || true,
+        created_at: produto.criado_em || new Date().toISOString(),
+        updated_at: produto.atualizado_em || new Date().toISOString()
+      }));
+
+      return adaptedProducts;
+      
+    } catch (error) {
+      console.error('❌ Erro geral ao buscar produtos:', error);
+      return [];
     }
-    
-    // Filtra por busca de texto se fornecido
-    if (params.search && params.search.trim()) {
-      const searchTerm = params.search.toLowerCase().trim();
-      const filtered = adaptedProducts.filter(p => 
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description?.toLowerCase().includes(searchTerm) ||
-        p.barcode?.includes(searchTerm)
-      );
-      console.log(`🔍 Filtrado por busca de texto "${params.search}":`, filtered.length, 'produtos');
-      return filtered;
-    }
-    
-    console.log('✅ Retornando', adaptedProducts.length, 'produtos embutidos');
-    return adaptedProducts;
   },
 
   async getById(id: string): Promise<Product | null> {
-    console.log('🔍 Buscando produto por ID:', id);
+    console.log('🔍 Buscando produto por ID no Supabase:', id);
     
-    const product = EMBEDDED_PRODUCTS.find(p => p.id === id);
-    
-    if (!product) {
-      console.log('❌ Produto não encontrado');
+    try {
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('id', id)
+        .eq('ativo', true)
+        .single();
+
+      if (error || !data) {
+        console.log('❌ Produto não encontrado no Supabase');
+        return null;
+      }
+
+      const adaptedProduct: Product = {
+        id: data.id,
+        name: data.nome,
+        description: data.descricao || data.nome,
+        sku: data.sku || '',
+        barcode: data.codigo_barras || '',
+        price: data.preco || 0,
+        stock_quantity: data.estoque || 0,
+        min_stock: data.estoque_minimo || 0,
+        unit: data.unidade || 'un',
+        active: data.ativo || true,
+        created_at: data.criado_em || new Date().toISOString(),
+        updated_at: data.atualizado_em || new Date().toISOString()
+      };
+      
+      console.log('✅ Produto encontrado no Supabase:', adaptedProduct);
+      return adaptedProduct;
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar produto por ID:', error);
       return null;
     }
-
-    const adaptedProduct: Product = {
-      id: product.id,
-      name: product.name,
-      description: `${product.category} - ${product.name}`,
-      sku: product.sku,
-      barcode: product.barcode,
-      price: product.price,
-      stock_quantity: product.stock,
-      min_stock: 1,
-      unit: 'un',
-      active: product.active,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    console.log('✅ Produto encontrado:', adaptedProduct);
-    return adaptedProduct;
   }
 };
 

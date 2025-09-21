@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
+import { supabase } from '../lib/supabase'
 
 interface OfflineData {
   vendas: any[]
@@ -45,17 +46,24 @@ export function useOfflineSync() {
     }
   }, [])
 
-  // Salvar dados offline no localStorage
+  // Salvar dados offline no localStorage com isolamento por usuário
   const saveOfflineData = useCallback(async (key: string, data: any) => {
     try {
-      const offlineData = getOfflineData()
+      // Obter ID do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id || 'anonymous'
+      
+      const offlineData = await getOfflineData()
       offlineData[key as keyof OfflineData] = data
-      localStorage.setItem('pdv-offline-data', JSON.stringify(offlineData))
       
-      // Adicionar timestamp para controle
-      localStorage.setItem('pdv-last-save', new Date().toISOString())
+      // Usar chave específica do usuário
+      const userKey = `pdv-offline-data-${userId}`
+      localStorage.setItem(userKey, JSON.stringify(offlineData))
       
-      console.log(`💾 Dados salvos offline: ${key}`)
+      // Adicionar timestamp para controle (também isolado por usuário)
+      localStorage.setItem(`pdv-last-save-${userId}`, new Date().toISOString())
+      
+      console.log(`💾 Dados salvos offline (usuário ${userId}): ${key}`)
       return true
     } catch (error) {
       console.error('❌ Erro ao salvar dados offline:', error)
@@ -63,10 +71,19 @@ export function useOfflineSync() {
     }
   }, [])
 
-  // Recuperar dados offline
-  const getOfflineData = useCallback((): OfflineData => {
+  // Recuperar dados offline com isolamento por usuário
+  const getOfflineData = useCallback(async (): Promise<OfflineData> => {
     try {
-      const data = localStorage.getItem('pdv-offline-data')
+      // Obter ID do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id || 'anonymous'
+      
+      // Usar chave específica do usuário para evitar vazamento de dados
+      const userKey = `pdv-offline-data-${userId}`
+      const data = localStorage.getItem(userKey)
+      
+      console.log('🔍 [OFFLINE] Usando chave isolada:', userKey)
+      
       return data ? JSON.parse(data) : {
         vendas: [],
         produtos: [],
@@ -94,7 +111,7 @@ export function useOfflineSync() {
     timestamp: number
   }) => {
     try {
-      const offlineData = getOfflineData()
+      const offlineData = await getOfflineData()
       offlineData.syncQueue.push(operation)
       
       await saveOfflineData('syncQueue', offlineData.syncQueue)
@@ -122,7 +139,7 @@ export function useOfflineSync() {
     setSyncStatus(prev => ({ ...prev, isSyncing: true }))
 
     try {
-      const offlineData = getOfflineData()
+      const offlineData = await getOfflineData()
       const { syncQueue } = offlineData
       
       if (syncQueue.length === 0) {
@@ -201,20 +218,32 @@ export function useOfflineSync() {
     return Math.random() > 0.1
   }
 
-  // Limpar dados offline antigos
-  const clearOldOfflineData = useCallback(() => {
-    const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 dias
-    const lastSave = localStorage.getItem('pdv-last-save')
-    
-    if (lastSave) {
-      const saveTime = new Date(lastSave).getTime()
-      const now = Date.now()
+  // Limpar dados offline antigos com isolamento por usuário
+  const clearOldOfflineData = useCallback(async () => {
+    try {
+      const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 dias
       
-      if (now - saveTime > maxAge) {
-        localStorage.removeItem('pdv-offline-data')
-        localStorage.removeItem('pdv-last-save')
-        console.log('🗑️ Dados offline antigos removidos')
+      // Obter ID do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id || 'anonymous'
+      
+      const lastSaveKey = `pdv-last-save-${userId}`
+      const dataKey = `pdv-offline-data-${userId}`
+      
+      const lastSave = localStorage.getItem(lastSaveKey)
+      
+      if (lastSave) {
+        const saveTime = new Date(lastSave).getTime()
+        const now = Date.now()
+        
+        if (now - saveTime > maxAge) {
+          localStorage.removeItem(dataKey)
+          localStorage.removeItem(lastSaveKey)
+          console.log(`🗑️ Dados offline antigos removidos para usuário ${userId}`)
+        }
       }
+    } catch (error) {
+      console.error('❌ Erro ao limpar dados antigos:', error)
     }
   }, [])
 
@@ -271,14 +300,22 @@ export function useOfflineSync() {
     }
 
     // Limpar dados antigos na inicialização
-    clearOldOfflineData()
-
-    // Verificar fila pendente
-    const offlineData = getOfflineData()
-    setSyncStatus(prev => ({
-      ...prev,
-      pendingItems: offlineData.syncQueue.length
-    }))
+    const initializeOfflineData = async () => {
+      await clearOldOfflineData()
+      
+      // Verificar fila pendente
+      try {
+        const offlineData = await getOfflineData()
+        setSyncStatus(prev => ({
+          ...prev,
+          pendingItems: offlineData.syncQueue.length
+        }))
+      } catch (error) {
+        console.error('❌ Erro ao verificar fila pendente:', error)
+      }
+    }
+    
+    initializeOfflineData()
 
     // Sincronizar se estiver online
     if (navigator.onLine) {

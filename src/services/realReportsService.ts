@@ -148,18 +148,8 @@ class RealReportsService {
         productsData = dbProducts;
       }
       
-      // Se não encontrou no banco, usar produtos embutidos como fallback
-      if (productsData.length === 0) {
-        // Importar produtos embutidos
-        try {
-          const { EMBEDDED_PRODUCTS } = await import('../data/products');
-          productsData = EMBEDDED_PRODUCTS
-            .filter(p => productIds.includes(p.id))
-            .map(p => ({ id: p.id, nome: p.name }));
-        } catch (error) {
-          console.warn('⚠️ Não foi possível carregar produtos embutidos:', error);
-        }
-      }
+      // DADOS EMBEDADOS DESABILITADOS - Usando apenas Supabase com RLS
+      console.log('🔍 [REPORTS] Usando apenas dados do Supabase com RLS - produtos encontrados:', productsData.length)
     }
 
     // Processar produtos mais vendidos

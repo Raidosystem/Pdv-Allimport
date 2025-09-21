@@ -98,84 +98,11 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     }
   })
 
-  // Função para buscar equipamentos anteriores do cliente
-  const buscarEquipamentosAnteriores = async (clienteId: string) => {
-    try {
-      console.log('🔍 Buscando equipamentos para cliente:', clienteId, clienteSelecionado?.nome)
-      console.log('📊 Cliente selecionado completo:', clienteSelecionado)
-      
-      const response = await fetch('/backup-allimport.json')
-      const backupData = await response.json()
-      const orders = backupData.data?.service_orders || []
-      
-      console.log('📦 Total de ordens no backup:', orders.length)
-      console.log('📦 Primeira ordem exemplo:', orders[0])
-      
-      // Filtrar ordens do cliente selecionado (principalmente por nome, pois é o mais confiável)
-      const ordensCliente = orders.filter((order: any) => {
-        const matchName = clienteSelecionado && order.client_name && 
-          order.client_name.toLowerCase().trim() === clienteSelecionado.nome.toLowerCase().trim()
-        const matchId = order.client_id === clienteId
-        
-        console.log('🔎 Comparando:', {
-          orderClientName: order.client_name,
-          selectedClientName: clienteSelecionado?.nome,
-          matchName,
-          matchId,
-          orderId: order.id
-        })
-        
-        return matchName || matchId
-      })
-      
-      console.log('📋 Ordens encontradas para o cliente:', ordensCliente.length)
-      console.log('📋 Primeira ordem de exemplo:', ordensCliente[0])
-      
-      // Agrupar por equipamento (marca + modelo) mantendo histórico completo
-      const equipamentosMap = new Map()
-      
-      ordensCliente.forEach((order: any) => {
-        const modelo = order.device_model || 'Modelo não informado'
-        const nome = order.device_name || 'Equipamento não informado'
-        const chave = `${modelo}-${nome}`.toLowerCase()
-        
-        const ordemInfo = {
-          id: order.id || '',
-          data: order.opening_date || 'Data não informada',
-          defeito: order.defect || 'Defeito não informado',
-          status: order.status || 'Em análise',
-          valor: order.total_amount || 0
-        }
-        
-        if (equipamentosMap.has(chave)) {
-          // Adicionar nova ordem ao equipamento existente
-          const equipamento = equipamentosMap.get(chave)
-          equipamento.ordens.push(ordemInfo)
-          if (!equipamento.defeitos.includes(ordemInfo.defeito)) {
-            equipamento.defeitos.push(ordemInfo.defeito)
-          }
-          equipamento.totalReparos++
-        } else {
-          // Criar novo equipamento
-          equipamentosMap.set(chave, {
-            tipo: nome,
-            marca: modelo?.split(' ')[0] || 'Marca não informada',
-            modelo: modelo,
-            cor: order.device_color || '',
-            defeitos: [ordemInfo.defeito],
-            ordens: [ordemInfo],
-            totalReparos: 1
-          })
-        }
-      })
-      
-      const equipamentosArray = Array.from(equipamentosMap.values())
-      console.log('🔧 Equipamentos processados:', equipamentosArray.length)
-      console.log('🔧 Equipamentos array:', equipamentosArray)
-      setEquipamentosAnteriores(equipamentosArray)
-    } catch (error) {
-      console.error('❌ Erro ao buscar equipamentos anteriores:', error)
-    }
+  // Função para buscar equipamentos anteriores do cliente - BACKUP DESABILITADO
+  const buscarEquipamentosAnteriores = async (_clienteId: string) => {
+    console.log('🔍 BACKUP DESABILITADO - Não buscando equipamentos do backup')
+    // BACKUP DESABILITADO - Retorna array vazio
+    setEquipamentosAnteriores([])
   }
 
   // Efeito para buscar equipamentos quando cliente é selecionado

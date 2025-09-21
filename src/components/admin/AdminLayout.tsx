@@ -22,7 +22,7 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
-  const { isAdmin, user } = usePermissions();
+  const { user } = usePermissions();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {

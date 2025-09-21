@@ -12,7 +12,6 @@ import {
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { GuardProfessional } from '../../components/admin/GuardProfessional'
 import type { Convite, ConviteForm } from '../../types/admin-professional'
 
 /**
@@ -142,27 +141,24 @@ export default function AdminConvitesPage() {
   }
 
   return (
-    <GuardProfessional perms={[]} need="convites.read">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Convites de Usuários
-            </h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Convites de Usuários
+          </h1>
             <p className="text-gray-600">
               Gerencie convites para novos funcionários da empresa
             </p>
           </div>
           
-          <GuardProfessional perms={[]} need="convites.create">
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Novo Convite
-            </Button>
-          </GuardProfessional>
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Convite
+          </Button>
         </div>
 
         {/* Formulário de Novo Convite */}
@@ -316,6 +312,6 @@ export default function AdminConvitesPage() {
           )}
         </Card>
       </div>
-    </GuardProfessional>
+    </div>
   )
 }

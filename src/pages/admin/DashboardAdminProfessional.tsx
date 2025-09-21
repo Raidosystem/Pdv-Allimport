@@ -50,33 +50,6 @@ export default function DashboardAdminProfessional() {
     loadDashboardStats()
   }, [])
 
-  const getIntegracaoIcon = (tipo: string) => {
-    switch (tipo) {
-      case 'mercadopago': return '💳'
-      case 'smtp': return '📧'
-      case 'whatsapp': return '💬'
-      default: return '🔌'
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ativo': case 'configurado': return 'text-green-600 bg-green-100'
-      case 'erro': return 'text-red-600 bg-red-100'
-      case 'nao_configurado': return 'text-gray-600 bg-gray-100'
-      default: return 'text-yellow-600 bg-yellow-100'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'ativo': case 'configurado': return 'Ativo'
-      case 'erro': return 'Erro'
-      case 'nao_configurado': return 'Não Configurado'
-      default: return 'Pendente'
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -146,31 +119,6 @@ export default function DashboardAdminProfessional() {
           </div>
         </Card>
       </div>
-
-      {/* Status das Integrações */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Status das Integrações
-        </h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          {stats.integracoes.map((integracao) => (
-            <div 
-              key={integracao.tipo}
-              className="rounded-xl border border-gray-200 p-4 hover:border-gray-300 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{getIntegracaoIcon(integracao.tipo)}</span>
-                  <span className="font-medium capitalize">{integracao.tipo}</span>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(integracao.status)}`}>
-                  {getStatusText(integracao.status)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
 
       {/* Backups Recentes */}
       <Card className="p-6">

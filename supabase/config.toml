@@ -321,6 +321,11 @@ deno_version = 1
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[edge_runtime.secrets]
+# Configuração para função de envio de email
+EMAIL_ENDPOINT_URL = "https://kmcaaqetxtwkdcczdomw.functions.supabase.co/send-email"
+EMAIL_WEBHOOK_SECRET = "v1,whsec_SVSVs19GAG1Y3epiNvvyDfaUwSSeOW4utibQEeCJkoqSTh5Sug//9K/7W91jW8qU80Aj5gHajkCYWl3Z"
+
 [analytics]
 enabled = true
 port = 54327

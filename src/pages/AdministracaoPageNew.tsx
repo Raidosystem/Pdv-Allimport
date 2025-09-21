@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { Settings, Users, Shield, Database, BarChart3, Crown } from 'lucide-react'
+import { Settings, Users, Shield, Database, BarChart3, Crown, Zap, UserPlus, Plug } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
+import DashboardAdminProfessional from './admin/DashboardAdminProfessional'
 import AdminUsersPage from './admin/AdminUsersPage'
+import AdminConvitesPage from './admin/AdminConvitesPage'
+import AdminIntegracoesPage from './admin/AdminIntegracoesPage'
 import AdminRolesPermissionsPage from './admin/AdminRolesPermissionsPage'
 import AdminBackupsPage from './admin/AdminBackupsPage'
 import AdminSystemSettingsPage from './admin/AdminSystemSettingsPage'
@@ -10,7 +13,7 @@ import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'sistema' | 'super-admin' | 'debug' | 'permissions-debug'
+type ViewMode = 'dashboard' | 'dashboard-pro' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'sistema' | 'super-admin' | 'debug' | 'permissions-debug'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -24,10 +27,28 @@ function AdministracaoContent() {
       description: 'Visão geral do sistema'
     },
     {
+      id: 'dashboard-pro' as ViewMode,
+      label: 'Dashboard Pro',
+      icon: Zap,
+      description: 'Dashboard administrativo profissional'
+    },
+    {
       id: 'usuarios' as ViewMode,
       label: 'Usuários',
       icon: Users,
       description: 'Gerenciar usuários do sistema'
+    },
+    {
+      id: 'convites' as ViewMode,
+      label: 'Convites',
+      icon: UserPlus,
+      description: 'Convidar novos usuários'
+    },
+    {
+      id: 'integracoes' as ViewMode,
+      label: 'Integrações',
+      icon: Plug,
+      description: 'Configurar integrações externas'
     },
     {
       id: 'permissoes' as ViewMode,
@@ -89,8 +110,14 @@ function AdministracaoContent() {
         return <SuperAdminPage />
       case 'dashboard':
         return <AdminDashboard />
+      case 'dashboard-pro':
+        return <DashboardAdminProfessional />
       case 'usuarios':
         return <AdminUsersPage />
+      case 'convites':
+        return <AdminConvitesPage />
+      case 'integracoes':
+        return <AdminIntegracoesPage />
       case 'permissoes':
         return <AdminRolesPermissionsPage />
       case 'backup':

@@ -1,19 +1,18 @@
 import { useState } from 'react'
-import { Settings, Users, Shield, Database, BarChart3, Crown, Zap, UserPlus, Plug } from 'lucide-react'
+import { Users, Shield, Database, BarChart3, Crown, Zap, UserPlus, Plug } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
-import DashboardAdminProfessional from './admin/DashboardAdminProfessional'
+import DashboardAdminProfissional from './admin/DashboardAdminProfessional'
 import AdminUsersPage from './admin/AdminUsersPage'
 import AdminConvitesPage from './admin/AdminConvitesPage'
 import AdminIntegracoesPage from './admin/AdminIntegracoesPage'
 import AdminRolesPermissionsPage from './admin/AdminRolesPermissionsPage'
 import AdminBackupsPage from './admin/AdminBackupsPage'
-import AdminSystemSettingsPage from './admin/AdminSystemSettingsPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 
-type ViewMode = 'dashboard' | 'dashboard-pro' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'sistema' | 'super-admin' | 'debug' | 'permissions-debug'
+type ViewMode = 'dashboard' | 'dashboard-pro' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -61,12 +60,6 @@ function AdministracaoContent() {
       label: 'Backups',
       icon: Database,
       description: 'Sistema de backup e restore'
-    },
-    {
-      id: 'sistema' as ViewMode,
-      label: 'Configurações',
-      icon: Settings,
-      description: 'Configurações gerais do sistema'
     }
     // Debug buttons hidden - removed from baseMenuItems
     // {
@@ -111,7 +104,7 @@ function AdministracaoContent() {
       case 'dashboard':
         return <AdminDashboard />
       case 'dashboard-pro':
-        return <DashboardAdminProfessional />
+        return <DashboardAdminProfissional />
       case 'usuarios':
         return <AdminUsersPage />
       case 'convites':
@@ -122,8 +115,6 @@ function AdministracaoContent() {
         return <AdminRolesPermissionsPage />
       case 'backup':
         return <AdminBackupsPage />
-      case 'sistema':
-        return <AdminSystemSettingsPage />
       case 'debug':
         return <DebugPermissions />
       case 'permissions-debug':

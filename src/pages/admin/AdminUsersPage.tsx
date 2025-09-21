@@ -193,14 +193,14 @@ const AdminUsersPage: React.FC = () => {
       await loadFuncionarios();
       setShowInviteModal(false);
 
-      // Log de auditoria
-      await supabase.from('audit_logs').insert({
-        recurso: 'administracao.usuarios',
-        acao: 'create',
-        entidade_tipo: 'funcionario',
-        entidade_id: funcionario.id,
-        detalhes: { userData }
-      });
+      // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
+      // await supabase.from('audit_logs').insert({
+      //   recurso: 'administracao.usuarios',
+      //   acao: 'create',
+      //   entidade_tipo: 'funcionario',
+      //   entidade_id: funcionario.id,
+      //   detalhes: { userData }
+      // });
 
     } catch (error) {
       console.error('Erro ao convidar usuário:', error);
@@ -242,14 +242,14 @@ const AdminUsersPage: React.FC = () => {
       setShowEditModal(false);
       setSelectedUser(null);
 
-      // Log de auditoria
-      await supabase.from('audit_logs').insert({
-        recurso: 'administracao.usuarios',
-        acao: 'update',
-        entidade_tipo: 'funcionario',
-        entidade_id: userId,
-        detalhes: { ...data, funcoes: newFuncaoIds }
-      });
+      // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
+      // await supabase.from('audit_logs').insert({
+      //   recurso: 'administracao.usuarios',
+      //   acao: 'update',
+      //   entidade_tipo: 'funcionario',
+      //   entidade_id: userId,
+      //   detalhes: { ...data, funcoes: newFuncaoIds }
+      // });
 
     } catch (error) {
       console.error('Erro ao editar usuário:', error);
@@ -271,13 +271,13 @@ const AdminUsersPage: React.FC = () => {
 
         await loadFuncionarios();
 
-        // Log de auditoria
-        await supabase.from('audit_logs').insert({
-          recurso: 'administracao.usuarios',
-          acao: 'delete',
-          entidade_tipo: 'funcionario',
-          entidade_id: userId
-        });
+        // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
+        // await supabase.from('audit_logs').insert({
+        //   recurso: 'administracao.usuarios',
+        //   acao: 'delete',
+        //   entidade_tipo: 'funcionario',
+        //   entidade_id: userId
+        // });
 
       } catch (error) {
         console.error('Erro ao excluir usuário:', error);

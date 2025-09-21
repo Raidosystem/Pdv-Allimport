@@ -47,6 +47,72 @@ export interface Backup {
   tamanho_mb?: number
 }
 
+// Tipos adicionais para Dashboard
+export interface UserStats {
+  total: number
+  ativos: number
+  bloqueados: number
+  pendentes: number
+}
+
+export interface IntegracaoStatus {
+  tipo: 'mercadopago' | 'smtp' | 'whatsapp'
+  status: 'ativo' | 'erro' | 'nao_configurado' | 'pendente'
+  ultimo_teste?: string
+  ultimo_erro?: string
+}
+
+export interface BackupInfo {
+  id: string
+  created_at: string
+  status: 'ok' | 'erro' | 'processando'
+  tamanho_mb: number
+  tipo: 'automatico' | 'manual'
+}
+
+export interface SistemaInfo {
+  versao: string
+  uptime: string
+  atualizado: boolean
+  ultima_atualizacao?: string
+  espaco_usado?: string
+  usuarios_online?: number
+}
+
+export interface DashboardStats {
+  users: UserStats
+  integracoes: IntegracaoStatus[]
+  backups: BackupInfo[]
+  sistema: SistemaInfo
+}
+
+// Tipos para Convites de Usuários
+export interface ConviteUser {
+  id: string
+  email: string
+  nome?: string
+  role: 'admin' | 'vendedor' | 'gerente'
+  status: 'pendente' | 'aceito' | 'expirado' | 'cancelado'
+  created_at: string
+  expires_at: string
+  invited_by: string
+}
+
+// Tipos para Configuração de Integrações
+export interface ConfigIntegracao {
+  tipo: 'mercadopago' | 'smtp' | 'whatsapp'
+  ativo: boolean
+  config: Record<string, any>
+  ultima_atualizacao: string
+}
+
+export interface TesteIntegracao {
+  tipo: string
+  sucesso: boolean
+  mensagem: string
+  detalhes?: any
+}
+
 // Tipos para Integrações
 export interface Integracao {
   id: string
@@ -110,24 +176,6 @@ export interface DashboardStats {
     acoes: number
     ultimo_backup?: string
   }
-  sistema: {
-    versao: string
-    uptime: string
-    atualizado: boolean
-    ultima_atualizacao?: string
-  }
-  integracoes: Array<{
-    tipo: string
-    status: string
-    ultimo_teste?: string
-    ultimo_erro?: string
-  }>
-  backups_recentes: Array<{
-    id: string
-    status: string
-    created_at: string
-    tamanho_mb?: number
-  }>
 }
 
 // Tipos para Permissões Profissionais

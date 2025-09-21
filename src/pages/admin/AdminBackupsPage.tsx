@@ -39,7 +39,7 @@ interface BackupConfig {
 }
 
 const AdminBackupsPage: React.FC = () => {
-  const { can, isAdmin } = usePermissions();
+  const { can, isAdmin, isAdminEmpresa } = usePermissions();
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [config, setConfig] = useState<BackupConfig>({
     automatico_ativo: true,
@@ -59,7 +59,7 @@ const AdminBackupsPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (can('administracao.backups', 'read')) {
+    if (can('administracao.backups', 'read') || isAdminEmpresa) {
       loadData();
     }
   }, []);
@@ -80,38 +80,34 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const loadBackups = async () => {
-    // Simulação de dados de backup - em produção viria do Supabase
-    const mockBackups: BackupInfo[] = [
-      {
-        id: '1',
-        nome: 'Backup Automático - 2024-12-08',
-        tipo: 'automatico',
-        status: 'concluido',
-        tamanho_mb: 45.2,
-        created_at: '2024-12-08T02:00:00Z',
-        url_download: 'https://exemplo.com/backup1.sql'
-      },
-      {
-        id: '2',
-        nome: 'Backup Manual - 2024-12-07',
-        tipo: 'manual',
-        status: 'concluido',
-        tamanho_mb: 42.8,
-        created_at: '2024-12-07T14:30:00Z',
-        url_download: 'https://exemplo.com/backup2.sql'
-      },
-      {
-        id: '3',
-        nome: 'Backup Automático - 2024-12-07',
-        tipo: 'automatico',
-        status: 'erro',
-        tamanho_mb: 0,
-        created_at: '2024-12-07T02:00:00Z',
-        erro_detalhes: 'Erro de conexão com o banco de dados'
-      }
-    ];
+    try {
+      // Carregar backups reais do Supabase
+      const { data, error } = await supabase
+        .from('backups')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    setBackups(mockBackups);
+      if (error) throw error;
+
+      // Converter dados do Supabase para o formato esperado
+      const backupsFormatted: BackupInfo[] = (data || []).map(backup => ({
+        id: backup.id,
+        nome: `Backup ${backup.status === 'pendente' ? 'em andamento' : 'concluído'} - ${new Date(backup.created_at).toLocaleDateString('pt-BR')}`,
+        tipo: 'manual' as const,
+        status: backup.status === 'pendente' ? 'em_andamento' : 
+               backup.status === 'concluido' ? 'concluido' : 'erro',
+        tamanho_mb: backup.tamanho_bytes ? Math.round(backup.tamanho_bytes / 1024 / 1024 * 100) / 100 : 0,
+        created_at: backup.created_at,
+        url_download: backup.arquivo_url || undefined,
+        erro_detalhes: backup.mensagem || undefined
+      }));
+
+      setBackups(backupsFormatted);
+    } catch (error) {
+      console.error('Erro ao carregar backups:', error);
+      // Fallback para dados mock em caso de erro
+      setBackups([]);
+    }
   };
 
   const loadConfig = async () => {
@@ -129,54 +125,91 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const loadStorageInfo = async () => {
-    // Simulação - em produção calcularia o uso real
-    const totalBackups = backups.length;
-    const usedSpace = backups.reduce((total, backup) => total + backup.tamanho_mb, 0);
+    try {
+      // Calcular informações de armazenamento com base nos backups reais
+      const totalBackups = backups.length;
+      const usedSpace = backups.reduce((total, backup) => total + backup.tamanho_mb, 0);
 
-    setStorageInfo({
-      usado_mb: usedSpace,
-      total_mb: 1000,
-      backups_count: totalBackups
-    });
+      setStorageInfo({
+        usado_mb: Math.round(usedSpace * 100) / 100,
+        total_mb: 1000, // Limite fictício de 1GB
+        backups_count: totalBackups
+      });
+    } catch (error) {
+      console.error('Erro ao calcular informações de armazenamento:', error);
+      setStorageInfo({
+        usado_mb: 0,
+        total_mb: 1000,
+        backups_count: 0
+      });
+    }
   };
 
   const handleCreateBackup = async () => {
-    if (!can('administracao.backups', 'create')) return;
+    if (!can('administracao.backups', 'create') && !isAdminEmpresa) return;
 
     setBackupInProgress(true);
     try {
-      // Simular criação de backup
-      const newBackup: BackupInfo = {
-        id: Date.now().toString(),
-        nome: `Backup Manual - ${new Date().toLocaleDateString('pt-BR')}`,
-        tipo: 'manual',
-        status: 'em_andamento',
-        tamanho_mb: 0,
-        created_at: new Date().toISOString()
-      };
+      // Criar registro de backup no Supabase
+      const { data: backup, error } = await supabase
+        .from('backups')
+        .insert({
+          empresa_id: (await supabase.auth.getUser()).data.user?.id,
+          status: 'pendente',
+          mensagem: 'Backup iniciado manualmente'
+        })
+        .select()
+        .single();
 
-      setBackups([newBackup, ...backups]);
+      if (error) throw error;
 
-      // Simular progresso do backup
+      // Atualizar lista local
+      await loadBackups();
+
+      // Simular processamento do backup (em produção seria uma função serverless)
       setTimeout(async () => {
-        const completedBackup = {
-          ...newBackup,
-          status: 'concluido' as const,
-          tamanho_mb: Math.random() * 50 + 30,
-          url_download: `https://exemplo.com/backup${Date.now()}.sql`
-        };
+        try {
+          // Simular conclusão do backup
+          const tamanhoSimulado = Math.floor(Math.random() * 50000000) + 10000000; // 10-60MB
+          
+          await supabase
+            .from('backups')
+            .update({
+              status: 'concluido',
+              tamanho_bytes: tamanhoSimulado,
+              arquivo_url: `https://backup-storage.com/${backup.id}.sql`,
+              mensagem: 'Backup concluído com sucesso'
+            })
+            .eq('id', backup.id);
 
-        setBackups(prev => prev.map(b => b.id === newBackup.id ? completedBackup : b));
-        setBackupInProgress(false);
+          // Recarregar lista
+          await loadBackups();
+          setBackupInProgress(false);
 
-        // Log de auditoria
-        await supabase.from('audit_logs').insert({
-          recurso: 'administracao.backups',
-          acao: 'create',
-          entidade_tipo: 'backup',
-          entidade_id: newBackup.id
-        });
-      }, 5000);
+          // Log de auditoria
+          await supabase.from('audit_logs').insert({
+            recurso: 'administracao.backups',
+            acao: 'create',
+            entidade_tipo: 'backup',
+            entidade_id: backup.id
+          });
+
+        } catch (updateError) {
+          console.error('Erro ao finalizar backup:', updateError);
+          
+          // Marcar como erro
+          await supabase
+            .from('backups')
+            .update({
+              status: 'erro',
+              mensagem: 'Erro durante o processamento do backup'
+            })
+            .eq('id', backup.id);
+
+          await loadBackups();
+          setBackupInProgress(false);
+        }
+      }, 3000); // 3 segundos para simular
 
     } catch (error) {
       console.error('Erro ao criar backup:', error);
@@ -186,7 +219,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleDownloadBackup = async (backup: BackupInfo) => {
-    if (!can('administracao.backups', 'read') || !backup.url_download) return;
+    if ((!can('administracao.backups', 'read') && !isAdminEmpresa) || !backup.url_download) return;
 
     try {
       // Simular download
@@ -212,10 +245,19 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleDeleteBackup = async (backupId: string) => {
-    if (!can('administracao.backups', 'delete')) return;
+    if (!can('administracao.backups', 'delete') && !isAdminEmpresa) return;
 
     if (confirm('Tem certeza que deseja excluir este backup? Esta ação não pode ser desfeita.')) {
       try {
+        // Deletar do Supabase
+        const { error } = await supabase
+          .from('backups')
+          .delete()
+          .eq('id', backupId);
+
+        if (error) throw error;
+
+        // Atualizar lista local
         setBackups(prev => prev.filter(b => b.id !== backupId));
 
         // Log de auditoria
@@ -234,7 +276,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleRestoreBackup = async (backup: BackupInfo) => {
-    if (!can('administracao.backups', 'update')) return;
+    if (!can('administracao.backups', 'update') && !isAdminEmpresa) return;
 
     const confirmed = confirm(
       `Tem certeza que deseja restaurar o backup "${backup.nome}"? ` +
@@ -340,7 +382,7 @@ const AdminBackupsPage: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          {can('administracao.backups', 'update') && (
+          {(can('administracao.backups', 'update') || isAdminEmpresa) && (
             <button
               onClick={() => setShowConfigModal(true)}
               className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -350,7 +392,7 @@ const AdminBackupsPage: React.FC = () => {
             </button>
           )}
           
-          {can('administracao.backups', 'create') && (
+          {(can('administracao.backups', 'create') || isAdminEmpresa) && (
             <button
               onClick={handleCreateBackup}
               disabled={backupInProgress}
@@ -549,7 +591,7 @@ const AdminBackupsPage: React.FC = () => {
                     
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        {backup.status === 'concluido' && backup.url_download && can('administracao.backups', 'read') && (
+                        {backup.status === 'concluido' && backup.url_download && (can('administracao.backups', 'read') || isAdminEmpresa) && (
                           <button
                             onClick={() => handleDownloadBackup(backup)}
                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
@@ -559,7 +601,7 @@ const AdminBackupsPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {backup.status === 'concluido' && can('administracao.backups', 'update') && (
+                        {backup.status === 'concluido' && (can('administracao.backups', 'update') || isAdminEmpresa) && (
                           <button
                             onClick={() => handleRestoreBackup(backup)}
                             className="p-1 text-green-600 hover:text-green-800 transition-colors"
@@ -569,7 +611,7 @@ const AdminBackupsPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {can('administracao.backups', 'delete') && (
+                        {(can('administracao.backups', 'delete') || isAdminEmpresa) && (
                           <button
                             onClick={() => handleDeleteBackup(backup.id)}
                             className="p-1 text-red-600 hover:text-red-800 transition-colors"

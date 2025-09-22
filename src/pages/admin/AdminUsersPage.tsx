@@ -4,7 +4,6 @@ import {
   UserPlus, 
   Search, 
   Filter, 
-  Mail,
   Clock,
   CheckCircle,
   XCircle,
@@ -17,11 +16,21 @@ import {
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
 import AccessFixer from '../../components/AccessFixer';
+import InviteUserFullPage from '../../components/admin/InviteUserFullPage';
 import type { Funcionario, Funcao } from '../../types/admin';
 
-interface FuncionarioWithDetails extends Funcionario {
+interface FuncionarioWithDetails {
+  id: string;
+  empresa_id: string;
+  email: string;
+  nome?: string;
+  telefone?: string;
+  status: 'ativo' | 'inativo' | 'pendente';
+  convite_token?: string;
+  convite_expires_at?: string;
+  created_at: string;
+  updated_at?: string;
   funcoes: Funcao[];
-  ultimoLogin?: string;
   convitePendente: boolean;
 }
 
@@ -33,8 +42,8 @@ const AdminUsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'ativo' | 'inativo' | 'pendente'>('todos');
   const [selectedUser, setSelectedUser] = useState<FuncionarioWithDetails | null>(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [currentView, setCurrentView] = useState<'list' | 'invite'>('list');
 
   useEffect(() => {
     if (can('administracao.usuarios', 'read')) {
@@ -57,52 +66,109 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const loadFuncionarios = async () => {
-    let query = supabase
-      .from('funcionarios')
-      .select(`
-        *,
-        funcionario_funcoes (
-          funcoes (
-            id,
-            nome,
-            descricao,
-            nivel
+    try {
+      console.log('🔄 Carregando funcionários...');
+      
+      let query = supabase
+        .from('funcionarios')
+        .select(`
+          id,
+          empresa_id,
+          email,
+          nome,
+          telefone,
+          status,
+          convite_token,
+          convite_expires_at,
+          created_at,
+          updated_at,
+          funcionario_funcoes (
+            funcoes (
+              id,
+              nome,
+              descricao,
+              nivel
+            )
           )
-        )
-      `);
+        `);
 
-    // Admin da empresa só vê funcionários da sua empresa (não super admins)
-    if (isAdminEmpresa) {
-      query = query.neq('tipo_admin', 'super_admin');
+      // Admin da empresa só vê funcionários da sua empresa (não super admins)
+      if (isAdminEmpresa) {
+        const { data: user } = await supabase.auth.getUser();
+        if (user.user) {
+          query = query.eq('empresa_id', user.user.id);
+        }
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Erro ao carregar funcionários:', error);
+        throw error;
+      }
+      
+      console.log('✅ Funcionários carregados:', data);
+
+      const funcionariosWithDetails: FuncionarioWithDetails[] = data?.map(func => ({
+        id: func.id,
+        empresa_id: func.empresa_id,
+        email: func.email,
+        nome: func.nome,
+        telefone: func.telefone,
+        status: func.status || 'pendente',
+        convite_token: func.convite_token,
+        convite_expires_at: func.convite_expires_at,
+        created_at: func.created_at,
+        updated_at: func.updated_at,
+        funcoes: func.funcionario_funcoes?.map((ff: any) => ff.funcoes) || [],
+        convitePendente: func.status === 'pendente' && !!func.convite_token
+      })) || [];
+
+      setFuncionarios(funcionariosWithDetails);
+    } catch (error) {
+      console.error('❌ Erro ao carregar funcionários:', error);
+      setFuncionarios([]);
     }
-
-    const { data } = await query.order('created_at', { ascending: false });
-
-    const funcionariosWithDetails: FuncionarioWithDetails[] = data?.map(func => ({
-      ...func,
-      funcoes: func.funcionario_funcoes?.map((ff: any) => ff.funcoes) || [],
-      convitePendente: func.status === 'pendente' && !!func.convite_token
-    })) || [];
-
-    setFuncionarios(funcionariosWithDetails);
   };
 
   const loadFuncoes = async () => {
     try {
-      // Tentar carregar funções existentes
-      const { data } = await supabase
+      console.log('🔄 Carregando funções...');
+      
+      // Obter o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return;
+      }
+      
+      console.log('👤 Usuário atual:', user.id);
+      
+      // Tentar carregar funções existentes filtradas por empresa_id
+      const { data, error } = await supabase
         .from('funcoes')
         .select('*')
+        .eq('empresa_id', user.id)
         .order('nome', { ascending: true });
+
+      if (error) {
+        console.error('❌ Erro ao carregar funções:', error);
+        throw error;
+      }
+
+      console.log('📋 Funções encontradas:', data?.length || 0, data);
 
       if (data && data.length > 0) {
         setFuncoes(data);
+        console.log('✅ Funções carregadas com sucesso');
       } else {
+        console.log('⚠️ Nenhuma função encontrada, criando funções padrão...');
         // Se não há funções, criar funções padrão
         await createDefaultFuncoes();
       }
     } catch (error) {
-      console.error('Erro ao carregar funções:', error);
+      console.error('❌ Erro ao carregar funções:', error);
+      console.log('🔧 Usando funções de fallback...');
       // Criar funções básicas como fallback
       setFuncoes([
         { id: 'admin', nome: 'Administrador', descricao: 'Acesso completo ao sistema' },
@@ -114,8 +180,15 @@ const AdminUsersPage: React.FC = () => {
 
   const createDefaultFuncoes = async () => {
     try {
+      console.log('🏗️ Criando funções padrão...');
+      
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+      if (!user.user) {
+        console.error('❌ Usuário não autenticado para criar funções');
+        return;
+      }
+
+      console.log('👤 Criando funções para empresa:', user.user.id);
 
       const defaultFuncoes = [
         { empresa_id: user.user.id, nome: 'Administrador', descricao: 'Acesso completo ao sistema' },
@@ -130,11 +203,16 @@ const AdminUsersPage: React.FC = () => {
         .insert(defaultFuncoes)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao inserir funções padrão:', error);
+        throw error;
+      }
       
+      console.log('✅ Funções padrão criadas:', data?.length || 0, data);
       setFuncoes(data || []);
     } catch (error) {
-      console.error('Erro ao criar funções padrão:', error);
+      console.error('❌ Erro ao criar funções padrão:', error);
+      console.log('🔧 Usando funções temporárias...');
       // Fallback para funções temporárias
       setFuncoes([
         { id: 'temp-admin', nome: 'Administrador', descricao: 'Acesso completo' },
@@ -148,13 +226,20 @@ const AdminUsersPage: React.FC = () => {
     if (!can('administracao.usuarios', 'create') && !isAdminEmpresa) return;
 
     try {
+      console.log('🚀 Iniciando criação de convite para:', userData);
+      
       // Gerar token de convite
       const inviteToken = crypto.randomUUID();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
 
+      console.log('🔑 Token gerado:', inviteToken);
+      console.log('⏰ Expira em:', expiresAt);
+
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Usuário não autenticado');
+
+      console.log('👤 Empresa ID:', user.user.id);
 
       // Criar funcionário
       const { data: funcionario, error } = await supabase
@@ -171,27 +256,59 @@ const AdminUsersPage: React.FC = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao criar funcionário:', error);
+        
+        // Tratamento específico para diferentes tipos de erro
+        if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('unique')) {
+          console.error('💥 Email já existe no sistema');
+          alert('Este email já está cadastrado no sistema. Use um email diferente.');
+          return;
+        }
+        
+        if (error.code === 'PGRST204' || error.message?.includes('column')) {
+          console.error('💥 Problema de schema - coluna ausente');
+          alert('Erro de configuração do banco de dados. Contate o suporte técnico.');
+          return;
+        }
+        
+        throw error;
+      }
+
+      console.log('✅ Funcionário criado:', funcionario);
 
       // Associar funções
       if (userData.funcaoIds.length > 0) {
+        console.log('🔗 Associando funções:', userData.funcaoIds);
+        
         const funcionarioFuncoes = userData.funcaoIds.map((funcaoId: string) => ({
           funcionario_id: funcionario.id,
           funcao_id: funcaoId,
           empresa_id: user.user.id
         }));
 
-        await supabase
+        const { error: funcaoError } = await supabase
           .from('funcionario_funcoes')
           .insert(funcionarioFuncoes);
+          
+        if (funcaoError) {
+          console.error('❌ Erro ao associar funções:', funcaoError);
+          throw funcaoError;
+        }
+        
+        console.log('✅ Funções associadas com sucesso');
       }
 
       // Enviar e-mail de convite (implementar depois)
+      console.log('📧 Enviando convite por email...');
       await sendInviteEmail(userData.email, inviteToken);
 
       // Recarregar dados
+      console.log('🔄 Recarregando lista de funcionários...');
       await loadFuncionarios();
-      setShowInviteModal(false);
+      setCurrentView('list');
+
+      console.log('🎉 Convite criado com sucesso!');
 
       // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
       // await supabase.from('audit_logs').insert({
@@ -202,9 +319,19 @@ const AdminUsersPage: React.FC = () => {
       //   detalhes: { userData }
       // });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao convidar usuário:', error);
-      alert('Erro ao enviar convite. Tente novamente.');
+      
+      // Mensagens de erro mais específicas
+      if (error?.code === '23505' || error?.message?.includes('duplicate')) {
+        alert('❌ Este email já está cadastrado no sistema.');
+      } else if (error?.code === 'PGRST204' || error?.message?.includes('column')) {
+        alert('❌ Erro de configuração do banco de dados. Execute o script de correção do schema.');
+      } else if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
+        alert('❌ Tabela não encontrada. Verifique a configuração do banco de dados.');
+      } else {
+        alert('❌ Erro ao enviar convite. Verifique os dados e tente novamente.');
+      }
     }
   };
 
@@ -316,6 +443,9 @@ const AdminUsersPage: React.FC = () => {
     // TODO: Implementar envio de email real
     const inviteLink = `${window.location.origin}/convite/${token}`;
     console.log(`Convite enviado para ${email}: ${inviteLink}`);
+    
+    // Para teste, mostramos o link em um alert
+    alert(`Convite criado com sucesso!\n\nEmail: ${email}\nLink de convite: ${inviteLink}\n\n(Em produção, este link seria enviado por email)`);
   };
 
   const filteredFuncionarios = funcionarios.filter(func => {
@@ -379,8 +509,10 @@ const AdminUsersPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {currentView === 'list' ? (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-600">
@@ -396,7 +528,7 @@ const AdminUsersPage: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => setShowInviteModal(true)}
+              onClick={() => setCurrentView('invite')}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <UserPlus className="w-5 h-5" />
@@ -529,8 +661,8 @@ const AdminUsersPage: React.FC = () => {
                     </td>
                     
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {funcionario.last_login_at 
-                        ? new Date(funcionario.last_login_at).toLocaleDateString('pt-BR')
+                      {funcionario.created_at 
+                        ? new Date(funcionario.created_at).toLocaleDateString('pt-BR')
                         : 'Nunca'
                       }
                     </td>
@@ -595,7 +727,7 @@ const AdminUsersPage: React.FC = () => {
                 </p>
                 {(!searchTerm && statusFilter === 'todos') && (can('administracao.usuarios', 'create') || isAdminEmpresa) && (
                   <button
-                    onClick={() => setShowInviteModal(true)}
+                    onClick={() => setCurrentView('invite')}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     <UserPlus className="w-5 h-5" />
@@ -607,16 +739,17 @@ const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Modais (Invite e Edit) serão implementados em componentes separados */}
-      {showInviteModal && (
-        <InviteUserModal
+        </>
+      ) : (
+        /* View de Convite - Página completa */
+        <InviteUserFullPage 
           funcoes={funcoes}
           onInvite={handleInviteUser}
-          onClose={() => setShowInviteModal(false)}
+          onBack={() => setCurrentView('list')}
         />
       )}
 
+      {/* Modal de edição (permanece como modal) */}
       {showEditModal && selectedUser && (
         <EditUserModal
           user={selectedUser}
@@ -632,214 +765,7 @@ const AdminUsersPage: React.FC = () => {
   );
 };
 
-// Modal de Convite de Usuário
-interface InviteUserModalProps {
-  funcoes: Funcao[];
-  onInvite: (userData: { email: string; nome?: string; telefone?: string; funcaoIds: string[] }) => Promise<void>;
-  onClose: () => void;
-}
-
-const InviteUserModal: React.FC<InviteUserModalProps> = ({ funcoes, onInvite, onClose }) => {
-  const [email, setEmail] = useState('');
-  const [nome, setNome] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [selectedFuncoes, setSelectedFuncoes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || selectedFuncoes.length === 0) return;
-
-    setLoading(true);
-    try {
-      await onInvite({
-        email,
-        nome: nome || undefined,
-        telefone: telefone || undefined,
-        funcaoIds: selectedFuncoes
-      });
-    } catch (error) {
-      // Erro já tratado no componente pai
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold text-white">
-                Convidar Novo Funcionário
-              </h3>
-              <p className="text-blue-100 text-sm mt-1">
-                Adicione um novo membro à sua equipe
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-6 max-h-[calc(90vh-120px)] overflow-y-auto">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Informações Pessoais */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Informações Pessoais
-              </h4>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome Completo
-                  </label>
-                  <input
-                    type="text"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    placeholder="Digite o nome completo"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefone
-                  </label>
-                  <input
-                    type="tel"
-                    value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
-                    placeholder="(11) 99999-9999"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  E-mail de Acesso *
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="funcionario@empresa.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Será enviado um convite para este e-mail
-                </p>
-              </div>
-            </div>
-
-            {/* Permissões e Funções */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                <svg className="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Funções e Permissões *
-              </h4>
-
-              {funcoes.length > 0 ? (
-                <div className="grid grid-cols-1 gap-3 max-h-40 overflow-y-auto">
-                  {funcoes.map((funcao) => (
-                    <label key={funcao.id} className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedFuncoes.includes(funcao.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedFuncoes([...selectedFuncoes, funcao.id]);
-                          } else {
-                            setSelectedFuncoes(selectedFuncoes.filter(id => id !== funcao.id));
-                          }
-                        }}
-                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-gray-900">
-                          {funcao.nome}
-                        </span>
-                        {funcao.descricao && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {funcao.descricao}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-gray-500">
-                  <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-sm">Nenhuma função disponível</p>
-                  <p className="text-xs mt-1">As funções serão criadas automaticamente</p>
-                </div>
-              )}
-
-              {selectedFuncoes.length > 0 && (
-                <div className="mt-3 p-2 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-700">
-                    ✓ {selectedFuncoes.length} função(ões) selecionada(s)
-                  </p>
-                </div>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || !email || selectedFuncoes.length === 0}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Mail className="w-4 h-4" />
-                Enviar Convite
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// Página completa de Convite de Usuário
 // Modal de Edição de Usuário
 interface EditUserModalProps {
   user: FuncionarioWithDetails;
@@ -865,7 +791,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, funcoes, onSave, on
       await onSave(user.id, {
         nome: nome || undefined,
         telefone: telefone || undefined,
-        status
+        status: status as 'ativo' | 'pendente' | 'bloqueado'
       }, selectedFuncoes);
     } catch (error) {
       // Erro já tratado no componente pai

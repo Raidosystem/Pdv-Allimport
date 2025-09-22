@@ -4,6 +4,7 @@ import AdminLayout from '../components/admin/AdminLayout';
 import { AdminGuard, PermissionGuard } from '../components/admin/AdminGuard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import InviteUserPage from '../pages/admin/InviteUserPage';
 import AdminRolesPermissionsPage from '../pages/admin/AdminRolesPermissionsPage';
 import AdminBackupsPage from '../pages/admin/AdminBackupsPage';
 import AdminSystemSettingsPage from '../pages/admin/AdminSystemSettingsPage';
@@ -31,6 +32,16 @@ const AdminRoutes: React.FC = () => {
             element={
               <PermissionGuard recurso="administracao.usuarios" acao="read">
                 <AdminUsersPage />
+              </PermissionGuard>
+            } 
+          />
+
+          {/* Convidar Usuário - Requer permissão específica */}
+          <Route 
+            path="/usuarios/convidar" 
+            element={
+              <PermissionGuard recurso="administracao.usuarios" acao="create">
+                <InviteUserPage />
               </PermissionGuard>
             } 
           />

@@ -91,7 +91,7 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       const { data: ordensSupabase, error: orderError } = await supabase
         .from('ordens_servico')
         .select('*')
-        .order('criado_em', { ascending: false })
+        .order('data_entrada', { ascending: false })
       
       console.log('🔍 [OrdensServico] Resultado da consulta:', {
         data: ordensSupabase?.length || 0,
@@ -246,15 +246,21 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       }
       
       // Normalizar status para o padrão do sistema
-      let status = order.status || 'aberta';
-      if (status === 'fechada' || status === 'fechado' || status === 'concluida' || status === 'pago') {
-        status = 'Entregue';
-      } else if (status === 'cancelada') {
-        status = 'Cancelado';
-      } else if (status === 'pendente') {
-        status = 'Em análise';
-      } else {
-        status = 'Em análise';
+      let status = order.status || 'Em análise';
+      
+      // Se já está em um dos status válidos, manter
+      const statusValidos = ['Em análise', 'Aguardando aprovação', 'Aguardando peças', 'Em conserto', 'Pronto', 'Entregue', 'Cancelado'];
+      if (!statusValidos.includes(status)) {
+        // Mapear status antigos
+        if (status === 'fechada' || status === 'fechado' || status === 'concluida' || status === 'pago') {
+          status = 'Entregue';
+        } else if (status === 'cancelada') {
+          status = 'Cancelado';
+        } else if (status === 'pendente' || status === 'aberta') {
+          status = 'Em análise';
+        } else {
+          status = 'Em análise';
+        }
       }
 
       // Mapear equipamento com múltiplas tentativas de campos
@@ -273,17 +279,17 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
         marca: equipamentoMarca,
         modelo: equipamentoModelo,
         tipo: equipamentoTipo,
-        numero_os: order.id?.slice(-6) || '',
+        numero_os: order.numero_os || order.id?.slice(-6) || '',
         status: status as any,
-        defeito_relatado: order.defect || 'Defeito não informado',
-        data_entrada: order.opening_date || new Date().toISOString().split('T')[0],
-        data_entrega: order.closing_date || '',
-        valor_orcamento: order.total_amount || 0,
-        valor_final: order.total_amount || 0,
-        observacoes: order.observations || '',
-        garantia_meses: order.warranty_days ? Math.ceil(order.warranty_days / 30) : 0,
-        created_at: order.created_at || new Date().toISOString(),
-        updated_at: order.updated_at || new Date().toISOString()
+        defeito_relatado: order.defeito_relatado || order.defect || 'Defeito não informado',
+        data_entrada: order.data_entrada || order.opening_date || new Date().toISOString().split('T')[0],
+        data_entrega: order.data_entrega || order.closing_date || '',
+        valor_orcamento: order.valor_orcamento || order.total_amount || 0,
+        valor_final: order.valor_final || order.total_amount || 0,
+        observacoes: order.observacoes || order.observations || '',
+        garantia_meses: order.garantia_meses || (order.warranty_days ? Math.ceil(order.warranty_days / 30) : 0),
+        created_at: order.criado_em || order.created_at || new Date().toISOString(),
+        updated_at: order.atualizado_em || order.updated_at || new Date().toISOString()
       };
     })
     

@@ -59,7 +59,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
             )
           )
         `)
-        .eq('user_id', user.id)
+        .eq('empresa_id', user.id)
         .eq('status', 'ativo')
         .single();
 
@@ -74,10 +74,8 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
             const { data: novoFuncionario, error: createError } = await supabase
               .from('funcionarios')
               .insert({
-                user_id: user.id,
                 nome: user.email.split('@')[0],
                 email: user.email,
-                tipo_admin: 'admin_empresa', // SEMPRE admin da empresa
                 status: 'ativo',
                 empresa_id: user.id // Usar user.id como empresa_id (cada usuário = sua empresa)
               })

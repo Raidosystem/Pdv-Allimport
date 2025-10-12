@@ -20,6 +20,9 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
   checkAccess: () => Promise<boolean>
   isAdmin: () => boolean
+  sendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
+  verifyWhatsAppCode: (userId: string, code: string) => Promise<boolean>
+  resendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -60,54 +63,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       password,
     })
 
-    // Se login bem-sucedido, verificar se usuário está aprovado
-    if (data.user && !error) {
-      // Verificar se é admin (sempre aprovado)
-      const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
-
-      if (!isAdmin) {
-        // Verificar status de aprovação para usuários normais
-        const { data: approvalData, error: approvalError } = await supabase
-          .from('user_approvals')
-          .select('status')
-          .eq('user_id', data.user.id)
-          .single()
-        
-        if (approvalError || !approvalData) {
-          // Se não encontrou registro de aprovação, criar um pendente
-          await supabase.from('user_approvals').insert({
-            user_id: data.user.id,
-            email: data.user.email,
-            status: 'pending'
-          })
-          
-          // Fazer logout e retornar erro
-          await supabase.auth.signOut()
-          return { 
-            data: null, 
-            error: { 
-              message: 'Sua conta está pendente de aprovação pelo administrador. Aguarde a aprovação para acessar o sistema.',
-              name: 'PENDING_APPROVAL'
-            } as any 
-          }
-        }
-        
-        if (approvalData.status !== 'approved') {
-          // Usuário não aprovado, fazer logout
-          await supabase.auth.signOut()
-          return { 
-            data: null, 
-            error: { 
-              message: approvalData.status === 'rejected' 
-                ? 'Sua conta foi rejeitada pelo administrador. Entre em contato para mais informações.'
-                : 'Sua conta está pendente de aprovação pelo administrador. Aguarde a aprovação para acessar o sistema.',
-              name: 'PENDING_APPROVAL'
-            } as any 
-          }
-        }
-      }
-    }
-
+    // Retornar resultado direto do Supabase (sem verificação de aprovação)
+    // Todos os usuários com contas válidas podem fazer login
     return { data, error }
   }
 
@@ -116,95 +73,103 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('Email:', email)
     console.log('Is Admin:', ADMIN_EMAILS.includes(email.toLowerCase()))
     
-    // Criar conta sem obrigar confirmação de email
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-        // Removido emailRedirectTo para evitar fluxo de confirmação obrigatório
-      }
-    })
+    try {
+      // Criar conta sem obrigar confirmação de email
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          // Removido emailRedirectTo para evitar fluxo de confirmação obrigatório
+        }
+      })
 
-    console.log('Supabase signUp result:', { data, error })
-
-    // Se a conta foi criada com sucesso
-    if (data.user && !error) {
-      // Verificar se é admin (admins são auto-aprovados)
-      const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
+      console.log('Supabase signUp result:', { data, error })
       
-      console.log('User created, isAdmin:', isAdmin)
-      
-      if (isAdmin) {
-        // Para admins, fazer login automático
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-          email,
-          password
+      // Tratamento específico para erro de webhook 404
+      if (error) {
+        const errorMessage = error.message || ''
+        console.error('❌ Signup error details:', {
+          message: errorMessage,
+          status: (error as any).status,
+          code: (error as any).code
         })
         
-        if (loginData.user && !loginError) {
-          console.log('Admin auto-login success')
-          return { data: loginData, error: null }
+        // Se for erro de webhook/hook 404
+        if (errorMessage.includes('404') || errorMessage.includes('hook') || errorMessage.includes('webhook')) {
+          throw new Error('ERRO DE CONFIGURAÇÃO: O sistema de autenticação está com um webhook configurado incorretamente no Supabase. Por favor, acesse o Dashboard do Supabase → Authentication → Hooks e desative/delete todos os webhooks configurados.')
         }
-      } else {
-        console.log('Non-admin user - checking approval system')
-        // Para usuários normais, verificar se a tabela de aprovação existe
-        try {
-          const { error: approvalError } = await supabase
-            .from('user_approvals')
-            .select('user_id')
-            .eq('user_id', data.user.id)
-            .limit(1)
+        
+        // Outros erros
+        throw error
+      }
+
+      // Se a conta foi criada com sucesso
+      if (data.user) {
+        // Verificar se é admin (admins são auto-aprovados)
+        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
+        
+        console.log('User created, isAdmin:', isAdmin)
+        
+        if (isAdmin) {
+          // Para admins, fazer login automático
+          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          })
           
-          console.log('Approval table check error:', approvalError)
+          if (loginData.user && !loginError) {
+            console.log('Admin auto-login success')
+            return { data: loginData, error: null }
+          }
+        } else {
+          console.log('Non-admin user - auto-approving and logging in')
           
-          if (approvalError && approvalError.code === '42P01') {
-            // Tabela não existe - forçar logout e informar
-            await supabase.auth.signOut()
-            console.log('Approval system not configured')
-            return { 
-              data: { 
-                user: data.user, 
-                session: null 
-              }, 
-              error: {
-                message: 'APPROVAL_SYSTEM_NOT_CONFIGURED',
-                name: 'SETUP_REQUIRED'
-              } as any
+          // Para usuários normais, auto-aprovar e inserir na tabela user_approvals
+          try {
+            // Inserir o usuário na tabela de aprovações como aprovado
+            const { error: insertError } = await supabase
+              .from('user_approvals')
+              .insert({
+                user_id: data.user.id,
+                email: email,
+                full_name: metadata?.full_name || 'Usuário',
+                company_name: metadata?.company_name || 'Não informado',
+                cpf_cnpj: metadata?.cpf_cnpj,
+                whatsapp: metadata?.whatsapp,
+                document_type: metadata?.document_type,
+                phone_verified: false, // Será verificado depois
+                status: 'pending', // Pendente até verificar WhatsApp
+                user_role: 'owner',
+                created_at: new Date().toISOString()
+              })
+            
+            if (insertError) {
+              console.error('Warning: Could not insert into user_approvals:', insertError)
             }
-          }
-          
-          // Tabela existe - fazer logout normal e aguardar aprovação
-          await supabase.auth.signOut()
-          console.log('User created, logging out for approval')
-          return { 
-            data: { 
-              user: data.user, 
-              session: null 
-            }, 
-            error: {
-              message: 'PENDING_APPROVAL',
-              name: 'PENDING_APPROVAL'
-            } as any
-          }
-        } catch (err) {
-          // Em caso de erro, forçar logout de segurança
-          await supabase.auth.signOut()
-          return { 
-            data: { 
-              user: data.user, 
-              session: null 
-            }, 
-            error: {
-              message: 'PENDING_APPROVAL',
-              name: 'PENDING_APPROVAL'
-            } as any
+            
+            // Enviar código de verificação via WhatsApp
+            if (metadata?.whatsapp) {
+              await sendWhatsAppCode(data.user.id, metadata.whatsapp as string)
+            }
+            
+            // Retornar sucesso para ir para tela de verificação
+            return { data: { user: data.user, session: null }, error: null }
+          } catch (err) {
+            console.log('Error in auto-approval process:', err)
+            throw err
           }
         }
       }
-    }
 
-    return { data, error }
+      return { data, error: null }
+    } catch (err: any) {
+      console.error('SignUp error:', err)
+      return {
+        data: null,
+        error: err
+      }
+    }
   }
 
   const signUpEmployee = async (email: string, password: string, metadata: Record<string, unknown>) => {
@@ -347,6 +312,67 @@ export function AuthProvider({ children }: AuthProviderProps) {
            user?.app_metadata?.role === 'admin'
   }
 
+  /**
+   * Enviar código de verificação via WhatsApp
+   */
+  const sendWhatsAppCode = async (userId: string, phone: string): Promise<boolean> => {
+    try {
+      // Chamar função do Supabase que gera e envia o código
+      const { data, error } = await supabase.rpc('generate_verification_code', {
+        p_user_id: userId,
+        p_phone: phone
+      })
+
+      if (error) {
+        console.error('Erro ao gerar código:', error)
+        throw error
+      }
+
+      // Enviar código via WhatsApp (em produção)
+      // Por enquanto, apenas loga no console
+      console.log('📱 Código gerado:', data)
+      console.log('📱 Telefone:', phone)
+      
+      // TODO: Integrar com serviço de WhatsApp real
+      // const { whatsappService } = await import('../../services/whatsappService')
+      // await whatsappService.sendVerificationCode(phone, data[0].code)
+
+      return true
+    } catch (error) {
+      console.error('Erro ao enviar código:', error)
+      return false
+    }
+  }
+
+  /**
+   * Verificar código de WhatsApp
+   */
+  const verifyWhatsAppCode = async (userId: string, code: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('verify_whatsapp_code', {
+        p_user_id: userId,
+        p_code: code
+      })
+
+      if (error) {
+        console.error('Erro ao verificar código:', error)
+        throw error
+      }
+
+      return data === true
+    } catch (error) {
+      console.error('Erro ao verificar código:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Reenviar código de verificação
+   */
+  const resendWhatsAppCode = async (userId: string, phone: string): Promise<boolean> => {
+    return sendWhatsAppCode(userId, phone)
+  }
+
   const value: AuthContextType = {
     user,
     session,
@@ -359,6 +385,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     resetPassword,
     checkAccess,
     isAdmin,
+    sendWhatsAppCode,
+    verifyWhatsAppCode,
+    resendWhatsAppCode,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -2,8 +2,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-// Debug de autenticação
-import './debug-auth.js'
+// Debug de autenticação - REMOVIDO para permitir login normal
+// import './debug-auth.js'
 
 console.log('🚀 PDV Allimport v2.2.3 - PWA Install Direto')
 

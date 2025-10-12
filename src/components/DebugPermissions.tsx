@@ -34,7 +34,7 @@ const DebugPermissions: React.FC = () => {
       const { data: funcionario, error: funcError } = await supabase
         .from('funcionarios')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('empresa_id', user.id)
         .single();
 
       if (funcError) {
@@ -76,13 +76,10 @@ const DebugPermissions: React.FC = () => {
       await supabase
         .from('funcionarios')
         .upsert({
-          user_id: user.id,
-          empresa_id: '00000000-0000-0000-0000-000000000001',
+          empresa_id: user.id,
           nome: user.email?.split('@')[0] || 'Admin',
           email: user.email,
-          tipo_admin: 'admin_empresa',
-          status: 'ativo',
-          lojas: []
+          status: 'ativo'
         });
 
       alert('Usuário de teste criado! Recarregue a página.');

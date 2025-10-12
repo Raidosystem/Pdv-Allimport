@@ -65,8 +65,8 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
       // 2. Verificar se existe funcionário
       let { data: funcionario } = await supabase
         .from('funcionarios')
-        .select('id, tipo_admin')
-        .eq('user_id', user.id)
+        .select('id')
+        .eq('empresa_id', user.id)
         .single();
 
       if (!funcionario) {
@@ -74,24 +74,16 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
         const { data: novoFuncionario, error: funcionarioError } = await supabase
           .from('funcionarios')
           .insert({
-            user_id: user.id,
-            empresa_id: empresa.id,
+            empresa_id: user.id,
             nome: user.email.split('@')[0] || 'Admin',
             email: user.email,
-            tipo_admin: 'admin_empresa',
             status: 'ativo'
           })
-          .select('id, tipo_admin')
+          .select('id')
           .single();
 
         if (funcionarioError) throw funcionarioError;
         funcionario = novoFuncionario;
-      } else if (funcionario.tipo_admin !== 'admin_empresa') {
-        setMessage('Atualizando tipo de administrador...');
-        await supabase
-          .from('funcionarios')
-          .update({ tipo_admin: 'admin_empresa', status: 'ativo' })
-          .eq('id', funcionario.id);
       }
 
       // 3. Verificar funções de administrador

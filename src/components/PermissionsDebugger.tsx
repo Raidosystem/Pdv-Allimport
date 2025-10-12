@@ -46,13 +46,13 @@ export const PermissionsDebugger: React.FC = () => {
             )
           )
         `)
-        .eq('user_id', user.id)
+        .eq('empresa_id', user.id)
         .single();
 
       setDbCheck({
         funcionario,
         error: funcError,
-        user_id: user.id,
+        empresa_id: user.id,
         email: user.email
       });
     } catch (error) {
@@ -88,10 +88,10 @@ export const PermissionsDebugger: React.FC = () => {
           .single();
 
         if (novaEmpresa) {
-          await createFuncionario(novaEmpresa.id);
+          await createFuncionario();
         }
       } else {
-        await createFuncionario(empresa.id);
+        await createFuncionario();
       }
     } catch (error) {
       console.error('Erro ao criar usuário admin:', error);
@@ -101,17 +101,15 @@ export const PermissionsDebugger: React.FC = () => {
     }
   };
 
-  const createFuncionario = async (empresaId: string) => {
+  const createFuncionario = async () => {
     if (!user?.id || !user?.email) return;
 
     const { data: funcionario } = await supabase
       .from('funcionarios')
       .insert({
-        user_id: user.id,
-        empresa_id: empresaId,
+        empresa_id: user.id,
         nome: user.email.split('@')[0] || 'Admin',
         email: user.email,
-        tipo_admin: 'admin_empresa',
         status: 'ativo'
       })
       .select()

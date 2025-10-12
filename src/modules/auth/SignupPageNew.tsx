@@ -6,13 +6,9 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
 import { validateDocument, maskCPF, maskCNPJ, unformatDocument, maskPhone } from '../../utils/validators'
+import { sendEmailVerificationCode } from '../../services/emailServiceSupabase'
 
 type DocumentType = 'CPF' | 'CNPJ'
-
-// Função auxiliar para gerar código de 6 dígitos
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
-}
 
 export function SignupPageNew() {
   const { signUp } = useAuth()
@@ -41,7 +37,6 @@ export function SignupPageNew() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [verificationCode, setVerificationCode] = useState<string>('')
 
   const handleChange = (field: string, value: string) => {
     let processedValue = value
@@ -53,10 +48,45 @@ export function SignupPageNew() {
     } else if (field === 'cep') {
       const cleaned = value.replace(/\D/g, '')
       processedValue = cleaned.length <= 5 ? cleaned : `${cleaned.slice(0, 5)}-${cleaned.slice(5, 8)}`
+      
+      // Buscar endereço automaticamente quando CEP estiver completo
+      if (cleaned.length === 8) {
+        fetchAddressByCep(cleaned)
+      }
     }
     
     setFormData(prev => ({ ...prev, [field]: processedValue }))
     setError('')
+  }
+
+  // Função para buscar endereço pela API ViaCEP
+  const fetchAddressByCep = async (cep: string) => {
+    try {
+      console.log('🔍 Buscando CEP:', cep)
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data = await response.json()
+
+      if (data.erro) {
+        setError('CEP não encontrado')
+        return
+      }
+
+      console.log('✅ Endereço encontrado:', data)
+
+      // Preencher campos automaticamente
+      setFormData(prev => ({
+        ...prev,
+        street: data.logradouro || '',
+        neighborhood: data.bairro || '',
+        city: data.localidade || '',
+        state: data.uf || ''
+      }))
+
+      setError('') // Limpar erro se houver
+    } catch (error) {
+      console.error('❌ Erro ao buscar CEP:', error)
+      setError('Erro ao buscar CEP. Verifique sua conexão.')
+    }
   }
 
   const handleDocumentTypeChange = (type: DocumentType) => {
@@ -169,13 +199,18 @@ export function SignupPageNew() {
       if (result && 'data' in result && result.data) {
         const data = result.data as { user?: { id: string }; session?: unknown }
         if (data.user?.id) {
-          // GERAR CÓDIGO DE 6 DÍGITOS
-          const code = generateVerificationCode()
-          setVerificationCode(code)
+          console.log('📧 Enviando código via Supabase OTP para:', formData.email)
           
-          console.log(`🔐 CÓDIGO DE VERIFICAÇÃO (DEV): ${code}`)
-          alert(`🔐 MODO DESENVOLVIMENTO\n\nCódigo de verificação: ${code}\n\nDigite este código na próxima tela.`)
+          // ENVIAR CÓDIGO VIA SUPABASE OTP
+          const emailResult = await sendEmailVerificationCode(formData.email)
           
+          if (!emailResult.success) {
+            console.error('⚠️ Erro ao enviar código:', emailResult.error)
+            setError('Conta criada, mas houve erro ao enviar código. Tente novamente.')
+            return
+          }
+          
+          console.log('✅ Código enviado! Verifique seu email')
           setStep('verify')
         }
       }
@@ -553,27 +588,26 @@ export function SignupPageNew() {
   return (
     <VerifyEmailCode 
       email={formData.email}
-      verificationCode={verificationCode}
       onSuccess={() => navigate('/login')}
       onResend={async () => {
-        const newCode = generateVerificationCode()
-        setVerificationCode(newCode)
-        console.log(`🔐 NOVO CÓDIGO (DEV): ${newCode}`)
-        alert(`🔐 NOVO CÓDIGO:\n${newCode}`)
+        console.log('🔄 Reenviando código via Supabase OTP...')
+        const result = await sendEmailVerificationCode(formData.email)
+        if (!result.success) {
+          throw new Error(result.error || 'Erro ao reenviar código')
+        }
+        console.log('✅ Código reenviado com sucesso! Verifique seu email.')
       }}
     />
   )
 }
 
-// Componente de verificação COM OS 6 DÍGITOS
+// Componente de verificação
 function VerifyEmailCode({ 
   email,
-  verificationCode,
   onSuccess,
   onResend 
 }: { 
   email: string
-  verificationCode: string
   onSuccess: () => void
   onResend: () => Promise<void>
 }) {
@@ -607,14 +641,19 @@ function VerifyEmailCode({
     setError('')
 
     try {
-      // Verificar código localmente (em produção, verificar no banco)
-      if (fullCode === verificationCode) {
+      // Importar o serviço de verificação
+      const { verifyEmailCode } = await import('../../services/emailServiceSupabase')
+      
+      // Verificar código com Supabase OTP
+      const result = await verifyEmailCode(email, fullCode)
+      
+      if (result.success) {
         setSuccessMessage('✅ Email verificado com sucesso!')
         setTimeout(() => {
           onSuccess()
         }, 2000)
       } else {
-        setError('Código inválido. Tente novamente.')
+        setError(result.error || 'Código inválido. Tente novamente.')
         setCode(['', '', '', '', '', ''])
         document.getElementById('code-0')?.focus()
       }

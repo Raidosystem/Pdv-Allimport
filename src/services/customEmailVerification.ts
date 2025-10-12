@@ -47,30 +47,39 @@ export async function sendVerificationCode(
     }
 
     const verificationCode = data.code;
-    console.log('🔐 Código gerado:', verificationCode);
+    console.log('🔐 Código gerado no banco:', verificationCode);
 
-    // Enviar email com o código via Supabase OTP
-    // (Usando OTP apenas para enviar email, não para autenticação)
-    const { error: emailError } = await supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        shouldCreateUser: false,
-        data: {
-          verification_code: verificationCode,
-        },
-      },
-    });
+    // SOLUÇÃO: Usar resetPasswordForEmail para enviar email via SMTP configurado
+    // O email de "reset password" será usado apenas como transportador
+    // O código real está no banco e será verificado manualmente
+    try {
+      const { error: emailError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/verify-email?code=${verificationCode}`
+      });
 
-    if (emailError) {
-      console.warn('⚠️ Erro ao enviar email via OTP, tentando método alternativo:', emailError);
-      // Continuar mesmo se falhar, pois o código foi gerado
+      if (emailError) {
+        console.warn('⚠️ Erro ao enviar email via Auth:', emailError);
+        
+        // FALLBACK: Mostrar código na tela (somente desenvolvimento)
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('═══════════════════════════════════════');
+          console.log('📧 CÓDIGO DE VERIFICAÇÃO (FALLBACK):', verificationCode);
+          console.log('📧 Email:', email);
+          console.log('⏰ Válido por: 15 minutos');
+          console.log('═══════════════════════════════════════');
+          alert(`🔐 CÓDIGO DE VERIFICAÇÃO:\n\n${verificationCode}\n\nEmail: ${email}\n\nValidade: 15 minutos`);
+        }
+      } else {
+        console.log('✅ Email enviado via Supabase Auth');
+        console.log('📧 Código no email:', verificationCode);
+      }
+    } catch (emailErr) {
+      console.warn('⚠️ Falha no envio do email:', emailErr);
     }
-
-    console.log('✅ Código gerado e email enviado!');
 
     return {
       success: true,
-      message: `Código de verificação enviado para ${email}. Válido por 15 minutos.`,
+      message: `Código de verificação enviado para ${email}. Verifique sua caixa de entrada e spam. Código válido por 15 minutos.`,
     };
   } catch (error: any) {
     console.error('❌ Erro ao enviar código:', error);

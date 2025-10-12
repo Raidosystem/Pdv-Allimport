@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
 import { validateDocument, maskCPF, maskCNPJ, unformatDocument, maskPhone } from '../../utils/validators'
-import { sendVerificationCode, verifyCode, resendVerificationCode } from '../../services/customEmailVerification'
+import { sendEmailVerificationCode, verifyEmailCode, resendEmailVerificationCode } from '../../services/emailServiceSupabase'
+import { activateUserAfterEmailVerification } from '../../services/userActivationService'
 
 type DocumentType = 'CPF' | 'CNPJ'
 
@@ -199,10 +200,10 @@ export function SignupPageNew() {
       if (result && 'data' in result && result.data) {
         const data = result.data as { user?: { id: string }; session?: unknown }
         if (data.user?.id) {
-          console.log('📧 Enviando código de verificação customizado para:', formData.email)
+          console.log('📧 Enviando código via Supabase OTP para:', formData.email)
           
-          // ENVIAR CÓDIGO CUSTOMIZADO (sem criar sessão)
-          const emailResult = await sendVerificationCode(formData.email)
+          // ENVIAR CÓDIGO VIA SUPABASE OTP (funciona e envia email)
+          const emailResult = await sendEmailVerificationCode(formData.email)
           
           if (!emailResult.success) {
             console.error('⚠️ Erro ao enviar código:', emailResult.error)
@@ -590,8 +591,8 @@ export function SignupPageNew() {
       email={formData.email}
       onSuccess={() => navigate('/login')}
       onResend={async () => {
-        console.log('🔄 Reenviando código de verificação...')
-        const result = await resendVerificationCode(formData.email)
+        console.log('🔄 Reenviando código via Supabase OTP...')
+        const result = await resendEmailVerificationCode(formData.email)
         if (!result.success) {
           throw new Error(result.error || 'Erro ao reenviar código')
         }
@@ -641,26 +642,29 @@ function VerifyEmailCode({
     setError('')
 
     try {
-      // Verificar código customizado (sem criar sessão)
-      const result = await verifyCode(email, fullCode)
+      // Verificar código com Supabase OTP
+      const result = await verifyEmailCode(email, fullCode)
       
       if (result.success) {
-        // Mostrar mensagem de sucesso com informações do período de teste
-        const message = result.trialEndDate 
-          ? `✅ Email verificado! Você ganhou ${result.daysRemaining || 15} dias de teste gratuito!`
-          : '✅ Email verificado com sucesso!';
+        console.log('✅ Código verificado! Ativando usuário e concedendo 15 dias...')
         
-        setSuccessMessage(message)
+        // IMPORTANTE: Ativar usuário e conceder 15 dias de teste
+        const activationResult = await activateUserAfterEmailVerification(email)
+        
+        if (activationResult.success) {
+          const message = `✅ Email verificado! Você ganhou ${activationResult.daysRemaining || 15} dias de teste gratuito!`;
+          setSuccessMessage(message)
+          console.log('🎉 Usuário ativado com 15 dias de teste!')
+        } else {
+          setSuccessMessage('✅ Email verificado com sucesso!')
+          console.warn('⚠️ Código verificado mas erro ao ativar período de teste:', activationResult.error)
+        }
         
         setTimeout(() => {
           onSuccess()
         }, 2500)
       } else {
-        const errorMsg = result.attemptsRemaining !== undefined
-          ? `${result.error} (${result.attemptsRemaining} tentativas restantes)`
-          : result.error || 'Código inválido. Tente novamente.';
-        
-        setError(errorMsg)
+        setError(result.error || 'Código inválido. Tente novamente.')
         setCode(['', '', '', '', '', ''])
         document.getElementById('code-0')?.focus()
       }

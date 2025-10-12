@@ -41,7 +41,6 @@ export function SignupPageNew() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [userId, setUserId] = useState<string>('')
   const [verificationCode, setVerificationCode] = useState<string>('')
 
   const handleChange = (field: string, value: string) => {
@@ -170,8 +169,6 @@ export function SignupPageNew() {
       if (result && 'data' in result && result.data) {
         const data = result.data as { user?: { id: string }; session?: unknown }
         if (data.user?.id) {
-          setUserId(data.user.id)
-          
           // GERAR CÓDIGO DE 6 DÍGITOS
           const code = generateVerificationCode()
           setVerificationCode(code)
@@ -221,6 +218,7 @@ export function SignupPageNew() {
                 Dados Pessoais
               </h3>
               
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -478,6 +476,7 @@ export function SignupPageNew() {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+
                       </button>
                     </div>
                   </div>
@@ -501,6 +500,7 @@ export function SignupPageNew() {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+
                       </button>
                     </div>
                   </div>
@@ -552,7 +552,6 @@ export function SignupPageNew() {
 
   return (
     <VerifyEmailCode 
-      userId={userId}
       email={formData.email}
       verificationCode={verificationCode}
       onSuccess={() => navigate('/login')}
@@ -568,13 +567,11 @@ export function SignupPageNew() {
 
 // Componente de verificação COM OS 6 DÍGITOS
 function VerifyEmailCode({ 
-  userId, 
   email,
   verificationCode,
   onSuccess,
   onResend 
 }: { 
-  userId: string
   email: string
   verificationCode: string
   onSuccess: () => void

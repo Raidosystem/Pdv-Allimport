@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, Crown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
@@ -96,6 +96,7 @@ export function ConfiguracoesPage() {
 
   // Estado local para edição de empresa
   const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>(empresaSettings)
+  const [isEmpresaInitialized, setIsEmpresaInitialized] = useState(false)
 
   // Sincronizar estado local quando as configurações carregarem
   useEffect(() => {
@@ -107,12 +108,13 @@ export function ConfiguracoesPage() {
     }
   }, [appearanceSettings, loadingAppearance])
 
-  // Sincronizar dados da empresa
+  // Sincronizar dados da empresa APENAS UMA VEZ quando carregar
   useEffect(() => {
-    if (!loadingEmpresa) {
+    if (!loadingEmpresa && !isEmpresaInitialized) {
       setConfigEmpresa(empresaSettings)
+      setIsEmpresaInitialized(true)
     }
-  }, [empresaSettings, loadingEmpresa])
+  }, [empresaSettings, loadingEmpresa, isEmpresaInitialized])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',
@@ -349,6 +351,23 @@ export function ConfiguracoesPage() {
     </div>
   )
 
+  // Handlers memoizados para evitar re-renders
+  const handleEmpresaChange = useCallback((field: keyof ConfiguracaoEmpresa, value: string) => {
+    setConfigEmpresa(prev => ({ ...prev, [field]: value }))
+    setUnsavedChanges(true)
+  }, [])
+
+  const handleEnderecoChange = useCallback((value: string) => {
+    const lines = value.split('\n')
+    setConfigEmpresa(prev => ({
+      ...prev,
+      endereco: lines[0] || '',
+      cidade: lines[1] || '',
+      cep: lines[2] ? lines[2].replace('CEP: ', '') : ''
+    }))
+    setUnsavedChanges(true)
+  }, [])
+
   // Configurações da empresa
   const EmpresaView = () => (
     <div className="bg-white rounded-lg shadow-sm">
@@ -382,10 +401,7 @@ export function ConfiguracoesPage() {
             <input
               type="text"
               value={configEmpresa.nome}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, nome: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('nome', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -397,10 +413,7 @@ export function ConfiguracoesPage() {
             <input
               type="text"
               value={configEmpresa.razao_social}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, razao_social: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('razao_social', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -412,10 +425,7 @@ export function ConfiguracoesPage() {
             <input
               type="text"
               value={configEmpresa.cnpj}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, cnpj: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('cnpj', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="00.000.000/0000-00"
             />
@@ -428,10 +438,7 @@ export function ConfiguracoesPage() {
             <input
               type="text"
               value={configEmpresa.telefone}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, telefone: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('telefone', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="(00) 00000-0000"
             />
@@ -444,10 +451,7 @@ export function ConfiguracoesPage() {
             <input
               type="email"
               value={configEmpresa.email}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, email: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('email', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -459,10 +463,7 @@ export function ConfiguracoesPage() {
             <input
               type="url"
               value={configEmpresa.site}
-              onChange={(e) => {
-                setConfigEmpresa(prev => ({ ...prev, site: e.target.value }))
-                setUnsavedChanges(true)
-              }}
+              onChange={(e) => handleEmpresaChange('site', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="www.empresa.com.br"
             />
@@ -476,16 +477,7 @@ export function ConfiguracoesPage() {
           <textarea
             rows={3}
             value={`${configEmpresa.endereco}\n${configEmpresa.cidade}\nCEP: ${configEmpresa.cep}`}
-            onChange={(e) => {
-              const lines = e.target.value.split('\n')
-              setConfigEmpresa(prev => ({
-                ...prev,
-                endereco: lines[0] || '',
-                cidade: lines[1] || '',
-                cep: lines[2] ? lines[2].replace('CEP: ', '') : ''
-              }))
-              setUnsavedChanges(true)
-            }}
+            onChange={(e) => handleEnderecoChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Rua, número, bairro&#10;Cidade, Estado&#10;CEP: 00000-000"
           />

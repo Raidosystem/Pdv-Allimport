@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, Crown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
@@ -371,13 +371,13 @@ export function ConfiguracoesPage() {
     </div>
   )
 
-  // Handlers memoizados para evitar re-renders
-  const handleEmpresaChange = useCallback((field: keyof ConfiguracaoEmpresa, value: string) => {
+  // Handlers para mudanças nos campos da empresa
+  const handleEmpresaChange = (field: keyof ConfiguracaoEmpresa, value: string) => {
     setConfigEmpresa(prev => ({ ...prev, [field]: value }))
     setUnsavedChanges(true)
-  }, [])
+  }
 
-  const handleEnderecoChange = useCallback((value: string) => {
+  const handleEnderecoChange = (value: string) => {
     const lines = value.split('\n')
     setConfigEmpresa(prev => ({
       ...prev,
@@ -386,10 +386,10 @@ export function ConfiguracoesPage() {
       cep: lines[2] ? lines[2].replace('CEP: ', '') : ''
     }))
     setUnsavedChanges(true)
-  }, [])
+  }
 
-  // Configurações da empresa - Memoizado para evitar re-renders
-  const EmpresaView = useMemo(() => () => (
+  // Configurações da empresa
+  const EmpresaView = () => (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="p-6 border-b">
         <div className="flex items-center justify-between">
@@ -553,7 +553,7 @@ export function ConfiguracoesPage() {
         )}
       </div>
     </div>
-  ), [configEmpresa, loading, uploadingLogo, unsavedChanges, handleEmpresaChange, handleEnderecoChange, handleLogoUpload])
+  )
 
   // Configurações de aparência
   const AparenciaView = () => (

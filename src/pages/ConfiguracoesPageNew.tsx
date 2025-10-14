@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, Crown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
@@ -95,7 +95,18 @@ export function ConfiguracoesPage() {
   })
 
   // Estado local para edição de empresa
-  const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>(empresaSettings)
+  const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>({
+    nome: '',
+    razao_social: '',
+    cnpj: '',
+    telefone: '',
+    email: '',
+    site: '',
+    endereco: '',
+    cidade: '',
+    cep: '',
+    logo: undefined
+  })
   const [isEmpresaInitialized, setIsEmpresaInitialized] = useState(false)
 
   // Sincronizar estado local quando as configurações carregarem
@@ -110,11 +121,20 @@ export function ConfiguracoesPage() {
 
   // Sincronizar dados da empresa APENAS UMA VEZ quando carregar
   useEffect(() => {
-    if (!loadingEmpresa && !isEmpresaInitialized) {
+    if (!loadingEmpresa && !isEmpresaInitialized && empresaSettings.nome) {
       setConfigEmpresa(empresaSettings)
       setIsEmpresaInitialized(true)
     }
-  }, [empresaSettings, loadingEmpresa, isEmpresaInitialized])
+  }, [loadingEmpresa, isEmpresaInitialized])
+  
+  // Dependências vazias para evitar re-execução
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isEmpresaInitialized && !loadingEmpresa) {
+      setConfigEmpresa(empresaSettings)
+      setIsEmpresaInitialized(true)
+    }
+  }, [])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',
@@ -368,8 +388,8 @@ export function ConfiguracoesPage() {
     setUnsavedChanges(true)
   }, [])
 
-  // Configurações da empresa
-  const EmpresaView = () => (
+  // Configurações da empresa - Memoizado para evitar re-renders
+  const EmpresaView = useMemo(() => () => (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="p-6 border-b">
         <div className="flex items-center justify-between">
@@ -533,7 +553,7 @@ export function ConfiguracoesPage() {
         )}
       </div>
     </div>
-  )
+  ), [configEmpresa, loading, uploadingLogo, unsavedChanges, handleEmpresaChange, handleEnderecoChange, handleLogoUpload])
 
   // Configurações de aparência
   const AparenciaView = () => (

@@ -261,3 +261,128 @@ body {
 .hover\:scale-102:hover {
   transform: scale(1.02);
 }
+
+/* ============================================
+   CONFIGURAÇÕES DE APARÊNCIA
+   ============================================ */
+
+/* Variáveis CSS personalizáveis */
+:root {
+  --color-primary: #3B82F6;
+  --color-secondary: #10B981;
+  --font-size-base: 16px;
+  --sidebar-width: 256px;
+  --sidebar-compact-width: 80px;
+}
+
+/* Tema escuro */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-gray-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-gray-500 {
+  color: #64748b !important;
+}
+
+html.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+html.dark .border-gray-300 {
+  border-color: #475569 !important;
+}
+
+html.dark .hover\:bg-gray-50:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark .hover\:bg-gray-100:hover {
+  background-color: #334155 !important;
+}
+
+/* Tamanho de fonte dinâmico */
+body {
+  font-size: var(--font-size-base);
+}
+
+/* Desabilitar animações */
+html.no-animations *,
+html.no-animations *::before,
+html.no-animations *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+}
+
+/* Sidebar compacta */
+html.sidebar-compact [data-sidebar] {
+  width: var(--sidebar-compact-width) !important;
+}
+
+html.sidebar-compact [data-sidebar] .sidebar-text {
+  display: none;
+}
+
+html.sidebar-compact [data-sidebar] .sidebar-logo-full {
+  display: none;
+}
+
+html.sidebar-compact [data-sidebar] .sidebar-logo-compact {
+  display: block;
+}
+
+/* Cores primárias personalizadas */
+.bg-primary-custom {
+  background-color: var(--color-primary);
+}
+
+.text-primary-custom {
+  color: var(--color-primary);
+}
+
+.border-primary-custom {
+  border-color: var(--color-primary);
+}
+
+.bg-secondary-custom {
+  background-color: var(--color-secondary);
+}
+
+.text-secondary-custom {
+  color: var(--color-secondary);
+}
+
+.border-secondary-custom {
+  border-color: var(--color-secondary);
+}

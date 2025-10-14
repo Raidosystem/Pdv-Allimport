@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, Crown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
+import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
+import toast from 'react-hot-toast'
 
 type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
 
@@ -72,6 +74,25 @@ export function ConfiguracoesPage() {
   const [loading, setLoading] = useState(false)
   const [unsavedChanges, setUnsavedChanges] = useState(false)
   const { isActive, isInTrial, daysRemaining } = useSubscription()
+  
+  // Hook de configurações de aparência
+  const { settings: appearanceSettings, saveSettings, loading: loadingAppearance } = useAppearanceSettings()
+  
+  // Estado local para edição de aparência
+  const [configAparencia, setConfigAparencia] = useState<ConfiguracaoAparencia>({
+    ...appearanceSettings,
+    fonte: 'Inter' // Adicionado campo que falta
+  })
+
+  // Sincronizar estado local quando as configurações carregarem
+  useEffect(() => {
+    if (!loadingAppearance) {
+      setConfigAparencia({
+        ...appearanceSettings,
+        fonte: 'Inter'
+      })
+    }
+  }, [appearanceSettings, loadingAppearance])
 
   // Mock data para configurações
   const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>({
@@ -85,16 +106,6 @@ export function ConfiguracoesPage() {
     email: '',
     site: '',
     logo: undefined
-  })
-
-  const [configAparencia, setConfigAparencia] = useState<ConfiguracaoAparencia>({
-    tema: 'claro',
-    cor_primaria: '#3B82F6',
-    cor_secundaria: '#10B981',
-    fonte: 'Inter',
-    tamanho_fonte: 'medio',
-    animacoes: true,
-    sidebar_compacta: false
   })
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
@@ -150,12 +161,31 @@ export function ConfiguracoesPage() {
 
   const handleSave = async (categoria: string) => {
     setLoading(true)
-    // Simular salvamento
-    setTimeout(() => {
+    
+    try {
+      if (categoria === 'Aparência') {
+        // Salvar configurações de aparência
+        const result = await saveSettings(configAparencia)
+        
+        if (result.success) {
+          toast.success('Configurações de aparência salvas com sucesso!')
+          setUnsavedChanges(false)
+        } else {
+          toast.error('Erro ao salvar configurações')
+        }
+      } else {
+        // Simular salvamento de outras categorias
+        setTimeout(() => {
+          toast.success(`Configurações de ${categoria} salvas com sucesso!`)
+          setUnsavedChanges(false)
+        }, 500)
+      }
+    } catch (error) {
+      console.error('Erro ao salvar:', error)
+      toast.error('Erro ao salvar configurações')
+    } finally {
       setLoading(false)
-      setUnsavedChanges(false)
-      alert(`Configurações de ${categoria} salvas com sucesso!`)
-    }, 1500)
+    }
   }
 
   const formatFileSize = (size: number) => {

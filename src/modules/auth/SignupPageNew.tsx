@@ -13,7 +13,6 @@ type DocumentType = 'CPF' | 'CNPJ'
 
 export function SignupPageNew() {
   const { signUp } = useAuth()
-  const navigate = useNavigate()
   
   const [step, setStep] = useState<'form' | 'verify'>('form')
   const [formData, setFormData] = useState({

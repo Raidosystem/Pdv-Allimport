@@ -107,7 +107,6 @@ export function ConfiguracoesPage() {
     cep: '',
     logo: undefined
   })
-  const [isEmpresaInitialized, setIsEmpresaInitialized] = useState(false)
 
   // Sincronizar estado local quando as configurações carregarem
   useEffect(() => {
@@ -121,20 +120,10 @@ export function ConfiguracoesPage() {
 
   // Sincronizar dados da empresa APENAS UMA VEZ quando carregar
   useEffect(() => {
-    if (!loadingEmpresa && !isEmpresaInitialized && empresaSettings.nome) {
+    if (!loadingEmpresa && empresaSettings.nome) {
       setConfigEmpresa(empresaSettings)
-      setIsEmpresaInitialized(true)
     }
-  }, [loadingEmpresa, isEmpresaInitialized])
-  
-  // Dependências vazias para evitar re-execução
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!isEmpresaInitialized && !loadingEmpresa) {
-      setConfigEmpresa(empresaSettings)
-      setIsEmpresaInitialized(true)
-    }
-  }, [])
+  }, [loadingEmpresa, empresaSettings.nome])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',

@@ -3,6 +3,7 @@ import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Clo
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
+import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import toast from 'react-hot-toast'
 
 type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
@@ -78,11 +79,23 @@ export function ConfiguracoesPage() {
   // Hook de configurações de aparência
   const { settings: appearanceSettings, saveSettings, loading: loadingAppearance } = useAppearanceSettings()
   
+  // Hook de configurações da empresa
+  const { 
+    settings: empresaSettings, 
+    saveSettings: saveEmpresa, 
+    uploadLogo,
+    loading: loadingEmpresa,
+    uploading: uploadingLogo
+  } = useEmpresaSettings()
+  
   // Estado local para edição de aparência
   const [configAparencia, setConfigAparencia] = useState<ConfiguracaoAparencia>({
     ...appearanceSettings,
     fonte: 'Inter' // Adicionado campo que falta
   })
+
+  // Estado local para edição de empresa
+  const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>(empresaSettings)
 
   // Sincronizar estado local quando as configurações carregarem
   useEffect(() => {
@@ -94,19 +107,12 @@ export function ConfiguracoesPage() {
     }
   }, [appearanceSettings, loadingAppearance])
 
-  // Mock data para configurações
-  const [configEmpresa, setConfigEmpresa] = useState<ConfiguracaoEmpresa>({
-    nome: 'Minha Empresa',
-    razao_social: 'Minha Empresa Ltda',
-    cnpj: '',
-    endereco: '',
-    cidade: '',
-    cep: '',
-    telefone: '',
-    email: '',
-    site: '',
-    logo: undefined
-  })
+  // Sincronizar dados da empresa
+  useEffect(() => {
+    if (!loadingEmpresa) {
+      setConfigEmpresa(empresaSettings)
+    }
+  }, [empresaSettings, loadingEmpresa])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',
@@ -173,6 +179,23 @@ export function ConfiguracoesPage() {
         } else {
           toast.error('Erro ao salvar configurações')
         }
+      } else if (categoria === 'Empresa') {
+        // Validar campos obrigatórios
+        if (!configEmpresa.nome.trim()) {
+          toast.error('Nome da empresa é obrigatório')
+          setLoading(false)
+          return
+        }
+
+        // Salvar configurações da empresa
+        const result = await saveEmpresa(configEmpresa)
+        
+        if (result.success) {
+          toast.success('Dados da empresa salvos com sucesso!')
+          setUnsavedChanges(false)
+        } else {
+          toast.error('Erro ao salvar dados da empresa')
+        }
       } else {
         // Simular salvamento de outras categorias
         setTimeout(() => {
@@ -185,6 +208,22 @@ export function ConfiguracoesPage() {
       toast.error('Erro ao salvar configurações')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Função para upload de logo
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const result = await uploadLogo(file)
+    
+    if (result.success && result.url) {
+      setConfigEmpresa(prev => ({ ...prev, logo: result.url }))
+      setUnsavedChanges(true)
+      toast.success('Logo enviada com sucesso!')
+    } else {
+      toast.error(result.error || 'Erro ao enviar logo')
     }
   }
 
@@ -456,13 +495,30 @@ export function ConfiguracoesPage() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Logo da Empresa
           </label>
+          
+          {configEmpresa.logo && (
+            <div className="mb-4 flex items-center justify-center">
+              <img 
+                src={configEmpresa.logo} 
+                alt="Logo da empresa" 
+                className="max-h-32 rounded-lg shadow-sm"
+              />
+            </div>
+          )}
+          
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
             <div className="space-y-1 text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <Upload className={`mx-auto h-12 w-12 ${uploadingLogo ? 'text-blue-500 animate-pulse' : 'text-gray-400'}`} />
               <div className="flex text-sm text-gray-600">
                 <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
-                  <span>Enviar arquivo</span>
-                  <input type="file" className="sr-only" accept="image/*" />
+                  <span>{uploadingLogo ? 'Enviando...' : 'Enviar arquivo'}</span>
+                  <input 
+                    type="file" 
+                    className="sr-only" 
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                  />
                 </label>
                 <p className="pl-1">ou arraste e solte</p>
               </div>

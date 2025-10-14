@@ -171,7 +171,8 @@ export function useEmpresaSettings() {
   // Carregar configurações quando o componente montar
   useEffect(() => {
     loadSettings()
-  }, [loadSettings])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return {
     settings,

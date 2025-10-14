@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, Upload, RefreshCw, Check, X, AlertTriangle, Crown } from 'lucide-react'
+import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, RefreshCw, Check, X, Crown, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
 import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
+import { EmpresaView } from '../components/EmpresaView'
 import toast from 'react-hot-toast'
 
 type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
@@ -120,15 +121,10 @@ export function ConfiguracoesPage() {
 
   // Sincronizar dados da empresa APENAS UMA VEZ quando carregar
   useEffect(() => {
-    if (!loadingEmpresa && Object.keys(empresaSettings).length > 0) {
-      setConfigEmpresa(prev => {
-        // Só atualiza se realmente mudou
-        if (prev.nome === '' && empresaSettings.nome !== '') {
-          return empresaSettings
-        }
-        return prev
-      })
+    if (!loadingEmpresa && empresaSettings.nome) {
+      setConfigEmpresa(empresaSettings)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingEmpresa])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
@@ -382,180 +378,6 @@ export function ConfiguracoesPage() {
     }))
     setUnsavedChanges(true)
   }
-
-  // Configurações da empresa
-  const EmpresaView = () => (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-6 border-b">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Dados da Empresa</h3>
-            <p className="text-gray-600 mt-1">Informações básicas da sua empresa</p>
-          </div>
-          <button
-            onClick={() => handleSave('Empresa')}
-            disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Salvar
-          </button>
-        </div>
-      </div>
-      
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nome da Empresa *
-            </label>
-            <input
-              key="empresa-nome"
-              type="text"
-              value={configEmpresa.nome}
-              onChange={(e) => handleEmpresaChange('nome', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Razão Social
-            </label>
-            <input
-              key="empresa-razao-social"
-              type="text"
-              value={configEmpresa.razao_social}
-              onChange={(e) => handleEmpresaChange('razao_social', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              CNPJ
-            </label>
-            <input
-              key="empresa-cnpj"
-              type="text"
-              value={configEmpresa.cnpj}
-              onChange={(e) => handleEmpresaChange('cnpj', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="00.000.000/0000-00"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Telefone
-            </label>
-            <input
-              key="empresa-telefone"
-              type="text"
-              value={configEmpresa.telefone}
-              onChange={(e) => handleEmpresaChange('telefone', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="(00) 00000-0000"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              key="empresa-email"
-              type="email"
-              value={configEmpresa.email}
-              onChange={(e) => handleEmpresaChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Website
-            </label>
-            <input
-              key="empresa-site"
-              type="url"
-              value={configEmpresa.site}
-              onChange={(e) => handleEmpresaChange('site', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="www.empresa.com.br"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Endereço Completo
-          </label>
-          <textarea
-            key="empresa-endereco"
-            rows={3}
-            value={`${configEmpresa.endereco}\n${configEmpresa.cidade}\nCEP: ${configEmpresa.cep}`}
-            onChange={(e) => handleEnderecoChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Rua, número, bairro&#10;Cidade, Estado&#10;CEP: 00000-000"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Logo da Empresa
-          </label>
-          
-          {configEmpresa.logo && (
-            <div className="mb-4 flex items-center justify-center">
-              <img 
-                src={configEmpresa.logo} 
-                alt="Logo da empresa" 
-                className="max-h-32 rounded-lg shadow-sm"
-              />
-            </div>
-          )}
-          
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-            <div className="space-y-1 text-center">
-              <Upload className={`mx-auto h-12 w-12 ${uploadingLogo ? 'text-blue-500 animate-pulse' : 'text-gray-400'}`} />
-              <div className="flex text-sm text-gray-600">
-                <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
-                  <span>{uploadingLogo ? 'Enviando...' : 'Enviar arquivo'}</span>
-                  <input 
-                    type="file" 
-                    className="sr-only" 
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={uploadingLogo}
-                  />
-                </label>
-                <p className="pl-1">ou arraste e solte</p>
-              </div>
-              <p className="text-xs text-gray-500">PNG, JPG até 2MB</p>
-            </div>
-          </div>
-        </div>
-
-        {unsavedChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div className="flex">
-              <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              <div className="ml-3">
-                <p className="text-sm text-yellow-800">
-                  Você tem alterações não salvas. Clique em "Salvar" para aplicar as mudanças.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
 
   // Configurações de aparência
   const AparenciaView = () => (
@@ -1006,7 +828,18 @@ export function ConfiguracoesPage() {
         {/* Conteúdo baseado na view selecionada */}
         <div className="animate-in fade-in duration-300">
           {viewMode === 'dashboard' && <DashboardView />}
-          {viewMode === 'empresa' && <EmpresaView />}
+          {viewMode === 'empresa' && (
+            <EmpresaView
+              configEmpresa={configEmpresa}
+              loading={loading}
+              uploadingLogo={uploadingLogo}
+              unsavedChanges={unsavedChanges}
+              onEmpresaChange={handleEmpresaChange}
+              onEnderecoChange={handleEnderecoChange}
+              onLogoUpload={handleLogoUpload}
+              onSave={() => handleSave('Empresa')}
+            />
+          )}
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
           {viewMode === 'assinatura' && <AssinaturaView />}

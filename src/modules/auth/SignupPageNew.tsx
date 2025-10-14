@@ -589,7 +589,7 @@ export function SignupPageNew() {
   return (
     <VerifyEmailCode 
       email={formData.email}
-      onSuccess={() => navigate('/login')}
+      password={formData.password}
       onResend={async () => {
         console.log('🔄 Reenviando código via Supabase OTP...')
         const result = await resendEmailVerificationCode(formData.email)
@@ -605,13 +605,15 @@ export function SignupPageNew() {
 // Componente de verificação
 function VerifyEmailCode({ 
   email,
-  onSuccess,
+  password,
   onResend 
 }: { 
   email: string
-  onSuccess: () => void
+  password: string
   onResend: () => Promise<void>
 }) {
+  const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -660,9 +662,33 @@ function VerifyEmailCode({
           console.warn('⚠️ Código verificado mas erro ao ativar período de teste:', activationResult.error)
         }
         
-        setTimeout(() => {
-          onSuccess()
-        }, 2500)
+        // Fazer login automático após verificação bem-sucedida
+        console.log('🔐 Fazendo login automático...')
+        
+        try {
+          const loginResult = await signIn(email, password)
+          
+          if (loginResult.error) {
+            console.error('❌ Erro no login automático:', loginResult.error)
+            // Se houver erro no login, redirecionar para página de login
+            setSuccessMessage('✅ Conta verificada! Redirecionando para o login...')
+            setTimeout(() => {
+              navigate('/login')
+            }, 2500)
+          } else {
+            console.log('✅ Login automático bem-sucedido! Redirecionando para o dashboard...')
+            setSuccessMessage(`✅ Bem-vindo! Você tem ${activationResult.daysRemaining || 15} dias de teste gratuito!`)
+            setTimeout(() => {
+              navigate('/dashboard')
+            }, 2500)
+          }
+        } catch (loginErr: any) {
+          console.error('❌ Erro ao fazer login automático:', loginErr)
+          setSuccessMessage('✅ Conta verificada! Redirecionando para o login...')
+          setTimeout(() => {
+            navigate('/login')
+          }, 2500)
+        }
       } else {
         setError(result.error || 'Código inválido. Tente novamente.')
         setCode(['', '', '', '', '', ''])

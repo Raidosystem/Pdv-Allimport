@@ -120,10 +120,16 @@ export function ConfiguracoesPage() {
 
   // Sincronizar dados da empresa APENAS UMA VEZ quando carregar
   useEffect(() => {
-    if (!loadingEmpresa && empresaSettings.nome) {
-      setConfigEmpresa(empresaSettings)
+    if (!loadingEmpresa && Object.keys(empresaSettings).length > 0) {
+      setConfigEmpresa(prev => {
+        // Só atualiza se realmente mudou
+        if (prev.nome === '' && empresaSettings.nome !== '') {
+          return empresaSettings
+        }
+        return prev
+      })
     }
-  }, [loadingEmpresa, empresaSettings.nome])
+  }, [loadingEmpresa])
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',
@@ -408,6 +414,7 @@ export function ConfiguracoesPage() {
               Nome da Empresa *
             </label>
             <input
+              key="empresa-nome"
               type="text"
               value={configEmpresa.nome}
               onChange={(e) => handleEmpresaChange('nome', e.target.value)}
@@ -420,6 +427,7 @@ export function ConfiguracoesPage() {
               Razão Social
             </label>
             <input
+              key="empresa-razao-social"
               type="text"
               value={configEmpresa.razao_social}
               onChange={(e) => handleEmpresaChange('razao_social', e.target.value)}
@@ -432,6 +440,7 @@ export function ConfiguracoesPage() {
               CNPJ
             </label>
             <input
+              key="empresa-cnpj"
               type="text"
               value={configEmpresa.cnpj}
               onChange={(e) => handleEmpresaChange('cnpj', e.target.value)}
@@ -445,6 +454,7 @@ export function ConfiguracoesPage() {
               Telefone
             </label>
             <input
+              key="empresa-telefone"
               type="text"
               value={configEmpresa.telefone}
               onChange={(e) => handleEmpresaChange('telefone', e.target.value)}
@@ -458,6 +468,7 @@ export function ConfiguracoesPage() {
               Email
             </label>
             <input
+              key="empresa-email"
               type="email"
               value={configEmpresa.email}
               onChange={(e) => handleEmpresaChange('email', e.target.value)}
@@ -470,6 +481,7 @@ export function ConfiguracoesPage() {
               Website
             </label>
             <input
+              key="empresa-site"
               type="url"
               value={configEmpresa.site}
               onChange={(e) => handleEmpresaChange('site', e.target.value)}
@@ -484,6 +496,7 @@ export function ConfiguracoesPage() {
             Endereço Completo
           </label>
           <textarea
+            key="empresa-endereco"
             rows={3}
             value={`${configEmpresa.endereco}\n${configEmpresa.cidade}\nCEP: ${configEmpresa.cep}`}
             onChange={(e) => handleEnderecoChange(e.target.value)}

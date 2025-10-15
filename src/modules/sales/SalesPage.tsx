@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
 import { useCaixa } from '../../hooks/useCaixa'
 import { usePrintReceipt } from '../../hooks/usePrintReceipt'
+import { useEmpresaSettings } from '../../hooks/useEmpresaSettings'
 import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/useSales'
 import { ProductSearch } from './components/ProductSearch'
 import { SaleResumo } from './components/SaleResumo'
@@ -24,6 +25,7 @@ export function SalesPage() {
   const { user } = useAuth()
   const { caixaAtual, loading: loadingCaixa, abrirCaixa } = useCaixa()
   const { printReceipt } = usePrintReceipt()
+  const { settings: empresaSettings } = useEmpresaSettings()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(false)
@@ -223,11 +225,23 @@ export function SalesPage() {
           phone: customer.phone,
           document: customer.document
         } : null,
-        storeName: "PDV Allimport",
+        storeName: empresaSettings.nome || "PDV Allimport",
         storeInfo: {
-          address: "Rua Exemplo, 123 - Centro",
-          phone: "(11) 99999-9999",
-          cnpj: "00.000.000/0001-00"
+          logo: empresaSettings.logo,
+          razao_social: empresaSettings.razao_social,
+          cnpj: empresaSettings.cnpj,
+          phone: empresaSettings.telefone,
+          email: empresaSettings.email,
+          // Endereço completo separado
+          logradouro: empresaSettings.logradouro,
+          numero: empresaSettings.numero,
+          complemento: empresaSettings.complemento,
+          bairro: empresaSettings.bairro,
+          cidade: empresaSettings.cidade,
+          estado: empresaSettings.estado,
+          cep: empresaSettings.cep,
+          // Fallback para endereço antigo (se ainda não foi migrado)
+          address: !empresaSettings.logradouro ? "Configure o endereço em Configurações → Empresa" : undefined
         },
         cashReceived,
         changeAmount

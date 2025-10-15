@@ -28,9 +28,20 @@ interface PrintReceiptData {
   } | null;
   storeName?: string;
   storeInfo?: {
+    logo?: string;
     address?: string;
     phone?: string;
     cnpj?: string;
+    razao_social?: string;
+    email?: string;
+    // Endereço completo separado
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
+    cep?: string;
   };
   cashReceived?: number;
   changeAmount?: number;

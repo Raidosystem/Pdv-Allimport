@@ -28,9 +28,20 @@ interface ReceiptProps {
   } | null;
   storeName?: string;
   storeInfo?: {
+    logo?: string;
     address?: string;
     phone?: string;
     cnpj?: string;
+    razao_social?: string;
+    email?: string;
+    // Endereço completo separado
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
+    cep?: string;
   };
   cashReceived?: number;
   changeAmount?: number;
@@ -67,23 +78,79 @@ const Receipt: React.FC<ReceiptProps> = ({
     color: 'black'
   };
 
+  // Montar endereço completo
+  const enderecoCompleto = storeInfo?.logradouro && storeInfo?.numero
+    ? `${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}`
+    : storeInfo?.address || '';
+  
+  const bairroCidade = [storeInfo?.bairro, storeInfo?.cidade].filter(Boolean).join(' - ');
+  const cepFormatado = storeInfo?.cep ? `CEP: ${storeInfo.cep}` : '';
+
   return (
     <div style={receiptStyle} id="receipt-content">
-      {/* Cabeçalho da Loja */}
+      {/* Cabeçalho da Loja com Logo */}
       <div style={{ textAlign: 'center', marginBottom: '15px', borderBottom: '1px dashed #000', paddingBottom: '10px' }}>
-        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '5px' }}>
-          {storeName}
-        </div>
-        {storeInfo?.address && (
-          <div style={{ fontSize: '10px', marginBottom: '2px' }}>
-            {storeInfo.address}
+        {/* Logo da Empresa */}
+        {storeInfo?.logo && (
+          <div style={{ marginBottom: '10px' }}>
+            <img 
+              src={storeInfo.logo} 
+              alt="Logo"
+              style={{ 
+                maxWidth: '120px', 
+                maxHeight: '80px', 
+                objectFit: 'contain',
+                margin: '0 auto',
+                display: 'block'
+              }} 
+            />
           </div>
         )}
+        
+        {/* Nome da Loja */}
+        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '3px' }}>
+          {storeName}
+        </div>
+        
+        {/* Razão Social (se diferente do nome) */}
+        {storeInfo?.razao_social && storeInfo.razao_social !== storeName && (
+          <div style={{ fontSize: '9px', marginBottom: '5px', color: '#555' }}>
+            {storeInfo.razao_social}
+          </div>
+        )}
+        
+        {/* Endereço Completo */}
+        {enderecoCompleto && (
+          <div style={{ fontSize: '10px', marginBottom: '2px' }}>
+            {enderecoCompleto}
+          </div>
+        )}
+        {bairroCidade && (
+          <div style={{ fontSize: '10px', marginBottom: '2px' }}>
+            {bairroCidade}
+          </div>
+        )}
+        {cepFormatado && (
+          <div style={{ fontSize: '10px', marginBottom: '2px' }}>
+            {cepFormatado}
+          </div>
+        )}
+        
+        {/* Telefone */}
         {storeInfo?.phone && (
           <div style={{ fontSize: '10px', marginBottom: '2px' }}>
             Tel: {storeInfo.phone}
           </div>
         )}
+        
+        {/* Email */}
+        {storeInfo?.email && (
+          <div style={{ fontSize: '10px', marginBottom: '2px' }}>
+            Email: {storeInfo.email}
+          </div>
+        )}
+        
+        {/* CNPJ */}
         {storeInfo?.cnpj && (
           <div style={{ fontSize: '10px' }}>
             CNPJ: {storeInfo.cnpj}

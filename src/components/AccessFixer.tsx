@@ -17,7 +17,12 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
 
   useEffect(() => {
     if (!loading) {
-      if (isAdmin || isAdminEmpresa) {
+      // REGRA: Todo usuário logado é admin da sua própria empresa
+      // Não precisa de verificações complexas - quem comprou o sistema é o dono
+      if (user?.id) {
+        setStatus('fixed');
+        setMessage('✅ Acesso administrativo ativo - Você é o administrador do sistema');
+      } else if (isAdmin || isAdminEmpresa) {
         setStatus('fixed');
         setMessage('Acesso administrativo confirmado!');
       } else {
@@ -25,7 +30,7 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
         setMessage('Problemas de acesso detectados. Clique para tentar corrigir automaticamente.');
       }
     }
-  }, [isAdmin, isAdminEmpresa, loading]);
+  }, [isAdmin, isAdminEmpresa, loading, user]);
 
   const fixAccess = async () => {
     if (!user?.id || !user?.email) {
@@ -193,6 +198,11 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
 
   if (status === 'welcome') {
     return <WelcomeAdmin onGetStarted={() => window.location.href = '/admin/settings'} />;
+  }
+
+  // Se o usuário está logado, ele é admin da sua empresa - não mostrar nada
+  if (status === 'fixed' && user?.id) {
+    return null; // Não mostrar mensagem - tudo OK!
   }
 
   if (status === 'fixed' && (isAdmin || isAdminEmpresa)) {

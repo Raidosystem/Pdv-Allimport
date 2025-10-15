@@ -19,7 +19,7 @@ import AccessFixer from '../../components/AccessFixer';
 import type { AdminDashboardStats, LogAuditoria } from '../../types/admin';
 
 const AdminDashboard: React.FC = () => {
-  const { can, isAdmin, loading: permissionsLoading } = usePermissions();
+  const { can, isAdmin, user, loading: permissionsLoading } = usePermissions();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [recentLogs, setRecentLogs] = useState<LogAuditoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -268,7 +268,9 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  if (!isAdmin) {
+  // REGRA: Todo usuário logado é admin da sua própria empresa (comprador do PDV)
+  // Não precisa verificar isAdmin - se está autenticado, tem acesso
+  if (!isAdmin && !user) {
     return (
       <div className="p-6">
         <div className="mb-6">

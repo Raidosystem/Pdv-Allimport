@@ -1,24 +1,28 @@
-import { Clock, Crown, AlertTriangle } from 'lucide-react'
+import { Crown, AlertTriangle } from 'lucide-react'
 import { useSubscription } from '../../hooks/useSubscription'
 
 export function SubscriptionDaysIndicator() {
-  const { subscription, daysRemaining, isActive, isInTrial } = useSubscription()
+  const { daysRemaining, isInTrial, hasAccess } = useSubscription()
 
-  if (!subscription || !isActive) {
+  // Debug: ver valores no console
+  console.log('📊 SubscriptionDaysIndicator:', { hasAccess, daysRemaining, isInTrial })
+
+  // Mostrar se tiver acesso (ativo ou em trial)
+  if (!hasAccess || daysRemaining <= 0) {
     return null
   }
 
   // Definir a cor baseada nos dias restantes
   const getIndicatorStyle = () => {
-    if (daysRemaining >= 6) {
+    if (daysRemaining >= 30) {
       return {
         bgColor: 'bg-green-100',
         textColor: 'text-green-800',
         borderColor: 'border-green-300',
-        icon: Clock,
+        icon: Crown,
         iconColor: 'text-green-600'
       }
-    } else if (daysRemaining >= 3) {
+    } else if (daysRemaining >= 7) {
       return {
         bgColor: 'bg-yellow-100',
         textColor: 'text-yellow-800',

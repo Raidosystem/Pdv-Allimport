@@ -9,9 +9,13 @@ export interface EmpresaSettings {
   telefone: string
   email: string
   site: string
-  endereco: string
-  cidade: string
   cep: string
+  logradouro: string
+  numero: string
+  complemento: string
+  bairro: string
+  cidade: string
+  estado: string
   logo?: string
 }
 
@@ -22,9 +26,13 @@ const DEFAULT_SETTINGS: EmpresaSettings = {
   telefone: '',
   email: '',
   site: '',
-  endereco: '',
-  cidade: '',
   cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  estado: '',
   logo: undefined
 }
 
@@ -62,9 +70,13 @@ export function useEmpresaSettings() {
             telefone: data.telefone || '',
             email: data.email || '',
             site: data.site || '',
-            endereco: data.endereco || '',
-            cidade: data.cidade || '',
             cep: data.cep || '',
+            logradouro: data.logradouro || '',
+            numero: data.numero || '',
+            complemento: data.complemento || '',
+            bairro: data.bairro || '',
+            cidade: data.cidade || '',
+            estado: data.estado || '',
             logo: data.logo_url || undefined
           }
           
@@ -97,9 +109,13 @@ export function useEmpresaSettings() {
             telefone: newSettings.telefone,
             email: newSettings.email,
             site: newSettings.site,
-            endereco: newSettings.endereco,
-            cidade: newSettings.cidade,
             cep: newSettings.cep,
+            logradouro: newSettings.logradouro,
+            numero: newSettings.numero,
+            complemento: newSettings.complemento,
+            bairro: newSettings.bairro,
+            cidade: newSettings.cidade,
+            estado: newSettings.estado,
             logo_url: newSettings.logo,
             updated_at: new Date().toISOString()
           }, {

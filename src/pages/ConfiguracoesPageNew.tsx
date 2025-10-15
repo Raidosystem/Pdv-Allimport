@@ -13,9 +13,13 @@ interface ConfiguracaoEmpresa {
   nome: string
   razao_social: string
   cnpj: string
-  endereco: string
-  cidade: string
   cep: string
+  logradouro: string
+  numero: string
+  complemento: string
+  bairro: string
+  cidade: string
+  estado: string
   telefone: string
   email: string
   site: string
@@ -103,9 +107,13 @@ export function ConfiguracoesPage() {
     telefone: '',
     email: '',
     site: '',
-    endereco: '',
-    cidade: '',
     cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
     logo: undefined
   })
 
@@ -365,17 +373,6 @@ export function ConfiguracoesPage() {
   // Handlers para mudanças nos campos da empresa
   const handleEmpresaChange = (field: keyof ConfiguracaoEmpresa, value: string) => {
     setConfigEmpresa(prev => ({ ...prev, [field]: value }))
-    setUnsavedChanges(true)
-  }
-
-  const handleEnderecoChange = (value: string) => {
-    const lines = value.split('\n')
-    setConfigEmpresa(prev => ({
-      ...prev,
-      endereco: lines[0] || '',
-      cidade: lines[1] || '',
-      cep: lines[2] ? lines[2].replace('CEP: ', '') : ''
-    }))
     setUnsavedChanges(true)
   }
 
@@ -835,7 +832,6 @@ export function ConfiguracoesPage() {
               uploadingLogo={uploadingLogo}
               unsavedChanges={unsavedChanges}
               onEmpresaChange={handleEmpresaChange}
-              onEnderecoChange={handleEnderecoChange}
               onLogoUpload={handleLogoUpload}
               onSave={() => handleSave('Empresa')}
             />

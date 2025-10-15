@@ -1,14 +1,20 @@
 import { memo } from 'react'
 import { Save, Upload, AlertTriangle } from 'lucide-react'
 import { EmpresaInput } from './EmpresaInput'
+import { EnderecoForm } from './EnderecoForm'
+import type { EnderecoData } from './EnderecoForm'
 
 interface ConfiguracaoEmpresa {
   nome: string
   razao_social: string
   cnpj: string
-  endereco: string
-  cidade: string
   cep: string
+  logradouro: string
+  numero: string
+  complemento: string
+  bairro: string
+  cidade: string
+  estado: string
   telefone: string
   email: string
   site: string
@@ -21,7 +27,6 @@ interface EmpresaViewProps {
   uploadingLogo: boolean
   unsavedChanges: boolean
   onEmpresaChange: (field: keyof ConfiguracaoEmpresa, value: string) => void
-  onEnderecoChange: (value: string) => void
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   onSave: () => void
 }
@@ -32,10 +37,23 @@ export const EmpresaView = memo(({
   uploadingLogo,
   unsavedChanges,
   onEmpresaChange,
-  onEnderecoChange,
   onLogoUpload,
   onSave
 }: EmpresaViewProps) => {
+  const handleEnderecoChange = (field: keyof EnderecoData, value: string) => {
+    onEmpresaChange(field, value)
+  }
+
+  const enderecoData: EnderecoData = {
+    cep: configEmpresa.cep,
+    logradouro: configEmpresa.logradouro,
+    numero: configEmpresa.numero,
+    complemento: configEmpresa.complemento,
+    bairro: configEmpresa.bairro,
+    cidade: configEmpresa.cidade,
+    estado: configEmpresa.estado
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="p-6 border-b">
@@ -104,18 +122,12 @@ export const EmpresaView = memo(({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Endereço Completo
-          </label>
-          <textarea
-            rows={3}
-            value={`${configEmpresa.endereco}\n${configEmpresa.cidade}\nCEP: ${configEmpresa.cep}`}
-            onChange={(e) => onEnderecoChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Rua, número, bairro&#10;Cidade, Estado&#10;CEP: 00000-000"
-          />
-        </div>
+        {/* Formulário de Endereço com busca automática de CEP */}
+        <EnderecoForm
+          endereco={enderecoData}
+          onChange={handleEnderecoChange}
+          disabled={loading}
+        />
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

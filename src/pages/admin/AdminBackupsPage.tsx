@@ -99,12 +99,9 @@ const AdminBackupsPage: React.FC = () => {
       }
     };
 
-    // NÃO executar ao carregar - apenas configurar o intervalo
+    // APENAS configurar o intervalo - NÃO executar ao carregar a página
     // Verificar a cada hora se precisa fazer backup
     const interval = setInterval(checkAndRunBackup, 60 * 60 * 1000);
-
-    // Verificar imediatamente apenas uma vez na inicialização
-    checkAndRunBackup();
 
     return () => clearInterval(interval);
   }, [config.automatico_ativo]);

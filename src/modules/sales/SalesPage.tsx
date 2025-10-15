@@ -37,6 +37,24 @@ export function SalesPage() {
   const [pendingSaleData, setPendingSaleData] = useState<any>(null)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
 
+  // Sincronizar cliente selecionado com customer para impressão
+  useEffect(() => {
+    if (clienteSelecionado) {
+      setCustomer({
+        id: clienteSelecionado.id,
+        name: clienteSelecionado.nome,
+        email: clienteSelecionado.email || undefined,
+        phone: clienteSelecionado.telefone || undefined,
+        document: clienteSelecionado.cpf_cnpj || undefined,
+        active: clienteSelecionado.ativo,
+        created_at: clienteSelecionado.criado_em,
+        updated_at: clienteSelecionado.atualizado_em
+      })
+    } else {
+      setCustomer(null)
+    }
+  }, [clienteSelecionado])
+
   // Hooks do carrinho e cálculos
   const {
     items,

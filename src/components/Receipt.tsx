@@ -279,6 +279,19 @@ const Receipt: React.FC<ReceiptProps> = ({
       {/* Linha separadora */}
       <div style={{ borderTop: '1px dashed #000', marginBottom: '10px' }}></div>
 
+      {/* Garantia */}
+      <div style={{ 
+        textAlign: 'center', 
+        fontSize: '11px', 
+        fontWeight: 'bold',
+        marginBottom: '15px',
+        padding: '8px',
+        border: '2px solid #000',
+        borderRadius: '5px'
+      }}>
+        ★ GARANTIA DE 3 MESES ★
+      </div>
+
       {/* Rodapé */}
       <div style={{ textAlign: 'center', fontSize: '9px', marginBottom: '10px' }}>
         <div style={{ marginBottom: '5px' }}>

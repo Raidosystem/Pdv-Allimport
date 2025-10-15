@@ -572,7 +572,7 @@ const AdminBackupsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Backups</h1>
           <p className="text-gray-600">
-            Controle os backups automáticos e manuais do sistema
+            Backups automáticos diários + Download/Upload manual no seu PC
           </p>
         </div>
         
@@ -589,9 +589,12 @@ const AdminBackupsPage: React.FC = () => {
           
           {(can('administracao.backups', 'create') || isAdminEmpresa) && (
             <>
-              <label className="flex items-center gap-2 px-4 py-2 text-green-700 bg-green-50 rounded-lg hover:bg-green-100 cursor-pointer transition-colors">
+              <label 
+                className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 cursor-pointer transition-colors"
+                title="Carregar backup do seu PC"
+              >
                 <Upload className="w-4 h-4" />
-                Restaurar Backup
+                Restaurar do PC
                 <input
                   type="file"
                   accept=".json"
@@ -605,13 +608,14 @@ const AdminBackupsPage: React.FC = () => {
                 onClick={handleCreateBackup}
                 disabled={backupInProgress}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Baixar backup para o seu PC"
               >
                 {backupInProgress ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                {backupInProgress ? 'Criando...' : 'Novo Backup'}
+                {backupInProgress ? 'Criando...' : 'Baixar para PC'}
               </button>
             </>
           )}
@@ -652,7 +656,7 @@ const AdminBackupsPage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Backup Automático</p>
               <p className="text-lg font-bold text-gray-900">
-                {config.automatico_ativo ? 'Ativo' : 'Inativo'}
+                {config.automatico_ativo ? '✓ Ativo' : 'Inativo'}
               </p>
             </div>
             {config.automatico_ativo ? (
@@ -664,10 +668,15 @@ const AdminBackupsPage: React.FC = () => {
           <div className="mt-4">
             <span className="text-sm text-gray-600">
               {config.automatico_ativo 
-                ? `${config.frequencia} às ${config.horario}`
+                ? `Executando ${config.frequencia} às ${config.horario}`
                 : 'Configurar backup automático'
               }
             </span>
+            {config.automatico_ativo && (
+              <p className="text-xs text-green-600 mt-1">
+                Verifica a cada hora se passaram 24h
+              </p>
+            )}
           </div>
         </div>
 
@@ -692,6 +701,21 @@ const AdminBackupsPage: React.FC = () => {
             <span className="text-sm text-gray-600 mt-1">
               {formatFileSize(storageInfo.total_mb)} total
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dica de uso */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Database className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900 mb-1">Como usar os backups:</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• <strong>Backup Automático:</strong> Sistema faz backup sozinho todos os dias (verifica de hora em hora)</li>
+              <li>• <strong>Baixar para PC:</strong> Salva um arquivo .json no seu computador com todos os dados</li>
+              <li>• <strong>Restaurar do PC:</strong> Carrega um arquivo .json do seu computador e restaura os dados</li>
+            </ul>
           </div>
         </div>
       </div>

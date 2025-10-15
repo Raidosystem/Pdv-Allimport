@@ -49,9 +49,10 @@ export function SubscriptionDaysIndicator() {
       inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 
       ${style.bgColor} ${style.borderColor} ${style.textColor}
       shadow-sm transition-all duration-200 hover:shadow-md
+      ${isInTrial ? 'animate-pulse-slow' : ''}
     `}>
       {isInTrial ? (
-        <Crown className={`w-4 h-4 ${style.iconColor}`} />
+        <Crown className={`w-4 h-4 ${style.iconColor} animate-bounce-slow`} />
       ) : (
         <IconComponent className={`w-4 h-4 ${style.iconColor}`} />
       )}
@@ -60,8 +61,8 @@ export function SubscriptionDaysIndicator() {
         <span className="text-sm font-semibold">
           {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
         </span>
-        <span className="text-xs opacity-75">
-          {isInTrial ? 'período trial' : 'restantes'}
+        <span className="text-xs opacity-75 font-medium">
+          {isInTrial ? '🎁 Teste Grátis' : '✨ Premium'}
         </span>
       </div>
       
@@ -70,11 +71,13 @@ export function SubscriptionDaysIndicator() {
         <div className="w-16 h-2 bg-white/50 rounded-full overflow-hidden">
           <div 
             className={`h-full transition-all duration-300 ${
-              daysRemaining > 25 ? 'bg-green-500' :
-              daysRemaining >= 3 ? 'bg-yellow-500' : 'bg-red-500'
+              isInTrial 
+                ? (daysRemaining >= 7 ? 'bg-blue-500' : 'bg-orange-500')
+                : (daysRemaining > 30 ? 'bg-green-500' :
+                   daysRemaining >= 7 ? 'bg-yellow-500' : 'bg-red-500')
             }`}
             style={{ 
-              width: `${Math.max(5, Math.min(100, (daysRemaining / 31) * 100))}%` 
+              width: `${Math.max(5, Math.min(100, isInTrial ? (daysRemaining / 15) * 100 : (daysRemaining / 365) * 100))}%` 
             }}
           />
         </div>

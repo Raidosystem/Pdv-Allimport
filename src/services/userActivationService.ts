@@ -24,41 +24,39 @@ export async function activateUserAfterEmailVerification(
   email: string
 ): Promise<ActivationResponse> {
   try {
-    console.log('🎯 Ativando usuário após verificação de email:', email);
+    console.log('🎯 Ativando teste de 15 dias para novo usuário:', email);
 
-    // Chamar função do Supabase para ativar usuário
+    // Chamar NOVA função que ativa teste de 15 dias
     const { data, error } = await supabase
-      .rpc('activate_user_after_email_verification', {
+      .rpc('activate_trial_for_new_user', {
         user_email: email
       });
 
     if (error) {
-      console.error('❌ Erro ao ativar usuário:', error);
+      console.error('❌ Erro ao ativar período de teste:', error);
       throw error;
     }
 
     console.log('✅ Resposta da ativação:', data);
 
     if (data && data.success) {
-      const subscription = data.subscription || {};
-      
       return {
         success: true,
-        message: data.message || 'Usuário ativado com sucesso!',
-        trialEndDate: subscription.trial_end_date,
-        daysRemaining: subscription.days_remaining
+        message: data.message || '15 dias de teste ativados!',
+        trialEndDate: data.trial_end_date,
+        daysRemaining: data.days_remaining || 15
       };
     } else {
       return {
         success: false,
-        error: data?.error || 'Erro ao ativar usuário'
+        error: data?.error || 'Erro ao ativar período de teste'
       };
     }
   } catch (error: any) {
     console.error('❌ Erro na ativação:', error);
     return {
       success: false,
-      error: error.message || 'Erro ao ativar usuário'
+      error: error.message || 'Erro ao ativar período de teste'
     };
   }
 }

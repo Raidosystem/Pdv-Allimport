@@ -241,4 +241,41 @@ export class SubscriptionService {
       throw error
     }
   }
+
+  // 🆕 Fazer upgrade de teste para assinatura paga (SOMA OS DIAS DO TESTE)
+  static async upgradeToPaidSubscription(
+    userEmail: string,
+    planName: string,  // 'monthly', 'quarterly', 'semiannual', 'yearly'
+    paymentAmount: number
+  ): Promise<{ success: boolean; message?: string; total_days?: number; error?: string }> {
+    try {
+      console.log('🎯 Fazendo upgrade para assinatura paga:', { userEmail, planName, paymentAmount })
+
+      const { data, error } = await supabase.rpc('upgrade_to_paid_subscription', {
+        user_email: userEmail,
+        plan_name: planName,
+        payment_amount: paymentAmount
+      })
+
+      if (error) {
+        console.error('❌ Erro ao fazer upgrade:', error)
+        throw error
+      }
+
+      console.log('✅ Upgrade realizado:', data)
+      
+      return {
+        success: data.success,
+        message: data.message,
+        total_days: data.total_days,
+        error: data.error
+      }
+    } catch (error: any) {
+      console.error('❌ Erro no upgrade:', error)
+      return {
+        success: false,
+        error: error.message || 'Erro ao fazer upgrade'
+      }
+    }
+  }
 }

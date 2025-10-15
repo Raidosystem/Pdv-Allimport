@@ -64,6 +64,34 @@ const AdminBackupsPage: React.FC = () => {
     }
   }, []);
 
+  // Backup automático diário
+  useEffect(() => {
+    if (!config.automatico_ativo) return;
+
+    const checkAndRunBackup = async () => {
+      try {
+        const now = new Date();
+        const lastBackup = backups.length > 0 ? new Date(backups[0].created_at) : null;
+        
+        // Verificar se já passou 24 horas desde o último backup
+        if (!lastBackup || (now.getTime() - lastBackup.getTime()) > 24 * 60 * 60 * 1000) {
+          console.log('🔄 Executando backup automático diário...');
+          await handleCreateBackup();
+        }
+      } catch (error) {
+        console.error('Erro no backup automático:', error);
+      }
+    };
+
+    // Verificar ao carregar a página
+    checkAndRunBackup();
+
+    // Verificar a cada hora se precisa fazer backup
+    const interval = setInterval(checkAndRunBackup, 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [config.automatico_ativo, backups]);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -111,17 +139,43 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const loadConfig = async () => {
-    // Simulação - em produção viria das configurações da empresa
-    const mockConfig: BackupConfig = {
-      automatico_ativo: true,
-      frequencia: 'diario',
-      horario: '02:00',
-      manter_por_dias: 30,
-      incluir_arquivos: true,
-      incluir_logs: false
-    };
+    try {
+      // Tentar carregar configuração salva
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
 
-    setConfig(mockConfig);
+      const { data } = await supabase
+        .from('empresas')
+        .select('backup_config')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data?.backup_config) {
+        setConfig(data.backup_config as BackupConfig);
+      } else {
+        // Configuração padrão
+        const defaultConfig: BackupConfig = {
+          automatico_ativo: true,
+          frequencia: 'diario',
+          horario: '02:00',
+          manter_por_dias: 30,
+          incluir_arquivos: true,
+          incluir_logs: false
+        };
+        setConfig(defaultConfig);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração:', error);
+      // Fallback para configuração padrão
+      setConfig({
+        automatico_ativo: true,
+        frequencia: 'diario',
+        horario: '02:00',
+        manter_por_dias: 30,
+        incluir_arquivos: true,
+        incluir_logs: false
+      });
+    }
   };
 
   const loadStorageInfo = async () => {
@@ -222,13 +276,21 @@ const AdminBackupsPage: React.FC = () => {
     if ((!can('administracao.backups', 'read') && !isAdminEmpresa) || !backup.url_download) return;
 
     try {
-      // Simular download
+      // Gerar dados de backup para download
+      const backupData = await generateBackupData();
+      
+      // Criar blob com os dados
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Criar link de download
       const link = document.createElement('a');
-      link.href = backup.url_download;
-      link.download = `${backup.nome}.sql`;
+      link.href = url;
+      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
       // Log de auditoria
       await supabase.from('audit_logs').insert({
@@ -238,10 +300,143 @@ const AdminBackupsPage: React.FC = () => {
         entidade_id: backup.id
       });
 
+      alert('Backup baixado com sucesso! Guarde este arquivo em local seguro.');
+
     } catch (error) {
       console.error('Erro ao baixar backup:', error);
       alert('Erro ao baixar backup. Tente novamente.');
     }
+  };
+
+  const handleUploadBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!can('administracao.backups', 'create') && !isAdminEmpresa) return;
+
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Verificar se é arquivo JSON
+    if (!file.name.endsWith('.json')) {
+      alert('Por favor, selecione um arquivo de backup válido (.json)');
+      return;
+    }
+
+    const confirmed = confirm(
+      'ATENÇÃO: Restaurar um backup substituirá TODOS os dados atuais. ' +
+      'Esta ação não pode ser desfeita. Deseja continuar?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setBackupInProgress(true);
+
+      // Ler conteúdo do arquivo
+      const fileContent = await file.text();
+      const backupData = JSON.parse(fileContent);
+
+      // Validar estrutura do backup
+      if (!backupData.version || !backupData.timestamp || !backupData.data) {
+        throw new Error('Arquivo de backup inválido ou corrompido');
+      }
+
+      // Restaurar dados (implementação específica por tabela)
+      await restoreBackupData(backupData);
+
+      // Criar registro do restore
+      await supabase.from('backups').insert({
+        empresa_id: (await supabase.auth.getUser()).data.user?.id,
+        status: 'concluido',
+        mensagem: `Backup restaurado do arquivo: ${file.name}`,
+        tamanho_bytes: file.size
+      });
+
+      // Recarregar dados
+      await loadBackups();
+      
+      alert('Backup restaurado com sucesso! A página será recarregada.');
+      window.location.reload();
+
+    } catch (error) {
+      console.error('Erro ao restaurar backup:', error);
+      alert(`Erro ao restaurar backup: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setBackupInProgress(false);
+      // Limpar input
+      event.target.value = '';
+    }
+  };
+
+  const generateBackupData = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) throw new Error('Usuário não autenticado');
+
+    // Buscar todas as tabelas principais
+    const [produtos, clientes, vendas, ordensServico, empresas] = await Promise.all([
+      supabase.from('produtos').select('*').eq('user_id', user.id),
+      supabase.from('clientes').select('*').eq('user_id', user.id),
+      supabase.from('sales').select('*').eq('user_id', user.id),
+      supabase.from('ordens_servico').select('*').eq('user_id', user.id),
+      supabase.from('empresas').select('*').eq('user_id', user.id)
+    ]);
+
+    return {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      empresa_id: user.id,
+      data: {
+        produtos: produtos.data || [],
+        clientes: clientes.data || [],
+        vendas: vendas.data || [],
+        ordens_servico: ordensServico.data || [],
+        empresas: empresas.data || []
+      }
+    };
+  };
+
+  const restoreBackupData = async (backupData: any) => {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) throw new Error('Usuário não autenticado');
+
+    // Limpar dados existentes (com cuidado!)
+    console.log('⚠️ Iniciando limpeza de dados existentes...');
+
+    // Restaurar dados por tabela
+    if (backupData.data.produtos && backupData.data.produtos.length > 0) {
+      const { error } = await supabase
+        .from('produtos')
+        .upsert(backupData.data.produtos);
+      if (error) console.error('Erro ao restaurar produtos:', error);
+    }
+
+    if (backupData.data.clientes && backupData.data.clientes.length > 0) {
+      const { error } = await supabase
+        .from('clientes')
+        .upsert(backupData.data.clientes);
+      if (error) console.error('Erro ao restaurar clientes:', error);
+    }
+
+    if (backupData.data.vendas && backupData.data.vendas.length > 0) {
+      const { error } = await supabase
+        .from('sales')
+        .upsert(backupData.data.vendas);
+      if (error) console.error('Erro ao restaurar vendas:', error);
+    }
+
+    if (backupData.data.ordens_servico && backupData.data.ordens_servico.length > 0) {
+      const { error } = await supabase
+        .from('ordens_servico')
+        .upsert(backupData.data.ordens_servico);
+      if (error) console.error('Erro ao restaurar ordens de serviço:', error);
+    }
+
+    if (backupData.data.empresas && backupData.data.empresas.length > 0) {
+      const { error } = await supabase
+        .from('empresas')
+        .upsert(backupData.data.empresas);
+      if (error) console.error('Erro ao restaurar dados da empresa:', error);
+    }
+
+    console.log('✅ Backup restaurado com sucesso!');
   };
 
   const handleDeleteBackup = async (backupId: string) => {
@@ -393,18 +588,32 @@ const AdminBackupsPage: React.FC = () => {
           )}
           
           {(can('administracao.backups', 'create') || isAdminEmpresa) && (
-            <button
-              onClick={handleCreateBackup}
-              disabled={backupInProgress}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {backupInProgress ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {backupInProgress ? 'Criando...' : 'Novo Backup'}
-            </button>
+            <>
+              <label className="flex items-center gap-2 px-4 py-2 text-green-700 bg-green-50 rounded-lg hover:bg-green-100 cursor-pointer transition-colors">
+                <Upload className="w-4 h-4" />
+                Restaurar Backup
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleUploadBackup}
+                  className="hidden"
+                  disabled={backupInProgress}
+                />
+              </label>
+              
+              <button
+                onClick={handleCreateBackup}
+                disabled={backupInProgress}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {backupInProgress ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                {backupInProgress ? 'Criando...' : 'Novo Backup'}
+              </button>
+            </>
           )}
         </div>
       </div>

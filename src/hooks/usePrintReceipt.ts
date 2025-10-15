@@ -219,9 +219,26 @@ export function usePrintReceipt() {
           <div class="receipt">
             <!-- Cabeçalho da Loja -->
             <div class="header">
+              ${storeInfo?.logo ? `
+                <div style="margin-bottom: 10px;">
+                  <img src="${storeInfo.logo}" alt="Logo" style="max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto; display: block;" />
+                </div>
+              ` : ''}
               <div class="store-name">${storeName}</div>
-              ${storeInfo?.address ? `<div class="store-info">${storeInfo.address}</div>` : ''}
+              ${storeInfo?.razao_social && storeInfo.razao_social !== storeName ? `
+                <div style="font-size: 9px; margin-bottom: 5px; color: #555;">${storeInfo.razao_social}</div>
+              ` : ''}
+              ${storeInfo?.logradouro && storeInfo?.numero ? `
+                <div class="store-info">${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}</div>
+              ` : storeInfo?.address ? `
+                <div class="store-info">${storeInfo.address}</div>
+              ` : ''}
+              ${storeInfo?.bairro || storeInfo?.cidade ? `
+                <div class="store-info">${[storeInfo?.bairro, storeInfo?.cidade].filter(Boolean).join(' - ')}${storeInfo?.estado ? '/' + storeInfo.estado : ''}</div>
+              ` : ''}
+              ${storeInfo?.cep ? `<div class="store-info">CEP: ${storeInfo.cep}</div>` : ''}
               ${storeInfo?.phone ? `<div class="store-info">Tel: ${storeInfo.phone}</div>` : ''}
+              ${storeInfo?.email ? `<div class="store-info">Email: ${storeInfo.email}</div>` : ''}
               ${storeInfo?.cnpj ? `<div class="store-info">CNPJ: ${storeInfo.cnpj}</div>` : ''}
             </div>
 
@@ -318,6 +335,11 @@ export function usePrintReceipt() {
             </div>
 
             <div class="separator"></div>
+
+            <!-- Garantia -->
+            <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 15px; padding: 8px; border: 2px solid #000; border-radius: 5px;">
+              ★ GARANTIA DE 3 MESES ★
+            </div>
 
             <!-- Rodapé -->
             <div class="footer">

@@ -177,7 +177,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-2 xs:gap-3 sm:gap-4 md:gap-6 justify-center items-stretch px-2 xs:px-3 sm:px-4 max-w-sm sm:max-w-md mx-auto">
               <Link to="/signup" className="w-full">
                 <Button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg text-xs xs:text-sm sm:text-base px-3 xs:px-4 sm:px-5 py-1.5 xs:py-2 sm:py-2.5 transform hover:scale-105 transition-all font-medium rounded-md">
-                  🚀 Teste Grátis por 30 Dias
+                  🚀 Teste Grátis por 15 Dias
                 </Button>
               </Link>
               <Link to="/login" className="w-full">

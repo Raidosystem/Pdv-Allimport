@@ -40,7 +40,7 @@ export function SalesPage() {
   // Sincronizar cliente selecionado com customer para impressão
   useEffect(() => {
     if (clienteSelecionado) {
-      setCustomer({
+      const customerData = {
         id: clienteSelecionado.id,
         name: clienteSelecionado.nome,
         email: clienteSelecionado.email || undefined,
@@ -49,8 +49,11 @@ export function SalesPage() {
         active: clienteSelecionado.ativo,
         created_at: clienteSelecionado.criado_em,
         updated_at: clienteSelecionado.atualizado_em
-      })
+      }
+      console.log('👤 Cliente sincronizado para impressão:', customerData)
+      setCustomer(customerData)
     } else {
+      console.log('👤 Nenhum cliente selecionado')
       setCustomer(null)
     }
   }, [clienteSelecionado])

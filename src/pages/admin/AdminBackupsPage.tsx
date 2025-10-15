@@ -44,8 +44,8 @@ const AdminBackupsPage: React.FC = () => {
   const [config, setConfig] = useState<BackupConfig>({
     automatico_ativo: true,
     frequencia: 'diario',
-    horario: '02:00',
-    manter_por_dias: 30,
+    horario: '17:00',
+    manter_por_dias: 1,
     incluir_arquivos: true,
     incluir_logs: false
   });
@@ -74,7 +74,7 @@ const AdminBackupsPage: React.FC = () => {
     loadData(); // Sempre carregar dados
   }, []);
 
-  // Backup automático diário
+  // Backup automático diário (salva no sistema)
   useEffect(() => {
     if (!config.automatico_ativo) return;
 
@@ -86,7 +86,7 @@ const AdminBackupsPage: React.FC = () => {
         // Verificar se já passou 24 horas desde o último backup
         if (!lastBackup || (now.getTime() - lastBackup.getTime()) > 24 * 60 * 60 * 1000) {
           console.log('🔄 Executando backup automático diário...');
-          await handleCreateBackup();
+          await handleCreateBackupSystem();
         }
       } catch (error) {
         console.error('Erro no backup automático:', error);
@@ -167,8 +167,8 @@ const AdminBackupsPage: React.FC = () => {
         const defaultConfig: BackupConfig = {
           automatico_ativo: true,
           frequencia: 'diario',
-          horario: '02:00',
-          manter_por_dias: 30,
+          horario: '17:00',
+          manter_por_dias: 1,
           incluir_arquivos: true,
           incluir_logs: false
         };
@@ -180,8 +180,8 @@ const AdminBackupsPage: React.FC = () => {
       setConfig({
         automatico_ativo: true,
         frequencia: 'diario',
-        horario: '02:00',
-        manter_por_dias: 30,
+        horario: '17:00',
+        manter_por_dias: 1,
         incluir_arquivos: true,
         incluir_logs: false
       });
@@ -209,8 +209,8 @@ const AdminBackupsPage: React.FC = () => {
     }
   };
 
-  const handleCreateBackup = async () => {
-    // Todo usuário logado pode criar backup
+  // Criar backup APENAS no sistema (registro no banco)
+  const handleCreateBackupSystem = async () => {
     setBackupInProgress(true);
     try {
       // Criar registro de backup no Supabase
@@ -249,6 +249,8 @@ const AdminBackupsPage: React.FC = () => {
           await loadBackups();
           setBackupInProgress(false);
 
+          alert('✅ Backup salvo no sistema com sucesso!');
+
           // Log de auditoria
           await supabase.from('audit_logs').insert({
             recurso: 'administracao.backups',
@@ -271,6 +273,7 @@ const AdminBackupsPage: React.FC = () => {
 
           await loadBackups();
           setBackupInProgress(false);
+          alert('❌ Erro ao finalizar backup.');
         }
       }, 3000); // 3 segundos para simular
 
@@ -278,6 +281,61 @@ const AdminBackupsPage: React.FC = () => {
       console.error('Erro ao criar backup:', error);
       setBackupInProgress(false);
       alert('Erro ao criar backup. Tente novamente.');
+    }
+  };
+
+  // Baixar backup diretamente para o PC (download imediato)
+  const handleDownloadBackupToPC = async () => {
+    setBackupInProgress(true);
+    try {
+      // Gerar dados de backup
+      const backupData = await generateBackupData();
+      
+      // Criar blob com os dados
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Criar link de download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Criar registro do backup no sistema também
+      const { data: backup, error } = await supabase
+        .from('backups')
+        .insert({
+          empresa_id: (await supabase.auth.getUser()).data.user?.id,
+          status: 'concluido',
+          mensagem: 'Backup baixado para o PC',
+          tamanho_bytes: blob.size
+        })
+        .select()
+        .single();
+
+      if (error) console.error('Erro ao registrar backup:', error);
+
+      // Recarregar lista
+      await loadBackups();
+
+      // Log de auditoria
+      await supabase.from('audit_logs').insert({
+        recurso: 'administracao.backups',
+        acao: 'export',
+        entidade_tipo: 'backup',
+        entidade_id: backup?.id || 'unknown'
+      });
+
+      alert('✅ Backup baixado com sucesso! Guarde este arquivo em local seguro.');
+
+    } catch (error) {
+      console.error('Erro ao baixar backup:', error);
+      alert('❌ Erro ao baixar backup. Tente novamente.');
+    } finally {
+      setBackupInProgress(false);
     }
   };
 
@@ -581,7 +639,7 @@ const AdminBackupsPage: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Todo usuário logado pode configurar backups */}
+          {/* Configurações */}
           <button
             onClick={() => setShowConfigModal(true)}
             className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -590,10 +648,25 @@ const AdminBackupsPage: React.FC = () => {
             Configurações
           </button>
           
-          {/* Todo usuário logado pode fazer backup */}
+          {/* Criar Backup no Sistema */}
+          <button
+            onClick={handleCreateBackupSystem}
+            disabled={backupInProgress}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="Criar backup e salvar apenas no sistema"
+          >
+            {backupInProgress ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Database className="w-4 h-4" />
+            )}
+            {backupInProgress ? 'Criando...' : 'Criar Backup'}
+          </button>
+          
+          {/* Restaurar do PC - abre seletor de arquivo */}
           <label 
             className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 cursor-pointer transition-colors"
-            title="Carregar backup do seu PC"
+            title="Restaurar backup do seu computador"
           >
             <Upload className="w-4 h-4" />
             Restaurar do PC
@@ -606,18 +679,19 @@ const AdminBackupsPage: React.FC = () => {
             />
           </label>
           
+          {/* Baixar para PC - download imediato */}
           <button
-            onClick={handleCreateBackup}
+            onClick={handleDownloadBackupToPC}
             disabled={backupInProgress}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title="Baixar backup para o seu PC"
+            title="Baixar backup para o seu computador"
           >
             {backupInProgress ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Download className="w-4 h-4" />
             )}
-            {backupInProgress ? 'Criando...' : 'Baixar para PC'}
+            {backupInProgress ? 'Baixando...' : 'Baixar para PC'}
           </button>
         </div>
       </div>
@@ -712,9 +786,10 @@ const AdminBackupsPage: React.FC = () => {
           <div className="flex-1">
             <h3 className="font-semibold text-blue-900 mb-1">Como usar os backups:</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>Backup Automático:</strong> Sistema faz backup sozinho todos os dias (verifica de hora em hora)</li>
-              <li>• <strong>Baixar para PC:</strong> Salva um arquivo .json no seu computador com todos os dados</li>
-              <li>• <strong>Restaurar do PC:</strong> Carrega um arquivo .json do seu computador e restaura os dados</li>
+              <li>• <strong>Criar Backup:</strong> Cria backup e salva APENAS no sistema (registro no histórico)</li>
+              <li>• <strong>Baixar para PC:</strong> Baixa arquivo .json IMEDIATAMENTE para o seu computador</li>
+              <li>• <strong>Restaurar do PC:</strong> Abre seletor para você escolher arquivo .json e restaurar dados</li>
+              <li>• <strong>Backup Automático:</strong> Sistema cria backup sozinho todos os dias (verifica de hora em hora)</li>
             </ul>
           </div>
         </div>

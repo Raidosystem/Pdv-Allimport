@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle, Receipt } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useCaixa } from '../hooks/useCaixa'
 import type { AberturaCaixaForm } from '../types/caixa'
 
 type ViewMode = 'dashboard' | 'movimentacoes' | 'historico'
 
 export function CaixaPage() {
+  const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
   const [searchTerm, setSearchTerm] = useState('')
   const [tipoFilter, setTipoFilter] = useState<'entrada' | 'saida' | ''>('')
@@ -416,6 +418,15 @@ export function CaixaPage() {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2">
+            {/* Botão Financeiro - sempre visível */}
+            <button
+              onClick={() => navigate('/financeiro/contas-pagar')}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+            >
+              <Receipt className="h-5 w-5" />
+              Financeiro
+            </button>
+            
             {!caixaAtivo ? (
               <button
                 onClick={() => setShowAbrirCaixaModal(true)}

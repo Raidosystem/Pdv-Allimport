@@ -17,6 +17,7 @@ import { TestPage } from './pages/TestPage'
 import { CaixaPage } from './pages/CaixaPageNew'
 import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
 import { OrdensServicoPage } from './pages/OrdensServicoPageNew'
+import ContasPagarList from './modules/financeiro/contas-pagar/ContasPagarList'
 import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
 import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
@@ -264,6 +265,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <HistoricoCaixaPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/financeiro/contas-pagar" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ContasPagarList />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

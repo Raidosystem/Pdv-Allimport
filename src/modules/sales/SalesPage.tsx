@@ -197,6 +197,13 @@ export function SalesPage() {
       // Criar venda
       const sale = await salesService.create(saleData)
 
+      // Salvar dados para impressão ANTES de limpar
+      const dadosParaImpressao = {
+        sale,
+        saleData,
+        customerData: customer // Salva o customer antes de limpar
+      }
+
       // Limpar formulário
       clearCart()
       setCustomer(null)
@@ -206,7 +213,7 @@ export function SalesPage() {
       toast.success('Venda finalizada com sucesso!')
 
       // Mostrar modal de confirmação de impressão
-      setPendingSaleData({ sale, saleData })
+      setPendingSaleData(dadosParaImpressao)
       setShowPrintModal(true)
 
     } catch (error) {
@@ -218,10 +225,13 @@ export function SalesPage() {
   }
 
     // Imprimir comprovante
-  const handlePrintReceipt = (saleId: string, saleData: any) => {
+  const handlePrintReceipt = (saleId: string, saleData: any, customerData?: Customer | null) => {
     try {
+      // Usa o customerData passado ou o customer do estado (para preview)
+      const clienteParaImprimir = customerData !== undefined ? customerData : customer;
+      
       console.log('📄 Dados para impressão:', {
-        customer,
+        customer: clienteParaImprimir,
         empresaSettings
       });
 
@@ -244,12 +254,12 @@ export function SalesPage() {
             }
           }))
         },
-        customer: customer ? {
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          document: customer.document
+        customer: clienteParaImprimir ? {
+          id: clienteParaImprimir.id,
+          name: clienteParaImprimir.name,
+          email: clienteParaImprimir.email,
+          phone: clienteParaImprimir.phone,
+          document: clienteParaImprimir.document
         } : null,
         storeName: empresaSettings.nome || "PDV Allimport",
         storeInfo: {
@@ -513,11 +523,15 @@ export function SalesPage() {
         onClose={() => setShowPrintModal(false)}
         onConfirm={() => {
           if (pendingSaleData) {
-            handlePrintReceipt(pendingSaleData.sale.id, pendingSaleData.saleData)
+            handlePrintReceipt(
+              pendingSaleData.sale.id, 
+              pendingSaleData.saleData,
+              pendingSaleData.customerData // Passa o customer salvo
+            )
           }
         }}
         saleTotal={totalAmount}
-        customerName={customer?.name || clienteSelecionado?.nome}
+        customerName={pendingSaleData?.customerData?.name || customer?.name || clienteSelecionado?.nome}
       />
 
       {/* Modal de Venda Rápida */}

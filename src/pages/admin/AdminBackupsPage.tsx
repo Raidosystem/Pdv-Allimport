@@ -80,27 +80,34 @@ const AdminBackupsPage: React.FC = () => {
 
     const checkAndRunBackup = async () => {
       try {
+        // Pegar timestamp do último backup automático do localStorage
+        const lastAutoBackupTime = localStorage.getItem('lastAutoBackupTime');
         const now = new Date();
-        const lastBackup = backups.length > 0 ? new Date(backups[0].created_at) : null;
         
-        // Verificar se já passou 24 horas desde o último backup
-        if (!lastBackup || (now.getTime() - lastBackup.getTime()) > 24 * 60 * 60 * 1000) {
+        // Se nunca fez backup automático OU passaram 24h desde o último
+        if (!lastAutoBackupTime || (now.getTime() - parseInt(lastAutoBackupTime)) > 24 * 60 * 60 * 1000) {
           console.log('🔄 Executando backup automático diário...');
           await handleCreateBackupSystem();
+          // Salvar timestamp do backup automático
+          localStorage.setItem('lastAutoBackupTime', now.getTime().toString());
+        } else {
+          const horasRestantes = Math.ceil((24 * 60 * 60 * 1000 - (now.getTime() - parseInt(lastAutoBackupTime))) / (1000 * 60 * 60));
+          console.log(`⏰ Próximo backup automático em ${horasRestantes}h`);
         }
       } catch (error) {
         console.error('Erro no backup automático:', error);
       }
     };
 
-    // Verificar ao carregar a página
-    checkAndRunBackup();
-
+    // NÃO executar ao carregar - apenas configurar o intervalo
     // Verificar a cada hora se precisa fazer backup
     const interval = setInterval(checkAndRunBackup, 60 * 60 * 1000);
 
+    // Verificar imediatamente apenas uma vez na inicialização
+    checkAndRunBackup();
+
     return () => clearInterval(interval);
-  }, [config.automatico_ativo, backups]);
+  }, [config.automatico_ativo]);
 
   const loadData = async () => {
     setLoading(true);

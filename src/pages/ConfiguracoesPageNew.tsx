@@ -174,16 +174,24 @@ export function ConfiguracoesPage() {
   //   sincronizacao_nuvem: false
   // })
 
-  // Estatísticas do dashboard
+  // Estatísticas do dashboard - calculadas dinamicamente
   const stats = {
-    configuracoes_ativas: 0,
-    integracao_status: 'Desconectado',
+    configuracoes_ativas: [
+      empresaSettings.nome,
+      appearanceSettings.tema,
+      configImpressao.impressora_padrao
+    ].filter(Boolean).length,
+    integracao_status: isActive ? 'Conectado' : 'Ativo',
     ultimo_backup: new Date().toISOString(),
-    espaco_utilizado: 0.0, // GB
-    tempo_funcionamento: '0 dias, 0 horas',
-    usuarios_conectados: 0,
-    notificacoes_pendentes: 0,
-    status_sistema: 'Normal'
+    espaco_utilizado: empresaSettings.logo ? 0.5 : 0.1, // GB (estimativa)
+    tempo_funcionamento: isActive 
+      ? `${Math.floor(daysRemaining)} dias ativos`
+      : isInTrial 
+        ? `${daysRemaining} dias restantes (Trial)`
+        : '0 dias',
+    usuarios_conectados: 1, // Usuário atual sempre conectado
+    notificacoes_pendentes: !empresaSettings.nome ? 1 : 0, // Aviso se não configurou empresa
+    status_sistema: isActive || isInTrial ? 'Ativo' : 'Normal'
   }
 
   const handleSave = async (categoria: string) => {

@@ -62,6 +62,13 @@ export function usePrintReceipt() {
   const generateReceiptHTML = (data: PrintReceiptData) => {
     const { sale, customer, storeName = "PDV Allimport", storeInfo, cashReceived = 0, changeAmount = 0 } = data;
     
+    // Debug: verificar dados do cliente
+    console.log('🧾 Gerando HTML do cupom:', {
+      temCliente: !!customer,
+      nomeCliente: customer?.name,
+      customer
+    });
+    
     return `
       <!DOCTYPE html>
       <html>
@@ -225,16 +232,13 @@ export function usePrintReceipt() {
                 </div>
               ` : ''}
               <div class="store-name">${storeName}</div>
-              ${storeInfo?.razao_social && storeInfo.razao_social !== storeName ? `
-                <div style="font-size: 9px; margin-bottom: 5px; color: #555;">${storeInfo.razao_social}</div>
-              ` : ''}
               ${storeInfo?.logradouro && storeInfo?.numero ? `
                 <div class="store-info">${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}</div>
               ` : storeInfo?.address ? `
                 <div class="store-info">${storeInfo.address}</div>
               ` : ''}
               ${storeInfo?.bairro || storeInfo?.cidade ? `
-                <div class="store-info">${[storeInfo?.bairro, storeInfo?.cidade].filter(Boolean).join(' - ')}${storeInfo?.estado ? '/' + storeInfo.estado : ''}</div>
+                <div class="store-info">${[storeInfo?.bairro, storeInfo?.cidade, storeInfo?.estado].filter(Boolean).join(' - ')}</div>
               ` : ''}
               ${storeInfo?.cep ? `<div class="store-info">CEP: ${storeInfo.cep}</div>` : ''}
               ${storeInfo?.phone ? `<div class="store-info">Tel: ${storeInfo.phone}</div>` : ''}

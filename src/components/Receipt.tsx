@@ -83,7 +83,7 @@ const Receipt: React.FC<ReceiptProps> = ({
     ? `${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}`
     : storeInfo?.address || '';
   
-  const bairroCidade = [storeInfo?.bairro, storeInfo?.cidade].filter(Boolean).join(' - ');
+  const bairroCidade = [storeInfo?.bairro, storeInfo?.cidade, storeInfo?.estado].filter(Boolean).join(' - ');
   const cepFormatado = storeInfo?.cep ? `CEP: ${storeInfo.cep}` : '';
 
   return (
@@ -108,16 +108,9 @@ const Receipt: React.FC<ReceiptProps> = ({
         )}
         
         {/* Nome da Loja */}
-        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '3px' }}>
+        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '5px' }}>
           {storeName}
         </div>
-        
-        {/* Razão Social (se diferente do nome) */}
-        {storeInfo?.razao_social && storeInfo.razao_social !== storeName && (
-          <div style={{ fontSize: '9px', marginBottom: '5px', color: '#555' }}>
-            {storeInfo.razao_social}
-          </div>
-        )}
         
         {/* Endereço Completo */}
         {enderecoCompleto && (

@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 import { validateDocument, maskCPF, maskCNPJ, unformatDocument, maskPhone } from '../../utils/validators'
 import { sendEmailVerificationCode, verifyEmailCode, resendEmailVerificationCode } from '../../services/emailServiceSupabase'
 import { activateUserAfterEmailVerification } from '../../services/userActivationService'
+import { checkDocumentExists } from '../../services/documentValidationService'
 
 type DocumentType = 'CPF' | 'CNPJ'
 
@@ -93,7 +94,7 @@ export function SignupPageNew() {
     setFormData(prev => ({ ...prev, documentType: type, document: '' }))
   }
 
-  const validateForm = (): boolean => {
+  const validateForm = async (): Promise<boolean> => {
     if (formData.fullName.trim().length < 3) {
       setError('Nome deve ter pelo menos 3 caracteres')
       return false
@@ -119,6 +120,15 @@ export function SignupPageNew() {
       setError(`${formData.documentType} inválido`)
       return false
     }
+
+    // 🆕 Verificar se CPF/CNPJ já está cadastrado
+    console.log('🔍 Verificando se documento já existe...')
+    const documentCheck = await checkDocumentExists(formData.document)
+    if (!documentCheck.valid) {
+      setError(documentCheck.error || 'Este CPF/CNPJ já está cadastrado no sistema')
+      return false
+    }
+    console.log('✅ Documento disponível para cadastro')
 
     if (formData.documentType === 'CNPJ' && formData.companyName.trim().length < 3) {
       setError('Nome da empresa é obrigatório para CNPJ')
@@ -153,7 +163,8 @@ export function SignupPageNew() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    const isValid = await validateForm()
+    if (!isValid) return
     
     setLoading(true)
     setError('')

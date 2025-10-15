@@ -58,10 +58,20 @@ const AdminBackupsPage: React.FC = () => {
     backups_count: 0
   });
 
+  // Debug: verificar permissões
   useEffect(() => {
-    if (can('administracao.backups', 'read') || isAdminEmpresa) {
-      loadData();
-    }
+    console.log('🔍 Permissões de Backup:', {
+      can_read: can('administracao.backups', 'read'),
+      can_create: can('administracao.backups', 'create'),
+      can_update: can('administracao.backups', 'update'),
+      can_delete: can('administracao.backups', 'delete'),
+      isAdmin,
+      isAdminEmpresa
+    });
+  }, [can, isAdmin, isAdminEmpresa]);
+
+  useEffect(() => {
+    loadData(); // Sempre carregar dados
   }, []);
 
   // Backup automático diário
@@ -200,8 +210,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleCreateBackup = async () => {
-    if (!can('administracao.backups', 'create') && !isAdminEmpresa) return;
-
+    // Todo usuário logado pode criar backup
     setBackupInProgress(true);
     try {
       // Criar registro de backup no Supabase
@@ -273,8 +282,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleDownloadBackup = async (backup: BackupInfo) => {
-    if ((!can('administracao.backups', 'read') && !isAdminEmpresa) || !backup.url_download) return;
-
+    // Todo usuário logado pode baixar backup
     try {
       // Gerar dados de backup para download
       const backupData = await generateBackupData();
@@ -309,8 +317,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleUploadBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!can('administracao.backups', 'create') && !isAdminEmpresa) return;
-
+    // Todo usuário logado pode restaurar backup
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -440,8 +447,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleDeleteBackup = async (backupId: string) => {
-    if (!can('administracao.backups', 'delete') && !isAdminEmpresa) return;
-
+    // Todo usuário logado pode deletar backup
     if (confirm('Tem certeza que deseja excluir este backup? Esta ação não pode ser desfeita.')) {
       try {
         // Deletar do Supabase
@@ -471,8 +477,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleRestoreBackup = async (backup: BackupInfo) => {
-    if (!can('administracao.backups', 'update') && !isAdminEmpresa) return;
-
+    // Todo usuário logado pode restaurar backup
     const confirmed = confirm(
       `Tem certeza que deseja restaurar o backup "${backup.nome}"? ` +
       'Esta ação substituirá todos os dados atuais e não pode ser desfeita.'
@@ -499,8 +504,7 @@ const AdminBackupsPage: React.FC = () => {
   };
 
   const handleUpdateConfig = async (newConfig: BackupConfig) => {
-    if (!can('administracao.backups', 'update')) return;
-
+    // Todo usuário logado pode atualizar config
     try {
       setConfig(newConfig);
       setShowConfigModal(false);
@@ -577,48 +581,44 @@ const AdminBackupsPage: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          {(can('administracao.backups', 'update') || isAdminEmpresa) && (
-            <button
-              onClick={() => setShowConfigModal(true)}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              Configurações
-            </button>
-          )}
+          {/* Todo usuário logado pode configurar backups */}
+          <button
+            onClick={() => setShowConfigModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            Configurações
+          </button>
           
-          {(can('administracao.backups', 'create') || isAdminEmpresa) && (
-            <>
-              <label 
-                className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 cursor-pointer transition-colors"
-                title="Carregar backup do seu PC"
-              >
-                <Upload className="w-4 h-4" />
-                Restaurar do PC
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleUploadBackup}
-                  className="hidden"
-                  disabled={backupInProgress}
-                />
-              </label>
-              
-              <button
-                onClick={handleCreateBackup}
-                disabled={backupInProgress}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Baixar backup para o seu PC"
-              >
-                {backupInProgress ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                {backupInProgress ? 'Criando...' : 'Baixar para PC'}
-              </button>
-            </>
-          )}
+          {/* Todo usuário logado pode fazer backup */}
+          <label 
+            className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 cursor-pointer transition-colors"
+            title="Carregar backup do seu PC"
+          >
+            <Upload className="w-4 h-4" />
+            Restaurar do PC
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleUploadBackup}
+              className="hidden"
+              disabled={backupInProgress}
+            />
+          </label>
+          
+          <button
+            onClick={handleCreateBackup}
+            disabled={backupInProgress}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="Baixar backup para o seu PC"
+          >
+            {backupInProgress ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {backupInProgress ? 'Criando...' : 'Baixar para PC'}
+          </button>
         </div>
       </div>
 
@@ -824,7 +824,8 @@ const AdminBackupsPage: React.FC = () => {
                     
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        {backup.status === 'concluido' && backup.url_download && (can('administracao.backups', 'read') || isAdminEmpresa) && (
+                        {/* Botão Download - sempre visível para backups concluídos */}
+                        {backup.status === 'concluido' && (
                           <button
                             onClick={() => handleDownloadBackup(backup)}
                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
@@ -834,7 +835,8 @@ const AdminBackupsPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {backup.status === 'concluido' && (can('administracao.backups', 'update') || isAdminEmpresa) && (
+                        {/* Botão Restaurar - sempre visível para backups concluídos */}
+                        {backup.status === 'concluido' && (
                           <button
                             onClick={() => handleRestoreBackup(backup)}
                             className="p-1 text-green-600 hover:text-green-800 transition-colors"
@@ -844,15 +846,14 @@ const AdminBackupsPage: React.FC = () => {
                           </button>
                         )}
                         
-                        {(can('administracao.backups', 'delete') || isAdminEmpresa) && (
-                          <button
-                            onClick={() => handleDeleteBackup(backup.id)}
-                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                            title="Excluir backup"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                        {/* Botão Deletar - sempre visível */}
+                        <button
+                          onClick={() => handleDeleteBackup(backup.id)}
+                          className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                          title="Excluir backup"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

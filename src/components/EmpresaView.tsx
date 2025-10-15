@@ -1,8 +1,7 @@
-import { memo } from 'react'
-import { Save, Upload, AlertTriangle } from 'lucide-react'
+import { memo, useState } from 'react'
+import { Save, Upload, AlertTriangle, Edit2, Building, Phone, MapPin } from 'lucide-react'
 import { EmpresaInput } from './EmpresaInput'
 import { EnderecoForm } from './EnderecoForm'
-import type { EnderecoData } from './EnderecoForm'
 
 interface ConfiguracaoEmpresa {
   nome: string
@@ -31,7 +30,7 @@ interface EmpresaViewProps {
   onSave: () => void
 }
 
-export const EmpresaView = memo(({
+export const EmpresaView = memo(function EmpresaView({
   configEmpresa,
   loading,
   uploadingLogo,
@@ -39,117 +38,234 @@ export const EmpresaView = memo(({
   onEmpresaChange,
   onLogoUpload,
   onSave
-}: EmpresaViewProps) => {
-  const handleEnderecoChange = (field: keyof EnderecoData, value: string) => {
-    onEmpresaChange(field, value)
+}: EmpresaViewProps) {
+  // Detecta se já tem dados salvos
+  const hasData = configEmpresa.nome && configEmpresa.nome.trim() !== ''
+  
+  // Estado de edição (começa em true se não tem dados)
+  const [isEditing, setIsEditing] = useState(!hasData)
+
+
+
+  const handleSave = async () => {
+    await onSave()
+    setIsEditing(false) // Volta para modo visualização após salvar
   }
 
-  const enderecoData: EnderecoData = {
-    cep: configEmpresa.cep,
-    logradouro: configEmpresa.logradouro,
-    numero: configEmpresa.numero,
-    complemento: configEmpresa.complemento,
-    bairro: configEmpresa.bairro,
-    cidade: configEmpresa.cidade,
-    estado: configEmpresa.estado
-  }
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-6 border-b">
-        <div className="flex items-center justify-between">
+  // Modo visualização (quando tem dados e não está editando)
+  if (hasData && !isEditing) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Dados da Empresa</h3>
-            <p className="text-gray-600 mt-1">Informações básicas da sua empresa</p>
+            <h2 className="text-xl font-semibold text-gray-900">Dados da Empresa</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Informações cadastradas
+            </p>
           </div>
+          
           <button
-            onClick={onSave}
-            disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
+            <Edit2 className="w-4 h-4" />
+            Editar
+          </button>
+        </div>
+
+        {/* Logo */}
+        {configEmpresa.logo && (
+          <div className="mb-6 flex justify-center">
+            <img
+              src={configEmpresa.logo}
+              alt="Logo da empresa"
+              className="max-h-32 object-contain rounded-lg shadow-sm"
+            />
+          </div>
+        )}
+
+        {/* Informações em cards */}
+        <div className="space-y-4">
+          {/* Dados Básicos */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Building className="w-4 h-4" />
+              Dados Básicos
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Nome Fantasia:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.nome || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Razão Social:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.razao_social || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">CNPJ:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.cnpj || '-'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contato */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Phone className="w-4 h-4" />
+              Contato
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Telefone:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.telefone || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">E-mail:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.email || '-'}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Site:</span>
+                <p className="font-medium text-gray-900 mt-1">{configEmpresa.site || '-'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Endereço */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Endereço
+            </h3>
+            <div className="text-sm space-y-2">
+              <p className="font-medium text-gray-900">
+                {configEmpresa.logradouro || '-'}
+                {configEmpresa.numero && `, ${configEmpresa.numero}`}
+              </p>
+              {configEmpresa.complemento && (
+                <p className="text-gray-600">{configEmpresa.complemento}</p>
+              )}
+              <p className="text-gray-600">
+                {configEmpresa.bairro || '-'} - {configEmpresa.cidade || '-'}/{configEmpresa.estado || '-'}
+              </p>
+              <p className="text-gray-600">CEP: {configEmpresa.cep || '-'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Modo edição (formulário)
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Dados da Empresa</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Configure as informações da sua empresa
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {hasData && (
+            <button
+              onClick={() => setIsEditing(false)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={loading || !unsavedChanges}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Save className="w-4 h-4" />
             Salvar
           </button>
         </div>
       </div>
-      
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      {/* Alerta de mudanças não salvas */}
+      {unsavedChanges && (
+        <div className="mb-6 flex items-center gap-2 text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm">Você tem alterações não salvas</p>
+        </div>
+      )}
+
+      {/* Formulário */}
+      <div className="space-y-6">
+        {/* Dados Básicos */}
+        <div className="grid grid-cols-2 gap-4">
           <EmpresaInput
-            label="Nome da Empresa"
+            label="Nome Fantasia"
             value={configEmpresa.nome}
             onChange={(value) => onEmpresaChange('nome', value)}
-            required
+            placeholder="Ex: Loja ABC"
           />
-
           <EmpresaInput
             label="Razão Social"
             value={configEmpresa.razao_social}
             onChange={(value) => onEmpresaChange('razao_social', value)}
+            placeholder="Ex: Loja ABC Ltda"
           />
-
           <EmpresaInput
             label="CNPJ"
             value={configEmpresa.cnpj}
             onChange={(value) => onEmpresaChange('cnpj', value)}
             placeholder="00.000.000/0000-00"
           />
-
           <EmpresaInput
             label="Telefone"
             value={configEmpresa.telefone}
             onChange={(value) => onEmpresaChange('telefone', value)}
             placeholder="(00) 00000-0000"
           />
-
           <EmpresaInput
-            label="Email"
+            label="E-mail"
             type="email"
             value={configEmpresa.email}
             onChange={(value) => onEmpresaChange('email', value)}
+            placeholder="contato@empresa.com"
           />
-
           <EmpresaInput
-            label="Website"
-            type="url"
+            label="Site"
             value={configEmpresa.site}
             onChange={(value) => onEmpresaChange('site', value)}
-            placeholder="www.empresa.com.br"
+            placeholder="www.empresa.com"
           />
         </div>
 
-        {/* Formulário de Endereço com busca automática de CEP */}
-        <EnderecoForm
-          endereco={enderecoData}
-          onChange={handleEnderecoChange}
-          disabled={loading}
-        />
-
+        {/* Endereço */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Logo da Empresa
-          </label>
-          <div className="mt-2 flex items-center gap-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Endereço</h3>
+          <EnderecoForm
+            endereco={{
+              cep: configEmpresa.cep,
+              logradouro: configEmpresa.logradouro,
+              numero: configEmpresa.numero,
+              complemento: configEmpresa.complemento,
+              bairro: configEmpresa.bairro,
+              cidade: configEmpresa.cidade,
+              estado: configEmpresa.estado
+            }}
+            onChange={onEmpresaChange}
+          />
+        </div>
+
+        {/* Logo */}
+        <div>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Logo da Empresa</h3>
+          <div className="flex items-center gap-4">
             {configEmpresa.logo && (
-              <img 
-                src={configEmpresa.logo} 
-                alt="Logo" 
-                className="h-20 w-20 object-contain rounded border border-gray-300"
+              <img
+                src={configEmpresa.logo}
+                alt="Logo atual"
+                className="w-20 h-20 object-contain rounded border border-gray-200"
               />
             )}
-            <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-              {uploadingLogo ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-              <span className="text-sm">
-                {uploadingLogo ? 'Enviando...' : 'Escolher arquivo'}
-              </span>
+            <label className="cursor-pointer">
               <input
                 type="file"
                 accept="image/*"
@@ -157,28 +273,17 @@ export const EmpresaView = memo(({
                 className="hidden"
                 disabled={uploadingLogo}
               />
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <Upload className="w-4 h-4" />
+                {uploadingLogo ? 'Enviando...' : configEmpresa.logo ? 'Alterar Logo' : 'Enviar Logo'}
+              </div>
             </label>
           </div>
-          <p className="mt-2 text-sm text-gray-500">
-            PNG, JPG ou GIF (máximo 2MB)
+          <p className="text-xs text-gray-500 mt-2">
+            Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB
           </p>
         </div>
-
-        {unsavedChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div className="flex">
-              <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              <div className="ml-3">
-                <p className="text-sm text-yellow-800">
-                  Você tem alterações não salvas. Clique em "Salvar" para aplicar as mudanças.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
 })
-
-EmpresaView.displayName = 'EmpresaView'

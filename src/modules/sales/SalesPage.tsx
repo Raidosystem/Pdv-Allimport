@@ -199,6 +199,11 @@ export function SalesPage() {
     // Imprimir comprovante
   const handlePrintReceipt = (saleId: string, saleData: any) => {
     try {
+      console.log('📄 Dados para impressão:', {
+        customer,
+        empresaSettings
+      });
+
       const receiptData = {
         sale: {
           id: saleId,

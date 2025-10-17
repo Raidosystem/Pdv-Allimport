@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import { Users, Shield, Database, BarChart3, Crown, UserPlus, Plug } from 'lucide-react'
+import { Users, Shield, Database, BarChart3, Crown, UserPlus, UserCheck } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
 import AdminConvitesPage from './admin/AdminConvitesPage'
-import AdminIntegracoesPage from './admin/AdminIntegracoesPage'
 import AdminRolesPermissionsPage from './admin/AdminRolesPermissionsPage'
 import AdminBackupsPage from './admin/AdminBackupsPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
+import { ActivateUsersPage } from '../modules/admin/pages/ActivateUsersPage'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'convites' | 'integracoes' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug'
+type ViewMode = 'dashboard' | 'usuarios' | 'convites' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -31,16 +31,16 @@ function AdministracaoContent() {
       description: 'Gerenciar usuários do sistema'
     },
     {
+      id: 'ativar-usuarios' as ViewMode,
+      label: 'Ativar Usuários',
+      icon: UserCheck,
+      description: 'Criar e ativar novos funcionários com senha local'
+    },
+    {
       id: 'convites' as ViewMode,
       label: 'Convites',
       icon: UserPlus,
       description: 'Convidar novos usuários'
-    },
-    {
-      id: 'integracoes' as ViewMode,
-      label: 'Integrações',
-      icon: Plug,
-      description: 'Configurar integrações externas'
     },
     {
       id: 'permissoes' as ViewMode,
@@ -98,10 +98,10 @@ function AdministracaoContent() {
         return <AdminDashboard />
       case 'usuarios':
         return <AdminUsersPage />
+      case 'ativar-usuarios':
+        return <ActivateUsersPage />
       case 'convites':
         return <AdminConvitesPage />
-      case 'integracoes':
-        return <AdminIntegracoesPage />
       case 'permissoes':
         return <AdminRolesPermissionsPage />
       case 'backup':

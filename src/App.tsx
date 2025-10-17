@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './modules/auth'
 import { LoginPage } from './modules/auth/LoginPage'
+import { LocalLoginPage } from './modules/auth/LocalLoginPage'
 import { SignupPageNew } from './modules/auth/SignupPageNew'
 import { ConfirmEmailPage } from './modules/auth/ConfirmEmailPage'
 import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
@@ -35,6 +36,7 @@ import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
 import GerenciarFuncionarios from './pages/GerenciarFuncionarios'
+import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
@@ -185,6 +187,7 @@ function App() {
           {/* Rotas públicas */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login-local" element={<LocalLoginPage />} />
           <Route path="/signup" element={<SignupPageNew />} />
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -359,6 +362,16 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <GerenciarFuncionarios />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/ativar-usuarios" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ActivateUsersPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

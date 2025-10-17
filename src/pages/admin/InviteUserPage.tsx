@@ -60,15 +60,27 @@ const InviteUserPage: React.FC = () => {
 
   const createDefaultFuncoes = async () => {
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Buscar empresa do usuário
+      const { data: empresa, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (empresaError || !empresa) {
+        console.error('Erro ao buscar empresa:', empresaError);
+        return;
+      }
 
       const defaultFuncoes = [
-        { empresa_id: user.user.id, nome: 'Administrador', descricao: 'Acesso completo ao sistema' },
-        { empresa_id: user.user.id, nome: 'Gerente', descricao: 'Acesso gerencial' },
-        { empresa_id: user.user.id, nome: 'Vendedor', descricao: 'Acesso a vendas e clientes' },
-        { empresa_id: user.user.id, nome: 'Caixa', descricao: 'Acesso ao caixa' },
-        { empresa_id: user.user.id, nome: 'Funcionário', descricao: 'Acesso básico' }
+        { empresa_id: empresa.id, nome: 'Administrador', descricao: 'Acesso completo ao sistema', nivel: 1 },
+        { empresa_id: empresa.id, nome: 'Gerente', descricao: 'Acesso gerencial', nivel: 2 },
+        { empresa_id: empresa.id, nome: 'Vendedor', descricao: 'Acesso a vendas e clientes', nivel: 3 },
+        { empresa_id: empresa.id, nome: 'Caixa', descricao: 'Acesso ao caixa', nivel: 3 },
+        { empresa_id: empresa.id, nome: 'Funcionário', descricao: 'Acesso básico', nivel: 4 }
       ];
 
       const { data, error } = await supabase
@@ -106,14 +118,31 @@ const InviteUserPage: React.FC = () => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
 
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Usuário não autenticado');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      console.log('🔍 [InviteUser] User ID:', user.id);
+
+      // Buscar empresa do usuário
+      const { data: empresa, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (empresaError || !empresa) {
+        console.error('❌ [InviteUser] Erro ao buscar empresa:', empresaError);
+        throw new Error('Empresa não encontrada');
+      }
+
+      console.log('🏢 [InviteUser] Empresa ID:', empresa.id);
 
       // Criar funcionário
       const { data: funcionario, error } = await supabase
         .from('funcionarios')
         .insert({
-          empresa_id: user.user.id,
+          empresa_id: empresa.id,
+          user_id: null, // Será preenchido quando o convite for aceito
           email: formData.email,
           nome: formData.nome || null,
           telefone: formData.telefone || null,
@@ -124,23 +153,38 @@ const InviteUserPage: React.FC = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      console.log('👤 [InviteUser] Funcionário criado:', funcionario);
+
+      if (error) {
+        console.error('❌ [InviteUser] Erro ao criar funcionário:', error);
+        throw error;
+      }
 
       // Associar funções
       if (formData.funcaoIds.length > 0) {
+        console.log('🔑 [InviteUser] Associando funções:', formData.funcaoIds);
+        
         const funcionarioFuncoes = formData.funcaoIds.map((funcaoId: string) => ({
           funcionario_id: funcionario.id,
-          funcao_id: funcaoId,
-          empresa_id: user.user.id
+          funcao_id: funcaoId
         }));
 
-        await supabase
+        const { error: funcoesError } = await supabase
           .from('funcionario_funcoes')
           .insert(funcionarioFuncoes);
+
+        if (funcoesError) {
+          console.error('❌ [InviteUser] Erro ao associar funções:', funcoesError);
+          throw funcoesError;
+        }
+
+        console.log('✅ [InviteUser] Funções associadas com sucesso');
       }
 
       // Enviar e-mail de convite (implementar depois)
       await sendInviteEmail(formData.email, inviteToken);
+
+      console.log('✅ [InviteUser] Convite criado com sucesso!');
 
       // Redirecionar para lista de usuários com sucesso
       navigate('/admin/users', { 
@@ -149,9 +193,20 @@ const InviteUserPage: React.FC = () => {
         } 
       });
 
-    } catch (error) {
-      console.error('Erro ao convidar usuário:', error);
-      alert('Erro ao enviar convite. Tente novamente.');
+    } catch (error: any) {
+      console.error('❌ [InviteUser] Erro ao convidar usuário:', error);
+      
+      let errorMessage = 'Erro ao enviar convite. Verifique os dados e tente novamente.';
+      
+      if (error.code === '23505') {
+        errorMessage = 'Este e-mail já possui um convite pendente ou usuário cadastrado.';
+      } else if (error.code === '42501') {
+        errorMessage = 'Você não tem permissão para criar convites. Entre em contato com o administrador.';
+      } else if (error.message) {
+        errorMessage = `Erro: ${error.message}`;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -30,7 +30,12 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
   const loadPermissions = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('❌ Nenhum usuário logado');
+        return;
+      }
+
+      console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
 
       // Buscar dados do funcionário e suas permissões
       const { data: funcionarioData, error } = await supabase
@@ -50,6 +55,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
               escopo_lojas,
               funcao_permissoes (
                 permissao_id,
+                permissao,
                 permissoes (
                   id,
                   recurso,
@@ -59,13 +65,19 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
             )
           )
         `)
-        .eq('empresa_id', user.id)
+        .eq('user_id', user.id)
         .eq('status', 'ativo')
         .single();
 
+      console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
+      
+      if (error) {
+        console.error('⚠️ [usePermissions] Erro na query:', error);
+      }
+
       if (error || !funcionarioData) {
-        console.error('Erro ao carregar permissões:', error);
-        console.log('🔧 CRIANDO ADMIN AUTOMÁTICO: Todo usuário logado é admin da sua empresa');
+        console.error('❌ [usePermissions] Erro ao carregar permissões:', error);
+        console.log('🔧 [usePermissions] CRIANDO ADMIN AUTOMÁTICO: Todo usuário logado é admin da sua empresa');
         
         // REGRA: Todo usuário que compra o sistema é automaticamente admin da sua empresa
         if (user.email) {
@@ -126,6 +138,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         return;
       }
 
+      console.log('✅ [usePermissions] Funcionário encontrado:', funcionarioData.nome);
+      console.log('📋 [usePermissions] funcionario_funcoes:', funcionarioData.funcionario_funcoes);
+
       // Extrair permissões únicas
       const permissoes = new Set<string>();
       const funcoes: string[] = [];
@@ -135,6 +150,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         const funcao = ff.funcoes;
         funcoes.push(funcao.id);
         
+        console.log(`🔑 [usePermissions] Processando função: ${funcao.nome}`);
+        console.log(`📦 [usePermissions] funcao_permissoes:`, funcao.funcao_permissoes);
+        
         // Merge escopo de lojas
         if (funcao.escopo_lojas?.length > 0) {
           escopo_lojas = [...new Set([...escopo_lojas, ...funcao.escopo_lojas])];
@@ -143,14 +161,38 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         // Adicionar permissões desta função
         funcao.funcao_permissoes?.forEach((fp: any) => {
           const perm = fp.permissoes;
-          permissoes.add(`${perm.recurso}:${perm.acao}`);
+          if (perm) {
+            const permissaoStr = `${perm.recurso}:${perm.acao}`;
+            permissoes.add(permissaoStr);
+            console.log(`  ✅ Permissão adicionada: ${permissaoStr}`);
+          } else {
+            console.log(`  ⚠️ Permissão sem dados:`, fp);
+          }
         });
       });
 
-      // Determinar tipo de admin baseado no campo tipo_admin
-      const tipo_admin = funcionarioData.tipo_admin || 'funcionario';
+      console.log(`🎯 [usePermissions] Total de permissões extraídas: ${permissoes.size}`);
+      console.log(`📋 [usePermissions] Permissões:`, Array.from(permissoes));
+
+      // Determinar tipo de admin baseado no campo tipo_admin OU se tem função "Administrador"
+      let tipo_admin = funcionarioData.tipo_admin || 'funcionario';
+      
+      // Se tem função "Administrador", automaticamente é admin_empresa
+      const temFuncaoAdmin = funcionarioData.funcionario_funcoes?.some((ff: any) => 
+        ff.funcoes?.nome === 'Administrador'
+      );
+      
+      if (temFuncaoAdmin && tipo_admin === 'funcionario') {
+        console.log('🔧 [usePermissions] Detectado função Administrador - promovendo para admin_empresa');
+        tipo_admin = 'admin_empresa';
+      }
+      
       const is_super_admin = tipo_admin === 'super_admin';
       const is_admin_empresa = tipo_admin === 'admin_empresa';
+
+      console.log(`👤 [usePermissions] Tipo admin: ${tipo_admin}`);
+      console.log(`🔑 [usePermissions] is_admin_empresa: ${is_admin_empresa}`);
+      console.log(`👑 [usePermissions] is_super_admin: ${is_super_admin}`);
 
       // Admin da empresa e super admin têm acesso administrativo total
       // Admin empresa pode gerenciar usuários, permissões, etc. da sua empresa
@@ -158,6 +200,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       // Admin da empresa tem permissões automáticas para administração
       if (is_admin_empresa) {
+        console.log('✅ [usePermissions] Adicionando permissões automáticas de admin_empresa');
         permissoes.add('administracao.usuarios:create');
         permissoes.add('administracao.usuarios:read');
         permissoes.add('administracao.usuarios:update');
@@ -191,6 +234,11 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         tipo_admin,
         escopo_lojas: escopo_lojas.length > 0 ? escopo_lojas : [] // vazio = todas as lojas
       };
+
+      console.log('🎉 [usePermissions] Contexto final criado:', newContext);
+      console.log(`   📊 Total permissões no contexto: ${newContext.permissoes.length}`);
+      console.log(`   🔑 is_admin: ${newContext.is_admin}`);
+      console.log(`   🏢 is_admin_empresa: ${newContext.is_admin_empresa}`);
 
       setContext(newContext);
 
@@ -252,38 +300,63 @@ export const usePermissions = (): UsePermissionsReturn => {
   }, []);
 
   const can = useCallback((recurso: string, acao: string): boolean => {
-    if (!context) return false;
+    if (!context) {
+      console.log(`❌ [can] Sem contexto para verificar ${recurso}:${acao}`);
+      return false;
+    }
+    
+    console.log(`🔍 [can] Verificando ${recurso}:${acao}`);
+    console.log(`   Context:`, {
+      is_super_admin: context.is_super_admin,
+      is_admin_empresa: context.is_admin_empresa,
+      is_admin: context.is_admin,
+      tipo_admin: context.tipo_admin,
+      total_permissoes: context.permissoes.length
+    });
     
     // Super admin pode tudo
-    if (context.is_super_admin) return true;
+    if (context.is_super_admin) {
+      console.log(`   👑 Super admin - PERMITIDO`);
+      return true;
+    }
     
     // Admin da empresa SEMPRE pode gerenciar recursos administrativos
     if (context.is_admin_empresa || context.is_admin) {
-      console.log(`🔑 Admin verificando: ${recurso}:${acao} - PERMITIDO`);
+      console.log(`   🔑 É admin (is_admin_empresa=${context.is_admin_empresa}, is_admin=${context.is_admin})`);
       
       const adminResources = [
         'administracao.usuarios',
         'administracao.funcoes', 
         'administracao.sistema',
         'administracao.backup',
+        'administracao.backups',
         'administracao.logs',
+        'administracao.permissoes',
         'admin.dashboard'
       ];
       
       // Admins podem gerenciar tudo relacionado à administração
       if (adminResources.some(resource => recurso.startsWith(resource))) {
+        console.log(`   ✅ Recurso administrativo - PERMITIDO`);
         return true;
       }
       
       // Admins também podem acessar funcionalidades básicas do sistema
       if (recurso.includes('vendas') || recurso.includes('produtos') || recurso.includes('clientes')) {
+        console.log(`   ✅ Recurso básico - PERMITIDO`);
         return true;
       }
     }
     
     // Verificação normal de permissões para funcionários
-    const hasPermission = context.permissoes.includes(`${recurso}:${acao}`);
-    console.log(`🔍 Permissão ${recurso}:${acao}: ${hasPermission ? 'PERMITIDO' : 'NEGADO'}`);
+    const permissaoCompleta = `${recurso}:${acao}`;
+    const hasPermission = context.permissoes.includes(permissaoCompleta);
+    console.log(`   🔍 Verificando no array (${context.permissoes.length} permissões): ${permissaoCompleta} = ${hasPermission ? 'PERMITIDO' : 'NEGADO'}`);
+    
+    if (!hasPermission && context.permissoes.length > 0) {
+      console.log(`   📋 Permissões disponíveis:`, context.permissoes.slice(0, 5));
+    }
+    
     return hasPermission;
   }, [context]);
 

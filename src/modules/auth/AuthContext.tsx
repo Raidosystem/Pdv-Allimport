@@ -23,6 +23,7 @@ interface AuthContextType {
   sendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
   verifyWhatsAppCode: (userId: string, code: string) => Promise<boolean>
   resendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
+  signInLocal?: (userData: any) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -373,6 +374,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return sendWhatsAppCode(userId, phone)
   }
 
+  /**
+   * Login local (sem Supabase Auth)
+   */
+  const signInLocal = async (userData: any) => {
+    console.log('🔐 Login local iniciado:', userData)
+    
+    // Criar user simulado do Supabase com dados locais
+    const localUser = {
+      id: userData.funcionario_id,
+      email: userData.email || 'local@user.com',
+      user_metadata: {
+        nome: userData.nome,
+        tipo_admin: userData.tipo_admin,
+        empresa_id: userData.empresa_id
+      },
+      app_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    } as User
+
+    // Criar session simulada
+    const localSession = {
+      access_token: userData.token,
+      token_type: 'bearer',
+      user: localUser,
+      expires_at: Math.floor(Date.now() / 1000) + 28800, // 8 horas
+      expires_in: 28800
+    } as Session
+
+    setUser(localUser)
+    setSession(localSession)
+    
+    console.log('✅ Login local completo:', localUser)
+  }
+
   const value: AuthContextType = {
     user,
     session,
@@ -388,6 +424,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     sendWhatsAppCode,
     verifyWhatsAppCode,
     resendWhatsAppCode,
+    signInLocal,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

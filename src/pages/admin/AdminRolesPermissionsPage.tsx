@@ -15,6 +15,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../modules/auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 import type { Funcao, Permissao } from '../../types/admin';
 
@@ -24,6 +25,21 @@ interface FuncaoWithPermissions extends Funcao {
   nivel: number; // Adicionado para compatibilidade
   sistema?: boolean; // Adicionado para compatibilidade
 }
+
+// Função utilitária para traduzir ações para português
+const traduzirAcao = (acao: string): string => {
+  const traducoes: Record<string, string> = {
+    'create': 'Criar',
+    'read': 'Visualizar',
+    'update': 'Editar',
+    'delete': 'Excluir',
+    'manage': 'Gerenciar',
+    'execute': 'Executar',
+    'export': 'Exportar',
+    'import': 'Importar'
+  };
+  return traducoes[acao.toLowerCase()] || acao;
+};
 
 // Função utilitária para agrupar permissões por recurso
 const groupPermissionsByResource = (permissions: Permissao[]): Record<string, Permissao[]> => {
@@ -38,6 +54,7 @@ const groupPermissionsByResource = (permissions: Permissao[]): Record<string, Pe
 
 const AdminRolesPermissionsPage: React.FC = () => {
   const { can, isAdmin } = usePermissions();
+  const { user } = useAuth();
   const [funcoes, setFuncoes] = useState<FuncaoWithPermissions[]>([]);
   const [permissoes, setPermissoes] = useState<Permissao[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,15 +85,26 @@ const AdminRolesPermissionsPage: React.FC = () => {
   };
 
   const loadFuncoes = async () => {
-    const { data: funcoesData } = await supabase
+    const { data: funcoesData, error: funcoesError } = await supabase
       .from('funcoes')
       .select(`
         *,
         funcao_permissoes (
-          permissoes (*)
+          permissao_id,
+          permissoes (
+            id,
+            recurso,
+            acao,
+            descricao
+          )
         )
       `)
       .order('created_at', { ascending: false });
+
+    if (funcoesError) {
+      console.error('Erro ao carregar funções:', funcoesError);
+      return;
+    }
 
     if (funcoesData) {
       // Contar funcionários por função
@@ -93,12 +121,15 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
       const funcoesWithDetails: FuncaoWithPermissions[] = funcoesData.map(funcao => ({
         ...funcao,
-        permissoes: funcao.funcao_permissoes?.map((fp: any) => fp.permissoes) || [],
+        permissoes: funcao.funcao_permissoes
+          ?.map((fp: any) => fp.permissoes)
+          .filter((p: any) => p !== null) || [],
         funcionarios_count: funcionariosCount[funcao.id] || 0,
         nivel: 50, // Valor padrão temporário
         sistema: funcao.is_system || false
       }));
 
+      console.log('📋 Funções carregadas:', funcoesWithDetails);
       setFuncoes(funcoesWithDetails);
     }
   };
@@ -116,38 +147,65 @@ const AdminRolesPermissionsPage: React.FC = () => {
     if (!can('administracao.funcoes', 'create')) return;
 
     try {
-      // Criar função
+      // Buscar empresa_id do usuário atual ANTES de criar a função
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (empresaError || !empresaData) {
+        console.error('Erro ao buscar empresa:', empresaError);
+        alert('Erro ao buscar empresa');
+        return;
+      }
+
+      // Criar função com empresa_id
       const { data: funcao, error } = await supabase
         .from('funcoes')
-        .insert(data)
+        .insert({
+          ...data,
+          empresa_id: empresaData.id
+        })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Associar permissões
+      // Associar permissões (empresaData já foi buscado acima)
       if (permissaoIds.length > 0) {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcao.id,
-          permissao_id: permissaoId
+          permissao_id: permissaoId,
+          empresa_id: empresaData.id
         }));
 
-        await supabase
+        console.log('📝 Inserindo permissões:', funcaoPermissoes);
+
+        const { error: permError, data: permData } = await supabase
           .from('funcao_permissoes')
-          .insert(funcaoPermissoes);
+          .insert(funcaoPermissoes)
+          .select();
+
+        if (permError) {
+          console.error('❌ Erro ao inserir permissões:', permError);
+          throw new Error(`Erro ao associar permissões: ${permError.message}`);
+        }
+
+        console.log('✅ Permissões inseridas:', permData);
       }
 
       await loadFuncoes();
       setShowRoleModal(false);
 
-      // Log de auditoria
-      await supabase.from('audit_logs').insert({
-        recurso: 'administracao.funcoes',
-        acao: 'create',
-        entidade_tipo: 'funcao',
-        entidade_id: funcao.id,
-        detalhes: { ...data, permissoes: permissaoIds }
-      });
+      // Log de auditoria (desabilitado temporariamente)
+      // await supabase.from('audit_logs').insert({
+      //   recurso: 'administracao.funcoes',
+      //   acao: 'create',
+      //   entidade_tipo: 'funcao',
+      //   entidade_id: funcao.id,
+      //   detalhes: { ...data, permissoes: permissaoIds }
+      // });
 
     } catch (error) {
       console.error('Erro ao criar função:', error);
@@ -167,35 +225,59 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
       if (error) throw error;
 
+      // Buscar empresa_id do usuário atual
+      const { data: empresaData } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
       // Atualizar permissões
-      await supabase
+      console.log('🗑️ Deletando permissões antigas da função:', funcaoId);
+      
+      const { error: deleteError } = await supabase
         .from('funcao_permissoes')
         .delete()
         .eq('funcao_id', funcaoId);
 
-      if (permissaoIds.length > 0) {
+      if (deleteError) {
+        console.error('❌ Erro ao deletar permissões:', deleteError);
+      }
+
+      if (permissaoIds.length > 0 && empresaData) {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcaoId,
-          permissao_id: permissaoId
+          permissao_id: permissaoId,
+          empresa_id: empresaData.id
         }));
 
-        await supabase
+        console.log('📝 Inserindo novas permissões:', funcaoPermissoes);
+
+        const { error: insertError, data: insertData } = await supabase
           .from('funcao_permissoes')
-          .insert(funcaoPermissoes);
+          .insert(funcaoPermissoes)
+          .select();
+
+        if (insertError) {
+          console.error('❌ Erro ao inserir permissões:', insertError);
+          throw new Error(`Erro ao atualizar permissões: ${insertError.message}`);
+        }
+
+        console.log('✅ Permissões atualizadas:', insertData);
       }
 
       await loadFuncoes();
       setShowRoleModal(false);
       setEditingFuncao(null);
 
-      // Log de auditoria
-      await supabase.from('audit_logs').insert({
-        recurso: 'administracao.funcoes',
-        acao: 'update',
-        entidade_tipo: 'funcao',
-        entidade_id: funcaoId,
-        detalhes: { ...data, permissoes: permissaoIds }
-      });
+      // Log de auditoria (desabilitado temporariamente)
+      // await supabase.from('audit_logs').insert({
+      //   recurso: 'administracao.funcoes',
+      //   acao: 'update',
+      //   entidade_tipo: 'funcao',
+      //   entidade_id: funcaoId,
+      //   detalhes: { ...data, permissoes: permissaoIds }
+      // });
 
     } catch (error) {
       console.error('Erro ao editar função:', error);
@@ -224,13 +306,13 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
         await loadFuncoes();
 
-        // Log de auditoria
-        await supabase.from('audit_logs').insert({
-          recurso: 'administracao.funcoes',
-          acao: 'delete',
-          entidade_tipo: 'funcao',
-          entidade_id: funcaoId
-        });
+        // Log de auditoria (desabilitado temporariamente)
+        // await supabase.from('audit_logs').insert({
+        //   recurso: 'administracao.funcoes',
+        //   acao: 'delete',
+        //   entidade_tipo: 'funcao',
+        //   entidade_id: funcaoId
+        // });
 
       } catch (error) {
         console.error('Erro ao excluir função:', error);
@@ -438,9 +520,9 @@ const AdminRolesPermissionsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Criar/Editar Função */}
+      {/* Formulário de Criar/Editar Função (inline) */}
       {showRoleModal && (
-        <RoleModal
+        <RoleForm
           funcao={editingFuncao}
           permissoes={permissoes}
           onCreate={handleCreateRole}
@@ -466,8 +548,8 @@ const AdminRolesPermissionsPage: React.FC = () => {
   );
 };
 
-// Modal de Criar/Editar Função
-interface RoleModalProps {
+// Formulário de Criar/Editar Função (Inline)
+interface RoleFormProps {
   funcao?: FuncaoWithPermissions | null;
   permissoes: Permissao[];
   onCreate: (data: Partial<Funcao>, permissaoIds: string[]) => Promise<void>;
@@ -475,7 +557,7 @@ interface RoleModalProps {
   onClose: () => void;
 }
 
-const RoleModal: React.FC<RoleModalProps> = ({ funcao, permissoes, onCreate, onEdit, onClose }) => {
+const RoleForm: React.FC<RoleFormProps> = ({ funcao, permissoes, onCreate, onEdit, onClose }) => {
   const [nome, setNome] = useState(funcao?.nome || '');
   const [descricao, setDescricao] = useState(funcao?.descricao || '');
   const [nivel, setNivel] = useState(funcao?.nivel || 20);
@@ -510,13 +592,32 @@ const RoleModal: React.FC<RoleModalProps> = ({ funcao, permissoes, onCreate, onE
   const groupedPermissions = groupPermissionsByResource(permissoes);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {funcao ? 'Editar Função' : 'Nova Função'}
-        </h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div 
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-white">
+              {funcao ? 'Editar Função' : 'Nova Função'}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center justify-center"
+          >
+            <span className="text-xl">&times;</span>
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(85vh-140px)] p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -589,7 +690,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ funcao, permissoes, onCreate, onE
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="ml-2 text-sm text-gray-700">
-                          {permissao.acao}
+                          {traduzirAcao(permissao.acao)}
                         </span>
                       </label>
                     ))}
@@ -598,29 +699,34 @@ const RoleModal: React.FC<RoleModalProps> = ({ funcao, permissoes, onCreate, onE
               ))}
             </div>
           </div>
+        </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !nome}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <CheckCircle className="w-4 h-4" />
-              )}
-              {funcao ? 'Salvar Alterações' : 'Criar Função'}
-            </button>
-          </div>
-        </form>
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit(e as any);
+            }}
+            disabled={loading || !nome}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircle className="w-4 h-4" />
+            )}
+            {funcao ? 'Salvar Alterações' : 'Criar Função'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -661,7 +767,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ funcao, onClose }) 
                   <div key={permissao.id} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
                     <span className="text-sm text-gray-700">
-                      {permissao.acao}
+                      {traduzirAcao(permissao.acao)}
                     </span>
                   </div>
                 ))}

@@ -264,24 +264,26 @@ returns boolean language sql stable security definer as $$
       public.jwt_empresa_id() as empresa_id
   ),
   funcionario_info as (
-    select f.id as funcionario_id, f.status
+    select f.id as funcionario_id, f.status, f.empresa_id
     from public.funcionarios f
     join user_context uc on uc.user_id = f.user_id
     where f.empresa_id = (select empresa_id from user_context)
       and f.status = 'ativo'
   ),
   user_roles as (
-    select ff.funcao_id
+    select ff.funcao_id, func.empresa_id
     from public.funcionario_funcoes ff
     join funcionario_info fi on fi.funcionario_id = ff.funcionario_id
-    where ff.empresa_id = (select empresa_id from user_context)
+    join public.funcoes func on func.id = ff.funcao_id
+    where func.empresa_id = (select empresa_id from user_context)
   )
   select exists (
     select 1
     from public.funcao_permissoes fp
     join public.permissoes p on p.id = fp.permissao_id
     join user_roles ur on ur.funcao_id = fp.funcao_id
-    where fp.empresa_id = (select empresa_id from user_context)
+    join public.funcoes f on f.id = fp.funcao_id
+    where f.empresa_id = (select empresa_id from user_context)
       and p.recurso = p_recurso
       and p.acao = p_acao
   );

@@ -13,13 +13,24 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    storage: window.localStorage,
+    storageKey: 'supabase.auth.token',
+    debug: import.meta.env.DEV
   },
   realtime: {
     params: {
       eventsPerSecond: 10
     }
   }
+})
+
+// Log de inicialização
+console.log('🔧 Supabase inicializado:', {
+  url: SUPABASE_URL.substring(0, 30) + '...',
+  hasKey: !!SUPABASE_ANON_KEY,
+  persistSession: true,
+  storageKey: 'supabase.auth.token'
 })
 
 // Função para limpar sessão corrompida
@@ -59,14 +70,16 @@ export const validateSession = async () => {
   }
 }
 
-// Inicializar verificação de sessão
-validateSession().then((session) => {
-  if (session) {
-    console.log('✅ Sessão válida encontrada')
-  } else {
-    console.log('ℹ️ Nenhuma sessão válida encontrada')
-  }
-})
+// Inicializar verificação de sessão (apenas em desenvolvimento)
+if (import.meta.env.DEV) {
+  validateSession().then((session) => {
+    if (session) {
+      console.log('✅ Sessão válida encontrada')
+    } else {
+      console.log('ℹ️ Nenhuma sessão válida encontrada')
+    }
+  })
+}
 
 // Tipos para o banco de dados (será expandido conforme necessário)
 export type Database = {

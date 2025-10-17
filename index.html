@@ -27,10 +27,14 @@
             });
           }
           
-          // Desregistrar Service Workers
+          // Desregistrar Service Workers (ignorar erros)
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(regs => {
-              regs.forEach(reg => reg.unregister());
+              regs.forEach(reg => {
+                reg.unregister().catch(() => {
+                  console.log('⚠️ [INLINE] SW ativo, será removido no próximo reload');
+                });
+              });
             });
           }
           

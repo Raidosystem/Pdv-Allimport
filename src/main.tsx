@@ -27,11 +27,18 @@ const checkAndClearCache = async () => {
         console.log('✅ Cache API limpo')
       }
 
-      // Limpar Service Workers
+      // Limpar Service Workers (de forma segura)
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations()
-        await Promise.all(registrations.map(reg => reg.unregister()))
-        console.log('✅ Service Workers removidos')
+        for (const reg of registrations) {
+          try {
+            await reg.unregister()
+          } catch (err) {
+            // Ignorar erros de Service Worker ativo
+            console.log('⚠️ Service Worker será removido no próximo carregamento')
+          }
+        }
+        console.log('✅ Service Workers processados')
       }
 
       // Salvar nova versão

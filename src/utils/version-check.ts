@@ -79,13 +79,18 @@ async function clearAllCaches(): Promise<void> {
       console.log('✅ Cache API limpo:', cacheNames.length, 'caches removidos')
     }
 
-    // 2. Limpar Service Workers antigos
+    // 2. Limpar Service Workers antigos (de forma segura)
     if ('serviceWorker' in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(
-        registrations.map(reg => reg.unregister())
-      )
-      console.log('✅ Service Workers removidos:', registrations.length)
+      for (const reg of registrations) {
+        try {
+          await reg.unregister()
+        } catch (err) {
+          // Service Worker ativo pode dar erro - será removido no próximo reload
+          console.log('⚠️ Service Worker ativo, será removido no próximo carregamento')
+        }
+      }
+      console.log('✅ Service Workers processados:', registrations.length)
     }
 
     // 3. Limpar dados de versão antigos

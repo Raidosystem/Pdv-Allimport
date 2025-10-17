@@ -41,17 +41,58 @@ export function LocalLoginPage() {
       setLoading(true)
       
       // Buscar empresa padrão (primeira empresa do sistema)
-      const { data: empresa, error: empresaError } = await supabase
+      const { data: empresas, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
         .limit(1)
-        .single()
 
-      if (empresaError || !empresa) {
+      if (empresaError) {
         console.error('Erro ao buscar empresa:', empresaError)
-        toast.error('Erro ao carregar usuários')
+        toast.error('Erro ao carregar usuários. Verifique as permissões.')
         return
       }
+
+      // Se não há empresa cadastrada, criar empresa padrão
+      if (!empresas || empresas.length === 0) {
+        console.log('⚠️ Nenhuma empresa cadastrada. Criando empresa padrão...')
+        
+        const { data: novaEmpresa, error: criarError } = await supabase
+          .from('empresas')
+          .insert({
+            nome: 'Allimport',
+            cnpj: '00000000000000',
+            telefone: '(00) 00000-0000',
+            email: 'contato@allimport.com'
+          })
+          .select('id')
+          .single()
+
+        if (criarError || !novaEmpresa) {
+          console.error('Erro ao criar empresa padrão:', criarError)
+          toast.error('Erro ao configurar sistema. Entre em contato com o suporte.')
+          return
+        }
+
+        // Usar a empresa recém-criada
+        const { data, error } = await supabase
+          .rpc('listar_usuarios_ativos', { p_empresa_id: novaEmpresa.id })
+
+        if (error) {
+          console.error('Erro ao listar usuários:', error)
+          toast.error('Erro ao carregar usuários')
+          return
+        }
+
+        setUsuarios(data || [])
+        
+        if (data && data.length === 1) {
+          setUsuarioSelecionado(data[0])
+        }
+        
+        return
+      }
+
+      const empresa = empresas[0]
 
       // Listar usuários ativos usando RPC
       const { data, error } = await supabase

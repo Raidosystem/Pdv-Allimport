@@ -68,9 +68,11 @@ const AdminDashboard: React.FC = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
-        console.error('Usuário não autenticado');
+        console.error('❌ Usuário não autenticado');
         throw new Error('Usuário não autenticado');
       }
+
+      console.log('✅ Usuário autenticado:', currentUser.id);
 
       // Buscar funcionário para pegar empresa_id
       const { data: funcionario, error: funcError } = await supabase
@@ -80,9 +82,11 @@ const AdminDashboard: React.FC = () => {
         .single();
 
       if (funcError || !funcionario) {
-        console.error('Erro ao buscar funcionário:', funcError);
+        console.error('❌ Erro ao buscar funcionário:', funcError);
         throw funcError || new Error('Funcionário não encontrado');
       }
+
+      console.log('✅ Funcionário encontrado, empresa_id:', funcionario.empresa_id);
 
       // Buscar dados da empresa
       const { data: empresa, error: empError } = await supabase
@@ -92,30 +96,42 @@ const AdminDashboard: React.FC = () => {
         .single();
 
       if (empError) {
-        console.error('Erro ao buscar empresa:', empError);
+        console.error('❌ Erro ao buscar empresa:', empError);
         throw empError;
       }
 
+      if (!empresa) {
+        console.error('❌ Empresa não encontrada');
+        throw new Error('Empresa não encontrada');
+      }
+
+      console.log('✅ Empresa encontrada:', {
+        nome: empresa.nome,
+        plano: empresa.plano,
+        status: empresa.status
+      });
+
       let dias_restantes: number | undefined;
-      if (empresa?.assinatura_expires_at) {
+      if (empresa.assinatura_expires_at) {
         const expiration = new Date(empresa.assinatura_expires_at);
         const now = new Date();
         dias_restantes = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       }
 
+      // Retornar dados REAIS da empresa (sem fallbacks)
       return {
-        nome: empresa?.nome || 'Empresa',
-        plano: empresa?.plano || 'teste',
-        status: empresa?.status || 'ativo',
+        nome: empresa.nome,
+        plano: empresa.plano,
+        status: empresa.status,
         dias_restantes
       };
     } catch (error) {
-      console.error('Erro em loadEmpresaStats:', error);
-      // Retornar valores padrão em caso de erro
+      console.error('❌ Erro crítico em loadEmpresaStats:', error);
+      // Retornar valores padrão apenas em caso de erro real
       return {
-        nome: 'Empresa',
-        plano: 'teste',
-        status: 'ativo',
+        nome: 'Erro ao carregar',
+        plano: 'Erro',
+        status: 'erro',
         dias_restantes: undefined
       };
     }

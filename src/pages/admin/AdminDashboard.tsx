@@ -63,24 +63,62 @@ const AdminDashboard: React.FC = () => {
   };
 
   const loadEmpresaStats = async () => {
-    const { data: empresa } = await supabase
-      .from('empresas')
-      .select('nome, plano, status, assinatura_expires_at')
-      .single();
+    try {
+      // Buscar empresa do usuário atual
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        console.error('Usuário não autenticado');
+        throw new Error('Usuário não autenticado');
+      }
 
-    let dias_restantes: number | undefined;
-    if (empresa?.assinatura_expires_at) {
-      const expiration = new Date(empresa.assinatura_expires_at);
-      const now = new Date();
-      dias_restantes = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      // Buscar funcionário para pegar empresa_id
+      const { data: funcionario, error: funcError } = await supabase
+        .from('funcionarios')
+        .select('empresa_id')
+        .eq('user_id', currentUser.id)
+        .single();
+
+      if (funcError || !funcionario) {
+        console.error('Erro ao buscar funcionário:', funcError);
+        throw funcError || new Error('Funcionário não encontrado');
+      }
+
+      // Buscar dados da empresa
+      const { data: empresa, error: empError } = await supabase
+        .from('empresas')
+        .select('nome, plano, status, assinatura_expires_at')
+        .eq('id', funcionario.empresa_id)
+        .single();
+
+      if (empError) {
+        console.error('Erro ao buscar empresa:', empError);
+        throw empError;
+      }
+
+      let dias_restantes: number | undefined;
+      if (empresa?.assinatura_expires_at) {
+        const expiration = new Date(empresa.assinatura_expires_at);
+        const now = new Date();
+        dias_restantes = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      return {
+        nome: empresa?.nome || 'Empresa',
+        plano: empresa?.plano || 'teste',
+        status: empresa?.status || 'ativo',
+        dias_restantes
+      };
+    } catch (error) {
+      console.error('Erro em loadEmpresaStats:', error);
+      // Retornar valores padrão em caso de erro
+      return {
+        nome: 'Empresa',
+        plano: 'teste',
+        status: 'ativo',
+        dias_restantes: undefined
+      };
     }
-
-    return {
-      nome: empresa?.nome || 'Empresa',
-      plano: empresa?.plano || 'basic',
-      status: empresa?.status || 'ativo',
-      dias_restantes
-    };
   };
 
   const loadUsuariosStats = async () => {
@@ -222,6 +260,18 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const getPlanoNome = (plano: string): string => {
+    // Mapeamento de planos para nomes amigáveis
+    const planoMap: Record<string, string> = {
+      'teste': 'Teste',
+      'basic': 'Básico',
+      'premium': 'Premium',
+      'enterprise': 'Empresarial'
+    };
+    
+    return planoMap[plano.toLowerCase()] || plano.charAt(0).toUpperCase() + plano.slice(1);
+  };
+
   if (permissionsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -292,7 +342,7 @@ const AdminDashboard: React.FC = () => {
               {stats.empresa.status.charAt(0).toUpperCase() + stats.empresa.status.slice(1)}
             </span>
             <span className="text-sm text-gray-500">
-              Plano {stats.empresa.plano.charAt(0).toUpperCase() + stats.empresa.plano.slice(1)}
+              Plano {getPlanoNome(stats.empresa.plano)}
             </span>
           </div>
           {stats.empresa.dias_restantes && (

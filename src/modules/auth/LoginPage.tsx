@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -15,9 +16,11 @@ export function LoginPage() {
   const [error, setError] = useState('')
 
   // Redirecionar se já estiver logado
-  if (user) {
-    return <Navigate to="/dashboard" replace />
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -2,42 +2,36 @@
 const CACHE_NAME = 'pdv-allimport-v2.2.5';
 const STATIC_CACHE = 'pdv-static-v2.2.5';
 
-// Recursos essenciais para cache
+// Recursos essenciais para cache (apenas os que existem com certeza)
 const CORE_FILES = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/manifest.json'
 ];
 
 // Install event - cache core files
 self.addEventListener('install', event => {
   console.log('SW v2.2.5: Installing...');
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE)
-        .then(cache => {
-          console.log('SW: Caching core files');
-          return cache.addAll(CORE_FILES).catch(err => {
-            console.warn('SW: Some files failed to cache:', err);
-            // Tentar cachear arquivos individualmente
-            return Promise.allSettled(
-              CORE_FILES.map(file => cache.add(file))
-            );
-          });
-        }),
-      caches.open(CACHE_NAME)
-        .then(cache => {
-          console.log('SW: Cache opened');
-          return cache.add('/');
-        })
-    ]).then(() => {
-      console.log('SW: Install complete');
-      return self.skipWaiting();
-    }).catch(err => {
-      console.error('SW: Install failed:', err);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('SW: Cache criado');
+        // Tentar cachear arquivos individualmente sem falhar
+        return Promise.allSettled(
+          CORE_FILES.map(file => 
+            cache.add(file).catch(err => {
+              console.log(`SW: Não foi possível cachear ${file}`);
+              return null;
+            })
+          )
+        );
+      })
+      .then(() => {
+        console.log('SW: Install complete');
+        return self.skipWaiting();
+      })
+      .catch(err => {
+        console.log('SW: Install com avisos:', err);
+        return self.skipWaiting(); // Continuar mesmo com erros
+      })
   );
 });
 

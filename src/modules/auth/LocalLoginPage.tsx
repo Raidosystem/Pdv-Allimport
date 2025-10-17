@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Lock, ArrowLeft, User } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
@@ -20,6 +20,7 @@ interface LocalUser {
 
 export function LocalLoginPage() {
   const { user, signInLocal } = useAuth()
+  const navigate = useNavigate()
   const [usuarios, setUsuarios] = useState<LocalUser[]>([])
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<LocalUser | null>(null)
   const [senha, setSenha] = useState('')
@@ -27,9 +28,11 @@ export function LocalLoginPage() {
   const [loginLoading, setLoginLoading] = useState(false)
 
   // Redirecionar se já estiver logado
-  if (user) {
-    return <Navigate to="/dashboard" replace />
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
 
   // Carregar usuários ativos ao montar
   useEffect(() => {
@@ -93,25 +96,31 @@ export function LocalLoginPage() {
       }
 
       const empresa = empresas[0]
+      console.log('🏢 Empresa encontrada:', empresa)
 
       // Listar usuários ativos usando RPC
       const { data, error } = await supabase
         .rpc('listar_usuarios_ativos', { p_empresa_id: empresa.id })
 
       if (error) {
-        console.error('Erro ao listar usuários:', error)
+        console.error('❌ Erro ao listar usuários:', error)
         toast.error('Erro ao carregar usuários')
         return
       }
 
+      console.log('👥 Usuários encontrados:', data?.length || 0, data)
       setUsuarios(data || [])
       
       // Se houver apenas 1 usuário, selecionar automaticamente
       if (data && data.length === 1) {
+        console.log('✅ Auto-selecionando único usuário:', data[0].nome)
         setUsuarioSelecionado(data[0])
+      } else if (!data || data.length === 0) {
+        console.warn('⚠️ Nenhum usuário ativo encontrado para a empresa')
+        toast.error('Nenhum usuário ativo encontrado. Verifique as configurações.')
       }
     } catch (error) {
-      console.error('Erro ao carregar usuários:', error)
+      console.error('❌ Erro ao carregar usuários:', error)
       toast.error('Erro ao carregar usuários')
     } finally {
       setLoading(false)

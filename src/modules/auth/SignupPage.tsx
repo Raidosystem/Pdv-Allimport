@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 
 export function SignupPage() {
   const { signUp, user } = useAuth()
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,10 +30,12 @@ export function SignupPage() {
   }, [success])
 
   // Redirecionar se já estiver logado (mas não durante o processo de cadastro)
-  if (user && !loading) {
-    console.log('User detectado, redirecionando para dashboard:', user)
-    return <Navigate to="/dashboard" replace />
-  }
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('User detectado, redirecionando para dashboard:', user)
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, loading, navigate])
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))

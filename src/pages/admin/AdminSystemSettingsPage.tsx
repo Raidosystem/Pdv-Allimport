@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Globe,
-  Mail,
-  MessageSquare,
-  CreditCard,
   Shield,
-  CheckCircle,
   RefreshCw,
   Save,
-  Eye,
-  EyeOff,
   Monitor,
   Bell
 } from 'lucide-react';
@@ -242,6 +236,7 @@ const AdminSystemSettingsPage: React.FC = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTestConnection = async (type: 'email' | 'whatsapp' | 'mercado_pago') => {
     if (!settings) return;
 
@@ -293,6 +288,7 @@ const AdminSystemSettingsPage: React.FC = () => {
     return mpConfig.access_token && mpConfig.public_key;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const togglePasswordVisibility = (field: string) => {
     setShowPasswords({
       ...showPasswords,

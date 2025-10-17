@@ -274,10 +274,6 @@ export interface AdminDashboardStats {
     ultimo_backup?: string;
     proxima_cobranca?: string;
   };
-  integracao: {
-    email: 'ok' | 'erro' | 'nao_configurado';
-    whatsapp: 'ok' | 'erro' | 'nao_configurado';
-  };
   sistema: {
     versao: string;
     atualizacao_disponivel: boolean;

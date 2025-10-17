@@ -31,18 +31,16 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     try {
       // Carregar estatísticas em paralelo
-      const [empresaData, usuariosData, atividadeData, integracaoData] = await Promise.all([
+      const [empresaData, usuariosData, atividadeData] = await Promise.all([
         loadEmpresaStats(),
         loadUsuariosStats(),
-        loadAtividadeStats(),
-        loadIntegracaoStats()
+        loadAtividadeStats()
       ]);
 
       const dashboardStats: AdminDashboardStats = {
         empresa: empresaData,
         usuarios: usuariosData,
         atividade: atividadeData,
-        integracao: integracaoData,
         sistema: {
           versao: '2.2.5',
           atualizacao_disponivel: false,
@@ -126,20 +124,6 @@ const AdminDashboard: React.FC = () => {
       ultimo_backup,
       proxima_cobranca
     };
-  };
-
-  const loadIntegracaoStats = async () => {
-    const { data: empresa } = await supabase
-      .from('empresas')
-      .select('configuracoes')
-      .single();
-
-    const config = empresa?.configuracoes || {};
-
-    return {
-      email: config.email_smtp_host ? 'ok' : 'nao_configurado',
-      whatsapp: config.whatsapp_api_url ? 'ok' : 'nao_configurado'
-    } as const;
   };
 
   const loadRecentLogs = async () => {

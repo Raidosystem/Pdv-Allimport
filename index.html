@@ -7,9 +7,39 @@
     <title>PDV Allimport v2.2.5 - Sistema de Ponto de Venda</title>
     
     <!-- Cache Control - Evitar cache agressivo -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    
+    <!-- Sistema de Limpeza de Cache Inline -->
+    <script>
+      (function() {
+        const CACHE_VERSION = '2.2.5';
+        const LAST_VERSION = localStorage.getItem('pdv_inline_cache_version');
+        
+        if (LAST_VERSION !== CACHE_VERSION) {
+          console.log('🧹 [INLINE] Limpando cache antigo:', LAST_VERSION, '→', CACHE_VERSION);
+          
+          // Limpar caches
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => caches.delete(name));
+            });
+          }
+          
+          // Desregistrar Service Workers
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+              regs.forEach(reg => reg.unregister());
+            });
+          }
+          
+          // Salvar nova versão
+          localStorage.setItem('pdv_inline_cache_version', CACHE_VERSION);
+          console.log('✅ [INLINE] Cache limpo e atualizado');
+        }
+      })();
+    </script>
     
     <!-- PWA Meta Tags -->
     <meta name="description" content="Sistema de ponto de venda completo com PWA" />

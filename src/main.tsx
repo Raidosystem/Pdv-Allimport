@@ -7,6 +7,47 @@ import App from './App.tsx'
 
 console.log('🚀 PDV Allimport v2.2.3 - PWA Install Direto')
 
+// ===== SISTEMA DE LIMPEZA DE CACHE AUTOMÁTICO =====
+const CACHE_VERSION_KEY = 'pdv_cache_version'
+const CURRENT_CACHE_VERSION = '2.2.5' // Incrementar a cada deploy importante
+
+// Verificar e limpar cache se versão mudou
+const checkAndClearCache = async () => {
+  const lastVersion = localStorage.getItem(CACHE_VERSION_KEY)
+  
+  if (lastVersion !== CURRENT_CACHE_VERSION) {
+    console.log('🧹 Nova versão detectada, limpando cache...')
+    console.log(`   Antiga: ${lastVersion} → Nova: ${CURRENT_CACHE_VERSION}`)
+    
+    try {
+      // Limpar Cache API
+      if ('caches' in window) {
+        const cacheNames = await caches.keys()
+        await Promise.all(cacheNames.map(name => caches.delete(name)))
+        console.log('✅ Cache API limpo')
+      }
+
+      // Limpar Service Workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(registrations.map(reg => reg.unregister()))
+        console.log('✅ Service Workers removidos')
+      }
+
+      // Salvar nova versão
+      localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION)
+      console.log('✅ Cache atualizado para versão', CURRENT_CACHE_VERSION)
+      
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache:', error)
+    }
+  }
+}
+
+// Executar limpeza antes de renderizar
+checkAndClearCache()
+// ===== FIM DO SISTEMA DE LIMPEZA =====
+
 // Aguardar DOM estar completamente pronto
 const waitForComplete = (): Promise<void> => {
   return new Promise((resolve) => {

@@ -29,7 +29,7 @@ export async function checkVersion(onNewVersion?: () => void): Promise<void> {
     const response = await fetch('/version.json', { 
       cache: 'no-store',
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate'
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
       }
     })
     
@@ -48,6 +48,12 @@ export async function checkVersion(onNewVersion?: () => void): Promise<void> {
     // Se já viu uma versão e agora é diferente = nova versão
     if (lastSeenVersion && lastSeenVersion !== currentVersion) {
       console.log('🆕 Nova versão detectada!')
+      console.log('🧹 Limpando cache...')
+      
+      // Limpar cache agressivamente
+      await clearAllCaches()
+      
+      // Executar callback se fornecido
       onNewVersion?.()
     }
     
@@ -60,13 +66,107 @@ export async function checkVersion(onNewVersion?: () => void): Promise<void> {
 }
 
 /**
+ * Limpa todos os caches do navegador
+ */
+async function clearAllCaches(): Promise<void> {
+  try {
+    // 1. Limpar Cache API
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      )
+      console.log('✅ Cache API limpo:', cacheNames.length, 'caches removidos')
+    }
+
+    // 2. Limpar Service Workers antigos
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(
+        registrations.map(reg => reg.unregister())
+      )
+      console.log('✅ Service Workers removidos:', registrations.length)
+    }
+
+    // 3. Limpar dados de versão antigos
+    const keysToRemove = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && (key.includes('pdv-cache') || key.includes('backup') || key.includes('offline'))) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key))
+    console.log('✅ LocalStorage cache limpo:', keysToRemove.length, 'items removidos')
+
+    // 4. Limpar sessionStorage
+    sessionStorage.clear()
+    console.log('✅ SessionStorage limpo')
+
+  } catch (error) {
+    console.error('❌ Erro ao limpar cache:', error)
+  }
+}
+
+/**
  * Compatibilidade com sistema antigo
  */
 export async function checkForUpdate(): Promise<void> {
   return checkVersion(() => {
-    if (window.confirm('🚀 Nova versão disponível! Deseja atualizar agora?')) {
-      window.location.reload()
-    }
+    console.log('🚀 ATUALIZAÇÃO DETECTADA - Recarregando automaticamente...')
+    
+    // Mostrar notificação antes de recarregar
+    const notification = document.createElement('div')
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 999999;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      animation: slideIn 0.3s ease-out;
+    `
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px;">🚀</div>
+        <div>
+          <div>Nova versão disponível!</div>
+          <div style="font-size: 14px; font-weight: 400; opacity: 0.9; margin-top: 4px;">
+            Atualizando em 3 segundos...
+          </div>
+        </div>
+      </div>
+    `
+    
+    // Adicionar animação
+    const style = document.createElement('style')
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    `
+    document.head.appendChild(style)
+    document.body.appendChild(notification)
+    
+    // Recarregar após 3 segundos
+    setTimeout(() => {
+      notification.remove()
+      // Forçar reload sem cache
+      window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now()
+    }, 3000)
   })
 }
 

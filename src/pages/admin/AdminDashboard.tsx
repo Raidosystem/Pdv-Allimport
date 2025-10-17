@@ -64,73 +64,78 @@ const AdminDashboard: React.FC = () => {
 
   const loadEmpresaStats = async () => {
     try {
-      // Buscar empresa do usuário atual
+      // Buscar usuário autenticado
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
-        console.error('❌ Usuário não autenticado');
+        console.error('❌ [loadEmpresaStats] Usuário não autenticado');
         throw new Error('Usuário não autenticado');
       }
 
-      console.log('✅ Usuário autenticado:', currentUser.id);
+      console.log('🔍 [loadEmpresaStats] Buscando empresa para user_id:', currentUser.id);
 
-      // Buscar funcionário para pegar empresa_id
-      const { data: funcionario, error: funcError } = await supabase
-        .from('funcionarios')
-        .select('empresa_id')
-        .eq('user_id', currentUser.id)
-        .single();
-
-      if (funcError || !funcionario) {
-        console.error('❌ Erro ao buscar funcionário:', funcError);
-        throw funcError || new Error('Funcionário não encontrado');
-      }
-
-      console.log('✅ Funcionário encontrado, empresa_id:', funcionario.empresa_id);
-
-      // Buscar dados da empresa
-      const { data: empresa, error: empError } = await supabase
+      // BUSCAR DIRETO DA EMPRESA (admin é o dono)
+      const { data: empresa, error: empErr } = await supabase
         .from('empresas')
-        .select('nome, plano, status, assinatura_expires_at')
-        .eq('id', funcionario.empresa_id)
-        .single();
+        .select('nome')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
 
-      if (empError) {
-        console.error('❌ Erro ao buscar empresa:', empError);
-        throw empError;
+      console.log('📦 [loadEmpresaStats] Resposta da query empresa:', { empresa, empErr });
+
+      if (empErr) {
+        console.error('❌ [loadEmpresaStats] Erro ao buscar empresa:', {
+          message: empErr.message,
+          code: empErr.code,
+          details: empErr.details,
+          hint: empErr.hint
+        });
+        throw empErr;
       }
 
       if (!empresa) {
-        console.error('❌ Empresa não encontrada');
-        throw new Error('Empresa não encontrada');
+        console.error('❌ [loadEmpresaStats] Nenhuma empresa encontrada para user_id:', currentUser.id);
+        throw new Error('Empresa não encontrada para este usuário');
       }
 
-      console.log('✅ Empresa encontrada:', {
-        nome: empresa.nome,
-        plano: empresa.plano,
-        status: empresa.status
-      });
+      console.log('✅ [loadEmpresaStats] Empresa encontrada:', empresa);
+
+      // Buscar subscription do usuário (admin)
+      const { data: sub, error: subErr } = await supabase
+        .from('subscriptions')
+        .select('plan_type, status, subscription_end_date')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      console.log('📦 [loadEmpresaStats] Resposta da query subscription:', { sub, subErr });
 
       let dias_restantes: number | undefined;
-      if (empresa.assinatura_expires_at) {
-        const expiration = new Date(empresa.assinatura_expires_at);
+      if (sub?.subscription_end_date) {
+        const expiration = new Date(sub.subscription_end_date);
         const now = new Date();
         dias_restantes = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       }
 
-      // Retornar dados REAIS da empresa (sem fallbacks)
       return {
         nome: empresa.nome,
-        plano: empresa.plano,
-        status: empresa.status,
+        plano: sub?.plan_type || 'free',
+        status: sub?.status || 'trial',
         dias_restantes
       };
-    } catch (error) {
-      console.error('❌ Erro crítico em loadEmpresaStats:', error);
-      // Retornar valores padrão apenas em caso de erro real
+
+    } catch (error: any) {
+      console.error('❌ [loadEmpresaStats] ERRO CRÍTICO:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        error
+      });
+      
+      // Retornar valores indicando erro
       return {
         nome: 'Erro ao carregar',
-        plano: 'Erro',
+        plano: 'N/A',
         status: 'erro',
         dias_restantes: undefined
       };

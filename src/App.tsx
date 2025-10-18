@@ -43,7 +43,7 @@ import { SubscriptionGuard } from './components/SubscriptionGuard'
 import { PaymentPage } from './components/subscription/PaymentPage'
 import { PaymentTest } from './components/PaymentTest'
 import { OfflineIndicator } from './components/OfflineIndicator'
-import { UpdateToast } from './components/UpdateToast'
+import { UpdateCard } from './components/UpdateCard'
 // import { InstallPWA } from './components/InstallPWA'
 import './App.css'
 import { useState, useEffect } from 'react'
@@ -475,7 +475,7 @@ function App() {
         
         {/* Componentes Globais */}
         <OfflineIndicator />
-        <UpdateToast />
+        <UpdateCard />
       </Router>
     </AuthProvider>
     </CacheErrorBoundary>

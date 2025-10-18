@@ -18,14 +18,16 @@ export function useEmpresa() {
         .from('empresas')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Erro ao buscar empresa:', error);
         return;
       }
 
-      setEmpresa(data);
+      // Extrair primeiro item do array
+      setEmpresa(data && data.length > 0 ? data[0] : null);
     } catch (error) {
       console.error('Erro ao buscar empresa:', error);
     }

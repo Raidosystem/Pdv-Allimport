@@ -174,7 +174,10 @@ export function ActivateUsersPage() {
           nome: novoUsuario.nome,
           email: null, // SEM EMAIL
           status: 'ativo',
-          tipo_admin: 'funcionario'
+          tipo_admin: 'funcionario',
+          usuario_ativo: true, // ✅ IMPORTANTE: Para aparecer na tela de login
+          senha_definida: true,
+          primeiro_acesso: false
         })
         .select()
         .single()

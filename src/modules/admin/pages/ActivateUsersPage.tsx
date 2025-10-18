@@ -55,20 +55,16 @@ export function ActivateUsersPage() {
       setLoading(true)
 
       // Buscar empresa do usuário
-      const { data: empresaData, error: empresaError } = await supabase
-        .from('empresas')
-        .select('id')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
+      const empresa = { id: user?.id };
 
-      const empresa = empresaData && empresaData.length > 0 ? empresaData[0] : null
-
-      if (empresaError || !empresa) {
-        console.error('Erro ao buscar empresa:', empresaError)
+      if (!empresa.id) {
+        console.error('❌ [carregarDados] user_id não disponível')
         toast.error('Erro ao carregar dados')
         return
       }
+
+      console.log('✅ [carregarDados] Usando empresa_id:', empresa.id);
 
       // Buscar funcionários
       const { data: funcionariosData, error: funcError } = await supabase
@@ -180,26 +176,22 @@ export function ActivateUsersPage() {
     try {
       setLoading(true)
 
-      // Buscar empresa
-      const { data: empresaDataArray, error: empresaError } = await supabase
-        .from('empresas')
-        .select('id')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
+      const empresaId = user?.id;
 
-      const empresa = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
-
-      if (empresaError || !empresa) {
-        toast.error('Erro ao buscar empresa')
-        return
+      if (!empresaId) {
+        console.error('❌ [handleActivateUser] user_id não disponível');
+        toast.error('Erro: Usuário não identificado');
+        return;
       }
+
+      console.log('✅ [handleActivateUser] Usando empresa_id:', empresaId);
 
       // Criar funcionário
       const { data: funcionarioDataArray, error: funcError } = await supabase
         .from('funcionarios')
         .insert({
-          empresa_id: empresa.id,
+          empresa_id: empresaId,
           nome: novoUsuario.nome,
           email: novoUsuario.email,
           status: 'ativo',
@@ -223,7 +215,7 @@ export function ActivateUsersPage() {
         .insert({
           funcionario_id: funcionario.id,
           funcao_id: novoUsuario.funcao_id,
-          empresa_id: empresa.id
+          empresa_id: empresaId
         })
 
       if (funcaoError) {

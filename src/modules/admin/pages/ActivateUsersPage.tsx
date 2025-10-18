@@ -130,13 +130,13 @@ export function ActivateUsersPage() {
       let usuarioExiste = true
 
       while (usuarioExiste) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('login_funcionarios')
           .select('id')
           .eq('usuario', usuario)
-          .single()
+          .maybeSingle() // Usa maybeSingle ao invés de single
 
-        if (!data) {
+        if (!data || error) {
           usuarioExiste = false
         } else {
           usuario = `${usuarioBase}${contador}`

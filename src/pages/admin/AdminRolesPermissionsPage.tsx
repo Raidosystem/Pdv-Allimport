@@ -147,28 +147,25 @@ const AdminRolesPermissionsPage: React.FC = () => {
     if (!can('administracao.funcoes', 'create')) return;
 
     try {
-      // Buscar empresa_id do usuário atual ANTES de criar a função
-      const { data: empresaDataArray, error: empresaError } = await supabase
-        .from('empresas')
-        .select('id')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      console.log('🔧 [handleCreateRole] Criando função com user_id:', user?.id);
+      
+      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
+      const empresaId = user?.id;
 
-      const empresaData = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
-
-      if (empresaError || !empresaData) {
-        console.error('Erro ao buscar empresa:', empresaError);
-        alert('Erro ao buscar empresa');
+      if (!empresaId) {
+        console.error('❌ [handleCreateRole] user_id não disponível');
+        alert('Erro: Usuário não identificado');
         return;
       }
+
+      console.log('✅ [handleCreateRole] Usando empresa_id:', empresaId);
 
       // Criar função com empresa_id
       const { data: funcaoDataArray, error } = await supabase
         .from('funcoes')
         .insert({
           ...data,
-          empresa_id: empresaData.id
+          empresa_id: empresaId
         })
         .select();
 
@@ -176,12 +173,12 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
       if (error) throw error;
 
-      // Associar permissões (empresaData já foi buscado acima)
+      // Associar permissões
       if (permissaoIds.length > 0) {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcao.id,
           permissao_id: permissaoId,
-          empresa_id: empresaData.id
+          empresa_id: empresaId
         }));
 
         console.log('📝 Inserindo permissões:', funcaoPermissoes);
@@ -229,15 +226,16 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
       if (error) throw error;
 
-      // Buscar empresa_id do usuário atual
-      const { data: empresaDataArray } = await supabase
-        .from('empresas')
-        .select('id')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
+      const empresaId = user?.id;
 
-      const empresaData = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
+      if (!empresaId) {
+        console.error('❌ [handleEditPermissions] user_id não disponível');
+        alert('Erro: Usuário não identificado');
+        return;
+      }
+
+      console.log('✅ [handleEditPermissions] Usando empresa_id:', empresaId);
 
       // Atualizar permissões
       console.log('🗑️ Deletando permissões antigas da função:', funcaoId);
@@ -251,11 +249,11 @@ const AdminRolesPermissionsPage: React.FC = () => {
         console.error('❌ Erro ao deletar permissões:', deleteError);
       }
 
-      if (permissaoIds.length > 0 && empresaData) {
+      if (permissaoIds.length > 0) {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcaoId,
           permissao_id: permissaoId,
-          empresa_id: empresaData.id
+          empresa_id: empresaId
         }));
 
         console.log('📝 Inserindo novas permissões:', funcaoPermissoes);

@@ -50,6 +50,9 @@ export function ActivateUsersPage() {
       // Buscar empresa_id do contexto (AuthContext já fornece isso)
       const empresaId = user?.id // No sistema, user.id É o empresa_id
 
+      console.log('🔍 DEBUG ActivateUsers - empresaId:', empresaId)
+      console.log('🔍 DEBUG ActivateUsers - user completo:', user)
+
       if (!empresaId) {
         throw new Error('Empresa não identificada')
       }
@@ -71,6 +74,9 @@ export function ActivateUsersPage() {
         .neq('tipo_admin', 'admin_empresa')
         .order('nome')
 
+      console.log('🔍 DEBUG ActivateUsers - Query retornou:', funcionariosData)
+      console.log('🔍 DEBUG ActivateUsers - Erro:', funcionariosError)
+
       if (funcionariosError) throw funcionariosError
 
       const funcionariosFormatados = (funcionariosData || []).map((f: any) => ({
@@ -81,6 +87,8 @@ export function ActivateUsersPage() {
         ultimo_acesso: f.ultimo_acesso,
         tipo_admin: f.tipo_admin
       }))
+
+      console.log('🔍 DEBUG ActivateUsers - Funcionários formatados:', funcionariosFormatados)
 
       setFuncionarios(funcionariosFormatados)
     } catch (error: any) {

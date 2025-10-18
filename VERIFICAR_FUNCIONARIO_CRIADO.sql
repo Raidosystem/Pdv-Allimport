@@ -2,60 +2,44 @@
 -- VERIFICAR SE FUNCIONÁRIO FOI REALMENTE CRIADO
 -- ========================================
 
--- Ver todos os funcionários (sem RLS)
-SELECT 
-  'TODOS OS FUNCIONARIOS (sem RLS):' as info;
-
+-- Ver todos os funcionários criados recentemente
 SELECT 
   id,
-  user_id,
   empresa_id,
   nome,
   email,
   status,
-  is_main_account,
+  tipo_admin,
   created_at
 FROM funcionarios
-ORDER BY created_at DESC;
+WHERE tipo_admin = 'funcionario'
+ORDER BY created_at DESC
+LIMIT 10;
 
--- Ver funcionário do usuário atual (com RLS)
+-- Ver logins de funcionários
 SELECT 
-  'FUNCIONARIO DO USUARIO ATUAL (com RLS):' as info;
+  lf.id,
+  lf.funcionario_id,
+  lf.usuario,
+  lf.ativo,
+  lf.created_at,
+  f.nome
+FROM login_funcionarios lf
+LEFT JOIN funcionarios f ON f.id = lf.funcionario_id
+ORDER BY lf.created_at DESC
+LIMIT 10;
 
+-- Ver funcionários COM login (JOIN completo)
 SELECT 
-  id,
-  user_id,
-  empresa_id,
-  nome,
-  email,
-  status,
-  is_main_account
-FROM funcionarios
-WHERE user_id = auth.uid();
-
--- Ver usuário autenticado
-SELECT 
-  'USUARIO AUTENTICADO:' as info;
-
-SELECT 
-  id,
-  email,
-  created_at
-FROM auth.users
-WHERE id = auth.uid();
-
--- Verificar políticas RLS de funcionarios
-SELECT 
-  'POLITICAS RLS DA TABELA FUNCIONARIOS:' as info;
-
-SELECT 
-  schemaname,
-  tablename,
-  policyname,
-  permissive,
-  roles,
-  cmd,
-  qual,
-  with_check
-FROM pg_policies
-WHERE tablename = 'funcionarios';
+  f.id,
+  f.nome,
+  f.empresa_id,
+  f.status,
+  f.tipo_admin,
+  lf.usuario,
+  lf.ativo as login_ativo,
+  f.created_at
+FROM funcionarios f
+LEFT JOIN login_funcionarios lf ON lf.funcionario_id = f.id
+WHERE f.tipo_admin = 'funcionario'
+ORDER BY f.created_at DESC;

@@ -168,7 +168,7 @@ export function ActivateUsersPage() {
         .insert({
           funcionario_id: novoFuncionario.id,
           usuario: usuario,
-          senha_hash: senhaHash,
+          senha: senhaHash,  // Pode ser 'senha' ou 'senha_hash'
           ativo: true
         })
 

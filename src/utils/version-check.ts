@@ -169,8 +169,8 @@ export async function checkForUpdate(): Promise<void> {
     // Recarregar após 3 segundos
     setTimeout(() => {
       notification.remove()
-      // Forçar reload sem cache
-      window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now()
+      // Forçar reload MANTENDO o login (não altera URL)
+      window.location.reload()
     }, 3000)
   })
 }

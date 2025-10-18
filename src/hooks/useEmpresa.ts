@@ -75,11 +75,10 @@ export function useEmpresa() {
             updated_at: new Date().toISOString()
           })
           .eq('id', empresa.id)
-          .select()
-          .single();
+          .select();
 
         if (error) throw error;
-        setEmpresa(data);
+        setEmpresa(data && data.length > 0 ? data[0] : null);
       } else {
         // Criar nova empresa
         const { data, error } = await supabase
@@ -88,11 +87,10 @@ export function useEmpresa() {
             ...dadosEmpresa,
             user_id: user.id
           })
-          .select()
-          .single();
+          .select();
 
         if (error) throw error;
-        setEmpresa(data);
+        setEmpresa(data && data.length > 0 ? data[0] : null);
       }
 
       return { success: true };

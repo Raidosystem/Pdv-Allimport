@@ -11,6 +11,16 @@ export function UpdateCard() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
+    // 🧪 TESTE: Pressione Ctrl+U para forçar exibição do card
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault()
+        console.log('🧪 [TESTE] Forçando exibição do card de atualização')
+        setShow(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+
     // Verificar nova versão ao montar o componente
     checkVersion(() => {
       console.log('🆕 Exibindo card de nova versão')
@@ -37,6 +47,7 @@ export function UpdateCard() {
     return () => {
       clearInterval(interval)
       window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('keydown', handleKeyPress)
     }
   }, [])
 
@@ -140,6 +151,13 @@ export function UpdateCard() {
           <p className="text-xs text-gray-500 dark:text-gray-500 text-center mt-4">
             A atualização leva apenas alguns segundos
           </p>
+
+          {/* Debug Helper - Remover em produção */}
+          {window.location.hostname === 'localhost' && (
+            <p className="text-xs text-blue-500 text-center mt-2 font-mono">
+              🧪 Dev: Pressione Ctrl+U para testar este card
+            </p>
+          )}
         </div>
       </div>
     </>

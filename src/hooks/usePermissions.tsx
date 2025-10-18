@@ -38,7 +38,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
 
       // Buscar dados do funcionário e suas permissões
-      const { data: funcionarioData, error } = await supabase
+      const { data: funcionarioDataArray, error } = await supabase
         .from('funcionarios')
         .select(`
           id,
@@ -67,7 +67,10 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         `)
         .eq('user_id', user.id)
         .eq('status', 'ativo')
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const funcionarioData = funcionarioDataArray && funcionarioDataArray.length > 0 ? funcionarioDataArray[0] : null;
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
       
@@ -83,7 +86,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         if (user.email) {
           try {
             // Tentar criar funcionário como admin_empresa
-            const { data: novoFuncionario, error: createError } = await supabase
+            const { data: novoFuncionarioArray, error: createError } = await supabase
               .from('funcionarios')
               .insert({
                 nome: user.email.split('@')[0],
@@ -91,8 +94,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
                 status: 'ativo',
                 empresa_id: user.id // Usar user.id como empresa_id (cada usuário = sua empresa)
               })
-              .select()
-              .single();
+              .select();
+
+            const novoFuncionario = novoFuncionarioArray && novoFuncionarioArray.length > 0 ? novoFuncionarioArray[0] : null;
               
             if (createError) {
               console.log('⚠️ Erro ao criar na tabela, mas seguindo como admin:', createError);

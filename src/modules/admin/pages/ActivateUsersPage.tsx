@@ -47,15 +47,12 @@ export function ActivateUsersPage() {
     try {
       setLoading(true)
 
-      // Buscar empresa_id do admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('funcionarios')
-        .select('empresa_id')
-        .eq('usuario_id', user?.id)
-        .eq('tipo_admin', 'admin_empresa')
-        .single()
+      // Buscar empresa_id do contexto (AuthContext já fornece isso)
+      const empresaId = user?.id // No sistema, user.id É o empresa_id
 
-      if (adminError) throw adminError
+      if (!empresaId) {
+        throw new Error('Empresa não identificada')
+      }
 
       // Buscar todos os funcionários da empresa (exceto admin)
       const { data: funcionariosData, error: funcionariosError } = await supabase
@@ -70,7 +67,7 @@ export function ActivateUsersPage() {
             usuario
           )
         `)
-        .eq('empresa_id', adminData.empresa_id)
+        .eq('empresa_id', empresaId)
         .neq('tipo_admin', 'admin_empresa')
         .order('nome')
 
@@ -111,15 +108,13 @@ export function ActivateUsersPage() {
         return
       }
 
-      // Buscar empresa_id do admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('funcionarios')
-        .select('empresa_id')
-        .eq('usuario_id', user?.id)
-        .eq('tipo_admin', 'admin_empresa')
-        .single()
+      // Empresa ID do contexto
+      const empresaId = user?.id // No sistema, user.id É o empresa_id
 
-      if (adminError) throw adminError
+      if (!empresaId) {
+        toast.error('Empresa não identificada')
+        return
+      }
 
       // Gerar usuário único a partir do nome
       const usuarioBase = novoUsuario.nome
@@ -156,7 +151,7 @@ export function ActivateUsersPage() {
       const { data: novoFuncionario, error: funcionarioError } = await supabase
         .from('funcionarios')
         .insert({
-          empresa_id: adminData.empresa_id,
+          empresa_id: empresaId,
           nome: novoUsuario.nome,
           email: null, // SEM EMAIL
           status: 'ativo',

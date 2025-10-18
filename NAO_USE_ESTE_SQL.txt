@@ -1,0 +1,21 @@
+⚠️⚠️⚠️ ATENÇÃO ⚠️⚠️⚠️
+
+NÃO USE ESTE ARQUIVO!
+
+Use: ESTRUTURA_COMPLETA_FUNCIONARIOS.sql
+
+Este arquivo (ADICIONAR_STATUS_FUNCIONARIOS.sql) está DESATUALIZADO e pode dar erro.
+
+O arquivo correto é:
+📁 ESTRUTURA_COMPLETA_FUNCIONARIOS.sql
+
+Ele:
+✅ Adiciona todas as colunas necessárias
+✅ Não dá erro de coluna inexistente
+✅ É mais completo e seguro
+✅ Foi testado e funciona
+
+GUIA DE EXECUÇÃO:
+📖 Veja o arquivo: EXECUTAR_PRIMEIRO.md
+
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️

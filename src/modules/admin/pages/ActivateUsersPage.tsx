@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { UserPlus, Eye, EyeOff, Save, Check, X } from 'lucide-react'
+import { UserPlus, Eye, EyeOff, Trash2, Pause, Play, Users, AlertTriangle } from 'lucide-react'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
@@ -10,534 +10,411 @@ import { useAuth } from '../../auth/AuthContext'
 interface Funcionario {
   id: string
   nome: string
-  email: string
-  usuario_ativo: boolean
-  senha_definida: boolean
-  tipo_admin: string
+  usuario: string
+  status: 'ativo' | 'pausado' | 'inativo'
+  ultimo_acesso: string | null
+  tipo_admin: string | null
 }
 
 interface NovoUsuario {
   nome: string
-  email: string
   senha: string
-  funcao_id: string
 }
 
-interface Funcao {
-  id: string
-  nome: string
-  descricao: string
+interface DeleteConfirmation {
+  isOpen: boolean
+  funcionarioId: string | null
+  funcionarioNome: string
 }
 
 export function ActivateUsersPage() {
   const { user } = useAuth()
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
-  const [funcoes, setFuncoes] = useState<Funcao[]>([])
   const [loading, setLoading] = useState(true)
-  const [showNovoUsuario, setShowNovoUsuario] = useState(false)
   const [novoUsuario, setNovoUsuario] = useState<NovoUsuario>({
     nome: '',
-    email: '',
-    senha: '',
-    funcao_id: ''
+    senha: ''
   })
-  const [showSenha, setShowSenha] = useState(false)
-  const [adminNeedPassword, setAdminNeedPassword] = useState(false)
-  const [adminPassword, setAdminPassword] = useState('')
-  const [savingAdmin, setSavingAdmin] = useState(false)
+  const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmation>({
+    isOpen: false,
+    funcionarioId: null,
+    funcionarioNome: ''
+  })
 
-  useEffect(() => {
-    carregarDados()
-  }, [])
-
-  const carregarDados = async () => {
+  // Buscar funcionários
+  const carregarFuncionarios = async () => {
     try {
       setLoading(true)
 
-      // Buscar empresa do usuário
-      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
-      const empresa = { id: user?.id };
+      // Buscar empresa_id do admin
+      const { data: adminData, error: adminError } = await supabase
+        .from('funcionarios')
+        .select('empresa_id')
+        .eq('usuario_id', user?.id)
+        .eq('tipo_admin', 'admin_empresa')
+        .single()
 
-      if (!empresa.id) {
-        console.error('❌ [carregarDados] user_id não disponível')
-        toast.error('Erro ao carregar dados')
+      if (adminError) throw adminError
+
+      // Buscar todos os funcionários da empresa (exceto admin)
+      const { data: funcionariosData, error: funcionariosError } = await supabase
+        .from('funcionarios')
+        .select(`
+          id,
+          nome,
+          status,
+          ultimo_acesso,
+          tipo_admin,
+          login_funcionarios (
+            usuario
+          )
+        `)
+        .eq('empresa_id', adminData.empresa_id)
+        .neq('tipo_admin', 'admin_empresa')
+        .order('nome')
+
+      if (funcionariosError) throw funcionariosError
+
+      const funcionariosFormatados = (funcionariosData || []).map((f: any) => ({
+        id: f.id,
+        nome: f.nome,
+        usuario: f.login_funcionarios?.[0]?.usuario || 'Sem usuário',
+        status: f.status || 'ativo',
+        ultimo_acesso: f.ultimo_acesso,
+        tipo_admin: f.tipo_admin
+      }))
+
+      setFuncionarios(funcionariosFormatados)
+    } catch (error: any) {
+      console.error('Erro ao carregar funcionários:', error)
+      toast.error('Erro ao carregar funcionários')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    carregarFuncionarios()
+  }, [user])
+
+  // Criar novo funcionário (SEM EMAIL)
+  const handleCriarFuncionario = async () => {
+    try {
+      if (!novoUsuario.nome.trim()) {
+        toast.error('Preencha o nome do funcionário')
         return
       }
 
-      console.log('✅ [carregarDados] Usando empresa_id:', empresa.id);
+      if (!novoUsuario.senha || novoUsuario.senha.length < 6) {
+        toast.error('A senha deve ter pelo menos 6 caracteres')
+        return
+      }
 
-      // Buscar funcionários
-      const { data: funcionariosData, error: funcError } = await supabase
+      // Buscar empresa_id do admin
+      const { data: adminData, error: adminError } = await supabase
         .from('funcionarios')
-        .select('id, nome, email, usuario_ativo, senha_definida, tipo_admin')
-        .eq('empresa_id', empresa.id)
-        .order('nome')
+        .select('empresa_id')
+        .eq('usuario_id', user?.id)
+        .eq('tipo_admin', 'admin_empresa')
+        .single()
 
-      if (funcError) {
-        console.error('Erro ao buscar funcionários:', funcError)
-        toast.error('Erro ao carregar funcionários')
-      } else {
-        setFuncionarios(funcionariosData || [])
-        
-        // Verificar se admin precisa definir senha
-        const admin = funcionariosData?.find(f => f.tipo_admin === 'admin_empresa')
-        if (admin && !admin.senha_definida) {
-          setAdminNeedPassword(true)
+      if (adminError) throw adminError
+
+      // Gerar usuário único a partir do nome
+      const usuarioBase = novoUsuario.nome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '')
+        .substring(0, 20)
+
+      // Verificar se usuário já existe
+      let usuario = usuarioBase
+      let contador = 1
+      let usuarioExiste = true
+
+      while (usuarioExiste) {
+        const { data } = await supabase
+          .from('login_funcionarios')
+          .select('id')
+          .eq('usuario', usuario)
+          .single()
+
+        if (!data) {
+          usuarioExiste = false
+        } else {
+          usuario = `${usuarioBase}${contador}`
+          contador++
         }
       }
 
-      // Buscar funções disponíveis
-      const { data: funcoesData, error: funcoesError } = await supabase
-        .from('funcoes')
-        .select('id, nome, descricao')
-        .eq('empresa_id', empresa.id)
-        .order('nome')
-
-      if (funcoesError) {
-        console.error('Erro ao buscar funções:', funcoesError)
-      } else {
-        setFuncoes(funcoesData || [])
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast.error('Erro ao carregar dados')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDefinirSenhaAdmin = async () => {
-    if (!adminPassword || adminPassword.length < 6) {
-      toast.error('A senha deve ter no mínimo 6 caracteres')
-      return
-    }
-
-    try {
-      setSavingAdmin(true)
-
-      // Buscar admin
-      const admin = funcionarios.find(f => f.tipo_admin === 'admin_empresa')
-      if (!admin) {
-        toast.error('Administrador não encontrado')
-        return
-      }
-
-      // Definir senha usando RPC
-      const { data, error } = await supabase
-        .rpc('definir_senha_local', {
-          p_funcionario_id: admin.id,
-          p_senha: adminPassword
-        })
-
-      if (error) {
-        console.error('Erro ao definir senha:', error)
-        toast.error('Erro ao definir senha do administrador')
-        return
-      }
-
-      if (data) {
-        toast.success('Senha do administrador definida com sucesso!')
-        setAdminNeedPassword(false)
-        setAdminPassword('')
-        await carregarDados()
-      } else {
-        toast.error('Erro ao definir senha do administrador')
-      }
-    } catch (error) {
-      console.error('Erro ao definir senha admin:', error)
-      toast.error('Erro ao definir senha do administrador')
-    } finally {
-      setSavingAdmin(false)
-    }
-  }
-
-  const handleCriarUsuario = async () => {
-    // Validações
-    if (!novoUsuario.nome.trim()) {
-      toast.error('Digite o nome do funcionário')
-      return
-    }
-
-    if (!novoUsuario.email.trim()) {
-      toast.error('Digite o email do funcionário')
-      return
-    }
-
-    if (!novoUsuario.senha || novoUsuario.senha.length < 6) {
-      toast.error('A senha deve ter no mínimo 6 caracteres')
-      return
-    }
-
-    if (!novoUsuario.funcao_id) {
-      toast.error('Selecione uma função para o funcionário')
-      return
-    }
-
-    try {
-      setLoading(true)
-
-      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
-      const empresaId = user?.id;
-
-      if (!empresaId) {
-        console.error('❌ [handleActivateUser] user_id não disponível');
-        toast.error('Erro: Usuário não identificado');
-        return;
-      }
-
-      console.log('✅ [handleActivateUser] Usando empresa_id:', empresaId);
+      // Hash da senha (simplificado - em produção use bcrypt)
+      const senhaHash = btoa(novoUsuario.senha)
 
       // Criar funcionário
-      const { data: funcionarioDataArray, error: funcError } = await supabase
+      const { data: novoFuncionario, error: funcionarioError } = await supabase
         .from('funcionarios')
         .insert({
-          empresa_id: empresaId,
+          empresa_id: adminData.empresa_id,
           nome: novoUsuario.nome,
-          email: novoUsuario.email,
+          email: null, // SEM EMAIL
           status: 'ativo',
           tipo_admin: 'funcionario',
-          usuario_ativo: false, // Será ativado quando definir senha
-          senha_definida: false
+          usuario_id: null
         })
         .select()
+        .single()
 
-      const funcionario = funcionarioDataArray && funcionarioDataArray.length > 0 ? funcionarioDataArray[0] : null;
+      if (funcionarioError) throw funcionarioError
 
-      if (funcError) {
-        console.error('Erro ao criar funcionário:', funcError)
-        toast.error('Erro ao criar funcionário')
-        return
-      }
-
-      // Associar função
-      const { error: funcaoError } = await supabase
-        .from('funcionario_funcoes')
+      // Criar login do funcionário
+      const { error: loginError } = await supabase
+        .from('login_funcionarios')
         .insert({
-          funcionario_id: funcionario.id,
-          funcao_id: novoUsuario.funcao_id,
-          empresa_id: empresaId
+          funcionario_id: novoFuncionario.id,
+          usuario: usuario,
+          senha_hash: senhaHash,
+          ativo: true
         })
 
-      if (funcaoError) {
-        console.error('Erro ao associar função:', funcaoError)
-        toast.error('Erro ao associar função ao funcionário')
-        return
-      }
+      if (loginError) throw loginError
 
-      // Definir senha usando RPC
-      const { data: senhaDefinida, error: senhaError } = await supabase
-        .rpc('definir_senha_local', {
-          p_funcionario_id: funcionario.id,
-          p_senha: novoUsuario.senha
-        })
-
-      if (senhaError || !senhaDefinida) {
-        console.error('Erro ao definir senha:', senhaError)
-        toast.error('Funcionário criado, mas erro ao definir senha')
-        return
-      }
-
-      toast.success(`Usuário ${novoUsuario.nome} criado e ativado com sucesso!`)
-      
-      // Limpar formulário
-      setNovoUsuario({
-        nome: '',
-        email: '',
-        senha: '',
-        funcao_id: ''
-      })
-      setShowNovoUsuario(false)
-      
-      // Recarregar lista
-      await carregarDados()
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error)
-      toast.error('Erro ao criar usuário')
-    } finally {
-      setLoading(false)
+      toast.success(`Funcionário criado! Usuário: ${usuario}`)
+      setNovoUsuario({ nome: '', senha: '' })
+      carregarFuncionarios()
+    } catch (error: any) {
+      console.error('Erro ao criar funcionário:', error)
+      toast.error('Erro ao criar funcionário: ' + error.message)
     }
   }
 
-  const handleToggleAtivo = async (funcionario: Funcionario) => {
+  // Pausar/Ativar funcionário
+  const handleTogglePausarFuncionario = async (funcionario: Funcionario) => {
     try {
-      const novoStatus = !funcionario.usuario_ativo
+      const novoStatus = funcionario.status === 'ativo' ? 'pausado' : 'ativo'
 
       const { error } = await supabase
         .from('funcionarios')
-        .update({ usuario_ativo: novoStatus })
+        .update({ status: novoStatus })
         .eq('id', funcionario.id)
 
-      if (error) {
-        console.error('Erro ao atualizar status:', error)
-        toast.error('Erro ao atualizar status do usuário')
-        return
-      }
+      if (error) throw error
+
+      // Atualizar também o login
+      const { error: loginError } = await supabase
+        .from('login_funcionarios')
+        .update({ ativo: novoStatus === 'ativo' })
+        .eq('funcionario_id', funcionario.id)
+
+      if (loginError) throw loginError
 
       toast.success(
-        novoStatus 
-          ? `${funcionario.nome} foi ativado` 
-          : `${funcionario.nome} foi desativado`
+        novoStatus === 'pausado'
+          ? `${funcionario.nome} foi pausado. Não poderá fazer login.`
+          : `${funcionario.nome} foi ativado novamente.`
       )
-      
-      await carregarDados()
-    } catch (error) {
-      console.error('Erro ao toggle ativo:', error)
-      toast.error('Erro ao atualizar status')
+
+      carregarFuncionarios()
+    } catch (error: any) {
+      console.error('Erro ao pausar/ativar funcionário:', error)
+      toast.error('Erro ao atualizar funcionário')
     }
   }
 
-  // Modal de definir senha do admin
-  if (adminNeedPassword) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-          <div className="p-8">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-secondary-900 mb-2">
-                Bem-vindo, Administrador!
-              </h2>
-              <p className="text-secondary-600">
-                Defina sua senha pessoal para começar a usar o sistema
-              </p>
-            </div>
+  // Excluir funcionário PERMANENTEMENTE
+  const handleExcluirFuncionario = async () => {
+    try {
+      if (!deleteConfirm.funcionarioId) return
 
-            <div className="space-y-4">
-              <Input
-                label="Sua Senha de Administrador"
-                type={showSenha ? 'text' : 'password'}
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
-                required
-                autoFocus
-              />
+      // Excluir login primeiro (FK)
+      const { error: loginError } = await supabase
+        .from('login_funcionarios')
+        .delete()
+        .eq('funcionario_id', deleteConfirm.funcionarioId)
 
-              <button
-                type="button"
-                onClick={() => setShowSenha(!showSenha)}
-                className="text-sm text-primary-600 hover:text-primary-700 flex items-center"
-              >
-                {showSenha ? (
-                  <>
-                    <EyeOff className="w-4 h-4 mr-2" />
-                    Ocultar senha
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Mostrar senha
-                  </>
-                )}
-              </button>
+      if (loginError) throw loginError
 
-              <Button
-                onClick={handleDefinirSenhaAdmin}
-                variant="primary"
-                size="lg"
-                className="w-full"
-                loading={savingAdmin}
-                disabled={!adminPassword || adminPassword.length < 6}
-              >
-                {savingAdmin ? 'Salvando...' : 'Definir Senha e Continuar'}
-              </Button>
-            </div>
+      // Excluir funcionário
+      const { error: funcionarioError } = await supabase
+        .from('funcionarios')
+        .delete()
+        .eq('id', deleteConfirm.funcionarioId)
 
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm">
-                <strong>💡 Dica:</strong> Escolha uma senha forte e memorável. 
-                Você precisará dela para acessar o sistema.
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-    )
-  }
+      if (funcionarioError) throw funcionarioError
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-secondary-600">Carregando usuários...</p>
-        </div>
-      </div>
-    )
+      toast.success(`${deleteConfirm.funcionarioNome} foi excluído permanentemente do sistema.`)
+      setDeleteConfirm({ isOpen: false, funcionarioId: null, funcionarioNome: '' })
+      carregarFuncionarios()
+    } catch (error: any) {
+      console.error('Erro ao excluir funcionário:', error)
+      toast.error('Erro ao excluir funcionário: ' + error.message)
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-secondary-900">Ativar Novos Usuários</h1>
-          <p className="text-secondary-600 mt-1">
-            Crie e ative funcionários para acessar o sistema
-          </p>
-        </div>
-        
-        <Button
-          onClick={() => setShowNovoUsuario(!showNovoUsuario)}
-          variant="primary"
-        >
-          <UserPlus className="w-5 h-5 mr-2" />
-          Novo Usuário
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-secondary-900 mb-2">
+          Gerenciar Funcionários
+        </h1>
+        <p className="text-secondary-600">
+          Crie, pause ou exclua funcionários do sistema
+        </p>
       </div>
 
-      {/* Formulário de Novo Usuário */}
-      {showNovoUsuario && (
-        <Card>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-              Criar Novo Funcionário
-            </h3>
+      {/* Card de Novo Funcionário */}
+      <Card className="mb-6">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <UserPlus className="w-5 h-5 text-primary-600 mr-2" />
+            <h2 className="text-lg font-semibold text-secondary-900">
+              Novo Funcionário
+            </h2>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nome */}
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                Nome Completo *
+              </label>
               <Input
-                label="Nome Completo"
+                type="text"
+                placeholder="Nome do funcionário"
                 value={novoUsuario.nome}
                 onChange={(e) => setNovoUsuario({ ...novoUsuario, nome: e.target.value })}
-                placeholder="João Silva"
-                required
               />
+            </div>
 
-              <Input
-                label="Email"
-                type="email"
-                value={novoUsuario.email}
-                onChange={(e) => setNovoUsuario({ ...novoUsuario, email: e.target.value })}
-                placeholder="joao@email.com"
-                required
-              />
-
+            {/* Senha */}
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                Senha *
+              </label>
               <div className="relative">
                 <Input
-                  label="Senha"
-                  type={showSenha ? 'text' : 'password'}
+                  type={mostrarSenha ? 'text' : 'password'}
+                  placeholder="Mínimo 6 caracteres"
                   value={novoUsuario.senha}
                   onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value })}
-                  placeholder="Mínimo 6 caracteres"
-                  required
                 />
                 <button
                   type="button"
-                  onClick={() => setShowSenha(!showSenha)}
-                  className="absolute right-3 top-9 text-secondary-400 hover:text-secondary-600"
+                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
                 >
-                  {showSenha ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {mostrarSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
-                  Função
-                </label>
-                <select
-                  value={novoUsuario.funcao_id}
-                  onChange={(e) => setNovoUsuario({ ...novoUsuario, funcao_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  required
-                >
-                  <option value="">Selecione uma função</option>
-                  {funcoes.map((funcao) => (
-                    <option key={funcao.id} value={funcao.id}>
-                      {funcao.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={handleCriarUsuario}
-                variant="primary"
-                loading={loading}
-              >
-                <Save className="w-5 h-5 mr-2" />
-                Criar e Ativar Usuário
-              </Button>
-              
-              <Button
-                onClick={() => {
-                  setShowNovoUsuario(false)
-                  setNovoUsuario({ nome: '', email: '', senha: '', funcao_id: '' })
-                }}
-                variant="outline"
-              >
-                Cancelar
-              </Button>
             </div>
           </div>
-        </Card>
-      )}
+
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-sm text-secondary-500">
+              O nome de usuário será gerado automaticamente
+            </p>
+            <Button onClick={handleCriarFuncionario}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Criar Funcionário
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {/* Lista de Funcionários */}
       <Card>
         <div className="p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Usuários Cadastrados
-          </h3>
+          <div className="flex items-center mb-4">
+            <Users className="w-5 h-5 text-primary-600 mr-2" />
+            <h2 className="text-lg font-semibold text-secondary-900">
+              Funcionários Cadastrados ({funcionarios.length})
+            </h2>
+          </div>
 
-          {funcionarios.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-secondary-600">Nenhum funcionário cadastrado ainda</p>
+          {loading ? (
+            <div className="text-center py-8 text-secondary-500">
+              Carregando funcionários...
+            </div>
+          ) : funcionarios.length === 0 ? (
+            <div className="text-center py-8 text-secondary-500">
+              Nenhum funcionário cadastrado
             </div>
           ) : (
             <div className="space-y-3">
               {funcionarios.map((funcionario) => (
                 <div
                   key={funcionario.id}
-                  className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors"
+                  className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg border border-secondary-200"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-semibold text-secondary-900">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-secondary-900">
                         {funcionario.nome}
-                      </h4>
-                      {funcionario.tipo_admin === 'admin_empresa' && (
-                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-                          Administrador
-                        </span>
-                      )}
-                      {funcionario.senha_definida && (
-                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full flex items-center">
-                          <Check className="w-3 h-3 mr-1" />
-                          Senha OK
-                        </span>
-                      )}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          funcionario.status === 'ativo'
+                            ? 'bg-green-100 text-green-700'
+                            : funcionario.status === 'pausado'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {funcionario.status === 'ativo'
+                          ? 'Ativo'
+                          : funcionario.status === 'pausado'
+                          ? 'Pausado'
+                          : 'Inativo'}
+                      </span>
                     </div>
-                    <p className="text-sm text-secondary-600 mt-1">{funcionario.email}</p>
+                    <p className="text-sm text-secondary-600 mt-1">
+                      Usuário: <span className="font-mono font-medium">{funcionario.usuario}</span>
+                    </p>
+                    {funcionario.ultimo_acesso && (
+                      <p className="text-xs text-secondary-500 mt-1">
+                        Último acesso: {new Date(funcionario.ultimo_acesso).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm font-medium ${
-                      funcionario.usuario_ativo ? 'text-green-600' : 'text-secondary-400'
-                    }`}>
-                      {funcionario.usuario_ativo ? 'Ativo' : 'Inativo'}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    {/* Botão Pausar/Ativar */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleTogglePausarFuncionario(funcionario)}
+                      title={funcionario.status === 'ativo' ? 'Pausar funcionário' : 'Ativar funcionário'}
+                      className={
+                        funcionario.status === 'ativo'
+                          ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
+                          : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                      }
+                    >
+                      {funcionario.status === 'ativo' ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                    </Button>
 
-                    {funcionario.tipo_admin !== 'admin_empresa' && (
-                      <button
-                        onClick={() => handleToggleAtivo(funcionario)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          funcionario.usuario_ativo
-                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                            : 'bg-green-100 text-green-600 hover:bg-green-200'
-                        }`}
-                        title={funcionario.usuario_ativo ? 'Desativar' : 'Ativar'}
-                      >
-                        {funcionario.usuario_ativo ? (
-                          <X className="w-5 h-5" />
-                        ) : (
-                          <Check className="w-5 h-5" />
-                        )}
-                      </button>
-                    )}
+                    {/* Botão Excluir */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setDeleteConfirm({
+                          isOpen: true,
+                          funcionarioId: funcionario.id,
+                          funcionarioNome: funcionario.nome
+                        })
+                      }
+                      title="Excluir funcionário permanentemente"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -545,6 +422,50 @@ export function ActivateUsersPage() {
           )}
         </div>
       </Card>
+
+      {/* Modal de Confirmação de Exclusão */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-600 mr-2" />
+              <h3 className="text-lg font-semibold text-secondary-900">
+                Confirmar Exclusão
+              </h3>
+            </div>
+
+            <p className="text-secondary-700 mb-4">
+              Tem certeza que deseja excluir <strong>{deleteConfirm.funcionarioNome}</strong>?
+            </p>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-red-800">
+                ⚠️ Esta ação é <strong>permanente</strong> e não pode ser desfeita.
+                O funcionário será removido completamente do banco de dados.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setDeleteConfirm({ isOpen: false, funcionarioId: null, funcionarioNome: '' })
+                }
+              >
+                Cancelar
+              </Button>
+              <Button 
+                variant="primary" 
+                onClick={handleExcluirFuncionario}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir Permanentemente
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -160,8 +160,7 @@ export function ActivateUsersPage() {
           nome: novoUsuario.nome,
           email: null, // SEM EMAIL
           status: 'ativo',
-          tipo_admin: 'funcionario',
-          usuario_id: null
+          tipo_admin: 'funcionario'
         })
         .select()
         .single()

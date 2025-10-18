@@ -48,10 +48,9 @@ export async function checkVersion(onNewVersion?: () => void): Promise<void> {
     // Se já viu uma versão e agora é diferente = nova versão
     if (lastSeenVersion && lastSeenVersion !== currentVersion) {
       console.log('🆕 Nova versão detectada!')
-      console.log('🧹 Limpando cache...')
       
-      // Limpar cache agressivamente
-      await clearAllCaches()
+      // ⚠️ NÃO limpar cache aqui - deixar para o usuário decidir
+      // O UpdateCard vai limpar quando o usuário clicar em "Recarregar Agora"
       
       // Executar callback se fornecido
       onNewVersion?.()
@@ -198,29 +197,12 @@ export function startVersionCheck(
 
 /**
  * Inicialização automática do sistema de versão
+ * ⚠️ DESABILITADO: Agora usamos UpdateCard com botão manual
  */
 export function initVersionCheck(): void {
-  // Só funcionar em produção
-  if (CURRENT_VERSION === 'dev' || window.location.hostname === 'localhost') {
-    console.log('🔧 Version check desabilitado em desenvolvimento')
-    return
-  }
-  
-  // Verificar ao carregar a página
-  checkForUpdate()
-  
-  // Verificar a cada 2 minutos (em produção)
-  setInterval(checkForUpdate, 120_000) // 2 min
-  
-  // Verificar quando a janela ganha foco
-  window.addEventListener('focus', checkForUpdate)
-  
-  // Verificar quando volta de visibilidade hidden
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      checkForUpdate()
-    }
-  })
+  console.log('ℹ️ Sistema de atualização automática desabilitado. Usando UpdateCard manual.')
+  // O UpdateCard agora gerencia as verificações e exibição
+  return
 }
 
 /**

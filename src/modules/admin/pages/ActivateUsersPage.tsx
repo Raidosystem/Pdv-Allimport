@@ -181,11 +181,14 @@ export function ActivateUsersPage() {
       setLoading(true)
 
       // Buscar empresa
-      const { data: empresa, error: empresaError } = await supabase
+      const { data: empresaDataArray, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
         .eq('user_id', user?.id)
-        .single()
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      const empresa = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
 
       if (empresaError || !empresa) {
         toast.error('Erro ao buscar empresa')
@@ -193,7 +196,7 @@ export function ActivateUsersPage() {
       }
 
       // Criar funcionário
-      const { data: funcionario, error: funcError } = await supabase
+      const { data: funcionarioDataArray, error: funcError } = await supabase
         .from('funcionarios')
         .insert({
           empresa_id: empresa.id,
@@ -205,7 +208,8 @@ export function ActivateUsersPage() {
           senha_definida: false
         })
         .select()
-        .single()
+
+      const funcionario = funcionarioDataArray && funcionarioDataArray.length > 0 ? funcionarioDataArray[0] : null;
 
       if (funcError) {
         console.error('Erro ao criar funcionário:', funcError)

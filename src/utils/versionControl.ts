@@ -125,13 +125,9 @@ export function showUpdateNotification(): void {
 }
 
 export function startVersionChecking(): void {
-  // Verificar imediatamente
-  checkVersionAndReload();
-  
-  // Verificar a cada 60 segundos
-  versionCheckInterval = setInterval(checkVersionAndReload, 60000);
-  
-  console.log('✅ Sistema de auto-update iniciado');
+  console.log('ℹ️ Sistema de atualização automática desabilitado. Usando UpdateCard manual.')
+  // O UpdateCard agora gerencia as verificações e exibição
+  return
 }
 
 export function stopVersionChecking(): void {
@@ -142,7 +138,7 @@ export function stopVersionChecking(): void {
   }
 }
 
-// Auto-iniciar em produção
-if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-  startVersionChecking();
-}
+// ⚠️ Auto-iniciar DESABILITADO - Usando UpdateCard manual
+// if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+//   startVersionChecking();
+// }

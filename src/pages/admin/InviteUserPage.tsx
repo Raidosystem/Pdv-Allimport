@@ -144,7 +144,7 @@ const InviteUserPage: React.FC = () => {
       console.log('🏢 [InviteUser] Empresa ID:', empresa.id);
 
       // Criar funcionário
-      const { data: funcionario, error } = await supabase
+      const { data: funcionarioData, error } = await supabase
         .from('funcionarios')
         .insert({
           empresa_id: empresa.id,
@@ -156,8 +156,9 @@ const InviteUserPage: React.FC = () => {
           convite_token: inviteToken,
           convite_expires_at: expiresAt.toISOString()
         })
-        .select()
-        .single();
+        .select();
+
+      const funcionario = funcionarioData && funcionarioData.length > 0 ? funcionarioData[0] : null;
 
       console.log('👤 [InviteUser] Funcionário criado:', funcionario);
 

@@ -204,7 +204,7 @@ const AdminDashboard: React.FC = () => {
         entidade_id,
         sucesso,
         created_at,
-        funcionarios (nome)
+        funcionarios!left (nome)
       `)
       .order('created_at', { ascending: false })
       .limit(10);

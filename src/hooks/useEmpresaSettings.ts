@@ -56,11 +56,14 @@ export function useEmpresaSettings() {
 
       // 2. Se usuário logado, carregar do Supabase
       if (user?.id) {
-        const { data, error } = await supabase
+        const { data: empresaDataArray, error } = await supabase
           .from('empresas')
           .select('*')
           .eq('user_id', user.id)
-          .single()
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        const data = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
 
         if (!error && data) {
           const empresaData: EmpresaSettings = {

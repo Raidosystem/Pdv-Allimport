@@ -164,14 +164,15 @@ const AdminRolesPermissionsPage: React.FC = () => {
       }
 
       // Criar função com empresa_id
-      const { data: funcao, error } = await supabase
+      const { data: funcaoDataArray, error } = await supabase
         .from('funcoes')
         .insert({
           ...data,
           empresa_id: empresaData.id
         })
-        .select()
-        .single();
+        .select();
+
+      const funcao = funcaoDataArray && funcaoDataArray.length > 0 ? funcaoDataArray[0] : null;
 
       if (error) throw error;
 
@@ -229,11 +230,14 @@ const AdminRolesPermissionsPage: React.FC = () => {
       if (error) throw error;
 
       // Buscar empresa_id do usuário atual
-      const { data: empresaData } = await supabase
+      const { data: empresaDataArray } = await supabase
         .from('empresas')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const empresaData = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
 
       // Atualizar permissões
       console.log('🗑️ Deletando permissões antigas da função:', funcaoId);

@@ -192,6 +192,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const loadRecentLogs = async () => {
+    // ⚠️ TEMPORÁRIO: Removido join com funcionarios devido a erro 400
     const { data: logs } = await supabase
       .from('audit_logs')
       .select(`
@@ -203,8 +204,7 @@ const AdminDashboard: React.FC = () => {
         entidade_tipo,
         entidade_id,
         sucesso,
-        created_at,
-        funcionarios!left (nome)
+        created_at
       `)
       .order('created_at', { ascending: false })
       .limit(10);
@@ -219,7 +219,7 @@ const AdminDashboard: React.FC = () => {
       entidade_id: log.entidade_id,
       sucesso: log.sucesso,
       created_at: log.created_at,
-      funcionario_nome: (log.funcionarios as any)?.nome || 'Sistema',
+      funcionario_nome: 'Sistema', // TODO: Buscar nome quando funcionarios tiver FK correta
       icon: getActionIcon(log.acao),
       color: getActionColor(log.acao),
       description: getActionDescription(log.recurso, log.acao, log.entidade_tipo)

@@ -64,11 +64,14 @@ const InviteUserPage: React.FC = () => {
       if (!user) return;
 
       // Buscar empresa do usuário
-      const { data: empresa, error: empresaError } = await supabase
+      const { data: empresaData, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const empresa = empresaData && empresaData.length > 0 ? empresaData[0] : null;
 
       if (empresaError || !empresa) {
         console.error('Erro ao buscar empresa:', empresaError);
@@ -124,11 +127,14 @@ const InviteUserPage: React.FC = () => {
       console.log('🔍 [InviteUser] User ID:', user.id);
 
       // Buscar empresa do usuário
-      const { data: empresa, error: empresaError } = await supabase
+      const { data: empresaData, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const empresa = empresaData && empresaData.length > 0 ? empresaData[0] : null;
 
       if (empresaError || !empresa) {
         console.error('❌ [InviteUser] Erro ao buscar empresa:', empresaError);

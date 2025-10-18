@@ -148,11 +148,14 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
     try {
       // Buscar empresa_id do usuário atual ANTES de criar a função
-      const { data: empresaData, error: empresaError } = await supabase
+      const { data: empresaDataArray, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const empresaData = empresaDataArray && empresaDataArray.length > 0 ? empresaDataArray[0] : null;
 
       if (empresaError || !empresaData) {
         console.error('Erro ao buscar empresa:', empresaError);

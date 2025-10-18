@@ -89,6 +89,10 @@ export function ActivateUsersPage() {
       }))
 
       console.log('🔍 DEBUG ActivateUsers - Funcionários formatados:', funcionariosFormatados)
+      console.log('📊 Total de funcionários:', funcionariosFormatados.length)
+      
+      // Salvar globalmente para debug fácil
+      ;(window as any).lastFuncionarios = funcionariosFormatados
 
       setFuncionarios(funcionariosFormatados)
     } catch (error: any) {
@@ -345,7 +349,9 @@ export function ActivateUsersPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {funcionarios.map((funcionario) => (
+              {funcionarios.map((funcionario) => {
+                console.log('🎨 Renderizando funcionário:', funcionario)
+                return (
                 <div
                   key={funcionario.id}
                   className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg border border-secondary-200"
@@ -419,7 +425,7 @@ export function ActivateUsersPage() {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

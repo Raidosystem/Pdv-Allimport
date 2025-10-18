@@ -21,7 +21,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login-local" replace />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>

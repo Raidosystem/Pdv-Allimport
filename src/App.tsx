@@ -185,8 +185,8 @@ function App() {
         
         <Routes>
           {/* Rotas públicas */}
-          <Route path="/" element={<Navigate to="/login-local" replace />} />
-          <Route path="/login" element={<Navigate to="/login-local" replace />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/login-local" element={<LocalLoginPage />} />
           <Route path="/signup" element={<SignupPageNew />} />
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />

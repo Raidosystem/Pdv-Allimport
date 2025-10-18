@@ -27,9 +27,12 @@ export function LocalLoginPage() {
   const [loading, setLoading] = useState(true)
   const [loginLoading, setLoginLoading] = useState(false)
 
-  // Redirecionar se já estiver logado
+  // Redirecionar apenas se já fez login local completo (funcionário)
+  // Se só fez login email/senha (empresa), permitir selecionar funcionário
   useEffect(() => {
-    if (user) {
+    if (user && user.user_metadata?.funcionario_id) {
+      // Já fez login local (tem funcionario_id)
+      console.log('✅ Login local já completo, redirecionando para dashboard...')
       navigate('/dashboard', { replace: true })
     }
   }, [user, navigate])

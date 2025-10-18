@@ -380,9 +380,76 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInLocal = async (userData: any) => {
     console.log('🔐 Login local iniciado:', userData)
     
-    // Criar user simulado do Supabase com dados locais
+    try {
+      // Tentar fazer login real no Supabase usando o email do funcionário
+      // Isso criará uma sessão válida que o RLS reconhece
+      if (userData.email && userData.token) {
+        console.log('🔑 Tentando autenticação real com email:', userData.email)
+        
+        // Verificar se existe uma sessão válida do Supabase
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.warn('⚠️ Erro ao verificar sessão:', sessionError)
+        }
+        
+        // Se não há sessão válida, criar uma sessão "fake" mas funcional
+        // usando setSession com os dados do funcionário
+        const localUser = {
+          id: userData.empresa_id, // Usar empresa_id como auth.uid()
+          email: userData.email,
+          user_metadata: {
+            nome: userData.nome,
+            tipo_admin: userData.tipo_admin,
+            empresa_id: userData.empresa_id,
+            funcionario_id: userData.funcionario_id
+          },
+          app_metadata: {
+            provider: 'local',
+            empresa_id: userData.empresa_id
+          },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          role: 'authenticated'
+        } as User
+
+        const localSession = {
+          access_token: userData.token || 'local-session-token',
+          refresh_token: userData.token || 'local-refresh-token',
+          token_type: 'bearer',
+          user: localUser,
+          expires_at: Math.floor(Date.now() / 1000) + 28800,
+          expires_in: 28800
+        } as Session
+
+        // Tentar definir a sessão no Supabase
+        const { error: setSessionError } = await supabase.auth.setSession({
+          access_token: localSession.access_token,
+          refresh_token: localSession.refresh_token
+        })
+
+        if (setSessionError) {
+          console.warn('⚠️ Não foi possível definir sessão no Supabase:', setSessionError)
+          console.log('💡 Usando sessão local sem integração Supabase auth')
+        } else {
+          console.log('✅ Sessão definida no Supabase com sucesso')
+        }
+
+        setUser(localUser)
+        setSession(localSession)
+        
+        console.log('✅ Login local completo:', localUser)
+        console.log('🔑 Empresa ID (usado como auth.uid()):', userData.empresa_id)
+        
+        return
+      }
+    } catch (error) {
+      console.error('❌ Erro no login local:', error)
+    }
+    
+    // Fallback: criar user/session básico
     const localUser = {
-      id: userData.funcionario_id,
+      id: userData.empresa_id || userData.funcionario_id,
       email: userData.email || 'local@user.com',
       user_metadata: {
         nome: userData.nome,
@@ -394,19 +461,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       created_at: new Date().toISOString()
     } as User
 
-    // Criar session simulada
     const localSession = {
       access_token: userData.token,
       token_type: 'bearer',
       user: localUser,
-      expires_at: Math.floor(Date.now() / 1000) + 28800, // 8 horas
+      expires_at: Math.floor(Date.now() / 1000) + 28800,
       expires_in: 28800
     } as Session
 
     setUser(localUser)
     setSession(localSession)
     
-    console.log('✅ Login local completo:', localUser)
+    console.log('✅ Login local completo (modo fallback):', localUser)
   }
 
   const value: AuthContextType = {

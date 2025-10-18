@@ -18,7 +18,8 @@ export function LoginPage() {
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true })
+      // Após login com email/senha, redirecionar para seleção de funcionário
+      navigate('/login-local', { replace: true })
     }
   }, [user, navigate])
 
@@ -37,9 +38,11 @@ export function LoginPage() {
       } else {
         setError('Erro ao fazer login. Tente novamente.')
       }
+      setLoading(false)
+    } else {
+      // Login bem-sucedido, será redirecionado pelo useEffect
+      console.log('✅ Login com email/senha bem-sucedido, redirecionando para seleção de funcionário...')
     }
-    
-    setLoading(false)
   }
 
   return (
@@ -178,6 +181,13 @@ export function LoginPage() {
             </div>
 
             <div className="mt-6 text-center space-y-3">
+              <Link 
+                to="/login-local" 
+                className="block text-lg font-semibold text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 hover:bg-primary-100 py-3 px-6 rounded-lg border-2 border-primary-200"
+              >
+                🔐 Acesso Rápido para Funcionários
+              </Link>
+              
               <Link 
                 to="/resend-confirmation" 
                 className="block text-primary-600 hover:text-primary-700 font-medium transition-colors"

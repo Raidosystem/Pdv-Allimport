@@ -75,7 +75,7 @@ export const useAdminGuard = () => {
   const location = useLocation();
 
   const redirectToLogin = () => {
-    return <Navigate to="/login-local" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   };
 
   const AccessDenied = () => (

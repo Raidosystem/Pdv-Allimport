@@ -55,13 +55,15 @@ export class SubscriptionService {
         .from('subscriptions')
         .select('*')
         .eq('user_id', userId)
-        .single()
+        .order('created_at', { ascending: false })
+        .limit(1)
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (error) {
         throw error
       }
 
-      return data as Subscription
+      // Retornar o primeiro item do array (se existir)
+      return data && data.length > 0 ? data[0] as Subscription : null
     } catch (error) {
       console.error('Erro ao buscar assinatura:', error)
       return null

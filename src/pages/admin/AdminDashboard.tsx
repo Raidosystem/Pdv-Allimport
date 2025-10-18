@@ -75,13 +75,14 @@ const AdminDashboard: React.FC = () => {
       console.log('🔍 [loadEmpresaStats] Buscando empresa para user_id:', currentUser.id);
 
       // BUSCAR DIRETO DA EMPRESA (admin é o dono)
-      const { data: empresa, error: empErr } = await supabase
+      const { data: empresaData, error: empErr } = await supabase
         .from('empresas')
         .select('nome')
         .eq('user_id', currentUser.id)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      console.log('📦 [loadEmpresaStats] Resposta da query empresa:', { empresa, empErr });
+      console.log('📦 [loadEmpresaStats] Resposta da query empresa:', { empresaData, empErr });
 
       if (empErr) {
         console.error('❌ [loadEmpresaStats] Erro ao buscar empresa:', {
@@ -93,6 +94,8 @@ const AdminDashboard: React.FC = () => {
         throw empErr;
       }
 
+      const empresa = empresaData && empresaData.length > 0 ? empresaData[0] : null;
+
       if (!empresa) {
         console.error('❌ [loadEmpresaStats] Nenhuma empresa encontrada para user_id:', currentUser.id);
         throw new Error('Empresa não encontrada para este usuário');
@@ -101,13 +104,16 @@ const AdminDashboard: React.FC = () => {
       console.log('✅ [loadEmpresaStats] Empresa encontrada:', empresa);
 
       // Buscar subscription do usuário (admin)
-      const { data: sub, error: subErr } = await supabase
+      const { data: subData, error: subErr } = await supabase
         .from('subscriptions')
         .select('plan_type, status, subscription_end_date')
         .eq('user_id', currentUser.id)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      console.log('📦 [loadEmpresaStats] Resposta da query subscription:', { sub, subErr });
+      console.log('📦 [loadEmpresaStats] Resposta da query subscription:', { subData, subErr });
+
+      const sub = subData && subData.length > 0 ? subData[0] : null;
 
       let dias_restantes: number | undefined;
       if (sub?.subscription_end_date) {

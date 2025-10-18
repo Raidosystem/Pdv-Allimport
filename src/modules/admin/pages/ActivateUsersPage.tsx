@@ -60,29 +60,36 @@ export function ActivateUsersPage() {
       // Buscar todos os funcionários da empresa (exceto admin)
       const { data: funcionariosData, error: funcionariosError } = await supabase
         .from('funcionarios')
-        .select(`
-          id,
-          nome,
-          status,
-          ultimo_acesso,
-          tipo_admin,
-          login_funcionarios (
-            usuario
-          )
-        `)
+        .select('id, nome, status, ultimo_acesso, tipo_admin')
         .eq('empresa_id', empresaId)
         .neq('tipo_admin', 'admin_empresa')
         .order('nome')
 
-      console.log('🔍 DEBUG ActivateUsers - Query retornou:', funcionariosData)
-      console.log('🔍 DEBUG ActivateUsers - Erro:', funcionariosError)
+      console.log('🔍 DEBUG ActivateUsers - Funcionários retornados:', funcionariosData)
+      console.log('🔍 DEBUG ActivateUsers - Erro funcionários:', funcionariosError)
 
       if (funcionariosError) throw funcionariosError
+
+      // Buscar logins SEPARADAMENTE (evita problema de RLS com nested query)
+      const funcionariosIds = (funcionariosData || []).map((f: any) => f.id)
+      
+      const { data: loginsData, error: loginsError } = await supabase
+        .from('login_funcionarios')
+        .select('funcionario_id, usuario')
+        .in('funcionario_id', funcionariosIds)
+
+      console.log('🔍 DEBUG ActivateUsers - Logins retornados:', loginsData)
+      console.log('🔍 DEBUG ActivateUsers - Erro logins:', loginsError)
+
+      // Criar mapa de logins por funcionario_id
+      const loginsMap = new Map(
+        (loginsData || []).map((l: any) => [l.funcionario_id, l.usuario])
+      )
 
       const funcionariosFormatados = (funcionariosData || []).map((f: any) => ({
         id: f.id,
         nome: f.nome,
-        usuario: f.login_funcionarios?.[0]?.usuario || 'Sem usuário',
+        usuario: loginsMap.get(f.id) || 'Sem usuário',
         status: f.status || 'ativo',
         ultimo_acesso: f.ultimo_acesso,
         tipo_admin: f.tipo_admin

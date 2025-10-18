@@ -26,7 +26,6 @@ interface Funcao {
   id: string
   nome: string
   descricao: string
-  permissoes: string[]
 }
 
 interface DeleteConfirmation {
@@ -233,25 +232,6 @@ export function ActivateUsersPage() {
         })
 
       if (loginError) throw loginError
-
-      // Buscar permissões da função e vincular ao funcionário
-      const funcaoSelecionada = funcoes.find(f => f.id === novoUsuario.funcao_id)
-      if (funcaoSelecionada && funcaoSelecionada.permissoes.length > 0) {
-        const permissoesVinculo = funcaoSelecionada.permissoes.map(permissaoId => ({
-          funcionario_id: novoFuncionario.id,
-          permissao_id: permissaoId
-        }))
-
-        const { error: permissoesError } = await supabase
-          .from('funcionario_permissoes')
-          .insert(permissoesVinculo)
-
-        if (permissoesError) {
-          console.error('Erro ao vincular permissões:', permissoesError)
-          // Não bloqueia a criação, apenas avisa
-          toast.error('Funcionário criado, mas houve erro ao vincular permissões')
-        }
-      }
 
       toast.success(`Funcionário criado! Usuário: ${usuario}`)
       setNovoUsuario({ nome: '', senha: '', funcao_id: '' })

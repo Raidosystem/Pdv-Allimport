@@ -19,6 +19,14 @@ interface Funcionario {
 interface NovoUsuario {
   nome: string
   senha: string
+  funcao_id: string
+}
+
+interface Funcao {
+  id: string
+  nome: string
+  descricao: string
+  permissoes: string[]
 }
 
 interface DeleteConfirmation {
@@ -30,10 +38,12 @@ interface DeleteConfirmation {
 export function ActivateUsersPage() {
   const { user } = useAuth()
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
+  const [funcoes, setFuncoes] = useState<Funcao[]>([])
   const [loading, setLoading] = useState(true)
   const [novoUsuario, setNovoUsuario] = useState<NovoUsuario>({
     nome: '',
-    senha: ''
+    senha: '',
+    funcao_id: ''
   })
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmation>({
@@ -41,6 +51,27 @@ export function ActivateUsersPage() {
     funcionarioId: null,
     funcionarioNome: ''
   })
+
+  // Buscar funções disponíveis
+  const carregarFuncoes = async () => {
+    try {
+      const empresaId = user?.id
+
+      if (!empresaId) return
+
+      const { data, error } = await supabase
+        .from('funcoes')
+        .select('*')
+        .eq('empresa_id', empresaId)
+        .order('nome')
+
+      if (error) throw error
+
+      setFuncoes(data || [])
+    } catch (error: any) {
+      console.error('Erro ao carregar funções:', error)
+    }
+  }
 
   // Buscar funcionários
   const carregarFuncionarios = async () => {
@@ -112,6 +143,7 @@ export function ActivateUsersPage() {
 
   useEffect(() => {
     carregarFuncionarios()
+    carregarFuncoes()
   }, [user])
 
   // Criar novo funcionário (SEM EMAIL)
@@ -124,6 +156,11 @@ export function ActivateUsersPage() {
 
       if (!novoUsuario.senha || novoUsuario.senha.length < 6) {
         toast.error('A senha deve ter pelo menos 6 caracteres')
+        return
+      }
+
+      if (!novoUsuario.funcao_id) {
+        toast.error('Selecione uma função para o funcionário')
         return
       }
 
@@ -177,7 +214,8 @@ export function ActivateUsersPage() {
           tipo_admin: 'funcionario',
           usuario_ativo: true, // ✅ IMPORTANTE: Para aparecer na tela de login
           senha_definida: true,
-          primeiro_acesso: false
+          primeiro_acesso: false,
+          funcao_id: novoUsuario.funcao_id // ✅ Função selecionada
         })
         .select()
         .single()
@@ -196,8 +234,27 @@ export function ActivateUsersPage() {
 
       if (loginError) throw loginError
 
+      // Buscar permissões da função e vincular ao funcionário
+      const funcaoSelecionada = funcoes.find(f => f.id === novoUsuario.funcao_id)
+      if (funcaoSelecionada && funcaoSelecionada.permissoes.length > 0) {
+        const permissoesVinculo = funcaoSelecionada.permissoes.map(permissaoId => ({
+          funcionario_id: novoFuncionario.id,
+          permissao_id: permissaoId
+        }))
+
+        const { error: permissoesError } = await supabase
+          .from('funcionario_permissoes')
+          .insert(permissoesVinculo)
+
+        if (permissoesError) {
+          console.error('Erro ao vincular permissões:', permissoesError)
+          // Não bloqueia a criação, apenas avisa
+          toast.error('Funcionário criado, mas houve erro ao vincular permissões')
+        }
+      }
+
       toast.success(`Funcionário criado! Usuário: ${usuario}`)
-      setNovoUsuario({ nome: '', senha: '' })
+      setNovoUsuario({ nome: '', senha: '', funcao_id: '' })
       carregarFuncionarios()
     } catch (error: any) {
       console.error('Erro ao criar funcionário:', error)
@@ -290,7 +347,7 @@ export function ActivateUsersPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Nome */}
             <div>
               <label className="block text-sm font-medium text-secondary-700 mb-1">
@@ -302,6 +359,30 @@ export function ActivateUsersPage() {
                 value={novoUsuario.nome}
                 onChange={(e) => setNovoUsuario({ ...novoUsuario, nome: e.target.value })}
               />
+            </div>
+
+            {/* Função */}
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                Função *
+              </label>
+              <select
+                value={novoUsuario.funcao_id}
+                onChange={(e) => setNovoUsuario({ ...novoUsuario, funcao_id: e.target.value })}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Selecione uma função</option>
+                {funcoes.map((funcao) => (
+                  <option key={funcao.id} value={funcao.id}>
+                    {funcao.nome}
+                  </option>
+                ))}
+              </select>
+              {novoUsuario.funcao_id && (
+                <p className="text-xs text-secondary-500 mt-1">
+                  {funcoes.find(f => f.id === novoUsuario.funcao_id)?.descricao}
+                </p>
+              )}
             </div>
 
             {/* Senha */}

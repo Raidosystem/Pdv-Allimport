@@ -226,15 +226,20 @@ const AdminRolesPermissionsPage: React.FC = () => {
 
       if (error) throw error;
 
-      // Usar user.id como empresa_id (cada usuário é sua própria empresa)
-      const empresaId = user?.id;
+      // Buscar empresa_id do login local (não usar auth.users.id!)
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('email', user?.email)
+        .single();
 
-      if (!empresaId) {
-        console.error('❌ [handleEditPermissions] user_id não disponível');
-        alert('Erro: Usuário não identificado');
+      if (empresaError || !empresaData) {
+        console.error('❌ [handleEditPermissions] Empresa não encontrada');
+        alert('Erro: Empresa não identificada');
         return;
       }
 
+      const empresaId = empresaData.id;
       console.log('✅ [handleEditPermissions] Usando empresa_id:', empresaId);
 
       // Atualizar permissões

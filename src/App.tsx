@@ -37,6 +37,7 @@ import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
 import GerenciarFuncionarios from './pages/GerenciarFuncionarios'
+import FuncionariosPage from './pages/admin/FuncionariosPage'
 import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -360,6 +361,16 @@ function App() {
           />
           <Route 
             path="/funcionarios" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <FuncionariosPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/funcionarios/antigo" 
             element={
               <ProtectedRoute>
                 <SubscriptionGuard>

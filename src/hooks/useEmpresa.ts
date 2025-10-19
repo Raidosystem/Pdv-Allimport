@@ -149,16 +149,49 @@ export function useEmpresa() {
     }
   };
 
-  // Criar funcionário com sistema hierárquico
+  // Criar funcionário com permissões padronizadas
   const createFuncionario = async (funcionarioData: Partial<Funcionario>, loginData: { usuario: string; senha: string }) => {
     if (!empresa) return { success: false, error: 'Empresa não encontrada' };
 
     try {
-      // Usar o novo sistema hierárquico do Supabase Auth
-      // Precisamos acessar o contexto auth do componente pai
-      console.log('Criando funcionário com sistema hierárquico...');
+      console.log('✅ Criando funcionário com permissões iniciais...');
       
-      // Por enquanto, criar usando auth tradicional até implementar a integração completa
+      // Garantir que permissões estejam definidas
+      const permissoesIniciais = funcionarioData.permissoes || {
+        vendas: true,
+        produtos: true,
+        clientes: true,
+        caixa: false,
+        ordens_servico: true,
+        funcionarios: false,
+        relatorios: false,
+        configuracoes: false,
+        backup: false,
+        pode_criar_vendas: true,
+        pode_editar_vendas: false,
+        pode_cancelar_vendas: false,
+        pode_aplicar_desconto: false,
+        pode_criar_produtos: false,
+        pode_editar_produtos: false,
+        pode_deletar_produtos: false,
+        pode_gerenciar_estoque: false,
+        pode_criar_clientes: true,
+        pode_editar_clientes: true,
+        pode_deletar_clientes: false,
+        pode_abrir_caixa: false,
+        pode_fechar_caixa: false,
+        pode_gerenciar_movimentacoes: false,
+        pode_criar_os: true,
+        pode_editar_os: true,
+        pode_finalizar_os: false,
+        pode_ver_todos_relatorios: false,
+        pode_exportar_dados: false,
+        pode_alterar_configuracoes: false,
+        pode_gerenciar_funcionarios: false,
+        pode_fazer_backup: false,
+      };
+
+      // Criar usuário no Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: funcionarioData.email!,
         password: loginData.senha,
@@ -176,23 +209,30 @@ export function useEmpresa() {
         throw new Error(error.message);
       }
 
-      // Criar registro adicional na tabela funcionarios (para compatibilidade)
+      // Criar registro na tabela funcionarios com permissões JSON
       const { error: funcionarioError } = await supabase
         .from('funcionarios')
         .insert({
-          ...funcionarioData,
+          nome: funcionarioData.nome,
+          email: funcionarioData.email,
+          telefone: funcionarioData.telefone,
+          cargo: funcionarioData.cargo,
           empresa_id: empresa.id,
-          user_id: data.user?.id // Vincular ao usuário do Supabase Auth
+          user_id: data.user?.id,
+          ativo: true,
+          permissoes: permissoesIniciais // ✅ Salvar permissões como JSON
         });
 
       if (funcionarioError) {
-        console.warn('Erro ao criar registro de funcionário (compatibilidade):', funcionarioError);
+        console.error('❌ Erro ao criar registro de funcionário:', funcionarioError);
+        throw new Error(funcionarioError.message);
       }
 
+      console.log('✅ Funcionário criado com sucesso!');
       await fetchFuncionarios();
       return { success: true };
     } catch (error: any) {
-      console.error('Erro ao criar funcionário:', error);
+      console.error('❌ Erro ao criar funcionário:', error);
       return { success: false, error: error.message };
     }
   };

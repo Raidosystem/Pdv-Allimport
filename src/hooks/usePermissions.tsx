@@ -37,12 +37,42 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
 
-      // ⚠️ TEMPORÁRIO: Tabela funcionarios não tem coluna user_id
-      // Sempre usar admin automático até adicionar coluna user_id
-      console.log('⚠️ [usePermissions] Query de funcionarios desabilitada - usando admin automático');
+      // ✅ BUSCAR FUNCIONÁRIO POR funcionario_id (do login local) OU por user_id (se existir)
+      const funcionarioId = user.user_metadata?.funcionario_id;
       
-      const funcionarioData: any = null;
-      const error: any = null;
+      console.log('🔑 [usePermissions] Buscando funcionário por ID:', funcionarioId);
+      
+      let funcionarioData: any = null;
+      let error: any = null;
+
+      // Se tem funcionario_id (login local), buscar por ele
+      if (funcionarioId) {
+        const { data, error: fetchError } = await supabase
+          .from('funcionarios')
+          .select(`
+            *,
+            funcionario_funcoes (
+              funcoes (
+                id,
+                nome,
+                escopo_lojas,
+                funcao_permissoes (
+                  permissoes (
+                    id,
+                    recurso,
+                    acao,
+                    descricao
+                  )
+                )
+              )
+            )
+          `)
+          .eq('id', funcionarioId)
+          .single();
+
+        funcionarioData = data;
+        error = fetchError;
+      }
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
       

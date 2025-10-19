@@ -51,18 +51,16 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
           .from('funcionarios')
           .select(`
             *,
-            funcionario_funcoes (
-              funcoes (
-                id,
-                nome,
-                escopo_lojas,
-                funcao_permissoes (
-                  permissoes (
-                    id,
-                    recurso,
-                    acao,
-                    descricao
-                  )
+            funcoes:funcao_id (
+              id,
+              nome,
+              escopo_lojas,
+              funcao_permissoes (
+                permissoes (
+                  id,
+                  recurso,
+                  acao,
+                  descricao
                 )
               )
             )
@@ -145,15 +143,17 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       }
 
       console.log('✅ [usePermissions] Funcionário encontrado:', funcionarioData.nome);
-      console.log('📋 [usePermissions] funcionario_funcoes:', funcionarioData.funcionario_funcoes);
+      console.log('📋 [usePermissions] funcoes:', funcionarioData.funcoes);
 
       // Extrair permissões únicas
       const permissoes = new Set<string>();
       const funcoes: string[] = [];
       let escopo_lojas: string[] = [];
 
-      funcionarioData.funcionario_funcoes?.forEach((ff: any) => {
-        const funcao = ff.funcoes;
+      // A função vem direto de funcao_id (não de funcionario_funcoes)
+      const funcao = funcionarioData.funcoes;
+      
+      if (funcao) {
         funcoes.push(funcao.id);
         
         console.log(`🔑 [usePermissions] Processando função: ${funcao.nome}`);
@@ -175,7 +175,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
             console.log(`  ⚠️ Permissão sem dados:`, fp);
           }
         });
-      });
+      } else {
+        console.warn('⚠️ [usePermissions] Funcionário sem função atribuída');
+      }
 
       console.log(`🎯 [usePermissions] Total de permissões extraídas: ${permissoes.size}`);
       console.log(`📋 [usePermissions] Permissões:`, Array.from(permissoes));
@@ -184,9 +186,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       let tipo_admin = funcionarioData.tipo_admin || 'funcionario';
       
       // Se tem função "Administrador", automaticamente é admin_empresa
-      const temFuncaoAdmin = funcionarioData.funcionario_funcoes?.some((ff: any) => 
-        ff.funcoes?.nome === 'Administrador'
-      );
+      const temFuncaoAdmin = funcionarioData.funcoes?.nome === 'Administrador';
       
       if (temFuncaoAdmin && tipo_admin === 'funcionario') {
         console.log('🔧 [usePermissions] Detectado função Administrador - promovendo para admin_empresa');

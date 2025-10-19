@@ -189,7 +189,8 @@ export function LocalLoginPage() {
 
       toast.success(`Bem-vindo, ${userData.nome}!`)
       
-      // Redirecionar será feito pelo Navigate acima
+      // Redirecionar para dashboard
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       console.error('Erro no login:', error)
       toast.error('Erro ao fazer login')

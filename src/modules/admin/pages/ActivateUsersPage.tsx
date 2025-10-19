@@ -51,10 +51,28 @@ export function ActivateUsersPage() {
     funcionarioNome: ''
   })
 
+  // Buscar empresa_id real da tabela empresas
+  const buscarEmpresaId = async () => {
+    if (!user?.email) return null
+    
+    const { data, error } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('email', user.email)
+      .single()
+    
+    if (error || !data) {
+      console.error('Erro ao buscar empresa:', error)
+      return null
+    }
+    
+    return data.id
+  }
+
   // Buscar funções disponíveis
   const carregarFuncoes = async () => {
     try {
-      const empresaId = user?.id
+      const empresaId = await buscarEmpresaId()
 
       if (!empresaId) return
 
@@ -77,8 +95,8 @@ export function ActivateUsersPage() {
     try {
       setLoading(true)
 
-      // Buscar empresa_id do contexto (AuthContext já fornece isso)
-      const empresaId = user?.id // No sistema, user.id É o empresa_id
+      // Buscar empresa_id REAL da tabela empresas
+      const empresaId = await buscarEmpresaId()
 
       console.log('🔍 DEBUG ActivateUsers - empresaId:', empresaId)
       console.log('🔍 DEBUG ActivateUsers - user completo:', user)

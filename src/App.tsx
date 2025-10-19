@@ -364,16 +364,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <SubscriptionGuard>
-                  <FuncionariosPage />
-                </SubscriptionGuard>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/funcionarios/antigo" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionGuard>
                   <GerenciarFuncionarios />
                 </SubscriptionGuard>
               </ProtectedRoute>

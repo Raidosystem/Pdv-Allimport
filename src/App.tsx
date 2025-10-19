@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './modules/auth'
+import { PermissionsProvider } from './hooks/usePermissions'
 import { LoginPage } from './modules/auth/LoginPage'
 import { LocalLoginPage } from './modules/auth/LocalLoginPage'
 import { SignupPageNew } from './modules/auth/SignupPageNew'
@@ -125,7 +126,8 @@ function App() {
   return (
     <CacheErrorBoundary>
       <AuthProvider>
-        <Router>
+        <PermissionsProvider>
+          <Router>
           {/* PWA Install Banner - Removido */}
           {false && showInstallBanner && deferredPrompt && (
             <div className="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
@@ -476,8 +478,9 @@ function App() {
         {/* Componentes Globais */}
         <OfflineIndicator />
         <UpdateCard />
-      </Router>
-    </AuthProvider>
+          </Router>
+        </PermissionsProvider>
+      </AuthProvider>
     </CacheErrorBoundary>
   )
 }

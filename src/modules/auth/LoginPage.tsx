@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
+import { supabase } from '../../lib/supabase'
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
@@ -15,13 +16,52 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Redirecionar se já estiver logado
+  // Redirecionar se já estiver logado - COM LÓGICA INTELIGENTE
   useEffect(() => {
     if (user) {
-      // Após login com email/senha, redirecionar para seleção de funcionário
-      navigate('/login-local', { replace: true })
+      checkFuncionariosERedirect()
     }
   }, [user, navigate])
+
+  const checkFuncionariosERedirect = async () => {
+    try {
+      if (!user?.email) {
+        navigate('/dashboard', { replace: true })
+        return
+      }
+
+      // Verificar se a empresa tem funcionários cadastrados
+      const { data: empresaData } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('email', user.email)
+        .single()
+
+      if (empresaData) {
+        // Verificar se existem funcionários ativos para esta empresa
+        const { data: funcionarios, error } = await supabase
+          .rpc('listar_usuarios_ativos', { p_empresa_id: empresaData.id })
+
+        if (!error && funcionarios && funcionarios.length > 0) {
+          // TEM FUNCIONÁRIOS → Redirecionar para seleção
+          console.log('✅ Empresa tem funcionários cadastrados, redirecionando para seleção...')
+          navigate('/login-local', { replace: true })
+        } else {
+          // NÃO TEM FUNCIONÁRIOS → Ir direto pro dashboard
+          console.log('✅ Empresa sem funcionários, indo direto para dashboard...')
+          navigate('/dashboard', { replace: true })
+        }
+      } else {
+        // Não encontrou empresa, ir pro dashboard mesmo assim
+        console.log('✅ Login bem-sucedido, redirecionando para dashboard...')
+        navigate('/dashboard', { replace: true })
+      }
+    } catch (error) {
+      console.error('❌ Erro ao verificar funcionários:', error)
+      // Em caso de erro, ir pro dashboard
+      navigate('/dashboard', { replace: true })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,8 +80,8 @@ export function LoginPage() {
       }
       setLoading(false)
     } else {
-      // Login bem-sucedido, será redirecionado pelo useEffect
-      console.log('✅ Login com email/senha bem-sucedido, redirecionando para seleção de funcionário...')
+      // Login bem-sucedido, será redirecionado para o dashboard automaticamente
+      console.log('✅ Login bem-sucedido!')
     }
   }
 
@@ -181,12 +221,8 @@ export function LoginPage() {
             </div>
 
             <div className="mt-6 text-center space-y-3">
-              <Link 
-                to="/login-local" 
-                className="block text-lg font-semibold text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 hover:bg-primary-100 py-3 px-6 rounded-lg border-2 border-primary-200"
-              >
-                🔐 Acesso Rápido para Funcionários
-              </Link>
+              {/* Botão de acesso para funcionários - só aparece se empresa tiver funcionários */}
+              {/* A lógica decide automaticamente após o login */}
               
               <Link 
                 to="/resend-confirmation" 

@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import { Users, Shield, Database, BarChart3, Crown, UserPlus, UserCheck } from 'lucide-react'
+import { Users, Shield, Database, BarChart3, Crown, UserCheck } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
-import AdminConvitesPage from './admin/AdminConvitesPage'
-import AdminRolesPermissionsPage from './admin/AdminRolesPermissionsPage'
+// import AdminConvitesPage from './admin/AdminConvitesPage' // REMOVIDO - Sistema automático
+import AdminRolesPermissionsPageNew from './admin/AdminRolesPermissionsPageNew' // NOVA VERSÃO MODERNA
 import AdminBackupsPage from './admin/AdminBackupsPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 import { ActivateUsersPage } from '../modules/admin/pages/ActivateUsersPage'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'convites' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
+type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -35,12 +35,6 @@ function AdministracaoContent() {
       label: 'Ativar Usuários',
       icon: UserCheck,
       description: 'Criar e ativar novos funcionários com senha local'
-    },
-    {
-      id: 'convites' as ViewMode,
-      label: 'Convites',
-      icon: UserPlus,
-      description: 'Convidar novos usuários'
     },
     {
       id: 'permissoes' as ViewMode,
@@ -100,10 +94,8 @@ function AdministracaoContent() {
         return <AdminUsersPage />
       case 'ativar-usuarios':
         return <ActivateUsersPage />
-      case 'convites':
-        return <AdminConvitesPage />
       case 'permissoes':
-        return <AdminRolesPermissionsPage />
+        return <AdminRolesPermissionsPageNew />
       case 'backup':
         return <AdminBackupsPage />
       case 'debug':

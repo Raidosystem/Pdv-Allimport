@@ -9,6 +9,7 @@ import { ConfirmEmailPage } from './modules/auth/ConfirmEmailPage'
 import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './modules/auth/ResetPasswordPage'
 import { AdminPanel } from './components/admin/AdminPanel'
+import { AdminDashboard } from './components/admin/AdminDashboard'
 import { LandingPage } from './modules/landing/LandingPage'
 import { DashboardPage } from './modules/dashboard/DashboardPageNew'
 import { SalesPage } from './modules/sales/SalesPage'
@@ -36,8 +37,8 @@ import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
 import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
-import GerenciarFuncionarios from './pages/GerenciarFuncionarios'
-import FuncionariosPage from './pages/admin/FuncionariosPage'
+// import GerenciarFuncionarios from './pages/GerenciarFuncionarios' // REMOVIDO - Cliente tem acesso total
+// import FuncionariosPage from './pages/admin/FuncionariosPage' // REMOVIDO - Cliente tem acesso total
 import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -195,7 +196,8 @@ function App() {
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/old" element={<AdminPanel />} />
           
           {/* Página de Debug Supabase */}
           <Route path="/debug-supabase" element={<DebugSupabase />} />
@@ -359,16 +361,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/funcionarios" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionGuard>
-                  <GerenciarFuncionarios />
-                </SubscriptionGuard>
-              </ProtectedRoute>
-            } 
-          />
+          {/* Rota de funcionários removida - cliente tem acesso total através do sistema */}
+          
           <Route 
             path="/admin/ativar-usuarios" 
             element={

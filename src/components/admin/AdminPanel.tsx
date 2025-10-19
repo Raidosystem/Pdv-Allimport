@@ -29,6 +29,18 @@ interface AdminUser {
   user_role?: 'owner' | 'employee'
   parent_user_id?: string
   created_by?: string
+  // Dados REAIS da assinatura
+  subscription?: {
+    id: string
+    status: string // 'pending', 'trial', 'active', 'expired', 'cancelled'
+    trial_start_date?: string
+    trial_end_date?: string
+    subscription_start_date?: string
+    subscription_end_date?: string
+    days_remaining?: number
+    is_paused?: boolean
+    plan_type?: string
+  }
 }
 
 export function AdminPanel() {
@@ -46,6 +58,11 @@ export function AdminPanel() {
   const [loginPassword, setLoginPassword] = useState('')
   const [loggingIn, setLoggingIn] = useState(false)
   const [showLoginPassword, setShowLoginPassword] = useState(false)
+
+  // Estados para modal de assinatura
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
+  const [daysToAdd, setDaysToAdd] = useState(30)
 
   // Verificar se o usuário atual é admin ou se não está logado (para configuração inicial)
   const isAdmin = !user || // Permitir acesso quando não logado para configuração inicial
@@ -103,7 +120,48 @@ export function AdminPanel() {
         return
       }
       
-      // Converter para formato AdminUser
+      // Buscar assinaturas REAIS de todos os usuários
+      const userIds = approvals?.map(a => a.user_id) || []
+      const { data: subscriptions, error: subError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .in('user_id', userIds)
+      
+      if (subError) {
+        console.warn('Aviso ao carregar assinaturas:', subError.message)
+      }
+      
+      // Criar mapa de assinaturas por user_id
+      const subscriptionMap = new Map()
+      subscriptions?.forEach(sub => {
+        // Calcular dias restantes em tempo real
+        let daysRemaining = 0
+        const now = new Date()
+        
+        if (sub.status === 'trial' && sub.trial_end_date) {
+          const endDate = new Date(sub.trial_end_date)
+          const diffTime = endDate.getTime() - now.getTime()
+          daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+        } else if (sub.status === 'active' && sub.subscription_end_date) {
+          const endDate = new Date(sub.subscription_end_date)
+          const diffTime = endDate.getTime() - now.getTime()
+          daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+        }
+        
+        subscriptionMap.set(sub.user_id, {
+          id: sub.id,
+          status: sub.status,
+          trial_start_date: sub.trial_start_date,
+          trial_end_date: sub.trial_end_date,
+          subscription_start_date: sub.subscription_start_date,
+          subscription_end_date: sub.subscription_end_date,
+          days_remaining: daysRemaining,
+          is_paused: sub.payment_status === 'paused' || false,
+          plan_type: sub.status
+        })
+      })
+      
+      // Converter para formato AdminUser com dados REAIS de assinatura
       const adminUsers: AdminUser[] = approvals?.map(approval => ({
         id: approval.user_id,
         email: approval.email,
@@ -123,11 +181,12 @@ export function AdminPanel() {
         approved_at: approval.approved_at,
         user_role: approval.user_role,
         parent_user_id: approval.parent_user_id,
-        created_by: approval.created_by
+        created_by: approval.created_by,
+        subscription: subscriptionMap.get(approval.user_id) // Dados REAIS da assinatura
       })) || []
       
       setUsers(adminUsers)
-      console.log(`Carregados ${adminUsers.length} usuários`)
+      console.log(`✅ Carregados ${adminUsers.length} usuários com assinaturas reais`)
       
     } catch (error) {
       console.error('Erro:', error)
@@ -193,10 +252,76 @@ export function AdminPanel() {
       }
       
       toast.success(`Usuário ${email} rejeitado`)
-      loadUsers() // Recarregar lista
+      loadUsers()
     } catch (err) {
       console.error('Erro ao rejeitar usuário:', err)
       toast.error('Erro ao rejeitar usuário')
+    }
+  }
+
+  const openSubscriptionModal = (user: AdminUser) => {
+    setSelectedUser(user)
+    setShowSubscriptionModal(true)
+    setDaysToAdd(30)
+  }
+
+  const closeSubscriptionModal = () => {
+    setShowSubscriptionModal(false)
+    setSelectedUser(null)
+    setDaysToAdd(30)
+  }
+
+  const addSubscriptionDays = async () => {
+    if (!selectedUser || daysToAdd <= 0) {
+      toast.error('Selecione um número válido de dias')
+      return
+    }
+
+    const loadingToast = toast.loading('Adicionando dias de assinatura...')
+
+    try {
+      if (!selectedUser.subscription) {
+        toast.dismiss(loadingToast)
+        toast.error('Usuário não possui assinatura')
+        return
+      }
+
+      // Calcular nova data de expiração
+      const currentEndDate = selectedUser.subscription.status === 'trial' 
+        ? new Date(selectedUser.subscription.trial_end_date || Date.now())
+        : new Date(selectedUser.subscription.subscription_end_date || Date.now())
+      
+      const newEndDate = new Date(currentEndDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+
+      // Atualizar assinatura no banco de dados
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      }
+
+      if (selectedUser.subscription.status === 'trial') {
+        updateData.trial_end_date = newEndDate.toISOString()
+      } else {
+        updateData.subscription_end_date = newEndDate.toISOString()
+      }
+
+      const { error } = await supabase
+        .from('subscriptions')
+        .update(updateData)
+        .eq('user_id', selectedUser.id)
+
+      if (error) {
+        throw error
+      }
+
+      toast.dismiss(loadingToast)
+      toast.success(`✅ ${daysToAdd} dias adicionados para ${selectedUser.full_name || selectedUser.email}!`)
+      
+      closeSubscriptionModal()
+      await loadUsers() // Recarregar dados atualizados
+    } catch (error) {
+      console.error('Erro ao adicionar dias:', error)
+      toast.dismiss(loadingToast)
+      toast.error('Erro ao adicionar dias de assinatura')
     }
   }
 
@@ -600,30 +725,38 @@ export function AdminPanel() {
           </div>
         </Card>
 
-        {/* Criar Novo Usuário */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-green-600" />
-            Criar Novo Usuário
-          </h2>
-          
-          <form onSubmit={createUser} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Criar Novo Proprietário */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl p-8 text-white">
+          <div className="flex justify-between items-center">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+              <h2 className="text-3xl font-bold mb-2 flex items-center">
+                <UserPlus className="w-8 h-8 mr-3" />
+                Criar Novo Proprietário
+              </h2>
+              <p className="text-blue-100 text-lg">
+                Adicione manualmente um novo proprietário do sistema PDV
+              </p>
+            </div>
+          </div>
+          
+          <form onSubmit={createUser} className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <div>
+              <label className="block text-sm font-semibold text-blue-100 mb-2">
+                Email *
               </label>
               <Input
                 type="email"
                 value={newUserEmail}
                 onChange={(e) => setNewUserEmail(e.target.value)}
-                placeholder="usuario@exemplo.com"
+                placeholder="proprietario@empresa.com"
+                className="bg-white/95"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Senha
+              <label className="block text-sm font-semibold text-blue-100 mb-2">
+                Senha *
               </label>
               <div className="relative">
                 <Input
@@ -631,6 +764,7 @@ export function AdminPanel() {
                   value={newUserPassword}
                   onChange={(e) => setNewUserPassword(e.target.value)}
                   placeholder="Digite uma senha segura"
+                  className="bg-white/95 pr-10"
                   required
                 />
                 <button
@@ -643,25 +777,35 @@ export function AdminPanel() {
               </div>
             </div>
             
+            <div>
+              <label className="block text-sm font-semibold text-blue-100 mb-2">
+                Nome da Empresa
+              </label>
+              <Input
+                type="text"
+                placeholder="Nome da Empresa"
+                className="bg-white/95"
+              />
+            </div>
+            
             <div className="flex items-end">
               <Button
                 type="submit"
                 disabled={creating}
-                className="w-full"
-                variant="primary"
+                className="w-full bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg hover:shadow-xl transition-all"
               >
-                {creating ? 'Criando...' : 'Criar Usuário'}
+                {creating ? 'Criando...' : '✅ Criar Proprietário'}
               </Button>
             </div>
           </form>
-        </Card>
+        </div>
 
-        {/* Lista de Usuários */}
-        <Card className="p-6">
+        {/* Lista de Proprietários em Cards */}
+        <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Database className="w-5 h-5 text-blue-600" />
-              Gerenciar Usuários
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <Database className="w-7 h-7 text-blue-600" />
+              Proprietários do Sistema PDV
             </h2>
             
             <Button
@@ -669,155 +813,388 @@ export function AdminPanel() {
               disabled={loading}
               variant="secondary"
               size="sm"
+              className="shadow-md"
             >
-              {loading ? 'Carregando...' : 'Atualizar'}
+              {loading ? '🔄 Atualizando...' : '🔄 Atualizar Lista'}
             </Button>
           </div>
 
           {loading ? (
-            <div className="text-center py-8">
-              <div className="text-gray-600">Carregando usuários...</div>
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600 font-medium">Carregando proprietários...</p>
+              </div>
             </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <div className="text-gray-600">Nenhum usuário encontrado</div>
-            </div>
+          ) : users.filter(u => u.user_role !== 'employee').length === 0 ? (
+            <Card className="p-12 text-center">
+              <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum proprietário encontrado</h3>
+              <p className="text-gray-600">Use o formulário acima para adicionar o primeiro proprietário do sistema</p>
+            </Card>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Criado em</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Último login</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-700">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-gray-900">{user.email}</div>
-                        <div className="text-xs text-gray-500">
-                          ID: {user.id.slice(0, 8)}...
-                          {user.full_name && <span className="ml-2">• {user.full_name}</span>}
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                            user.user_role === 'employee'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {user.user_role === 'employee' ? '👤 Funcionário' : '🏢 Proprietário'}
-                          </span>
-                          {user.parent_user_id && (
-                            <div className="text-xs text-gray-500">
-                              Vinculado ao proprietário
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {users.filter(u => u.user_role !== 'employee').map((user) => (
+                <div key={user.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border-2 border-gray-100 hover:border-blue-200">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center flex-1">
+                      <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md mr-4">
+                        {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-gray-900 mb-1">
+                          {user.full_name || user.email.split('@')[0]}
+                        </h3>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                             user.approval_status === 'approved'
-                              ? 'bg-green-100 text-green-800' 
+                              ? 'bg-green-100 text-green-800 border border-green-300' 
                               : user.approval_status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-red-100 text-red-800 border border-red-300'
+                              : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                           }`}>
-                            {user.approval_status === 'approved' ? '✅ Aprovado' : 
+                            {user.approval_status === 'approved' ? '✅ Ativo' : 
                              user.approval_status === 'rejected' ? '❌ Rejeitado' : 
-                             '⏳ Pendente'}
+                             '⏳ Aguardando'}
                           </span>
-                          
                           {user.banned_until && (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                              🚫 Desativado
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300">
+                              🚫 Pausado
                             </span>
                           )}
                         </div>
-                      </td>
-                      
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                      </td>
-                      
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {user.last_sign_in_at 
-                          ? new Date(user.last_sign_in_at).toLocaleDateString('pt-BR')
-                          : 'Nunca'
-                        }
-                      </td>
-                      
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {user.approval_status === 'pending' && (
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Informações de Assinatura REAIS */}
+                  {user.approval_status === 'approved' && user.subscription && (
+                    <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-blue-900">📋 PLANO</span>
+                        <span className={`px-2 py-1 text-white text-xs font-bold rounded-full ${
+                          user.subscription.status === 'trial' 
+                            ? 'bg-blue-600' 
+                            : user.subscription.status === 'active'
+                            ? 'bg-green-600'
+                            : user.subscription.status === 'expired'
+                            ? 'bg-red-600'
+                            : 'bg-gray-600'
+                        }`}>
+                          {user.subscription.status === 'trial' 
+                            ? '🎁 TESTE' 
+                            : user.subscription.status === 'active'
+                            ? '⭐ PREMIUM'
+                            : user.subscription.status === 'expired'
+                            ? '❌ EXPIRADO'
+                            : '⏳ PENDENTE'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-blue-800 font-semibold space-y-1">
+                        <div>⏰ Dias restantes: <span className={`text-blue-900 font-bold ${
+                          (user.subscription.days_remaining || 0) <= 5 ? 'text-red-600' : 
+                          (user.subscription.days_remaining || 0) <= 10 ? 'text-yellow-600' : ''
+                        }`}>{user.subscription.days_remaining || 0} dias</span></div>
+                        
+                        {user.subscription.status === 'trial' && user.subscription.trial_end_date && (
+                          <div>📅 Expira em: {new Date(user.subscription.trial_end_date).toLocaleDateString('pt-BR')}</div>
+                        )}
+                        
+                        {user.subscription.status === 'active' && user.subscription.subscription_end_date && (
+                          <div>📅 Renova em: {new Date(user.subscription.subscription_end_date).toLocaleDateString('pt-BR')}</div>
+                        )}
+                        
+                        {user.subscription.is_paused && (
+                          <div className="mt-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">
+                            ⏸️ PAUSADO
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Sem assinatura mas aprovado */}
+                  {user.approval_status === 'approved' && !user.subscription && (
+                    <div className="mb-4 p-3 bg-yellow-50 rounded-xl border-2 border-yellow-200">
+                      <div className="text-xs text-yellow-800 font-semibold">
+                        ⚠️ Sem assinatura ativa - Crie manualmente
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-700 bg-gray-50 p-2 rounded-lg">
+                      <Mail className="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" />
+                      <span className="truncate">{user.email}</span>
+                    </div>
+                    {user.company_name && (
+                      <div className="flex items-center text-sm text-gray-700 bg-gray-50 p-2 rounded-lg">
+                        <Crown className="w-4 h-4 mr-2 text-purple-600 flex-shrink-0" />
+                        <span className="truncate">{user.company_name}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                      <span className="mr-2">📅</span>
+                      Cadastrado em {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                    </div>
+                    {user.last_sign_in_at && (
+                      <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                        <span className="mr-2">🕐</span>
+                        Último acesso: {new Date(user.last_sign_in_at).toLocaleDateString('pt-BR')}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 pt-4 border-t-2 border-gray-100">
+                    {user.approval_status === 'pending' && (
+                      <>
+                        <Button
+                          onClick={() => approveUser(user.id, user.email)}
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                          title="Aprovar proprietário e ativar teste de 30 dias"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Aprovar
+                        </Button>
+                        <Button
+                          onClick={() => rejectUser(user.id, user.email)}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-2 border-red-300 text-red-600 hover:bg-red-50 font-semibold"
+                          title="Rejeitar proprietário"
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Rejeitar
+                        </Button>
+                      </>
+                    )}
+                    
+                    {user.approval_status === 'rejected' && (
+                      <Button
+                        onClick={() => approveUser(user.id, user.email)}
+                        size="sm"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                        title="Aprovar proprietário e ativar teste de 30 dias"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Aprovar
+                      </Button>
+                    )}
+
+                    {user.approval_status === 'approved' && (
+                      <>
+                        <Button
+                          onClick={() => openSubscriptionModal(user)}
+                          size="sm"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                          title="Gerenciar assinatura e adicionar dias"
+                        >
+                          💳 Assinatura
+                        </Button>
+                        
+                        <Button
+                          onClick={() => toggleUserStatus(user.id, user.email, !!user.banned_until)}
+                          size="sm"
+                          className={`flex-1 ${user.banned_until ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-orange-600 hover:bg-orange-700 text-white'} font-semibold`}
+                          title={user.banned_until ? "Reativar acesso do proprietário" : "Pausar acesso do proprietário"}
+                        >
+                          {user.banned_until ? (
                             <>
-                              <Button
-                                onClick={() => approveUser(user.id, user.email)}
-                                size="sm"
-                                variant="primary"
-                                title="Aprovar usuário"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                onClick={() => rejectUser(user.id, user.email)}
-                                size="sm"
-                                variant="outline"
-                                title="Rejeitar usuário"
-                                className="border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
+                              <Eye className="w-4 h-4 mr-1" />
+                              Reativar
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-4 h-4 mr-1" />
+                              Pausar
                             </>
                           )}
-                          
-                          {user.approval_status === 'rejected' && (
-                            <Button
-                              onClick={() => approveUser(user.id, user.email)}
-                              size="sm"
-                              variant="primary"
-                              title="Aprovar usuário"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                          )}
-                          
-                          <Button
-                            onClick={() => toggleUserStatus(user.id, user.email, !!user.banned_until)}
-                            size="sm"
-                            variant={user.banned_until ? "primary" : "secondary"}
-                            title={user.banned_until ? "Ativar usuário" : "Desativar usuário"}
-                          >
-                            {user.banned_until ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                          </Button>
-                          
-                          <Button
-                            onClick={() => deleteUser(user.id, user.email)}
-                            size="sm"
-                            variant="outline"
-                            title="Excluir usuário"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-        </Card>
+        </div>
+
+        {/* Modal de Gerenciar Assinatura */}
+        {showSubscriptionModal && selectedUser && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+              <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity backdrop-blur-sm" onClick={closeSubscriptionModal}></div>
+              
+              <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+                {/* Header do Modal */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-6 rounded-t-2xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold flex items-center">
+                        💳 Gerenciar Assinatura
+                      </h2>
+                      <p className="text-blue-100 mt-1">
+                        {selectedUser.full_name || selectedUser.email}
+                      </p>
+                    </div>
+                    <button onClick={closeSubscriptionModal} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+                      <XCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  {/* Informações Atuais REAIS */}
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                    <h3 className="font-bold text-blue-900 mb-3 flex items-center">
+                      <Database className="w-5 h-5 mr-2" />
+                      Status Atual da Assinatura
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Plano</p>
+                        <p className={`font-bold ${
+                          selectedUser.subscription?.status === 'trial' ? 'text-blue-900' :
+                          selectedUser.subscription?.status === 'active' ? 'text-green-900' :
+                          'text-gray-900'
+                        }`}>
+                          {selectedUser.subscription?.status === 'trial' ? '🎁 TESTE' :
+                           selectedUser.subscription?.status === 'active' ? '⭐ PREMIUM' :
+                           selectedUser.subscription?.status === 'expired' ? '❌ EXPIRADO' :
+                           '⏳ PENDENTE'}
+                        </p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Dias Restantes</p>
+                        <p className={`font-bold ${
+                          (selectedUser.subscription?.days_remaining || 0) <= 5 ? 'text-red-600' :
+                          (selectedUser.subscription?.days_remaining || 0) <= 10 ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>
+                          {selectedUser.subscription?.days_remaining || 0} dias
+                        </p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Data de Início</p>
+                        <p className="font-bold text-gray-900">
+                          {selectedUser.subscription?.trial_start_date 
+                            ? new Date(selectedUser.subscription.trial_start_date).toLocaleDateString('pt-BR')
+                            : selectedUser.subscription?.subscription_start_date
+                            ? new Date(selectedUser.subscription.subscription_start_date).toLocaleDateString('pt-BR')
+                            : new Date(selectedUser.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Vencimento</p>
+                        <p className="font-bold text-orange-600">
+                          {selectedUser.subscription?.trial_end_date 
+                            ? new Date(selectedUser.subscription.trial_end_date).toLocaleDateString('pt-BR')
+                            : selectedUser.subscription?.subscription_end_date
+                            ? new Date(selectedUser.subscription.subscription_end_date).toLocaleDateString('pt-BR')
+                            : 'Não definido'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Adicionar Dias */}
+                  <div className="mb-6">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center text-lg">
+                      <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                      Adicionar Dias de Assinatura
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {/* Input de Dias */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Quantidade de Dias
+                        </label>
+                        <input
+                          type="number"
+                          value={daysToAdd}
+                          onChange={(e) => setDaysToAdd(parseInt(e.target.value) || 0)}
+                          min="1"
+                          max="3650"
+                          className="w-full px-4 py-3 text-lg font-bold border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-center"
+                          placeholder="30"
+                        />
+                      </div>
+
+                      {/* Botões Rápidos */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Atalhos Rápidos:</p>
+                        <div className="grid grid-cols-4 gap-2">
+                          <button
+                            onClick={() => setDaysToAdd(7)}
+                            className="px-4 py-3 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 font-bold rounded-xl transition-colors border-2 border-gray-200 hover:border-blue-300"
+                          >
+                            7 dias
+                          </button>
+                          <button
+                            onClick={() => setDaysToAdd(30)}
+                            className="px-4 py-3 bg-blue-100 text-blue-700 hover:bg-blue-200 font-bold rounded-xl transition-colors border-2 border-blue-300"
+                          >
+                            30 dias
+                          </button>
+                          <button
+                            onClick={() => setDaysToAdd(90)}
+                            className="px-4 py-3 bg-gray-100 hover:bg-green-100 hover:text-green-700 font-bold rounded-xl transition-colors border-2 border-gray-200 hover:border-green-300"
+                          >
+                            90 dias
+                          </button>
+                          <button
+                            onClick={() => setDaysToAdd(365)}
+                            className="px-4 py-3 bg-gray-100 hover:bg-purple-100 hover:text-purple-700 font-bold rounded-xl transition-colors border-2 border-gray-200 hover:border-purple-300"
+                          >
+                            1 ano
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Preview com dados REAIS */}
+                      {daysToAdd > 0 && selectedUser.subscription && (
+                        <div className="p-4 bg-green-50 border-2 border-green-300 rounded-xl">
+                          <p className="text-sm text-green-800 mb-1 font-semibold">✨ Nova Data de Vencimento:</p>
+                          <p className="text-2xl font-bold text-green-900">
+                            {(() => {
+                              const currentEndDate = selectedUser.subscription.status === 'trial'
+                                ? new Date(selectedUser.subscription.trial_end_date || Date.now())
+                                : new Date(selectedUser.subscription.subscription_end_date || Date.now())
+                              const newEndDate = new Date(currentEndDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+                              return newEndDate.toLocaleDateString('pt-BR')
+                            })()}
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">
+                            Total: {(selectedUser.subscription.days_remaining || 0) + daysToAdd} dias de acesso
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="flex gap-4 pt-6 border-t-2 border-gray-200">
+                    <button
+                      onClick={closeSubscriptionModal}
+                      className="flex-1 px-6 py-4 text-sm font-semibold text-gray-700 bg-gray-100 border-2 border-gray-300 rounded-xl hover:bg-gray-200 transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={addSubscriptionDays}
+                      disabled={daysToAdd <= 0}
+                      className="flex-1 px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      ✅ Adicionar {daysToAdd} Dias
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </>
       )}

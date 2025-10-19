@@ -178,7 +178,12 @@ const AdminRolesPermissionsPage: React.FC = () => {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcao.id,
           permissao_id: permissaoId,
-          empresa_id: empresaId
+          empresa_id: empresaId,
+          ativo: true, // ✅ AUTO-ATIVAR permissão
+          pode_visualizar: true, // ✅ Permite visualizar por padrão
+          pode_criar: false, // ⚠️ Criar requer ativação manual
+          pode_editar: false, // ⚠️ Editar requer ativação manual
+          pode_excluir: false // ⚠️ Excluir requer ativação manual
         }));
 
         console.log('📝 Inserindo permissões:', funcaoPermissoes);
@@ -258,7 +263,12 @@ const AdminRolesPermissionsPage: React.FC = () => {
         const funcaoPermissoes = permissaoIds.map(permissaoId => ({
           funcao_id: funcaoId,
           permissao_id: permissaoId,
-          empresa_id: empresaId
+          empresa_id: empresaId,
+          ativo: true, // ✅ AUTO-ATIVAR permissão
+          pode_visualizar: true, // ✅ Permite visualizar por padrão
+          pode_criar: false, // ⚠️ Criar requer ativação manual
+          pode_editar: false, // ⚠️ Editar requer ativação manual
+          pode_excluir: false // ⚠️ Excluir requer ativação manual
         }));
 
         console.log('📝 Inserindo novas permissões:', funcaoPermissoes);

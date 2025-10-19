@@ -182,76 +182,37 @@ export function ActivateUsersPage() {
       }
 
       // Empresa ID do contexto
-      const empresaId = user?.id // No sistema, user.id É o empresa_id
+      const empresaId = await buscarEmpresaId()
 
       if (!empresaId) {
         toast.error('Empresa não identificada')
         return
       }
 
-      // Gerar usuário único a partir do nome
-      const usuarioBase = novoUsuario.nome
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '')
-        .substring(0, 20)
+      // ✅ USAR RPC QUE CRIA FUNCIONÁRIO COMPLETO COM BCRYPT
+      const { data, error } = await supabase
+        .rpc('criar_funcionario_completo', {
+          p_empresa_id: empresaId,
+          p_nome: novoUsuario.nome,
+          p_senha: novoUsuario.senha,
+          p_funcao_id: novoUsuario.funcao_id,
+          p_email: null
+        })
 
-      // Verificar se usuário já existe
-      let usuario = usuarioBase
-      let contador = 1
-      let usuarioExiste = true
-
-      while (usuarioExiste) {
-        const { data, error } = await supabase
-          .from('login_funcionarios')
-          .select('id')
-          .eq('usuario', usuario)
-          .maybeSingle() // Usa maybeSingle ao invés de single
-
-        if (!data || error) {
-          usuarioExiste = false
-        } else {
-          usuario = `${usuarioBase}${contador}`
-          contador++
-        }
+      if (error) {
+        console.error('Erro ao criar funcionário:', error)
+        throw error
       }
 
-      // Hash da senha (simplificado - em produção use bcrypt)
-      const senhaHash = btoa(novoUsuario.senha)
+      // Verificar resultado da RPC
+      const resultado = data?.[0]
+      
+      if (!resultado?.sucesso) {
+        toast.error(resultado?.mensagem || 'Erro ao criar funcionário')
+        return
+      }
 
-      // Criar funcionário
-      const { data: novoFuncionario, error: funcionarioError } = await supabase
-        .from('funcionarios')
-        .insert({
-          empresa_id: empresaId,
-          nome: novoUsuario.nome,
-          email: null, // SEM EMAIL
-          status: 'ativo',
-          tipo_admin: 'funcionario',
-          usuario_ativo: true, // ✅ IMPORTANTE: Para aparecer na tela de login
-          senha_definida: true,
-          primeiro_acesso: false,
-          funcao_id: novoUsuario.funcao_id // ✅ Função selecionada
-        })
-        .select()
-        .single()
-
-      if (funcionarioError) throw funcionarioError
-
-      // Criar login do funcionário
-      const { error: loginError } = await supabase
-        .from('login_funcionarios')
-        .insert({
-          funcionario_id: novoFuncionario.id,
-          usuario: usuario,
-          senha: senhaHash,  // Pode ser 'senha' ou 'senha_hash'
-          ativo: true
-        })
-
-      if (loginError) throw loginError
-
-      toast.success(`Funcionário criado! Usuário: ${usuario}`)
+      toast.success(resultado.mensagem)
       setNovoUsuario({ nome: '', senha: '', funcao_id: '' })
       carregarFuncionarios()
     } catch (error: any) {

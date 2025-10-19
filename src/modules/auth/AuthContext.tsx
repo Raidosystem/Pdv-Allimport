@@ -380,7 +380,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInLocal = async (userData: any) => {
     console.log('🔐 Login local iniciado:', userData)
     
+    // Buscar email da empresa (que já está logada)
+    let empresaEmail = user?.email || 'local@user.com'
+    
     try {
+      // Se temos empresa_id, buscar o email dela
+      if (userData.empresa_id && empresaEmail === 'local@user.com') {
+        const { data: empresaData } = await supabase
+          .from('empresas')
+          .select('email')
+          .eq('id', userData.empresa_id)
+          .single()
+        
+        if (empresaData?.email) {
+          empresaEmail = empresaData.email
+          console.log('📧 Email da empresa encontrado:', empresaEmail)
+        }
+      }
+      
       // Tentar fazer login real no Supabase usando o email do funcionário
       // Isso criará uma sessão válida que o RLS reconhece
       if (userData.email && userData.token) {
@@ -397,7 +414,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // usando setSession com os dados do funcionário
         const localUser = {
           id: userData.empresa_id, // Usar empresa_id como auth.uid()
-          email: userData.email,
+          email: empresaEmail, // ✅ USAR EMAIL DA EMPRESA
           user_metadata: {
             nome: userData.nome,
             tipo_admin: userData.tipo_admin,
@@ -450,11 +467,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Fallback: criar user/session básico
     const localUser = {
       id: userData.empresa_id || userData.funcionario_id,
-      email: userData.email || 'local@user.com',
+      email: empresaEmail, // ✅ USAR EMAIL DA EMPRESA, NÃO DO FUNCIONÁRIO
       user_metadata: {
         nome: userData.nome,
         tipo_admin: userData.tipo_admin,
-        empresa_id: userData.empresa_id
+        empresa_id: userData.empresa_id,
+        funcionario_id: userData.funcionario_id
       },
       app_metadata: {},
       aud: 'authenticated',

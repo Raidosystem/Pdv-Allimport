@@ -105,12 +105,11 @@ export function ActivateUsersPage() {
         throw new Error('Empresa não identificada')
       }
 
-      // Buscar todos os funcionários da empresa (exceto admin)
+      // Buscar todos os funcionários da empresa (incluindo admin para debug)
       const { data: funcionariosData, error: funcionariosError } = await supabase
         .from('funcionarios')
         .select('id, nome, status, ultimo_acesso, tipo_admin')
         .eq('empresa_id', empresaId)
-        .neq('tipo_admin', 'admin_empresa')
         .order('nome')
 
       console.log('🔍 DEBUG ActivateUsers - Funcionários retornados:', funcionariosData)

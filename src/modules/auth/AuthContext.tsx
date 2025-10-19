@@ -460,6 +460,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (userData.funcionario_id) {
           localStorage.setItem('pdv_funcionario_id', userData.funcionario_id);
           console.log('💾 funcionario_id salvo no localStorage:', userData.funcionario_id);
+          
+          // ✅ Disparar evento customizado para forçar reload do PermissionsProvider
+          window.dispatchEvent(new CustomEvent('pdv_storage_change', {
+            detail: { key: 'pdv_funcionario_id', value: userData.funcionario_id }
+          }));
         }
         
         console.log('✅ Login local completo:', localUser)
@@ -501,6 +506,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (userData.funcionario_id) {
       localStorage.setItem('pdv_funcionario_id', userData.funcionario_id);
       console.log('💾 funcionario_id salvo no localStorage (fallback):', userData.funcionario_id);
+      
+      // ✅ Disparar evento customizado para forçar reload do PermissionsProvider
+      window.dispatchEvent(new CustomEvent('pdv_storage_change', {
+        detail: { key: 'pdv_funcionario_id', value: userData.funcionario_id }
+      }));
     }
     
     console.log('✅ Login local completo (modo fallback):', localUser)

@@ -276,8 +276,31 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       }
     });
 
+    // ✅ NOVO: Escutar mudanças no localStorage (login local)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'pdv_funcionario_id' && e.newValue) {
+        console.log('🔄 [usePermissions] funcionario_id mudou no localStorage, recarregando...', e.newValue);
+        loadPermissions();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // ✅ NOVO: Também criar um custom event para mudanças no mesmo tab
+    const handleCustomStorageChange = (e: CustomEvent) => {
+      if (e.detail?.key === 'pdv_funcionario_id') {
+        console.log('🔄 [usePermissions] funcionario_id mudou (custom event), recarregando...', e.detail.value);
+        // Dar um delay pequeno para garantir que o localStorage foi atualizado
+        setTimeout(() => loadPermissions(), 100);
+      }
+    };
+
+    window.addEventListener('pdv_storage_change' as any, handleCustomStorageChange as EventListener);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('pdv_storage_change' as any, handleCustomStorageChange as EventListener);
     };
   }, [loadPermissions]);
 

@@ -400,7 +400,11 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
         
         {can('administracao.funcoes', 'create') && (
           <button
-            onClick={() => handleOpenModal()}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleOpenModal();
+            }}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <Plus className="w-5 h-5" />
@@ -470,7 +474,11 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
             {/* Actions */}
             <div className="flex gap-2">
               <button
-                onClick={() => handleOpenPermissions(funcao)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenPermissions(funcao);
+                }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
               >
                 <Eye className="w-4 h-4" />
@@ -480,13 +488,21 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
               {!funcao.sistema && (
                 <>
                   <button
-                    onClick={() => handleOpenModal(funcao)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleOpenModal(funcao);
+                    }}
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteFuncao(funcao.id)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteFuncao(funcao.id);
+                    }}
                     className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -623,7 +639,9 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   setShowPermissionsModal(false);
                   setSelectedFuncao(null);
                   setSelectedPermissoes([]);
@@ -689,6 +707,10 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                           return (
                             <label
                               key={permissao.id}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleTogglePermissao(permissao.id);
+                              }}
                               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                                 isSelected
                                   ? 'bg-blue-100 border-2 border-blue-300'
@@ -724,11 +746,9 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                               <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  handleTogglePermissao(permissao.id);
-                                }}
+                                onChange={(e) => e.preventDefault()}
                                 className="sr-only"
+                                tabIndex={-1}
                               />
                             </label>
                           );
@@ -743,7 +763,9 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
             {/* Footer */}
             <div className="px-6 py-4 bg-gray-50 border-t flex gap-3">
               <button
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   setShowPermissionsModal(false);
                   setSelectedFuncao(null);
                   setSelectedPermissoes([]);
@@ -753,7 +775,11 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                 Cancelar
               </button>
               <button
-                onClick={handleSavePermissions}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSavePermissions();
+                }}
                 className="flex-1 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
                 <Check className="w-5 h-5" />

@@ -149,7 +149,7 @@ export function useUserHierarchy() {
         description: 'Gestão de ordens de serviço',
         icon: 'FileText',
         path: '/ordens-servico',
-        permission: 'ordens'
+        permission: 'ordens_servico'
       },
       {
         name: 'reports',

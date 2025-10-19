@@ -7,6 +7,7 @@ import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
 import { formatarCpfCnpj } from '../utils/formatacao'
 import { onlyDigits } from '../lib/cpf'
 import { supabase } from '../lib/supabase'
+import { usePermissions } from '../hooks/usePermissions'
 
 interface OrdemServico {
   id: string
@@ -322,6 +323,8 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
 
 export function OrdensServicoPage() {
   console.log('🔥 OrdensServicoPage carregando...')
+  const { can } = usePermissions()
+  
   const [todasOrdens, setTodasOrdens] = useState<OrdemServico[]>([]) // Lista completa
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null)
@@ -868,18 +871,20 @@ export function OrdensServicoPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
-                        className="p-1 text-red-600 hover:text-red-800"
-                        title="Excluir ordem"
-                        onClick={() => {
-                          console.log('🗑️ Excluir ordem:', ordem.id);
-                          if (confirm(`Deseja excluir a ordem "${ordem.numero_os || ordem.id.slice(-6)}"?`)) {
-                            alert('Ordem excluída com sucesso!');
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {can('ordens_servico', 'delete') && (
+                        <button 
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Excluir ordem"
+                          onClick={() => {
+                            console.log('🗑️ Excluir ordem:', ordem.id);
+                            if (confirm(`Deseja excluir a ordem "${ordem.numero_os || ordem.id.slice(-6)}"?`)) {
+                              alert('Ordem excluída com sucesso!');
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

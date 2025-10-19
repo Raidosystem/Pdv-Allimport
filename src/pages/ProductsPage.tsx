@@ -3,6 +3,7 @@ import { Package, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import ProductForm from '../components/product/ProductForm'
 import { useProdutos } from '../hooks/useProdutos'
+import { usePermissions } from '../hooks/usePermissions'
 
 interface Product {
   id: string
@@ -33,6 +34,8 @@ export function ProductsPage() {
     mostrarTodos,
     toggleMostrarTodos
   } = useProdutos()
+
+  const { can } = usePermissions()
   
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -427,18 +430,20 @@ export function ProductsPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
-                        className="p-1 text-red-600 hover:text-red-800"
-                        title="Excluir produto"
-                        onClick={() => {
-                          console.log('🗑️ Excluir produto:', product.id);
-                          if (confirm(`Deseja excluir o produto "${product.name}"?`)) {
-                            alert('Produto excluído com sucesso!');
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {can('produtos', 'delete') && (
+                        <button 
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Excluir produto"
+                          onClick={() => {
+                            console.log('🗑️ Excluir produto:', product.id);
+                            if (confirm(`Deseja excluir o produto "${product.name}"?`)) {
+                              alert('Produto excluído com sucesso!');
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

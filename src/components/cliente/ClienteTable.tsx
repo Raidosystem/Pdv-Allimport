@@ -17,6 +17,7 @@ import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
 import { formatarCpfCnpj } from '../../utils/formatacao'
 import { onlyDigits } from '../../lib/cpf'
+import { usePermissions } from '../../hooks/usePermissions'
 import type { Cliente, ClienteFilters } from '../../types/cliente'
 
 interface ClienteTableProps {
@@ -38,6 +39,8 @@ export function ClienteTable({
   onToggleStatus,
   onFiltersChange
 }: ClienteTableProps) {
+  const { can } = usePermissions()
+  
   const [filtros, setFiltros] = useState<ClienteFilters>({
     search: '',
     searchType: 'geral',
@@ -332,14 +335,16 @@ export function ClienteTable({
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => confirmarExclusao(cliente.id, cliente.nome)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {can('clientes', 'delete') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => confirmarExclusao(cliente.id, cliente.nome)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

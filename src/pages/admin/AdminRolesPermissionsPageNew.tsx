@@ -290,6 +290,16 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
     if (!selectedFuncao) return;
 
     try {
+      // Buscar empresa_id da função
+      const { data: funcaoData, error: funcaoError } = await supabase
+        .from('funcoes')
+        .select('empresa_id')
+        .eq('id', selectedFuncao.id)
+        .single();
+
+      if (funcaoError) throw funcaoError;
+      if (!funcaoData?.empresa_id) throw new Error('empresa_id não encontrado');
+
       // Deletar permissões antigas
       await supabase
         .from('funcao_permissoes')
@@ -300,7 +310,8 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
       if (selectedPermissoes.length > 0) {
         const inserts = selectedPermissoes.map(permissao_id => ({
           funcao_id: selectedFuncao.id,
-          permissao_id
+          permissao_id,
+          empresa_id: funcaoData.empresa_id
         }));
 
         const { error } = await supabase

@@ -354,13 +354,13 @@ export const usePermissions = (): UsePermissionsReturn => {
       total_permissoes: context.permissoes.length
     });
     
-    // Super admin pode tudo
-    if (context.is_super_admin) {
-      console.log(`   👑 Super admin - PERMITIDO`);
+    // Super admin e Admin Empresa podem tudo
+    if (context.is_super_admin || context.is_admin_empresa) {
+      console.log(`   👑 ${context.is_super_admin ? 'Super admin' : 'Admin empresa'} - PERMITIDO (acesso total)`);
       return true;
     }
     
-    // ✅ VERIFICAÇÃO RIGOROSA: Verificar permissão no array SEMPRE
+    // ✅ Funcionários normais: Verificar permissão no array
     const permissaoCompleta = `${recurso}:${acao}`;
     const hasPermission = context.permissoes.includes(permissaoCompleta);
     

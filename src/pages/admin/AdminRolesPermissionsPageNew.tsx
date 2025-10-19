@@ -67,6 +67,19 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
     loadData();
   }, []);
 
+  // Prevenir scroll do body quando modal está aberto
+  useEffect(() => {
+    if (showPermissionsModal || showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPermissionsModal, showModal]);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -636,7 +649,11 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                   >
                     {/* Header Categoria */}
                     <button
-                      onClick={() => handleToggleCategoria(categoria.categoria)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleToggleCategoria(categoria.categoria);
+                      }}
                       className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -707,7 +724,10 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                               <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={() => handleTogglePermissao(permissao.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleTogglePermissao(permissao.id);
+                                }}
                                 className="sr-only"
                               />
                             </label>

@@ -260,6 +260,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Limpar dados de teste do localStorage
     localStorage.removeItem('test-user')
     localStorage.removeItem('test-session')
+    localStorage.removeItem('pdv_funcionario_id') // ✅ Limpar funcionario_id
     
     // Limpar estado local
     setUser(null)
@@ -455,6 +456,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(localUser)
         setSession(localSession)
         
+        // ✅ SALVAR funcionario_id no localStorage para usePermissions recuperar
+        if (userData.funcionario_id) {
+          localStorage.setItem('pdv_funcionario_id', userData.funcionario_id);
+          console.log('💾 funcionario_id salvo no localStorage:', userData.funcionario_id);
+        }
+        
         console.log('✅ Login local completo:', localUser)
         console.log('🔑 Empresa ID (usado como auth.uid()):', userData.empresa_id)
         
@@ -489,6 +496,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUser(localUser)
     setSession(localSession)
+    
+    // ✅ SALVAR funcionario_id no localStorage (fallback também)
+    if (userData.funcionario_id) {
+      localStorage.setItem('pdv_funcionario_id', userData.funcionario_id);
+      console.log('💾 funcionario_id salvo no localStorage (fallback):', userData.funcionario_id);
+    }
     
     console.log('✅ Login local completo (modo fallback):', localUser)
   }

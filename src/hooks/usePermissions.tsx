@@ -36,11 +36,22 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       }
 
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
+      console.log('🔍 [usePermissions] user.user_metadata:', user.user_metadata);
 
-      // ✅ BUSCAR FUNCIONÁRIO POR funcionario_id (do login local) OU por user_id (se existir)
-      const funcionarioId = user.user_metadata?.funcionario_id;
+      // ✅ BUSCAR funcionario_id de várias fontes possíveis
+      let funcionarioId = user.user_metadata?.funcionario_id;
+      
+      // Se não achou no metadata, tentar localStorage (para login local)
+      if (!funcionarioId) {
+        const storedFuncionarioId = localStorage.getItem('pdv_funcionario_id');
+        if (storedFuncionarioId && storedFuncionarioId !== 'null') {
+          funcionarioId = storedFuncionarioId;
+          console.log('🔑 [usePermissions] funcionario_id recuperado do localStorage:', funcionarioId);
+        }
+      }
       
       console.log('🔑 [usePermissions] Buscando funcionário por ID:', funcionarioId);
+      console.log('🔑 [usePermissions] user.id (empresa):', user.id);
       
       let funcionarioData: any = null;
       let error: any = null;

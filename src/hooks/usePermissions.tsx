@@ -211,9 +211,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       console.log(`🔑 [usePermissions] is_admin_empresa: ${is_admin_empresa}`);
       console.log(`👑 [usePermissions] is_super_admin: ${is_super_admin}`);
 
-      // Admin da empresa e super admin têm acesso administrativo total
-      // Admin empresa pode gerenciar usuários, permissões, etc. da sua empresa
-      const is_admin = is_super_admin || is_admin_empresa || permissoes.has('administracao.usuarios:create');
+      // ✅ APENAS super_admin e admin_empresa são considerados admin
+      // Funcionários normais NÃO são admin, mesmo que tenham algumas permissões
+      const is_admin = is_super_admin || is_admin_empresa;
 
       // Admin da empresa tem permissões automáticas para administração
       if (is_admin_empresa) {
@@ -337,41 +337,19 @@ export const usePermissions = (): UsePermissionsReturn => {
       return true;
     }
     
-    // Admin da empresa SEMPRE pode gerenciar recursos administrativos
-    if (context.is_admin_empresa || context.is_admin) {
-      console.log(`   🔑 É admin (is_admin_empresa=${context.is_admin_empresa}, is_admin=${context.is_admin})`);
-      
-      const adminResources = [
-        'administracao.usuarios',
-        'administracao.funcoes', 
-        'administracao.sistema',
-        'administracao.backup',
-        'administracao.backups',
-        'administracao.logs',
-        'administracao.permissoes',
-        'admin.dashboard'
-      ];
-      
-      // Admins podem gerenciar tudo relacionado à administração
-      if (adminResources.some(resource => recurso.startsWith(resource))) {
-        console.log(`   ✅ Recurso administrativo - PERMITIDO`);
-        return true;
-      }
-      
-      // Admins também podem acessar funcionalidades básicas do sistema
-      if (recurso.includes('vendas') || recurso.includes('produtos') || recurso.includes('clientes')) {
-        console.log(`   ✅ Recurso básico - PERMITIDO`);
-        return true;
-      }
-    }
-    
-    // Verificação normal de permissões para funcionários
+    // ✅ VERIFICAÇÃO RIGOROSA: Verificar permissão no array SEMPRE
     const permissaoCompleta = `${recurso}:${acao}`;
     const hasPermission = context.permissoes.includes(permissaoCompleta);
+    
     console.log(`   🔍 Verificando no array (${context.permissoes.length} permissões): ${permissaoCompleta} = ${hasPermission ? 'PERMITIDO' : 'NEGADO'}`);
     
-    if (!hasPermission && context.permissoes.length > 0) {
-      console.log(`   📋 Permissões disponíveis:`, context.permissoes.slice(0, 5));
+    if (!hasPermission) {
+      console.log(`   ❌ NEGADO - Permissão não encontrada no array`);
+      if (context.permissoes.length > 0) {
+        console.log(`   📋 Permissões disponíveis (primeiras 10):`, context.permissoes.slice(0, 10));
+      }
+    } else {
+      console.log(`   ✅ PERMITIDO - Permissão encontrada no array`);
     }
     
     return hasPermission;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../modules/auth/AuthContext';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { usePermissionsContext } from './usePermissions';
 
 export interface UserPermissions {
   [moduleName: string]: {
@@ -43,6 +44,7 @@ export interface UserProfile {
 
 export function useUserHierarchy() {
   const { user } = useAuth();
+  const permissionsContext = usePermissionsContext();
   const [permissions] = useState<UserPermissions>({});
   const [userProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,34 +55,38 @@ export function useUserHierarchy() {
     }
   }, [user]);
 
-  // Verificar se é conta principal (qualquer usuário logado é considerado proprietário)
+  // ✅ Verificar se é conta principal usando o contexto de permissões
   const isMainAccount = () => {
-    // Todos os usuários autenticados são considerados proprietários do sistema
-    // pois cada sistema vendido é para um proprietário específico
-    return !!user?.email;
+    // Apenas admin_empresa e super_admin são considerados conta principal
+    return permissionsContext?.is_admin_empresa || permissionsContext?.is_super_admin || false;
   };
 
-  // Verificar se é admin
+  // ✅ Verificar se é admin usando o contexto de permissões
   const isAdmin = () => {
-    console.log('Debug isAdmin - isMainAccount:', isMainAccount());
-    return isMainAccount();
+    const result = permissionsContext?.is_admin || false;
+    console.log('Debug isAdmin - resultado:', result, 'tipo_admin:', permissionsContext?.tipo_admin);
+    return result;
   };
 
-  // Verificar se é owner
+  // ✅ Verificar se é owner usando o contexto de permissões
   const isOwner = () => {
-    console.log('Debug isOwner - isMainAccount:', isMainAccount());
-    return isMainAccount();
+    const result = permissionsContext?.is_admin_empresa || false;
+    console.log('Debug isOwner - resultado:', result);
+    return result;
   };
 
-  // Verificar se é employee
+  // ✅ Verificar se é employee
   const isEmployee = () => {
-    return !isMainAccount();
+    return permissionsContext?.tipo_admin === 'funcionario';
   };
 
-  // Verificar se tem permissão para um módulo
+  // ✅ Verificar se tem permissão para um módulo
   const hasPermission = (moduleName: string, action: 'view' | 'create' | 'edit' | 'delete' = 'view') => {
-    // Conta principal sempre tem permissão
-    if (isMainAccount()) return true;
+    // Super admin pode tudo
+    if (permissionsContext?.is_super_admin) return true;
+    
+    // Admin da empresa pode tudo
+    if (permissionsContext?.is_admin_empresa) return true;
     
     const modulePermissions = permissions[moduleName];
     if (!modulePermissions) return false;
@@ -99,87 +105,93 @@ export function useUserHierarchy() {
     }
   };
 
-  // Obter módulos visíveis para o dashboard
+  // ✅ Obter módulos visíveis baseado nas permissões reais
   const getVisibleModules = () => {
-    // Conta principal tem acesso a todos os módulos
-    if (isMainAccount()) {
-      return [
-        {
-          name: 'sales',
-          display_name: 'Vendas',
-          description: 'Realizar vendas e emitir cupons fiscais',
-          icon: 'ShoppingCart',
-          path: '/vendas',
+    const modules = [];
+    
+    // Verificar cada módulo individualmente baseado nas permissões
+    const allModules = [
+      {
+        name: 'sales',
+        display_name: 'Vendas',
+        description: 'Realizar vendas e emitir cupons fiscais',
+        icon: 'ShoppingCart',
+        path: '/vendas',
+        permission: 'vendas'
+      },
+      {
+        name: 'clients',
+        display_name: 'Clientes',
+        description: 'Gerenciar cadastro de clientes',
+        icon: 'Users',
+        path: '/clientes',
+        permission: 'clientes'
+      },
+      {
+        name: 'products',
+        display_name: 'Produtos',
+        description: 'Controle de estoque e produtos',
+        icon: 'Package',
+        path: '/produtos',
+        permission: 'produtos'
+      },
+      {
+        name: 'cashier',
+        display_name: 'Caixa',
+        description: 'Controle de caixa e movimento',
+        icon: 'DollarSign',
+        path: '/caixa',
+        permission: 'caixa'
+      },
+      {
+        name: 'orders',
+        display_name: 'OS - Ordem de Serviço',
+        description: 'Gestão de ordens de serviço',
+        icon: 'FileText',
+        path: '/ordens-servico',
+        permission: 'ordens'
+      },
+      {
+        name: 'reports',
+        display_name: 'Relatórios',
+        description: 'Análises e relatórios de vendas',
+        icon: 'BarChart3',
+        path: '/relatorios',
+        permission: 'relatorios'
+      }
+    ];
+    
+    for (const module of allModules) {
+      // Verificar se tem pelo menos permissão de leitura
+      const hasReadPermission = permissionsContext?.permissoes.some(
+        p => p.startsWith(`${module.permission}:read`) || p.startsWith(`${module.permission}:`)
+      ) || false;
+      
+      if (hasReadPermission || permissionsContext?.is_admin_empresa || permissionsContext?.is_super_admin) {
+        // Verificar permissões específicas
+        const can_create = permissionsContext?.permissoes.includes(`${module.permission}:create`) || 
+                          permissionsContext?.is_admin_empresa || 
+                          permissionsContext?.is_super_admin || false;
+        
+        const can_edit = permissionsContext?.permissoes.includes(`${module.permission}:update`) || 
+                        permissionsContext?.is_admin_empresa || 
+                        permissionsContext?.is_super_admin || false;
+        
+        const can_delete = permissionsContext?.permissoes.includes(`${module.permission}:delete`) || 
+                          permissionsContext?.is_admin_empresa || 
+                          permissionsContext?.is_super_admin || false;
+        
+        modules.push({
+          ...module,
           can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        },
-        {
-          name: 'clients',
-          display_name: 'Clientes',
-          description: 'Gerenciar cadastro de clientes',
-          icon: 'Users',
-          path: '/clientes',
-          can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        },
-        {
-          name: 'products',
-          display_name: 'Produtos',
-          description: 'Controle de estoque e produtos',
-          icon: 'Package',
-          path: '/produtos',
-          can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        },
-        {
-          name: 'cashier',
-          display_name: 'Caixa',
-          description: 'Controle de caixa e movimento',
-          icon: 'DollarSign',
-          path: '/caixa',
-          can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        },
-        {
-          name: 'orders',
-          display_name: 'OS - Ordem de Serviço',
-          description: 'Gestão de ordens de serviço',
-          icon: 'FileText',
-          path: '/ordens-servico',
-          can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        },
-        {
-          name: 'reports',
-          display_name: 'Relatórios',
-          description: 'Análises e relatórios de vendas',
-          icon: 'BarChart3',
-          path: '/relatorios',
-          can_view: true,
-          can_create: true,
-          can_edit: true,
-          can_delete: true
-        }
-      ];
+          can_create,
+          can_edit,
+          can_delete
+        });
+      }
     }
-
-    // Para outros usuários, usar permissões do banco
-    return Object.entries(permissions)
-      .filter(([_, perms]) => perms.can_view)
-      .map(([name, perms]) => ({
-        name,
-        ...perms
-      }));
+    
+    return modules;
   };
 
   // Obter funcionários

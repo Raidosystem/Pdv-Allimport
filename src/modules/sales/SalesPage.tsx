@@ -204,9 +204,10 @@ export function SalesPage() {
         customerData: customer // Salva o customer antes de limpar
       }
 
-      // Limpar formulário
+      // Limpar formulário COMPLETO
       clearCart()
       setCustomer(null)
+      setClienteSelecionado(null) // Remove o cliente selecionado
       setCashReceived(0)
       resetCalculation()
 
@@ -406,71 +407,98 @@ export function SalesPage() {
             </Button>
           </Card>
         ) : (
-          <div className="mobile-grid grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* Coluna esquerda - Busca e Cliente */}
-            <div className="space-y-6">
-              <ProductSearch 
-                onProductSelect={handleProductSelect}
-                onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
-                onCreateProduct={handleCreateProduct}
-              />
-              <ClienteSelector 
-                clienteSelecionado={clienteSelecionado}
-                onClienteSelect={setClienteSelecionado}
-                titulo="Cliente da Venda"
-                showCard={false}
-              />
-            </div>
-
-            {/* Coluna central - Carrinho */}
-            <div>
-              <SaleResumo
-                items={items}
-                onUpdateQuantity={updateQuantity}
-                onUpdatePrice={updatePrice}
-                onRemoveItem={removeItem}
-                onClearCart={clearCart}
-                subtotal={subtotal}
-                discountType={discountType}
-                discountValue={discountValue}
-                discountAmount={discountAmount}
-                totalAmount={totalAmount}
-                onDiscountTypeChange={setDiscountType}
-                onDiscountValueChange={setDiscountValue}
-              />
-            </div>
-
-            {/* Coluna direita - Pagamento */}
-            <div className="space-y-6">
-              <PagamentoForm
-                totalAmount={totalAmount}
-                payments={payments}
-                onAddPayment={addPayment}
-                onRemovePayment={removePayment}
-                cashReceived={cashReceived}
-                onCashReceivedChange={setCashReceived}
-                changeAmount={changeAmount}
-                hasItems={items.length > 0}
-              />
-
-              {/* Botões de ação */}
-              <Card className="p-6 bg-white border-0 shadow-lg">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-sm text-secondary-600 mb-2">
-                      {getItemsCount()} {getItemsCount() === 1 ? 'item' : 'itens'} • Total: {formatCurrency(totalAmount)}
-                    </div>
-                    {totalPaid >= totalAmount && items.length > 0 && (
-                      <div className="text-green-600 font-medium">
-                        ✓ Pronto para finalizar
-                      </div>
-                    )}
+          <div className="space-y-6">
+            {/* Seção de Venda Rápida - Destaque Separado */}
+            <Card className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <FileText className="w-7 h-7 text-white" />
                   </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Venda Rápida</h3>
+                    <p className="text-sm text-gray-600">Venda sem cadastrar produto no estoque</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowQuickSaleModal(true)}
+                  size="lg"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg px-8 h-12"
+                >
+                  <FileText className="w-5 h-5 mr-2" />
+                  Iniciar Venda Rápida
+                </Button>
+              </div>
+            </Card>
 
-                  <Button
-                    onClick={handleFinalizeSale}
-                    disabled={!canFinalizeSale || loading}
-                    className="w-full text-lg py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+            {/* Layout Principal - 2 Colunas */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Coluna Esquerda - Busca e Cliente */}
+              <div className="space-y-6">
+                {/* Card de Busca de Produtos */}
+                <ProductSearch 
+                  onProductSelect={handleProductSelect}
+                  onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
+                  onCreateProduct={handleCreateProduct}
+                />
+
+                {/* Card de Cliente */}
+                <ClienteSelector 
+                  clienteSelecionado={clienteSelecionado}
+                  onClienteSelect={setClienteSelecionado}
+                  titulo="Cliente da Venda"
+                  showCard={false}
+                />
+              </div>
+
+              {/* Coluna Direita - Carrinho e Pagamento */}
+              <div className="space-y-6">
+                {/* Carrinho de Compras */}
+                <SaleResumo
+                  items={items}
+                  onUpdateQuantity={updateQuantity}
+                  onUpdatePrice={updatePrice}
+                  onRemoveItem={removeItem}
+                  onClearCart={clearCart}
+                  subtotal={subtotal}
+                  discountType={discountType}
+                  discountValue={discountValue}
+                  discountAmount={discountAmount}
+                  totalAmount={totalAmount}
+                  onDiscountTypeChange={setDiscountType}
+                  onDiscountValueChange={setDiscountValue}
+                />
+
+                {/* Formulário de Pagamento */}
+                <PagamentoForm
+                  totalAmount={totalAmount}
+                  payments={payments}
+                  onAddPayment={addPayment}
+                  onRemovePayment={removePayment}
+                  cashReceived={cashReceived}
+                  onCashReceivedChange={setCashReceived}
+                  changeAmount={changeAmount}
+                  hasItems={items.length > 0}
+                />
+
+                {/* Botões de Ação */}
+                <Card className="p-6 bg-white border-0 shadow-lg">
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-sm text-secondary-600 mb-2">
+                        {getItemsCount()} {getItemsCount() === 1 ? 'item' : 'itens'} • Total: {formatCurrency(totalAmount)}
+                      </div>
+                      {totalPaid >= totalAmount && items.length > 0 && (
+                        <div className="text-green-600 font-medium">
+                          ✓ Pronto para finalizar
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={handleFinalizeSale}
+                      disabled={!canFinalizeSale || loading}
+                      className="w-full text-lg py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                   >
                     {loading ? 'Finalizando...' : 'Finalizar Venda'}
                   </Button>
@@ -508,6 +536,7 @@ export function SalesPage() {
                   </div>
                 </div>
               </Card>
+              </div>
             </div>
           </div>
         )}

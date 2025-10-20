@@ -138,82 +138,73 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
   }
 
   return (
-    <Card className="p-6 bg-white border-0 shadow-xl">
-      <div className="space-y-6">
-        {/* Cabeçalho Melhorado */}
-        <div className="flex items-center justify-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Search className="w-7 h-7 text-white" />
+    <Card className="p-6 bg-white border-0 shadow-lg">
+      <div className="space-y-4">
+        {/* Cabeçalho Simplificado */}
+        <div className="flex items-center space-x-3 pb-4 border-b border-gray-200">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <Search className="w-5 h-5 text-white" />
           </div>
-          <div className="text-center">
-            <h3 className="text-xl font-bold text-secondary-900">Buscar Produto</h3>
-          </div>
-          <div className="w-14"></div>
+          <h3 className="text-lg font-semibold text-gray-900">Buscar Produto</h3>
         </div>
 
         {/* Feedback de produto adicionado */}
         {productJustAdded && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center space-x-2">
               <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
-              <span className="text-green-800 font-medium">
-                Produto cadastrado com sucesso! Já está disponível para busca.
+              <span className="text-green-700 text-sm font-medium">
+                Produto cadastrado com sucesso!
               </span>
             </div>
           </div>
         )}
 
-        {/* Busca Unificada */}
-        <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-lg">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <Search className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-blue-600">Buscar por código de barras, nome ou SKU</p>
-            </div>
-          </div>
-          
+        {/* Campo de Busca Simplificado */}
+        <div>
           <div className="relative">
             <Input
               ref={searchInputRef}
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Digite código de barras, nome ou SKU do produto..."
+              placeholder="Digite código de barras, nome ou SKU..."
               data-search="unified"
               onKeyDown={handleKeyDown}
-              className="h-12 text-base pl-12 pr-12 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500/20"
+              className="h-11 text-base pl-11 pr-11 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-blue-400" />
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             {loading && (
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+              <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
               </div>
             )}
           </div>
+          <p className="text-xs text-gray-500 mt-2 ml-1">
+            Busque por código de barras, nome ou SKU do produto
+          </p>
         </div>
 
-        {/* Resultados da busca */}
+        {/* Resultados da busca - Simplificado */}
         {showResults && (
-          <div className="border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden bg-white">
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
             {(() => {
               console.log('🎯 Renderizando resultados - showResults:', showResults, 'loading:', loading, 'products.length:', products.length);
               return null;
             })()}
             {loading ? (
-              <div className="p-8 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Buscando produtos...</p>
+              <div className="p-6 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
+                <p className="text-gray-600 text-sm">Buscando...</p>
               </div>
             ) : products.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto">
-                <div className="p-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white">
-                  <h4 className="font-semibold text-lg">
+              <div className="max-h-80 overflow-y-auto">
+                <div className="p-3 bg-blue-50 border-b border-blue-100">
+                  <p className="text-sm font-medium text-blue-900">
                     {products.length} produto{products.length !== 1 ? 's' : ''} encontrado{products.length !== 1 ? 's' : ''}
-                  </h4>
+                  </p>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {products.map((product, index) => {
@@ -222,41 +213,39 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                     <div
                       key={product.id}
                       onClick={() => handleProductSelect(product)}
-                      className={`p-4 cursor-pointer transition-all duration-200 hover:bg-primary-50 ${
+                      className={`p-3 cursor-pointer transition-colors ${
                         index === selectedIndex
-                          ? 'bg-primary-100 border-l-4 border-primary-500 shadow-lg'
-                          : 'hover:shadow-md'
+                          ? 'bg-blue-50 border-l-2 border-blue-500'
+                          : 'hover:bg-gray-50'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
-                              <Package className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-secondary-900 text-base">
-                                {product.name}
-                              </h4>
-                              <div className="flex items-center space-x-4 mt-1">
-                                <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                                  SKU: {product.sku}
-                                </span>
-                                <span className="text-sm text-gray-600">
-                                  Estoque: {product.stock_quantity}
-                                </span>
-                                {product.stock_quantity <= (product.min_stock || 0) && (
-                                  <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
-                                    ⚠️ Estoque Baixo
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Package className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                            <h4 className="font-medium text-gray-900 text-sm truncate">
+                              {product.name}
+                            </h4>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-600">
+                            <span className="bg-gray-100 px-2 py-0.5 rounded">
+                              SKU: {product.sku}
+                            </span>
+                            <span>
+                              Estoque: {product.stock_quantity}
+                            </span>
+                            {product.stock_quantity <= (product.min_stock || 0) && (
+                              <span className="text-red-600 font-medium">
+                                ⚠️ Baixo
+                              </span>
+                            )}
                           </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <div className="text-xl font-bold text-primary-600 mb-1">
-                            {formatCurrency(product.price)}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="text-right">
+                            <div className="text-base font-bold text-blue-600">
+                              {formatCurrency(product.price)}
+                            </div>
                           </div>
                           <Button
                             size="sm"
@@ -264,9 +253,9 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                               e.stopPropagation()
                               handleProductSelect(product)
                             }}
-                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium shadow-lg transform hover:scale-105 transition-all"
+                            className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5"
                           >
-                            + Adicionar
+                            Adicionar
                           </Button>
                         </div>
                       </div>
@@ -276,33 +265,17 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                 </div>
               </div>
             ) : (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Package className="w-8 h-8 text-gray-400" />
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Package className="w-6 h-6 text-gray-400" />
                 </div>
-                <h4 className="text-lg font-medium text-gray-600 mb-2">Nenhum produto encontrado</h4>
-                <p className="text-gray-500">Tente buscar com outros termos</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">Nenhum produto encontrado</p>
+                <p className="text-xs text-gray-500">Tente buscar com outros termos</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Botão Venda Rápida */}
-        <div className="flex justify-center">
-          <Button 
-            onClick={() => {
-              if (onCreateProduct) {
-                onCreateProduct()
-              } else {
-                alert('Funcionalidade de venda rápida será implementada')
-              }
-            }}
-            className="w-full max-w-sm h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Venda Rápida
-          </Button>
-        </div>
       </div>
     </Card>
   )

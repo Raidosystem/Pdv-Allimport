@@ -8,13 +8,24 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
-  // Carregar todos os produtos
+  // Carregar todos os produtos do usuário
   const loadProducts = async () => {
     setLoading(true)
     try {
+      // Obter user_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        toast.error('Erro ao carregar produtos: usuário não identificado')
+        setProducts([])
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
+        .eq('user_id', user.id)
         .order('criado_em', { ascending: false })
 
       if (error) throw error
@@ -28,21 +39,34 @@ export function useProducts() {
     }
   }
 
-  // Deletar produto
+  // Deletar produto (apenas do próprio usuário)
   const deleteProduct = async (productId: string) => {
     setLoading(true)
     try {
+      // Obter user_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        toast.error('Erro: usuário não identificado')
+        setLoading(false)
+        return
+      }
+
+      // Deletar apenas se o produto pertencer ao usuário
       const { error } = await supabase
         .from('produtos')
         .delete()
         .eq('id', productId)
+        .eq('user_id', user.id)
 
       if (error) throw error
       
       // Atualizar lista local
       setProducts(prev => prev.filter(p => p.id !== productId))
+      toast.success('Produto deletado com sucesso!')
     } catch (error) {
       console.error('Erro ao deletar produto:', error)
+      toast.error('Erro ao deletar produto')
       throw error
     } finally {
       setLoading(false)
@@ -145,9 +169,20 @@ export function useProducts() {
   // Buscar categorias
   const fetchCategories = async () => {
     try {
+      // Obter empresa_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        return
+      }
+
+      // Usar o ID do usuário como empresa_id
+      const empresa_id = user.id
+
       const { data, error } = await supabase
         .from('categories')
         .select('*')
+        .eq('empresa_id', empresa_id)
         .order('name')
 
       if (error) throw error
@@ -168,11 +203,22 @@ export function useProducts() {
     try {
       console.log('🔄 Criando categoria:', name)
       
-      // Verificar se já existe uma categoria com este nome
+      // Obter empresa_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        toast.error('Erro ao criar categoria: usuário não identificado')
+        return null
+      }
+
+      const empresa_id = user.id
+      
+      // Verificar se já existe uma categoria com este nome PARA ESTA EMPRESA
       const { data: existing, error: checkError } = await supabase
         .from('categories')
         .select('id, name')
         .eq('name', name.trim())
+        .eq('empresa_id', empresa_id)
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -186,10 +232,10 @@ export function useProducts() {
         return null
       }
 
-      // Criar nova categoria
+      // Criar nova categoria com empresa_id
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ name: name.trim() }])
+        .insert([{ name: name.trim(), empresa_id }])
         .select()
         .single()
 
@@ -229,6 +275,15 @@ export function useProducts() {
   const saveProduct = async (productData: ProductFormData, id?: string): Promise<boolean> => {
     setLoading(true)
     try {
+      // Obter user_id do usuário autenticado (obrigatório para isolamento de dados)
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        toast.error('Erro: usuário não identificado. Faça login novamente.')
+        setLoading(false)
+        return false
+      }
+
       let imageUrl = null
 
       // Upload da imagem se fornecida
@@ -244,44 +299,75 @@ export function useProducts() {
         }
       }
 
-      // Preparar dados para o banco
+      // Preparar dados para o banco (apenas campos que existem na tabela)
       const productToSave = {
         nome: productData.nome,
-        codigo: productData.codigo,
-        codigo_barras: productData.codigo_barras || null,
-        categoria: productData.categoria,
-        preco_venda: productData.preco_venda,
-        preco_custo: productData.preco_custo || null,
-        estoque: productData.estoque,
-        unidade: productData.unidade,
         descricao: productData.descricao || null,
-        fornecedor: productData.fornecedor || null,
-        ativo: productData.ativo,
-        imagem_url: imageUrl,
+        preco: productData.preco_venda,  // campo principal de preço
+        categoria_id: productData.categoria || null,
+        estoque: productData.estoque,
+        codigo_barras: productData.codigo_barras || null,
+        sku: productData.codigo || null,  // usar código como SKU
+        estoque_minimo: 0,  // valor padrão
+        unidade: productData.unidade || null,
+        ativo: productData.ativo !== false,  // garantir boolean
+        preco_custo: productData.preco_custo || null,
+        user_id: user.id,
         atualizado_em: new Date().toISOString()
+      }
+
+      console.log('🔍 [saveProduct] Dados do produto a salvar:', {
+        nome: productToSave.nome,
+        categoria_id: productToSave.categoria_id,
+        categoria_id_vazio: !productToSave.categoria_id,
+        sku: productToSave.sku,
+        user_id: productToSave.user_id
+      })
+
+      // ✅ VALIDAÇÃO CRÍTICA: Verificar se a categoria existe no banco ANTES de tentar inserir
+      if (productToSave.categoria_id) {
+        console.log('🔍 [saveProduct] Validando categoria:', productToSave.categoria_id)
+        
+        const { data: categoryExists, error: catError } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('id', productToSave.categoria_id)
+          .eq('empresa_id', user.id)  // garantir que é a categoria do usuario
+          .limit(1)
+
+        if (catError || !categoryExists || categoryExists.length === 0) {
+          console.error('❌ [saveProduct] Categoria não encontrada ou inválida:', {
+            categoria_id: productToSave.categoria_id,
+            encontrado: categoryExists?.length || 0,
+            error: catError
+          })
+          toast.error('❌ ERRO: Categoria selecionada não existe na base de dados. Por favor, selecione uma categoria válida.')
+          setLoading(false)
+          return false
+        }
+        
+        console.log('✅ [saveProduct] Categoria validada com sucesso:', categoryExists[0])
       }
 
       let result
 
       if (id) {
-        // Atualizar produto existente
+        // Atualizar produto existente (sem updated_at pois o banco gerencia)
         result = await supabase
           .from('produtos')
           .update(productToSave)
           .eq('id', id)
+          .eq('user_id', user.id)  // garantir isolamento
       } else {
         // Criar novo produto
         result = await supabase
           .from('produtos')
-          .insert([{
-            ...productToSave,
-            criado_em: new Date().toISOString()
-          }])
+          .insert([productToSave])
       }
 
       if (result.error) throw result.error
 
-      toast.success(id ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!')
+      // Remover toast.success daqui - será controlado pelo componente que chama
       return true
     } catch (error: unknown) {
       console.error('Erro ao salvar produto:', error)
@@ -298,13 +384,22 @@ export function useProducts() {
     }
   }
 
-  // Buscar produto por ID
+  // Buscar produto por ID (apenas do usuário autenticado)
   const getProduct = async (id: string): Promise<Product | null> => {
     try {
+      // Obter user_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        toast.error('Erro: usuário não identificado')
+        return null
+      }
+
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
         .eq('id', id)
+        .eq('user_id', user.id)
         .single()
 
       if (error) throw error
@@ -316,13 +411,21 @@ export function useProducts() {
     }
   }
 
-  // Verificar se código já existe
+  // Verificar se código já existe (para este usuário)
   const checkCodeExists = async (code: string, excludeId?: string): Promise<boolean> => {
     try {
+      // Obter user_id do usuário autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('Erro ao obter usuário:', userError)
+        return false
+      }
+
       let query = supabase
         .from('produtos')
         .select('id')
         .eq('codigo', code)
+        .eq('user_id', user.id)
 
       if (excludeId) {
         query = query.neq('id', excludeId)

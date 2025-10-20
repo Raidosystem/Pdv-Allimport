@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Form Cache</title>
+</head>
+<body>
+    <h1>Limpando Cache...</h1>
+    <p id="status">Processando...</p>
+    
+    <script>
+        // Clear all localStorage
+        localStorage.clear();
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        // Clear IndexedDB
+        if (window.indexedDB) {
+            const request = window.indexedDB.databases();
+            request.then(dbs => {
+                dbs.forEach(db => {
+                    window.indexedDB.deleteDatabase(db.name);
+                });
+            });
+        }
+        
+        // Log cleared items
+        console.log('✅ localStorage cleared');
+        console.log('✅ sessionStorage cleared');
+        console.log('✅ IndexedDB cleared');
+        
+        document.getElementById('status').textContent = 'Cache limpo com sucesso! Fechando em 2 segundos...';
+        
+        setTimeout(() => {
+            window.close();
+        }, 2000);
+    </script>
+</body>
+</html>

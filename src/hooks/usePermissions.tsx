@@ -91,34 +91,13 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       if (error || !funcionarioData) {
         console.error('❌ [usePermissions] Erro ao carregar permissões:', error);
-        console.log('🔧 [usePermissions] CRIANDO ADMIN AUTOMÁTICO: Todo usuário logado é admin da sua empresa');
+        console.log('🔧 [usePermissions] Usuário será tratado como admin da sua empresa');
         
-        // REGRA: Todo usuário que compra o sistema é automaticamente admin da sua empresa
+        // ✅ NÃO TENTAR CRIAR FUNCIONÁRIO - Isso causa 409 Conflict por RLS policies
+        // Apenas deixar claro que este usuário é admin automático
+        // A criação do funcionário será feita no contexto específico quando necessário
         if (user.email) {
-          try {
-            // Tentar criar funcionário como admin_empresa
-            const { data: novoFuncionarioArray, error: createError } = await supabase
-              .from('funcionarios')
-              .insert({
-                nome: user.email.split('@')[0],
-                email: user.email,
-                status: 'ativo',
-                empresa_id: user.id // Usar user.id como empresa_id (cada usuário = sua empresa)
-              })
-              .select();
-
-            const novoFuncionario = novoFuncionarioArray && novoFuncionarioArray.length > 0 ? novoFuncionarioArray[0] : null;
-              
-            if (createError) {
-              console.log('⚠️ Erro ao criar na tabela, mas seguindo como admin:', createError);
-            } else {
-              console.log('✅ Admin criado com sucesso:', novoFuncionario);
-            }
-          } catch (createError) {
-            console.log('⚠️ Erro na criação, mas continuando como admin:', createError);
-          }
-          
-          // SEMPRE continuar como admin, mesmo se falhar a criação no banco
+          console.log('✅ Usuário', user.email, 'definido como admin automático da empresa');
           const adminContext: PermissaoContext = {
             empresa_id: user.id, // Cada usuário é sua própria empresa
             user_id: user.id,

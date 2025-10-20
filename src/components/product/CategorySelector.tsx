@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Check, X } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
@@ -25,6 +25,18 @@ export function CategorySelector({
   const [newCategoryName, setNewCategoryName] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // ✅ Debug: Log quando as categorias mudam
+  useEffect(() => {
+    if (categories.length > 0) {
+      console.log('📂 [CategorySelector] Categorias carregadas:', {
+        total: categories.length,
+        ids: categories.map(c => c.id),
+        primeiro_id: categories[0].id,
+        nomes: categories.map(c => c.name)
+      })
+    }
+  }, [categories])
+
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return
 
@@ -32,7 +44,7 @@ export function CategorySelector({
     try {
       const newCategory = await onCreateCategory(newCategoryName.trim())
       if (newCategory) {
-        onChange(newCategory.name)
+        onChange(newCategory.id)
         setNewCategoryName('')
         setIsCreating(false)
       }
@@ -97,7 +109,14 @@ export function CategorySelector({
           <div className="flex space-x-2">
             <select
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => {
+                const selectedId = e.target.value
+                // ✅ Validar se a categoria existe
+                if (selectedId && !categories.some(cat => cat.id === selectedId)) {
+                  console.warn('⚠️ [CategorySelector] Tentativa de selecionar categoria inexistente:', selectedId)
+                }
+                onChange(selectedId)
+              }}
               disabled={disabled}
               className={`flex-1 px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
                 error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
@@ -105,7 +124,7 @@ export function CategorySelector({
             >
               <option value="">Selecione uma categoria</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.name}>
+                <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}

@@ -52,7 +52,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
 
   useEffect(() => {
     fetchCategories()
-  }, [fetchCategories])
+  }, [])
 
   const getErrorMessage = (error: any): string => {
     if (!error) return ''
@@ -64,17 +64,34 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const handleSubmitForm = async (data: ProductFormData) => {
     if (loading) return
 
+    console.log('📝 [ProductForm] Dados do formulário antes de salvar:', {
+      nome: data.nome,
+      categoria: data.categoria,
+      categoria_vazio: !data.categoria,
+      sku: data.codigo
+    })
+
+    console.log('📂 [ProductForm] Categorias carregadas no momento do submit:', {
+      total: categories.length,
+      primeira_id: categories[0]?.id,
+      categoria_selecionada: data.categoria,
+      existe: categories.some(c => c.id === data.categoria)
+    })
+
     setLoading(true)
     try {
-      await saveProduct(data, productId)
-      toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')
+      const success = await saveProduct(data, productId)
       
-      // Dispara eventos para sincronização entre seções
-      window.dispatchEvent(new CustomEvent('productAdded'))
-      window.dispatchEvent(new CustomEvent('productUpdated'))
-      
-      if (onSuccess) {
-        onSuccess()
+      if (success) {
+        toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')
+        
+        // Dispara eventos para sincronização entre seções
+        window.dispatchEvent(new CustomEvent('productAdded'))
+        window.dispatchEvent(new CustomEvent('productUpdated'))
+        
+        if (onSuccess) {
+          onSuccess()
+        }
       }
     } catch (error) {
       console.error('Erro ao salvar produto:', error)

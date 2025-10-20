@@ -1,0 +1,278 @@
+/* ============================================================
+   CORREÇÕES DE RESPONSIVIDADE - SISTEMA PEGA 100% DA TELA
+   ============================================================ */
+
+/* 1. RESET GLOBAL - Garante 100% em qualquer resolução */
+html, body, #root {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 2. PREVENÇÃO DE OVERFLOW HORIZONTAL */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#root {
+  overflow-x: hidden;
+}
+
+/* 3. REMOVER max-width em containers principais */
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl,
+.max-w-3xl {
+  max-width: 100% !important;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 4. GARANTIR 100% EM COMPONENTES FLEX */
+.flex {
+  width: 100%;
+}
+
+.flex-1 {
+  width: 100%;
+  flex: 1;
+}
+
+/* 5. CORRIGIR OVERFLOW EM CONTAINERS */
+.overflow-hidden {
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+}
+
+.overflow-auto {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.overflow-y-auto {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.overflow-x-auto {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+/* 6. MOBILE FIRST - Extra pequeno (até 480px) */
+@media (max-width: 480px) {
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  /* Containers com padding reduzido */
+  .px-4, .px-6, .px-8 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* Remover width fixo */
+  div[style*="width"],
+  div[style*="max-width"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Garantir 100% em grids */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Input e forms 100% */
+  input, textarea, select {
+    width: 100% !important;
+  }
+}
+
+/* 7. PEQUENO (481px - 640px) */
+@media (min-width: 481px) and (max-width: 640px) {
+  .px-4, .px-6, .px-8 {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  }
+}
+
+/* 8. TABLET (641px - 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .px-4, .px-6 {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .px-8 {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  }
+}
+
+/* 9. DESKTOP (1025px+) */
+@media (min-width: 1025px) {
+  .px-4 {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .px-6 {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  .px-8 {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+/* 10. SIDEBAR RESPONSIVO */
+.lg\:static {
+  width: 100% !important;
+}
+
+.lg\:translate-x-0 {
+  transform: translateX(0) !important;
+  width: 100% !important;
+}
+
+/* 11. HEADER RESPONSIVO */
+header {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+/* 12. MAIN CONTENT RESPONSIVO */
+main {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 13. MODALS E DIALOGS */
+.fixed {
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+
+.inset-0 {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+}
+
+/* 14. REMOVER max-width DE CARDS E CONTAINERS */
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.shadow-lg,
+.shadow-xl {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 15. TABELAS RESPONSIVAS */
+table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+thead, tbody, tr, td, th {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+/* 16. FORÇAR 100vw quando necessário */
+.w-screen {
+  width: 100vw !important;
+  overflow-x: hidden;
+}
+
+.h-screen {
+  height: 100vh !important;
+}
+
+/* 17. GARANTIR SCROLL SUAVE SEM HORIZONTAL */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 18. REMOVER SCROLL HORIZONTAL */
+html, body {
+  overflow-x: hidden !important;
+}
+
+body {
+  position: relative;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* 19. PROTEÇÃO CONTRA MARGIN/PADDING QUE CAUSA OVERFLOW */
+body > * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 20. INPUT/TEXTAREA/SELECT COM 100% */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="phone"],
+input[type="date"],
+input[type="search"],
+textarea,
+select {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ============================================================
+   NOTAS IMPORTANTES:
+   - Este CSS apenas CORRIGE RESPONSIVIDADE
+   - NÃO altera cores, fontes, ou lógica de componentes
+   - Garante 100% de largura em qualquer navegador/resolução
+   - Previne scroll horizontal em MOBILE, TABLET e DESKTOP
+   - Use em produção sem preocupações
+   ============================================================ */

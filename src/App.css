@@ -52,3 +52,42 @@ html, body {
 .read-the-docs {
   color: #888;
 }
+
+/* ============================================================
+   DASHBOARD - AUMENTAR CONTEÚDO PROPORCIONALMENTE
+   ============================================================ */
+
+/* Remover limite de largura e ocupar 100% */
+.max-w-7xl {
+  max-width: 100% !important;
+}
+
+/* Aumentar largura de TODOS os cards do menu */
+.mobile-menu-button {
+  min-width: 145px !important;
+}
+
+@media (min-width: 640px) {
+  .mobile-menu-button {
+    min-width: 175px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu-button {
+    min-width: 220px !important;
+  }
+}
+
+/* Centralizar os cards do menu */
+.dashboard-menu-container {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.dashboard-menu-container > div {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+

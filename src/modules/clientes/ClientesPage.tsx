@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Users, Plus } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { ClienteFormUnificado } from '../../components/cliente/ClienteFormUnificado'
 import { ClienteTable } from '../../components/cliente/ClienteTable'
@@ -70,8 +71,29 @@ export function ClientesPage() {
     if (window.confirm(`Deseja realmente excluir o cliente "${cliente.nome}"?`)) {
       try {
         await deletarCliente(id)
-      } catch (error) {
+        toast.success('Cliente excluído com sucesso!')
+      } catch (error: any) {
         console.error('Erro ao excluir cliente:', error)
+        
+        // Verificar se é erro de foreign key
+        if (error.message && error.message.includes('FOREIGN_KEY_VIOLATION')) {
+          const mensagem = error.message.replace('FOREIGN_KEY_VIOLATION: ', '')
+          toast.error(mensagem, {
+            duration: 6000,
+            style: {
+              maxWidth: '500px',
+            }
+          })
+          
+          // Perguntar se deseja desativar
+          setTimeout(() => {
+            if (window.confirm(`Deseja desativar o cliente "${cliente.nome}" em vez de excluir?`)) {
+              handleToggleStatus(id, false)
+            }
+          }, 500)
+        } else {
+          toast.error('Erro ao excluir cliente. Tente novamente.')
+        }
       }
     }
   }

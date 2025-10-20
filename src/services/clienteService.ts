@@ -302,12 +302,49 @@ export class ClienteService {
 
   // Deletar cliente
   static async deletarCliente(id: string) {
+    // Primeiro, verificar se há ordens de serviço vinculadas
+    const { data: ordensServico, error: checkError } = await supabase
+      .from('ordens_servico')
+      .select('id')
+      .eq('cliente_id', id)
+      .limit(1)
+
+    if (checkError) {
+      throw new Error(`Erro ao verificar ordens de serviço: ${checkError.message}`)
+    }
+
+    // Se houver ordens de serviço, não permite deletar
+    if (ordensServico && ordensServico.length > 0) {
+      throw new Error('FOREIGN_KEY_VIOLATION: Este cliente possui ordens de serviço cadastradas e não pode ser excluído. Você pode desativar o cliente em vez de excluí-lo.')
+    }
+
+    // Verificar se há vendas vinculadas
+    const { data: vendas, error: salesCheckError } = await supabase
+      .from('sales')
+      .select('id')
+      .eq('customer_id', id)
+      .limit(1)
+
+    if (salesCheckError) {
+      throw new Error(`Erro ao verificar vendas: ${salesCheckError.message}`)
+    }
+
+    // Se houver vendas, não permite deletar
+    if (vendas && vendas.length > 0) {
+      throw new Error('FOREIGN_KEY_VIOLATION: Este cliente possui vendas cadastradas e não pode ser excluído. Você pode desativar o cliente em vez de excluí-lo.')
+    }
+
+    // Se não houver relacionamentos, pode deletar
     const { error } = await supabase
       .from('clientes')
       .delete()
       .eq('id', id)
 
     if (error) {
+      // Se mesmo assim der erro de foreign key, capturar
+      if (error.code === '23503' || error.message.includes('foreign key')) {
+        throw new Error('FOREIGN_KEY_VIOLATION: Este cliente possui registros vinculados e não pode ser excluído. Você pode desativar o cliente em vez de excluí-lo.')
+      }
       throw new Error(`Erro ao deletar cliente: ${error.message}`)
     }
   }

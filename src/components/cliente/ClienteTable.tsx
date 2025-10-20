@@ -278,9 +278,11 @@ export function ClienteTable({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-1">
-                        <div className="flex items-center text-sm text-gray-900">
+                        <div className="flex items-center text-sm">
                           <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                          {formatarTelefone(cliente.telefone)}
+                          <span className={cliente.telefone ? 'text-gray-900' : 'text-gray-400 italic'}>
+                            {formatarTelefone(cliente.telefone) || 'Não informado'}
+                          </span>
                         </div>
                         {cliente.email && (
                           <div className="flex items-center text-sm text-gray-500">
@@ -291,7 +293,7 @@ export function ClienteTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className={`text-sm ${cliente.cpf_cnpj ? 'text-gray-900' : 'text-gray-400 italic'}`}>
                         {cliente.cpf_cnpj || 'Não informado'}
                       </div>
                     </td>

@@ -45,6 +45,22 @@ interface PrintReceiptData {
   };
   cashReceived?: number;
   changeAmount?: number;
+  // Configurações de impressão personalizadas
+  printConfig?: {
+    // Textos personalizados
+    cabecalho_personalizado?: string;
+    rodape_linha1?: string;
+    rodape_linha2?: string;
+    rodape_linha3?: string;
+    rodape_linha4?: string;
+    // Configurações de fonte
+    fonte_tamanho?: 'pequena' | 'media' | 'grande';
+    fonte_intensidade?: 'normal' | 'medio' | 'forte';
+    fonte_negrito?: boolean;
+    // Outras configurações
+    papel_tamanho?: 'A4' | '80mm' | '58mm';
+    logo_recibo?: boolean;
+  };
 }
 
 export function usePrintReceipt() {
@@ -60,14 +76,40 @@ export function usePrintReceipt() {
   };
 
   const generateReceiptHTML = (data: PrintReceiptData) => {
-    const { sale, customer, storeName = "PDV Allimport", storeInfo, cashReceived = 0, changeAmount = 0 } = data;
+    const { sale, customer, storeName = "PDV Allimport", storeInfo, cashReceived = 0, changeAmount = 0, printConfig } = data;
     
     // Debug: verificar dados do cliente
     console.log('🧾 Gerando HTML do cupom:', {
       temCliente: !!customer,
       nomeCliente: customer?.name,
-      customer
+      customer,
+      printConfig
     });
+
+    // Mapear configurações de tamanho de fonte
+    const fontSizeMap = {
+      'pequena': '10px',
+      'media': '12px',
+      'grande': '14px'
+    };
+    const baseFontSize = fontSizeMap[printConfig?.fonte_tamanho || 'media'];
+
+    // Mapear configurações de intensidade (peso da fonte + filtro CSS)
+    const fontIntensityConfig = {
+      'normal': { weight: 'normal', filter: 'none', stroke: '0' },
+      'medio': { weight: '500', filter: 'contrast(1.2)', stroke: '0.3px' },
+      'forte': { weight: 'bold', filter: 'contrast(1.5)', stroke: '0.5px' }
+    };
+    const intensitySettings = fontIntensityConfig[printConfig?.fonte_intensidade || 'normal'];
+
+    // Aplicar negrito (se configurado, sobrescreve o peso da intensidade)
+    const fontWeight = printConfig?.fonte_negrito ? 'bold' : intensitySettings.weight;
+    const fontFilter = intensitySettings.filter;
+    const textStroke = intensitySettings.stroke;
+
+    // Tamanho do papel
+    const paperSize = printConfig?.papel_tamanho || '80mm';
+    const paperWidth = paperSize === 'A4' ? '210mm' : paperSize === '58mm' ? '58mm' : '80mm';
     
     return `
       <!DOCTYPE html>
@@ -87,6 +129,10 @@ export function usePrintReceipt() {
               background: white;
               margin: 0;
               padding: 5px;
+              font-size: ${baseFontSize};
+              font-weight: ${fontWeight};
+              color: #000;
+              filter: ${fontFilter};
             }
             
             @media print {
@@ -96,24 +142,27 @@ export function usePrintReceipt() {
               }
               
               @page {
-                size: 80mm auto;
+                size: ${paperWidth} auto;
                 margin: 0;
               }
               
               * {
                 -webkit-print-color-adjust: exact !important;
                 color-adjust: exact !important;
+                print-color-adjust: exact !important;
               }
             }
             
             .receipt {
-              width: 80mm;
-              max-width: 302px;
+              width: ${paperWidth};
+              max-width: ${paperSize === 'A4' ? '210mm' : paperSize === '58mm' ? '220px' : '302px'};
               margin: 0 auto;
               padding: 10px;
-              font-size: 12px;
+              font-size: ${baseFontSize};
               line-height: 1.2;
-              color: black;
+              color: #000;
+              font-weight: ${fontWeight};
+              -webkit-text-stroke: ${textStroke} black;
             }
             
             .header {
@@ -226,24 +275,30 @@ export function usePrintReceipt() {
           <div class="receipt">
             <!-- Cabeçalho da Loja -->
             <div class="header">
-              ${storeInfo?.logo ? `
+              ${(printConfig?.logo_recibo !== false && storeInfo?.logo) ? `
                 <div style="margin-bottom: 10px;">
                   <img src="${storeInfo.logo}" alt="Logo" style="max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto; display: block;" />
                 </div>
               ` : ''}
-              <div class="store-name">${storeName}</div>
-              ${storeInfo?.logradouro && storeInfo?.numero ? `
-                <div class="store-info">${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}</div>
-              ` : storeInfo?.address ? `
-                <div class="store-info">${storeInfo.address}</div>
-              ` : ''}
-              ${storeInfo?.bairro || storeInfo?.cidade ? `
-                <div class="store-info">${[storeInfo?.bairro, storeInfo?.cidade, storeInfo?.estado].filter(Boolean).join(' - ')}</div>
-              ` : ''}
-              ${storeInfo?.cep ? `<div class="store-info">CEP: ${storeInfo.cep}</div>` : ''}
-              ${storeInfo?.phone ? `<div class="store-info">Tel: ${storeInfo.phone}</div>` : ''}
-              ${storeInfo?.email ? `<div class="store-info">Email: ${storeInfo.email}</div>` : ''}
-              ${storeInfo?.cnpj ? `<div class="store-info">CNPJ: ${storeInfo.cnpj}</div>` : ''}
+              ${printConfig?.cabecalho_personalizado ? `
+                <div class="store-info" style="white-space: pre-line; font-weight: bold;">
+                  ${printConfig.cabecalho_personalizado}
+                </div>
+              ` : `
+                <div class="store-name">${storeName}</div>
+                ${storeInfo?.logradouro && storeInfo?.numero ? `
+                  <div class="store-info">${storeInfo.logradouro}, ${storeInfo.numero}${storeInfo.complemento ? ` - ${storeInfo.complemento}` : ''}</div>
+                ` : storeInfo?.address ? `
+                  <div class="store-info">${storeInfo.address}</div>
+                ` : ''}
+                ${storeInfo?.bairro || storeInfo?.cidade ? `
+                  <div class="store-info">${[storeInfo?.bairro, storeInfo?.cidade, storeInfo?.estado].filter(Boolean).join(' - ')}</div>
+                ` : ''}
+                ${storeInfo?.cep ? `<div class="store-info">CEP: ${storeInfo.cep}</div>` : ''}
+                ${storeInfo?.phone ? `<div class="store-info">Tel: ${storeInfo.phone}</div>` : ''}
+                ${storeInfo?.email ? `<div class="store-info">Email: ${storeInfo.email}</div>` : ''}
+                ${storeInfo?.cnpj ? `<div class="store-info">CNPJ: ${storeInfo.cnpj}</div>` : ''}
+              `}
             </div>
 
             <!-- Informações da Venda -->
@@ -347,8 +402,14 @@ export function usePrintReceipt() {
 
             <!-- Rodapé -->
             <div class="footer">
-              <div>Obrigado pela preferência!</div>
-              <div>Volte sempre!</div>
+              ${printConfig?.rodape_linha1 ? `<div>${printConfig.rodape_linha1}</div>` : ''}
+              ${printConfig?.rodape_linha2 ? `<div>${printConfig.rodape_linha2}</div>` : ''}
+              ${printConfig?.rodape_linha3 ? `<div>${printConfig.rodape_linha3}</div>` : ''}
+              ${printConfig?.rodape_linha4 ? `<div>${printConfig.rodape_linha4}</div>` : ''}
+              ${!printConfig?.rodape_linha1 && !printConfig?.rodape_linha2 && !printConfig?.rodape_linha3 && !printConfig?.rodape_linha4 ? `
+                <div>Obrigado pela preferência!</div>
+                <div>Volte sempre!</div>
+              ` : ''}
               <div class="footer-info">Sistema PDV Allimport</div>
               <div class="footer-info">${new Date().toLocaleString('pt-BR')}</div>
             </div>

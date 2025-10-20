@@ -280,7 +280,21 @@ export function SalesPage() {
           address: !empresaSettings.logradouro ? "Configure o endereço em Configurações → Empresa" : undefined
         },
         cashReceived,
-        changeAmount
+        changeAmount,
+        // Buscar configurações de impressão do localStorage
+        printConfig: (() => {
+          try {
+            const configStr = localStorage.getItem('print_config');
+            if (!configStr) return undefined;
+            
+            const config = JSON.parse(configStr);
+            console.log('📋 Configurações de impressão carregadas:', config);
+            return config;
+          } catch (error) {
+            console.error('Erro ao carregar configurações de impressão:', error);
+            return undefined;
+          }
+        })()
       };
 
       printReceipt(receiptData);

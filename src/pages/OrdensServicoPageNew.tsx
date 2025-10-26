@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Wrench, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
+import { Wrench, Plus, Search, Edit, Trash2, Eye, Printer, X } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
@@ -13,6 +13,7 @@ interface OrdemServico {
   id: string
   numero_os?: string
   user_id?: string
+  cliente_id?: string
   cliente?: {
     nome: string
     telefone?: string
@@ -30,6 +31,7 @@ interface OrdemServico {
   data_entrada: string
   data_previsao?: string
   data_entrega?: string
+  data_finalizacao?: string
   garantia_meses?: number
   observacoes?: string
   checklist?: any
@@ -91,7 +93,7 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
       console.log('🔍 [OrdensServico] Iniciando consulta ao Supabase...')
       const { data: ordensSupabase, error: orderError } = await supabase
         .from('ordens_servico')
-        .select('*')
+        .select('*, clientes(*)')
         .order('data_entrada', { ascending: false })
       
       console.log('🔍 [OrdensServico] Resultado da consulta:', {
@@ -227,22 +229,36 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
     console.log(`📊 Ordens do Supabase: ${supabaseOrders.length} → ${allOrders.length} final`)
     
     // 6. Validar e limpar dados de todas as ordens
+    
+    // 🆕 ANÁLISE CRÍTICA: Verificar quantas ordens têm cliente_id
+    const ordensComCliente = allOrders.filter((o: any) => o.cliente_id || o.client_id).length
+    const ordensComClientName = allOrders.filter((o: any) => o.client_name || o.cliente_nome).length
+    console.log('🚨 [ANÁLISE CRÍTICA DAS ORDENS]')
+    console.log(`   Total de ordens: ${allOrders.length}`)
+    console.log(`   Ordens COM cliente_id: ${ordensComCliente}`)
+    console.log(`   Ordens COM client_name: ${ordensComClientName}`)
+    console.log('   Exemplo de ordem COM cliente_id:', allOrders.find((o: any) => o.cliente_id || o.client_id))
+    console.log('   Exemplo de ordem SEM cliente_id:', allOrders.find((o: any) => !(o.cliente_id || o.client_id)))
+    
     const validOrders = allOrders.map((order: any) => {
       // Buscar dados do cliente pelo ID (pode vir do backup ou Supabase)
       const clientData = clientsMap.get(order.client_id || order.cliente_id)
       
-      // Log para debugging dos campos do equipamento
-      if (order.source === 'supabase') {
+      // Log para debugging dos campos do equipamento (apenas primeiras 10 ordens)
+      if (order.source === 'supabase' && allOrders.indexOf(order) < 10) {
         console.log('🔧 Ordem Supabase - Campos disponíveis:', {
           id: order.id,
+          cliente_id: order.cliente_id,
+          client_id: order.client_id,
+          client_name: order.client_name,
+          cliente_nome: order.cliente_nome,
+          clientes: order.clientes, // ← VERIFICAR SE O JOIN ESTÁ FUNCIONANDO!
           equipamento_tipo: order.equipamento_tipo,
           equipamento_modelo: order.equipamento_modelo,
           equipamento_marca: order.equipamento_marca,
           marca: order.marca,
           modelo: order.modelo,
-          tipo: order.tipo,
-          device_name: order.device_name,
-          device_model: order.device_model
+          tipo: order.tipo
         })
       }
       
@@ -271,11 +287,12 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
 
       return {
         id: order.id || Date.now().toString(),
+        cliente_id: order.cliente_id || order.client_id || order.clientes?.id || '',
         cliente: {
-          id: order.client_id || order.cliente_id || '',
-          nome: order.client_name || order.cliente_nome || clientData?.name || 'Cliente não informado',
-          telefone: order.client_phone || order.cliente_telefone || clientData?.phone || '',
-          cpf_cnpj: clientData?.cpf_cnpj || ''
+          id: order.cliente_id || order.client_id || order.clientes?.id || '',
+          nome: order.clientes?.nome || order.client_name || order.cliente_nome || clientData?.name || 'Cliente não informado',
+          telefone: order.clientes?.telefone || order.client_phone || order.cliente_telefone || clientData?.phone || '',
+          cpf_cnpj: order.clientes?.cpf_cnpj || clientData?.cpf_cnpj || ''
         },
         marca: equipamentoMarca,
         modelo: equipamentoModelo,
@@ -335,6 +352,11 @@ export function OrdensServicoPage() {
   })
   const [loading, setLoading] = useState(true)
   const [mostrarTodos, setMostrarTodos] = useState(false) // Iniciar mostrando apenas 10
+  const [showEncerrarModal, setShowEncerrarModal] = useState(false)
+  const [ordemParaEncerrar, setOrdemParaEncerrar] = useState<OrdemServico | null>(null)
+  const [garantiaMeses, setGarantiaMeses] = useState<number>(3)
+  const [garantiaPersonalizada, setGarantiaPersonalizada] = useState<string>('')
+  const [servicoRealizado, setServicoRealizado] = useState<string>('')
 
   useEffect(() => {
     // Carregar todas as ordens de serviço do backup
@@ -424,6 +446,317 @@ export function OrdensServicoPage() {
     setViewingOrdem(null)
   }
 
+  const handleEncerrarOrdem = async (ordem: OrdemServico) => {
+    setOrdemParaEncerrar(ordem)
+    setGarantiaMeses(ordem.garantia_meses || 3)
+    setGarantiaPersonalizada('')
+    setServicoRealizado(ordem.observacoes || '')
+    setShowEncerrarModal(true)
+  }
+
+  const confirmarEncerramentoOrdem = async () => {
+    if (!ordemParaEncerrar) return
+    
+    try {
+      // Usar garantia personalizada se preenchida, senão usar a selecionada
+      const garantiaFinal = garantiaPersonalizada.trim() !== '' 
+        ? parseInt(garantiaPersonalizada) 
+        : garantiaMeses
+
+      // Registrar timestamps: ISO para DB, localizado para UI
+      const dataFinalISO = new Date().toISOString()
+      const dataFinalDisplay = new Date().toLocaleString('pt-BR')
+
+      console.log('🔧 [DEBUG GARANTIA]', {
+        garantiaPersonalizada,
+        garantiaMeses,
+        garantiaFinal,
+        tipo: typeof garantiaFinal
+      })
+
+      const { error } = await supabase
+        .from('ordens_servico')
+        .update({ 
+          status: 'Pronto',
+          data_finalizacao: dataFinalISO,
+          data_entrega: dataFinalISO,
+          garantia_meses: garantiaFinal,
+          observacoes: servicoRealizado
+        })
+        .eq('id', ordemParaEncerrar.id)
+
+      if (error) throw error
+
+      // Atualizar a ordem no estado local (usar formato localizado para exibição imediata)
+      const ordemAtualizada = {
+        ...ordemParaEncerrar,
+        status: 'Pronto' as any,
+        garantia_meses: garantiaFinal,
+        observacoes: servicoRealizado,
+        data_finalizacao: dataFinalDisplay,
+        data_entrega: dataFinalDisplay
+      }
+      
+      console.log('📄 [DEBUG IMPRESSÃO] Ordem a ser impressa:', {
+        id: ordemAtualizada.id,
+        garantia_meses: ordemAtualizada.garantia_meses,
+        tipo: typeof ordemAtualizada.garantia_meses
+      })
+      
+      setTodasOrdens(prev => 
+        prev.map(o => 
+          o.id === ordemParaEncerrar.id 
+            ? ordemAtualizada
+            : o
+        )
+      )
+      
+      // Atualizar a ordem sendo visualizada
+      if (viewingOrdem?.id === ordemParaEncerrar.id) {
+        setViewingOrdem(ordemAtualizada)
+      }
+      
+      setShowEncerrarModal(false)
+      
+      // Perguntar se deseja imprimir
+      const desejaImprimir = window.confirm('✅ Ordem encerrada com sucesso!\n\nDeseja imprimir o comprovante de entrega?')
+      if (desejaImprimir) {
+        imprimirComprovanteEntrega(ordemAtualizada)
+      }
+    } catch (error) {
+      console.error('Erro ao encerrar ordem:', error)
+      alert('❌ Erro ao encerrar ordem. Tente novamente.')
+    }
+  }
+
+  const imprimirComprovanteEntrega = (ordem: OrdemServico) => {
+    console.log('🖨️ [DEBUG IMPRESSÃO] Iniciando impressão com garantia:', {
+      garantia_meses: ordem.garantia_meses,
+      tipo: typeof ordem.garantia_meses,
+      ordem_completa: ordem
+    })
+    
+    const dataEntrega = new Date().toLocaleDateString('pt-BR')
+    const dataGarantia = new Date()
+    const mesesGarantia = ordem.garantia_meses || 3
+    dataGarantia.setMonth(dataGarantia.getMonth() + mesesGarantia)
+    const dataGarantiaFormatada = dataGarantia.toLocaleDateString('pt-BR')
+    
+    console.log('📅 [DEBUG IMPRESSÃO] Cálculo de garantia:', {
+      mesesGarantia,
+      dataEntrega,
+      dataGarantiaFormatada
+    })
+    
+    const conteudo = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Comprovante de Entrega - OS ${ordem.numero_os || ordem.id.slice(-6)}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20mm;
+            max-width: 210mm;
+            margin: 0 auto;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 24px;
+          }
+          .header p {
+            margin: 5px 0;
+            color: #666;
+          }
+          .info-section {
+            margin-bottom: 20px;
+          }
+          .info-section h2 {
+            font-size: 16px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+          }
+          .info-row {
+            display: flex;
+            margin-bottom: 8px;
+          }
+          .info-label {
+            font-weight: bold;
+            width: 180px;
+            color: #555;
+          }
+          .info-value {
+            flex: 1;
+            color: #333;
+          }
+          .garantia-box {
+            background-color: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+          }
+          .garantia-box h3 {
+            margin: 0 0 10px 0;
+            color: #1e40af;
+          }
+          .garantia-box p {
+            margin: 5px 0;
+            font-size: 14px;
+          }
+          .assinaturas {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+          }
+          .assinatura {
+            width: 45%;
+            text-align: center;
+          }
+          .assinatura-linha {
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            padding-top: 5px;
+          }
+          .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+          @media print {
+            body {
+              padding: 10mm;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>COMPROVANTE DE ENTREGA</h1>
+          <p>Ordem de Serviço: <strong>#${ordem.numero_os || ordem.id.slice(-6)}</strong></p>
+          <p>Data de Entrega: ${dataEntrega}</p>
+        </div>
+
+        <div class="info-section">
+          <h2>Dados do Cliente</h2>
+          <div class="info-row">
+            <span class="info-label">Nome:</span>
+            <span class="info-value">${ordem.cliente?.nome || 'Não informado'}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Telefone:</span>
+            <span class="info-value">${ordem.cliente?.telefone || 'Não informado'}</span>
+          </div>
+          ${ordem.cliente?.cpf_cnpj ? `
+          <div class="info-row">
+            <span class="info-label">CPF/CNPJ:</span>
+            <span class="info-value">${formatarCpfCnpj(ordem.cliente.cpf_cnpj)}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="info-section">
+          <h2>Dados do Equipamento</h2>
+          <div class="info-row">
+            <span class="info-label">Tipo:</span>
+            <span class="info-value">${ordem.tipo}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Marca:</span>
+            <span class="info-value">${ordem.marca}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Modelo:</span>
+            <span class="info-value">${ordem.modelo}</span>
+          </div>
+          ${ordem.cor ? `
+          <div class="info-row">
+            <span class="info-label">Cor:</span>
+            <span class="info-value">${ordem.cor}</span>
+          </div>
+          ` : ''}
+          ${ordem.numero_serie ? `
+          <div class="info-row">
+            <span class="info-label">Número de Série:</span>
+            <span class="info-value">${ordem.numero_serie}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="info-section">
+          <h2>Serviço Realizado</h2>
+          <div class="info-row">
+            <span class="info-label">Defeito Relatado:</span>
+            <span class="info-value">${ordem.defeito_relatado}</span>
+          </div>
+          ${ordem.observacoes ? `
+          <div class="info-row">
+            <span class="info-label">Serviço Executado:</span>
+            <span class="info-value">${ordem.observacoes}</span>
+          </div>
+          ` : ''}
+          ${ordem.valor_final ? `
+          <div class="info-row">
+            <span class="info-label">Valor Total:</span>
+            <span class="info-value">R$ ${ordem.valor_final.toFixed(2).replace('.', ',')}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="garantia-box">
+          <h3>⚠️ GARANTIA DO SERVIÇO</h3>
+          <p><strong>Prazo de Garantia:</strong> ${ordem.garantia_meses || 3} ${(ordem.garantia_meses || 3) === 1 ? 'mês' : 'meses'}</p>
+          <p><strong>Válida até:</strong> ${dataGarantiaFormatada}</p>
+          <p style="margin-top: 10px; font-size: 12px;">
+            A garantia cobre defeitos relacionados ao serviço executado. 
+            Não cobre danos causados por mau uso, quedas, água ou modificações não autorizadas.
+          </p>
+        </div>
+
+        <div class="assinaturas">
+          <div class="assinatura">
+            <div class="assinatura-linha">
+              Assinatura do Cliente
+            </div>
+          </div>
+          <div class="assinatura">
+            <div class="assinatura-linha">
+              Assinatura da Empresa
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Este documento comprova a entrega do equipamento em perfeito estado de funcionamento.</p>
+          <p>Em caso de dúvidas, entre em contato conosco.</p>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `
+    
+    const janelaImpressao = window.open('', '_blank')
+    if (janelaImpressao) {
+      janelaImpressao.document.write(conteudo)
+      janelaImpressao.document.close()
+    }
+  }
+
   const formatPrice = (price: number) => {
     return price.toLocaleString('pt-BR', {
       style: 'currency',
@@ -432,7 +765,35 @@ export function OrdensServicoPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR')
+    if (!dateString) return '-'
+    
+    // Se já está formatado (contém "/"), retornar direto
+    if (dateString.includes('/')) {
+      return dateString.split(' ')[0] // Pegar só a data, sem hora
+    }
+    
+    // Caso contrário, formatar ISO para pt-BR
+    try {
+      return new Date(dateString).toLocaleDateString('pt-BR')
+    } catch (e) {
+      return dateString
+    }
+  }
+
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return '-'
+    
+    // Se já está formatado (contém "/"), retornar direto
+    if (dateString.includes('/')) {
+      return dateString
+    }
+    
+    // Caso contrário, formatar ISO para pt-BR
+    try {
+      return new Date(dateString).toLocaleString('pt-BR')
+    } catch (e) {
+      return dateString
+    }
   }
 
   const filteredOrdens = todasOrdens.filter(ordem => {
@@ -491,42 +852,180 @@ export function OrdensServicoPage() {
   // View de formulário (nova/editar ordem)
   if (viewMode === 'form') {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Wrench className="w-6 h-6 text-white" />
+      <>
+        <div className="min-h-screen bg-gray-50">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <Wrench className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {editingOrdem ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
+                  </h1>
+                  <p className="text-sm text-gray-600">Preencha os dados da ordem de serviço</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {editingOrdem ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
-                </h1>
-                <p className="text-sm text-gray-600">Preencha os dados da ordem de serviço</p>
+              
+              <Button
+                onClick={handleCancelar}
+                variant="outline"
+              >
+                Voltar para Lista
+              </Button>
+            </div>
+
+            <OrdemServicoForm
+              onSuccess={handleSalvarOrdem}
+              onCancel={handleCancelar}
+            />
+          </main>
+        </div>
+
+        {/* Modal de Encerramento */}
+        {showEncerrarModal && ordemParaEncerrar && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                {/* Header do Modal */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Encerrar Ordem de Serviço</h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      OS #{ordemParaEncerrar.numero_os || ordemParaEncerrar.id.slice(-6)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowEncerrarModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Informações do Equipamento */}
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-blue-900 mb-2">Equipamento</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">Cliente:</span> {ordemParaEncerrar.cliente?.nome}</p>
+                    <p><span className="font-medium">Equipamento:</span> {ordemParaEncerrar.marca} {ordemParaEncerrar.modelo}</p>
+                    <p><span className="font-medium">Defeito:</span> {ordemParaEncerrar.defeito_relatado}</p>
+                  </div>
+                </div>
+
+                {/* Formulário de Encerramento */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Serviço Realizado *
+                    </label>
+                    <textarea
+                      value={servicoRealizado}
+                      onChange={(e) => setServicoRealizado(e.target.value)}
+                      placeholder="Descreva o serviço que foi executado..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Esta informação será incluída no comprovante de entrega
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Garantia do Serviço *
+                    </label>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {[1, 3, 6, 12].map((meses) => (
+                        <button
+                          key={meses}
+                          type="button"
+                          onClick={() => {
+                            setGarantiaMeses(meses)
+                            setGarantiaPersonalizada('')
+                          }}
+                          className={`px-4 py-3 rounded-lg border-2 transition-all ${
+                            garantiaMeses === meses && garantiaPersonalizada === ''
+                              ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
+                              : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                          }`}
+                        >
+                          {meses} {meses === 1 ? 'mês' : 'meses'}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0"
+                        max="120"
+                        value={garantiaPersonalizada}
+                        onChange={(e) => setGarantiaPersonalizada(e.target.value)}
+                        placeholder="Ou digite meses personalizados..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <span className="absolute right-3 top-2 text-sm text-gray-500">meses</span>
+                    </div>
+                    
+                    <p className="text-xs text-gray-500 mt-2">
+                      Selecione uma opção rápida ou digite um valor personalizado
+                    </p>
+                  </div>
+
+                  {/* Preview da Garantia */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="text-green-600 text-2xl">✓</div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-green-900 mb-1">Garantia do Serviço</h4>
+                        <p className="text-sm text-green-700">
+                          O equipamento terá <strong>{garantiaPersonalizada || garantiaMeses} {(garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses) === 1 ? 'mês' : 'meses'}</strong> de garantia
+                        </p>
+                        <p className="text-xs text-green-600 mt-1">
+                          Válida até: {new Date(new Date().setMonth(new Date().getMonth() + (garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses))).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ações do Modal */}
+                <div className="flex gap-3 mt-6 pt-6 border-t">
+                  <Button
+                    onClick={() => setShowEncerrarModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={confirmarEncerramentoOrdem}
+                    disabled={!servicoRealizado.trim()}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    <Printer className="w-4 h-4 mr-2" />
+                    Encerrar e Imprimir
+                  </Button>
+                </div>
+
+                <p className="text-xs text-gray-500 text-center mt-4">
+                  Após encerrar, você poderá imprimir o comprovante de entrega com os dados da garantia
+                </p>
               </div>
             </div>
-            
-            <Button
-              onClick={handleCancelar}
-              variant="outline"
-            >
-              Voltar para Lista
-            </Button>
           </div>
-
-          <OrdemServicoForm
-            onSuccess={handleSalvarOrdem}
-            onCancel={handleCancelar}
-          />
-        </main>
-      </div>
+        )}
+      </>
     )
   }
 
   // View de visualização da ordem
   if (viewMode === 'view' && viewingOrdem) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <>
+        <div className="min-h-screen bg-gray-50">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
@@ -542,6 +1041,21 @@ export function OrdensServicoPage() {
             </div>
             
             <div className="flex gap-2">
+              {viewingOrdem.status === 'Pronto' ? (
+                <Button
+                  disabled
+                  className="bg-green-600 text-white cursor-not-allowed opacity-75"
+                >
+                  ✓ OS Encerrada
+                </Button>
+              ) : viewingOrdem.status !== 'Entregue' && viewingOrdem.status !== 'Cancelado' ? (
+                <Button
+                  onClick={() => handleEncerrarOrdem(viewingOrdem)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  ✓ Encerrar OS
+                </Button>
+              ) : null}
               <Button
                 onClick={() => handleEditarOrdem(viewingOrdem)}
                 variant="outline"
@@ -641,7 +1155,7 @@ export function OrdensServicoPage() {
                 </div>
                 {viewingOrdem.data_entrega && (
                   <div>
-                    <span className="font-medium">Data de Entrega:</span> {formatDate(viewingOrdem.data_entrega)}
+                    <span className="font-medium">Data de Entrega:</span> {formatDateTime(viewingOrdem.data_entrega)}
                   </div>
                 )}
                 {viewingOrdem.garantia_meses && viewingOrdem.garantia_meses > 0 && (
@@ -657,9 +1171,270 @@ export function OrdensServicoPage() {
                 )}
               </div>
             </div>
+
+            {/* Histórico de Aparelhos do Cliente */}
+            {viewingOrdem.cliente_id && (() => {
+              const ordensDoCliente = todasOrdens.filter((o: OrdemServico) => 
+                o.cliente_id === viewingOrdem.cliente_id
+              ).sort((a: OrdemServico, b: OrdemServico) => 
+                new Date(b.data_entrada).getTime() - new Date(a.data_entrada).getTime()
+              )
+              
+              if (ordensDoCliente.length > 1) {
+                return (
+                  <div className="mt-6 pt-6 border-t">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Histórico de Aparelhos do Cliente ({ordensDoCliente.length} ordens)
+                    </h2>
+                    
+                    <div className="space-y-3">
+                      {ordensDoCliente.map((ordem: OrdemServico) => {
+                        const isAtual = ordem.id === viewingOrdem.id
+                        const statusClass = 
+                          ordem.status === 'Entregue' ? 'bg-gray-100 border-gray-300' :
+                          ordem.status === 'Pronto' ? 'bg-green-50 border-green-300' :
+                          ordem.status === 'Em conserto' ? 'bg-blue-50 border-blue-300' :
+                          'bg-yellow-50 border-yellow-300'
+                        
+                        return (
+                          <div 
+                            key={ordem.id}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              isAtual 
+                                ? 'bg-blue-100 border-blue-500 shadow-md' 
+                                : statusClass
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {isAtual && (
+                                    <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                                      ORDEM ATUAL
+                                    </span>
+                                  )}
+                                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                    ordem.status === 'Em análise' ? 'bg-yellow-200 text-yellow-800' :
+                                    ordem.status === 'Em conserto' ? 'bg-blue-200 text-blue-800' :
+                                    ordem.status === 'Pronto' ? 'bg-green-200 text-green-800' :
+                                    ordem.status === 'Entregue' ? 'bg-gray-300 text-gray-800' :
+                                    'bg-red-200 text-red-800'
+                                  }`}>
+                                    {ordem.status}
+                                  </span>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                                  <div>
+                                    <span className="text-gray-600 font-medium">Equipamento:</span>
+                                    <p className="text-gray-900 font-semibold">
+                                      {ordem.marca} {ordem.modelo}
+                                    </p>
+                                    <p className="text-gray-500 text-xs">{ordem.tipo}</p>
+                                  </div>
+                                  
+                                  <div>
+                                    <span className="text-gray-600 font-medium">OS:</span>
+                                    <p className="text-gray-900">#{ordem.numero_os || ordem.id.slice(-6)}</p>
+                                    <p className="text-gray-500 text-xs">
+                                      Entrada: {formatDate(ordem.data_entrada)}
+                                    </p>
+                                  </div>
+                                  
+                                  <div>
+                                    <span className="text-gray-600 font-medium">Defeito:</span>
+                                    <p className="text-gray-900 line-clamp-2" title={ordem.defeito_relatado}>
+                                      {ordem.defeito_relatado || 'Não informado'}
+                                    </p>
+                                  </div>
+                                  
+                                  <div>
+                                    <span className="text-gray-600 font-medium">Valor:</span>
+                                    <p className="text-gray-900 font-bold">
+                                      {ordem.valor_final 
+                                        ? formatPrice(ordem.valor_final) 
+                                        : ordem.valor_orcamento 
+                                          ? formatPrice(ordem.valor_orcamento)
+                                          : 'Não definido'
+                                      }
+                                    </p>
+                                    {ordem.garantia_meses && ordem.garantia_meses > 0 && (
+                                      <p className="text-blue-600 text-xs font-medium">
+                                        Garantia: {ordem.garantia_meses} meses
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {!isAtual && (
+                                <button
+                                  onClick={() => handleVisualizarOrdem(ordem)}
+                                  className="ml-4 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                  title="Ver detalhes"
+                                >
+                                  Ver
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-800">
+                        <strong>💡 Histórico completo:</strong> Mostrando todas as ordens de serviço deste cliente, 
+                        incluindo as que estão em andamento e as já finalizadas.
+                      </p>
+                    </div>
+                  </div>
+                )
+              }
+              return null
+            })()}
           </div>
         </main>
       </div>
+
+      {/* Modal de Encerramento */}
+      {showEncerrarModal && ordemParaEncerrar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header do Modal */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Encerrar Ordem de Serviço</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    OS #{ordemParaEncerrar.numero_os || ordemParaEncerrar.id.slice(-6)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowEncerrarModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Informações do Equipamento */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-blue-900 mb-2">Equipamento</h3>
+                <div className="space-y-1 text-sm">
+                  <p><span className="font-medium">Cliente:</span> {ordemParaEncerrar.cliente?.nome}</p>
+                  <p><span className="font-medium">Equipamento:</span> {ordemParaEncerrar.marca} {ordemParaEncerrar.modelo}</p>
+                  <p><span className="font-medium">Defeito:</span> {ordemParaEncerrar.defeito_relatado}</p>
+                </div>
+              </div>
+
+              {/* Formulário de Encerramento */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Serviço Realizado *
+                  </label>
+                  <textarea
+                    value={servicoRealizado}
+                    onChange={(e) => setServicoRealizado(e.target.value)}
+                    placeholder="Descreva o serviço que foi executado..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Esta informação será incluída no comprovante de entrega
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Garantia do Serviço *
+                  </label>
+                  <div className="grid grid-cols-4 gap-2 mb-3">
+                    {[1, 3, 6, 12].map((meses) => (
+                      <button
+                        key={meses}
+                        type="button"
+                        onClick={() => {
+                          setGarantiaMeses(meses)
+                          setGarantiaPersonalizada('')
+                        }}
+                        className={`px-4 py-3 rounded-lg border-2 transition-all ${
+                          garantiaMeses === meses && garantiaPersonalizada === ''
+                            ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                        }`}
+                      >
+                        {meses} {meses === 1 ? 'mês' : 'meses'}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="120"
+                      value={garantiaPersonalizada}
+                      onChange={(e) => setGarantiaPersonalizada(e.target.value)}
+                      placeholder="Ou digite meses personalizados..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="absolute right-3 top-2 text-sm text-gray-500">meses</span>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 mt-2">
+                    Selecione uma opção rápida ou digite um valor personalizado
+                  </p>
+                </div>
+
+                {/* Preview da Garantia */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-green-600 text-2xl">✓</div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-green-900 mb-1">Garantia do Serviço</h4>
+                      <p className="text-sm text-green-700">
+                        O equipamento terá <strong>{garantiaPersonalizada || garantiaMeses} {(garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses) === 1 ? 'mês' : 'meses'}</strong> de garantia
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Válida até: {new Date(new Date().setMonth(new Date().getMonth() + (garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses))).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ações do Modal */}
+              <div className="flex gap-3 mt-6 pt-6 border-t">
+                <Button
+                  onClick={() => setShowEncerrarModal(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={confirmarEncerramentoOrdem}
+                  disabled={!servicoRealizado.trim()}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Encerrar e Imprimir
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                Após encerrar, você poderá imprimir o comprovante de entrega com os dados da garantia
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
     )
   }
 

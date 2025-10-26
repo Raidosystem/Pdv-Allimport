@@ -102,9 +102,11 @@ export function ClienteSelector({
   }
 
   const handleClienteSelect = (cliente: Cliente) => {
+    console.log('✅ Cliente selecionado:', cliente.nome)
     onClienteSelect(cliente)
     setBusca('')
     setMostrarSugestoes(false)
+    setMostrarFormCadastro(false) // Garantir que o form de cadastro não abra
   }
 
   const handleClienteRemove = () => {

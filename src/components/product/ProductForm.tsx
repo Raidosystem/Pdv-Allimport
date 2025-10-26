@@ -133,43 +133,41 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   }
 
+  console.log('🎨 [ProductForm] Renderizando formulário:', {
+    productId,
+    categories: categories.length,
+    fornecedores: fornecedores.length
+  })
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Card className="p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {productId ? 'Editar Produto' : 'Novo Produto'}
-          </h2>
-        </div>
-
-        <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nome do Produto *
-            </label>
-            <Controller
-              name="nome"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Input
-                  value={value}
-                  onChange={onChange}
-                  placeholder="Nome do produto"
-                  error={getErrorMessage(errors.nome)}
-                />
-              )}
+    <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Nome do Produto *
+        </label>
+        <Controller
+          name="nome"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              value={value}
+              onChange={onChange}
+              placeholder="Nome do produto"
+              error={getErrorMessage(errors.nome)}
             />
-          </div>
+          )}
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código *
-            </label>
-            <Controller
-              name="codigo"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Input
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Código *
+          </label>
+          <Controller
+            name="codigo"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <Input
                   value={value}
                   onChange={onChange}
                   placeholder="Código interno"
@@ -531,8 +529,6 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
             </Button>
           </div>
         </form>
-      </Card>
-    </div>
   )
 }
 

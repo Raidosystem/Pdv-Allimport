@@ -182,9 +182,25 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-2 ml-1">
-            Busque por código de barras, nome ou SKU do produto
-          </p>
+          
+          {/* Dica de busca e Botão lado a lado */}
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-gray-500 ml-1">
+              Busque por código de barras, nome ou SKU
+            </p>
+            
+            {/* Botão Criar Produto */}
+            {onCreateProduct && (
+              <Button
+                type="button"
+                onClick={onCreateProduct}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Criar Produto
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Resultados da busca - Simplificado */}

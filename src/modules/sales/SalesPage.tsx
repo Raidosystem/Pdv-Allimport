@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Printer, FileText, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
@@ -22,6 +23,7 @@ import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
 
 export function SalesPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { caixaAtual, loading: loadingCaixa, abrirCaixa } = useCaixa()
   const { printReceipt } = usePrintReceipt()
@@ -123,9 +125,10 @@ export function SalesPage() {
     }
   }
 
-  // Função para abrir modal de venda rápida
+  // Função para navegar para página de criar produto
   const handleCreateProduct = () => {
-    setShowQuickSaleModal(true)
+    navigate('/produtos', { state: { openForm: true } })
+    toast.success('Abrindo formulário de cadastro de produtos...')
   }
 
   // Atalhos de teclado
@@ -309,7 +312,7 @@ export function SalesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+    <div className="bg-gradient-to-br from-secondary-50 via-white to-primary-50 pb-8">
       {/* CSS customizado para melhor experiência mobile */}
       <style>
         {`

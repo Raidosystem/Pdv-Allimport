@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Package, Plus, Search, Edit, Trash2, Eye, Users } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -8,6 +8,7 @@ import { useProdutos } from '../hooks/useProdutos'
 import { usePermissions } from '../hooks/usePermissions'
 import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
+import { useLocation, useNavigate } from 'react-router-dom'
 import type { Fornecedor, FornecedorFormData } from '../types/fornecedor'
 
 interface Product {
@@ -32,6 +33,9 @@ type ViewMode = 'list' | 'form' | 'view'
 export function ProductsPage() {
   console.log('🔥 ProductsPage carregando...')
   
+  const location = useLocation()
+  const navigate = useNavigate()
+  
   const {
     produtos: products,
     todosProdutos: allProducts,
@@ -47,6 +51,20 @@ export function ProductsPage() {
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   
+  // Estados para modal de produto
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false)
+  const [cameFromExternalPage, setCameFromExternalPage] = useState(false)
+  
+  // Detectar se veio da página de vendas para abrir modal automaticamente
+  useEffect(() => {
+    if (location.state?.openForm) {
+      setIsProductModalOpen(true)
+      setCameFromExternalPage(true)
+      // Limpar o state para não reabrir ao navegar de volta
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
+  
   // Estados para modal de fornecedores
   const [isFornecedorModalOpen, setIsFornecedorModalOpen] = useState(false)
   const [isFornecedorFormOpen, setIsFornecedorFormOpen] = useState(false)
@@ -56,12 +74,12 @@ export function ProductsPage() {
 
   const handleNovoProduto = () => {
     setEditingProduct(null)
-    setViewMode('form')
+    setIsProductModalOpen(true)
   }
 
   const handleEditarProduto = (product: Product) => {
     setEditingProduct(product)
-    setViewMode('form')
+    setIsProductModalOpen(true)
   }
 
   const handleVisualizarProduto = (product: Product) => {
@@ -72,8 +90,14 @@ export function ProductsPage() {
   const handleSalvarProduto = async () => {
     try {
       // Recarregar lista (aqui seria a implementação do save)
-      setViewMode('list')
+      setIsProductModalOpen(false)
       setEditingProduct(null)
+      
+      // Se veio de página externa, voltar
+      if (cameFromExternalPage) {
+        navigate(-1) // Volta para página anterior
+      }
+      
       console.log('✅ Produto salvo com sucesso!')
     } catch (error) {
       console.error('Erro ao salvar produto:', error)
@@ -81,9 +105,14 @@ export function ProductsPage() {
   }
 
   const handleCancelar = () => {
-    setViewMode('list')
+    setIsProductModalOpen(false)
     setEditingProduct(null)
     setViewingProduct(null)
+    
+    // Se veio de página externa (vendas, dashboard), voltar
+    if (cameFromExternalPage) {
+      navigate(-1) // Volta para página anterior
+    }
   }
 
   // Funções para gerenciar fornecedores
@@ -202,46 +231,10 @@ export function ProductsPage() {
   const lowStockProducts = allProducts.filter(p => p.current_stock <= p.minimum_stock)
   const totalValue = allProducts.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
 
-  // View de formulário (nova/editar produto)
-  if (viewMode === 'form') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                </h1>
-                <p className="text-sm text-gray-600">Preencha os dados do produto</p>
-              </div>
-            </div>
-            
-            <Button
-              onClick={handleCancelar}
-              variant="outline"
-            >
-              Voltar para Lista
-            </Button>
-          </div>
-
-          <ProductForm
-            productId={editingProduct?.id}
-            onSuccess={handleSalvarProduto}
-            onCancel={handleCancelar}
-          />
-        </main>
-      </div>
-    )
-  }
-
   // View de visualização do produto
   if (viewMode === 'view' && viewingProduct) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="pb-8">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
@@ -395,7 +388,7 @@ export function ProductsPage() {
   // View de gerenciamento de fornecedores (fullscreen)
   if (isFornecedorModalOpen) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="pb-8">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
@@ -548,6 +541,47 @@ export function ProductsPage() {
     )
   }
 
+  // Modal de Produto (Criar/Editar) - Renderiza dentro da página
+  const renderProductModal = () => {
+    if (!isProductModalOpen) return null
+    
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCancelar} />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 flex items-center justify-center py-8">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden">
+              <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">
+                      {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                    </h1>
+                    <p className="text-sm text-gray-600">Preencha os dados do produto</p>
+                  </div>
+                </div>
+                <Button onClick={handleCancelar} variant="outline" size="sm">
+                  Fechar
+                </Button>
+              </div>
+              
+              <div className="p-6">
+                <ProductForm
+                  productId={editingProduct?.id}
+                  onSuccess={handleSalvarProduto}
+                  onCancel={handleCancelar}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -564,9 +598,8 @@ export function ProductsPage() {
         
         <div className="flex gap-2">
           <Button 
-            onClick={handleOpenFornecedorModal} 
-            variant="outline"
-            className="flex items-center gap-2"
+            onClick={handleOpenFornecedorModal}
+            className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white"
           >
             <Users className="w-4 h-4" />
             Fornecedores
@@ -754,6 +787,8 @@ export function ProductsPage() {
         )}
       </div>
 
+      {/* Renderizar modal de produto se estiver aberto */}
+      {renderProductModal()}
 
     </div>
   )

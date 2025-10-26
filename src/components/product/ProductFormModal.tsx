@@ -42,7 +42,7 @@ export function ProductFormModal({ isOpen, onClose, onSuccess, productId }: Prod
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
           <ProductForm
             productId={productId}
             onSuccess={handleSuccess}

@@ -67,6 +67,31 @@ export function DashboardPage() {
   const { isActive } = useSubscription()
   const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null)
+  const [showMobileHint, setShowMobileHint] = useState(true)
+
+  // Ocultar as setas indicadoras do mobile após 3 segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowMobileHint(false)
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Função para rolar os cards
+  const scrollCards = (direction: 'left' | 'right') => {
+    if (scrollContainerRef) {
+      const scrollAmount = 200
+      const newScrollLeft = direction === 'left' 
+        ? scrollContainerRef.scrollLeft - scrollAmount
+        : scrollContainerRef.scrollLeft + scrollAmount
+      
+      scrollContainerRef.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      })
+    }
+  }
 
   // Debug do activeMenu (simplificado)
   useEffect(() => {
@@ -242,18 +267,18 @@ export function DashboardPage() {
               padding-top: 12px !important;
             }
             .mobile-menu-button {
-              min-width: 65px !important;
-              height: 48px !important;
-              padding: 6px !important;
+              min-width: 55px !important;
+              height: 42px !important;
+              padding: 5px !important;
             }
             .mobile-menu-icon {
-              width: 16px !important;
-              height: 16px !important;
+              width: 14px !important;
+              height: 14px !important;
               margin-bottom: 2px !important;
             }
             .mobile-menu-text {
-              font-size: 10px !important;
-              line-height: 1.2 !important;
+              font-size: 9px !important;
+              line-height: 1.1 !important;
               font-weight: 600 !important;
             }
           }
@@ -270,18 +295,18 @@ export function DashboardPage() {
               padding-top: 16px !important;
             }
             .mobile-menu-button {
-              min-width: 75px !important;
-              height: 52px !important;
-              padding: 8px !important;
+              min-width: 65px !important;
+              height: 46px !important;
+              padding: 7px !important;
             }
             .mobile-menu-icon {
-              width: 18px !important;
-              height: 18px !important;
-              margin-bottom: 3px !important;
+              width: 16px !important;
+              height: 16px !important;
+              margin-bottom: 2px !important;
             }
             .mobile-menu-text {
-              font-size: 11px !important;
-              line-height: 1.2 !important;
+              font-size: 10px !important;
+              line-height: 1.1 !important;
               font-weight: 600 !important;
             }
           }
@@ -365,12 +390,19 @@ export function DashboardPage() {
             
             {/* Indicador de dias restantes da assinatura */}
             <div className="flex-1 flex justify-center">
-              <SubscriptionDaysIndicator />
+              <div className="sm:hidden">
+                {/* Versão mobile compacta - só números */}
+                <SubscriptionDaysIndicator />
+              </div>
+              <div className="hidden sm:block">
+                {/* Versão desktop completa */}
+                <SubscriptionDaysIndicator />
+              </div>
             </div>
             
             {/* Actions */}
-            <div className="flex items-center space-x-4">
-              {/* User info */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* User info - REMOVIDO EM MOBILE */}
               <div className="hidden md:flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-gray-600" />
@@ -383,14 +415,9 @@ export function DashboardPage() {
                 </div>
               </div>
 
-              {/* User avatar apenas em mobile/tablet */}
-              <div className="md:hidden w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-600" />
-              </div>
-
               {/* Subscription button */}
               {!isActive && !isAdmin() && (
-                <Link to="/assinatura">
+                <Link to="/assinatura" className="hidden sm:block">
                   <Button variant="outline" className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50">
                     <Crown className="w-4 h-4" />
                     <span className="hidden sm:inline">Assinatura</span>
@@ -398,14 +425,14 @@ export function DashboardPage() {
                 </Link>
               )}
 
-              {/* Logout button */}
+              {/* Logout button - TEXTO VISÍVEL EM MOBILE */}
               <Button
                 variant="outline"
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                className="flex items-center space-x-1 sm:space-x-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs sm:text-sm px-2 sm:px-4"
               >
-                <LogOut className="w-5 h-5" />
-                <span className="hidden sm:inline">Sair</span>
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Sair</span>
               </Button>
             </div>
           </div>
@@ -417,10 +444,30 @@ export function DashboardPage() {
 
       {/* Menu Principal Horizontal - Otimizado para Mobile */}
       <div className="bg-white border-b shadow-sm relative z-20">
-        <div className="max-w-7xl mx-auto dashboard-menu-container">
+        <div className="w-full px-2 sm:px-4 lg:px-6 relative">
+          {/* Setas indicadoras para MOBILE - piscam 3 vezes e somem */}
+          {showMobileHint && (
+            <>
+              <div className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-40 pointer-events-none"
+                   style={{ animation: 'pulse 0.8s ease-in-out 3' }}>
+                <svg className="w-14 h-12 text-black drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+              </div>
+              <div className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-40 pointer-events-none"
+                   style={{ animation: 'pulse 0.8s ease-in-out 3' }}>
+                <svg className="w-14 h-12 text-black drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                </svg>
+              </div>
+            </>
+          )}
+          
           {/* Scroll horizontal otimizado para mobile */}
-          <div className="flex gap-1 sm:gap-2 overflow-x-auto py-2 sm:py-3 lg:py-4 scrollbar-hide smooth-scroll" 
-               style={{ pointerEvents: 'auto' }}>
+          <div 
+            ref={setScrollContainerRef}
+            className="flex gap-1 sm:gap-2 md:gap-1 lg:-space-x-12 xl:-space-x-14 overflow-x-auto py-2 sm:py-3 lg:py-4 md:px-6 lg:px-10 xl:px-12 scrollbar-hide smooth-scroll lg:justify-center" 
+            style={{ pointerEvents: 'auto' }}>
             
             {/* Menus Prioritários - Otimizados para mobile */}
             {allMenus.filter(menu => menu.priority).map((menu) => {
@@ -449,25 +496,32 @@ export function DashboardPage() {
                   style={{ 
                     pointerEvents: 'auto',
                     position: 'relative',
-                    zIndex: 10,
+                    zIndex: isActive ? 30 : 10,
                     cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.zIndex = '40'
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.zIndex = isActive ? '30' : '10'
+                    e.currentTarget.style.transform = ''
                   }}
                   className={`
                     mobile-menu-button mobile-touch-target
                     flex flex-col items-center justify-center
-                    p-2 sm:p-3 lg:p-4 
+                    p-2 sm:p-3 md:p-2 lg:px-1.5 lg:py-2 
                     rounded-lg border-2 
                     transition-all duration-200 
-                    min-w-[80px] sm:min-w-[100px] lg:min-w-[140px]
-                    h-14 sm:h-16 lg:h-20
+                    min-w-[80px] sm:min-w-[100px] md:min-w-[90px] lg:min-w-[66px] xl:min-w-[68px]
+                    h-14 sm:h-16 md:h-14 lg:h-14
                     cursor-pointer 
-                    hover:scale-105 active:scale-95
                     flex-shrink-0
                     ${colorClasses}
                   `}
                 >
-                  <Icon className="mobile-menu-icon w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mb-1 sm:mb-2" />
-                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-sm font-semibold text-center leading-tight">
+                  <Icon className="mobile-menu-icon w-5 h-5 sm:w-6 sm:h-6 lg:w-6 lg:h-6 mb-1 sm:mb-2" />
+                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-xs font-semibold text-center leading-tight">
                     {menu.title}
                   </span>
                 </button>
@@ -506,25 +560,32 @@ export function DashboardPage() {
                   style={{ 
                     pointerEvents: 'auto',
                     position: 'relative',
-                    zIndex: 10,
+                    zIndex: isActive ? 30 : 10,
                     cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.zIndex = '40'
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.zIndex = isActive ? '30' : '10'
+                    e.currentTarget.style.transform = ''
                   }}
                   className={`
                     mobile-menu-button mobile-touch-target
                     flex flex-col items-center justify-center
-                    p-2 sm:p-3 lg:p-3 
+                    p-2 sm:p-3 lg:p-1 
                     rounded-lg border-2 
                     transition-all duration-200 
-                    min-w-[70px] sm:min-w-[90px] lg:min-w-[100px]
-                    h-12 sm:h-14 lg:h-16
+                    min-w-[70px] sm:min-w-[90px] lg:min-w-[62px]
+                    h-12 sm:h-14 lg:h-12
                     cursor-pointer 
-                    hover:scale-105 active:scale-95
                     flex-shrink-0
                     ${colorClasses}
                   `}
                 >
-                  <Icon className="mobile-menu-icon w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mb-1" />
-                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-sm font-medium text-center leading-tight">
+                  <Icon className="mobile-menu-icon w-4 h-4 sm:w-5 sm:h-5 lg:w-4 lg:h-4 mb-1" />
+                  <span className="mobile-menu-text text-xs sm:text-sm lg:text-[10px] font-medium text-center leading-tight">
                     {menu.title}
                   </span>
                 </button>

@@ -46,28 +46,28 @@ export function SubscriptionDaysIndicator() {
 
   return (
     <div className={`
-      inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 
+      inline-flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-full border-2 
       ${style.bgColor} ${style.borderColor} ${style.textColor}
       shadow-sm transition-all duration-200 hover:shadow-md
       ${isInTrial ? 'animate-pulse-slow' : ''}
     `}>
       {isInTrial ? (
-        <Crown className={`w-4 h-4 ${style.iconColor} animate-bounce-slow`} />
+        <Crown className={`w-3 h-3 sm:w-4 sm:h-4 ${style.iconColor} animate-bounce-slow`} />
       ) : (
-        <IconComponent className={`w-4 h-4 ${style.iconColor}`} />
+        <IconComponent className={`w-3 h-3 sm:w-4 sm:h-4 ${style.iconColor}`} />
       )}
       
       <div className="flex flex-col items-center">
-        <span className="text-sm font-semibold">
+        <span className="text-xs sm:text-sm font-semibold">
           {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
         </span>
-        <span className="text-xs opacity-75 font-medium">
-          {isInTrial ? '🎁 Teste Grátis' : '✨ Premium'}
+        <span className="text-[10px] sm:text-xs opacity-75 font-medium">
+          {isInTrial ? '🎁 Teste' : '✨ Premium'}
         </span>
       </div>
       
-      {/* Barra de progresso visual */}
-      <div className="ml-2">
+      {/* Barra de progresso visual - oculta em mobile */}
+      <div className="ml-1 sm:ml-2 hidden sm:block">
         <div className="w-16 h-2 bg-white/50 rounded-full overflow-hidden">
           <div 
             className={`h-full transition-all duration-300 ${

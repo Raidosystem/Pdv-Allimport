@@ -183,7 +183,7 @@ export function DashboardPage() {
         </div>
 
         {/* Modules Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {modules.map((module) => {
             const Icon = module.icon
             const colorClasses = getColorClasses(module.color)
@@ -194,21 +194,21 @@ export function DashboardPage() {
                 className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0"
               >
                 {module.comingSoon && (
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                  <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                     Em breve
                   </div>
                 )}
                 
-                <div className="p-8">
-                  <div className={`w-16 h-16 ${colorClasses} rounded-2xl flex items-center justify-center mb-6 shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                    <Icon className="w-8 h-8 text-white" />
+                <div className="p-6">
+                  <div className={`w-12 h-12 ${colorClasses} rounded-xl flex items-center justify-center mb-4 shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-secondary-900 mb-3">
+                  <h3 className="text-xl font-bold text-secondary-900 mb-2">
                     {module.title}
                   </h3>
                   
-                  <p className="text-secondary-600 mb-6 text-lg leading-relaxed">
+                  <p className="text-secondary-600 mb-4 text-base leading-relaxed">
                     {module.description}
                   </p>
                   
@@ -216,13 +216,13 @@ export function DashboardPage() {
                     <Button 
                       variant="outline" 
                       disabled 
-                      className="w-full py-3 text-lg border-secondary-200 text-secondary-400"
+                      className="w-full py-2 text-base border-secondary-200 text-secondary-400"
                     >
                       Em desenvolvimento
                     </Button>
                   ) : (
                     <Link to={module.path}>
-                      <Button className="w-full py-3 text-lg bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transform hover:scale-105 transition-all">
+                      <Button className="w-full py-2 text-base bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transform hover:scale-105 transition-all">
                         Acessar
                       </Button>
                     </Link>
@@ -234,36 +234,36 @@ export function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-primary-500 to-primary-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-            <div className="p-8 text-center">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-90" />
-              <div className="text-4xl font-bold mb-2">0</div>
-              <div className="text-primary-100 text-lg">Vendas Hoje</div>
+            <div className="p-6 text-center">
+              <ShoppingCart className="w-8 h-8 mx-auto mb-3 opacity-90" />
+              <div className="text-2xl font-bold mb-1">0</div>
+              <div className="text-primary-100 text-sm">Vendas Hoje</div>
             </div>
           </Card>
           
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-            <div className="p-8 text-center">
-              <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-90" />
-              <div className="text-4xl font-bold mb-2">R$ 0,00</div>
-              <div className="text-green-100 text-lg">Faturamento</div>
+            <div className="p-6 text-center">
+              <CreditCard className="w-8 h-8 mx-auto mb-3 opacity-90" />
+              <div className="text-2xl font-bold mb-1">R$ 0,00</div>
+              <div className="text-green-100 text-sm">Faturamento</div>
             </div>
           </Card>
           
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-            <div className="p-8 text-center">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-90" />
-              <div className="text-4xl font-bold mb-2">0</div>
-              <div className="text-blue-100 text-lg">Produtos</div>
+            <div className="p-6 text-center">
+              <Package className="w-8 h-8 mx-auto mb-3 opacity-90" />
+              <div className="text-2xl font-bold mb-1">0</div>
+              <div className="text-blue-100 text-sm">Produtos</div>
             </div>
           </Card>
           
           <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-            <div className="p-8 text-center">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-90" />
-              <div className="text-4xl font-bold mb-2">0</div>
-              <div className="text-yellow-100 text-lg">Clientes</div>
+            <div className="p-6 text-center">
+              <Users className="w-8 h-8 mx-auto mb-3 opacity-90" />
+              <div className="text-2xl font-bold mb-1">0</div>
+              <div className="text-yellow-100 text-sm">Clientes</div>
             </div>
           </Card>
         </div>

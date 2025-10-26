@@ -16,17 +16,16 @@ import {
   Unlock
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../modules/auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
 interface Funcao {
   id: string;
+  empresa_id: string;
   nome: string;
   descricao: string;
-  nivel: number;
-  sistema: boolean;
-  ativo: boolean;
-  created_at: string;
+  created_at?: string;
 }
 
 interface Permissao {
@@ -45,6 +44,7 @@ interface PermissaoCategoria {
 
 const AdminRolesPermissionsPageNew: React.FC = () => {
   const { can, isAdmin } = usePermissions();
+  const { user } = useAuth();
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [permissoes, setPermissoes] = useState<Permissao[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +58,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
   
   const [formData, setFormData] = useState({
     nome: '',
-    descricao: '',
-    nivel: 1,
-    ativo: true
+    descricao: ''
   });
 
   useEffect(() => {
@@ -191,17 +189,13 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
       setEditingFuncao(funcao);
       setFormData({
         nome: funcao.nome,
-        descricao: funcao.descricao,
-        nivel: funcao.nivel,
-        ativo: funcao.ativo
+        descricao: funcao.descricao
       });
     } else {
       setEditingFuncao(null);
       setFormData({
         nome: '',
-        descricao: '',
-        nivel: 1,
-        ativo: true
+        descricao: ''
       });
     }
     setShowModal(true);
@@ -212,30 +206,54 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
     setEditingFuncao(null);
     setFormData({
       nome: '',
-      descricao: '',
-      nivel: 1,
-      ativo: true
+      descricao: ''
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+    
     try {
+      // Buscar empresa_id do usuário logado
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (empresaError || !empresaData?.id) {
+        throw new Error('Empresa não encontrada');
+      }
+
+      const empresaId = empresaData.id;
+
       if (editingFuncao) {
-        // Atualizar
+        // Atualizar - enviar apenas os campos permitidos
         const { error } = await supabase
           .from('funcoes')
-          .update(formData)
-          .eq('id', editingFuncao.id);
+          .update({
+            nome: formData.nome,
+            descricao: formData.descricao
+          })
+          .eq('id', editingFuncao.id)
+          .eq('empresa_id', empresaId);
 
         if (error) throw error;
         toast.success('Função atualizada com sucesso!');
       } else {
-        // Criar
+        // Criar nova função com empresa_id
         const { error } = await supabase
           .from('funcoes')
-          .insert([formData]);
+          .insert([{
+            nome: formData.nome,
+            descricao: formData.descricao,
+            empresa_id: empresaId
+          }]);
 
         if (error) throw error;
         toast.success('Função criada com sucesso!');
@@ -243,9 +261,9 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
 
       handleCloseModal();
       loadFuncoes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar função:', error);
-      toast.error('Erro ao salvar função');
+      toast.error(`Erro ao salvar função: ${error.message || 'Erro desconhecido'}`);
     }
   };
 
@@ -300,47 +318,63 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
   };
 
   const handleSavePermissions = async () => {
-    if (!selectedFuncao) return;
+    if (!selectedFuncao || !user) return;
 
     try {
-      // Buscar empresa_id da função
-      const { data: funcaoData, error: funcaoError } = await supabase
-        .from('funcoes')
-        .select('empresa_id')
-        .eq('id', selectedFuncao.id)
+      // Buscar empresa_id do usuário logado
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', user.id)
         .single();
 
-      if (funcaoError) throw funcaoError;
-      if (!funcaoData?.empresa_id) throw new Error('empresa_id não encontrado');
+      if (empresaError) {
+        console.error('Erro ao buscar empresa:', empresaError);
+        throw new Error('Empresa não encontrada');
+      }
+
+      if (!empresaData?.id) throw new Error('empresa_id não encontrado');
+
+      const empresaId = empresaData.id;
 
       // Deletar permissões antigas
-      await supabase
+      const { error: deleteError } = await supabase
         .from('funcao_permissoes')
         .delete()
-        .eq('funcao_id', selectedFuncao.id);
+        .eq('funcao_id', selectedFuncao.id)
+        .eq('empresa_id', empresaId);
+
+      if (deleteError) {
+        console.error('Erro ao deletar permissões antigas:', deleteError);
+        // Continua mesmo se der erro no delete (pode não ter permissões antigas)
+      }
 
       // Inserir novas permissões
       if (selectedPermissoes.length > 0) {
         const inserts = selectedPermissoes.map(permissao_id => ({
           funcao_id: selectedFuncao.id,
           permissao_id,
-          empresa_id: funcaoData.empresa_id
+          empresa_id: empresaId
         }));
 
         const { error } = await supabase
           .from('funcao_permissoes')
           .insert(inserts);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erro detalhado ao inserir:', error);
+          throw error;
+        }
       }
 
       toast.success('Permissões atualizadas com sucesso!');
       setShowPermissionsModal(false);
       setSelectedFuncao(null);
       setSelectedPermissoes([]);
-    } catch (error) {
+      loadData(); // Recarrega os dados
+    } catch (error: any) {
       console.error('Erro ao salvar permissões:', error);
-      toast.error('Erro ao salvar permissões');
+      toast.error(`Erro ao salvar permissões: ${error.message || 'Verifique as políticas RLS'}`);
     }
   };
 
@@ -445,34 +479,10 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                 </div>
                 <p className="text-sm text-gray-600">{funcao.descricao}</p>
               </div>
-              
-              {funcao.sistema && (
-                <div title="Função do Sistema">
-                  <Crown className="w-5 h-5 text-yellow-500" />
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="flex items-center gap-4 mb-4 text-sm">
-              <span className={`px-3 py-1 rounded-full font-semibold ${
-                funcao.ativo 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {funcao.ativo ? (
-                  <><Unlock className="w-3 h-3 inline mr-1" />Ativo</>
-                ) : (
-                  <><Lock className="w-3 h-3 inline mr-1" />Inativo</>
-                )}
-              </span>
-              <span className="text-gray-500">
-                Nível {funcao.nivel}
-              </span>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-4">
               <button
                 type="button"
                 onClick={(e) => {
@@ -485,30 +495,26 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                 Permissões
               </button>
               
-              {!funcao.sistema && (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleOpenModal(funcao);
-                    }}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleDeleteFuncao(funcao.id);
-                    }}
-                    className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenModal(funcao);
+                }}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeleteFuncao(funcao.id);
+                }}
+                className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
         ))}
@@ -571,36 +577,6 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                   rows={3}
                   required
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nível de Acesso
-                </label>
-                <input
-                  type="number"
-                  value={formData.nivel}
-                  onChange={(e) => setFormData({ ...formData, nivel: parseInt(e.target.value) })}
-                  min="1"
-                  max="10"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  1 = Acesso básico | 10 = Acesso total
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="ativo"
-                  checked={formData.ativo}
-                  onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <label htmlFor="ativo" className="text-sm font-semibold text-gray-700">
-                  Função ativa
-                </label>
               </div>
 
               {/* Actions */}

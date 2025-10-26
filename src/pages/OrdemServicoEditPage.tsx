@@ -40,8 +40,8 @@ const ordemServicoEditSchema = z.object({
   }, 'Data deve ser válida'),
   valor_orcamento: z.number().min(0, 'Valor deve ser positivo').optional(),
   valor_final: z.number().min(0, 'Valor deve ser positivo').optional(),
-  status: z.enum(['Em análise', 'Aguardando aprovação', 'Aguardando peças', 'Em conserto', 'Pronto', 'Entregue', 'Cancelado']),
-  garantia_meses: z.number().min(0).max(60).optional()
+  status: z.enum(['Em análise', 'Orçamento', 'Aguardando aprovação', 'Aguardando peças', 'Em conserto', 'Pronto', 'Entregue', 'Cancelado']),
+  garantia_meses: z.number().min(0).max(120).optional()
 })
 
 type EditFormData = z.infer<typeof ordemServicoEditSchema>

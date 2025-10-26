@@ -36,9 +36,16 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
   const { categories, fetchCategories, createCategory, saveProduct } = useProducts()
 
+  // Estados para exibição formatada dos campos
+  const [precoVendaDisplay, setPrecoVendaDisplay] = useState('0,00')
+  const [precoCustoDisplay, setPrecoCustoDisplay] = useState('0,00')
+  const [estoqueDisplay, setEstoqueDisplay] = useState('0')
+
   const {
     control,
     handleSubmit,
+    reset,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<ProductFormData>({
     resolver: zodResolver(ProductFormSchema),
@@ -55,9 +62,98 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   })
 
+  // Watch para sincronizar valores formatados
+  const precoVenda = watch('preco_venda')
+  const precoCusto = watch('preco_custo')
+  const estoque = watch('estoque')
+
+  // Sincronizar displays quando valores mudam
   useEffect(() => {
-    fetchCategories()
-    loadFornecedores()
+    if (precoVenda >= 0) {
+      const formatted = precoVenda.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+      setPrecoVendaDisplay(formatted)
+    }
+  }, [precoVenda])
+
+  useEffect(() => {
+    if (precoCusto >= 0) {
+      const formatted = precoCusto.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+      setPrecoCustoDisplay(formatted)
+    }
+  }, [precoCusto])
+
+  useEffect(() => {
+    if (estoque >= 0) {
+      setEstoqueDisplay(estoque.toString())
+    }
+  }, [estoque])
+
+  async function loadProductData(id: string) {
+    try {
+      setLoading(true)
+      console.log('🔍 [ProductForm] Carregando produto:', id)
+      
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        console.log('✅ [ProductForm] Produto carregado:', {
+          nome: data.nome,
+          categoria_id: data.categoria_id,
+          preco: data.preco,
+          preco_custo: data.preco_custo,
+          estoque: data.estoque,
+          sku: data.sku,
+          codigo_barras: data.codigo_barras,
+          fornecedor: data.fornecedor
+        })
+
+        const formData = {
+          nome: data.nome || '',
+          codigo: data.sku || data.codigo_barras || '',
+          categoria: data.categoria_id || '',
+          unidade: data.unidade || 'UN',
+          preco_venda: Number(data.preco) || 0,
+          preco_custo: Number(data.preco_custo) || 0,
+          estoque: Number(data.estoque) || 0,
+          fornecedor: data.fornecedor || '',
+          ativo: data.ativo !== false
+        }
+
+        console.log('📝 [ProductForm] Populando formulário com:', formData)
+        reset(formData)
+      }
+    } catch (error) {
+      console.error('❌ [ProductForm] Erro ao carregar produto:', error)
+      toast.error('Erro ao carregar dados do produto')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const initializeForm = async () => {
+      // Primeiro carrega categorias e fornecedores
+      await Promise.all([fetchCategories(), loadFornecedores()])
+      
+      // Depois carrega o produto se estiver editando
+      if (productId) {
+        await loadProductData(productId)
+      }
+    }
+    
+    initializeForm()
     
     // Escutar evento de atualização de fornecedores
     const handleFornecedorUpdate = () => {
@@ -69,7 +165,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     return () => {
       window.removeEventListener('fornecedorUpdated', handleFornecedorUpdate)
     }
-  }, [])
+  }, [productId])
 
   async function loadFornecedores() {
     try {
@@ -202,9 +298,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 name="preco_venda"
                 control={control}
                 render={({ field: { onChange, value } }) => {
-                  const [displayValue, setDisplayValue] = useState('0,00')
-
-                  // Formatação brasileira simples - MESMA LÓGICA QUE FUNCIONA
+                  // Formatação brasileira simples
                   const formatPrice = (inputValue: string) => {
                     const numbers = inputValue.replace(/\D/g, '')
                     if (!numbers) return ''
@@ -218,28 +312,17 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                     })
                   }
 
-                  // Atualiza display quando valor muda
-                  useEffect(() => {
-                    if (value > 0) {
-                      const formatted = value.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })
-                      setDisplayValue(formatted)
-                    }
-                  }, [value])
-
                   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const input = e.target.value
                     
                     if (input === '') {
-                      setDisplayValue('')
+                      setPrecoVendaDisplay('')
                       onChange(0)
                       return
                     }
 
                     const formatted = formatPrice(input)
-                    setDisplayValue(formatted)
+                    setPrecoVendaDisplay(formatted)
                     
                     if (formatted === '') {
                       onChange(0)
@@ -250,15 +333,15 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   }
 
                   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-                    if (displayValue === '0,00' || value === 0) {
-                      setDisplayValue('')
+                    if (precoVendaDisplay === '0,00' || value === 0) {
+                      setPrecoVendaDisplay('')
                     }
                     e.target.select()
                   }
 
                   const handleBlur = () => {
-                    if (displayValue === '') {
-                      setDisplayValue('0,00')
+                    if (precoVendaDisplay === '') {
+                      setPrecoVendaDisplay('0,00')
                       onChange(0)
                     }
                   }
@@ -266,7 +349,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   return (
                     <Input
                       type="text"
-                      value={displayValue}
+                      value={precoVendaDisplay}
                       onChange={handleChange}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
@@ -288,9 +371,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 name="preco_custo"
                 control={control}
                 render={({ field: { onChange, value } }) => {
-                  const [displayValue, setDisplayValue] = useState('0,00')
-
-                  // Formatação brasileira simples - MESMA LÓGICA QUE FUNCIONA
+                  // Formatação brasileira simples
                   const formatPrice = (inputValue: string) => {
                     const numbers = inputValue.replace(/\D/g, '')
                     if (!numbers) return ''
@@ -304,28 +385,17 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                     })
                   }
 
-                  // Atualiza display quando valor muda
-                  useEffect(() => {
-                    if (value > 0) {
-                      const formatted = value.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })
-                      setDisplayValue(formatted)
-                    }
-                  }, [value])
-
                   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const input = e.target.value
                     
                     if (input === '') {
-                      setDisplayValue('')
+                      setPrecoCustoDisplay('')
                       onChange(0)
                       return
                     }
 
                     const formatted = formatPrice(input)
-                    setDisplayValue(formatted)
+                    setPrecoCustoDisplay(formatted)
                     
                     if (formatted === '') {
                       onChange(0)
@@ -336,15 +406,15 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   }
 
                   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-                    if (displayValue === '0,00' || value === 0) {
-                      setDisplayValue('')
+                    if (precoCustoDisplay === '0,00' || value === 0) {
+                      setPrecoCustoDisplay('')
                     }
                     e.target.select()
                   }
 
                   const handleBlur = () => {
-                    if (displayValue === '') {
-                      setDisplayValue('0,00')
+                    if (precoCustoDisplay === '') {
+                      setPrecoCustoDisplay('0,00')
                       onChange(0)
                     }
                   }
@@ -352,7 +422,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   return (
                     <Input
                       type="text"
-                      value={displayValue}
+                      value={precoCustoDisplay}
                       onChange={handleChange}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
@@ -375,20 +445,11 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               name="estoque"
               control={control}
               render={({ field: { onChange, value } }) => {
-                const [displayValue, setDisplayValue] = useState('0')
-
-                // Atualiza display quando valor muda
-                useEffect(() => {
-                  if (value > 0) {
-                    setDisplayValue(value.toString())
-                  }
-                }, [value])
-
                 const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   const input = e.target.value
                   
                   if (input === '') {
-                    setDisplayValue('0')
+                    setEstoqueDisplay('0')
                     onChange(0)
                     return
                   }
@@ -396,26 +457,26 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   // Remove caracteres não numéricos
                   const numbers = input.replace(/\D/g, '')
                   if (numbers === '') {
-                    setDisplayValue('0')
+                    setEstoqueDisplay('0')
                     onChange(0)
                     return
                   }
 
                   const numericValue = parseInt(numbers) || 0
-                  setDisplayValue(numericValue.toString())
+                  setEstoqueDisplay(numericValue.toString())
                   onChange(numericValue)
                 }
 
                 const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-                  if (displayValue === '0' || value === 0) {
-                    setDisplayValue('')
+                  if (estoqueDisplay === '0' || value === 0) {
+                    setEstoqueDisplay('')
                   }
                   e.target.select()
                 }
 
                 const handleBlur = () => {
-                  if (displayValue === '') {
-                    setDisplayValue('0')
+                  if (estoqueDisplay === '') {
+                    setEstoqueDisplay('0')
                     onChange(0)
                   }
                 }
@@ -423,7 +484,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 return (
                   <Input
                     type="text"
-                    value={displayValue}
+                    value={estoqueDisplay}
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onBlur={handleBlur}

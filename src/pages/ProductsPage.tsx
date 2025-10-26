@@ -80,6 +80,7 @@ export function ProductsPage() {
   const handleEditarProduto = (product: Product) => {
     setEditingProduct(product)
     setIsProductModalOpen(true)
+    // Não muda viewMode - mantém na visualização se estiver lá
   }
 
   const handleVisualizarProduto = (product: Product) => {
@@ -89,13 +90,44 @@ export function ProductsPage() {
 
   const handleSalvarProduto = async () => {
     try {
-      // Recarregar lista (aqui seria a implementação do save)
       setIsProductModalOpen(false)
+      
+      // Se estava visualizando um produto, recarregar os dados dele
+      if (viewMode === 'view' && editingProduct) {
+        // Buscar dados atualizados do produto
+        const { data } = await supabase
+          .from('produtos')
+          .select('*')
+          .eq('id', editingProduct.id)
+          .single()
+        
+        if (data) {
+          // Adaptar para o formato esperado
+          const updatedProduct: Product = {
+            id: data.id,
+            user_id: data.user_id,
+            name: data.nome || '',
+            barcode: data.codigo_barras || '',
+            category_id: data.categoria_id,
+            sale_price: data.preco || 0,
+            cost_price: data.preco_custo || 0,
+            current_stock: data.estoque || 0,
+            minimum_stock: data.estoque_minimo || 0,
+            unit_measure: data.unidade || 'UN',
+            active: data.ativo !== false,
+            expiry_date: data.data_validade || null,
+            created_at: data.criado_em || new Date().toISOString(),
+            updated_at: data.atualizado_em || new Date().toISOString()
+          }
+          setViewingProduct(updatedProduct)
+        }
+      }
+      
       setEditingProduct(null)
       
       // Se veio de página externa, voltar
       if (cameFromExternalPage) {
-        navigate(-1) // Volta para página anterior
+        navigate(-1)
       }
       
       console.log('✅ Produto salvo com sucesso!')
@@ -107,11 +139,26 @@ export function ProductsPage() {
   const handleCancelar = () => {
     setIsProductModalOpen(false)
     setEditingProduct(null)
-    setViewingProduct(null)
+    
+    // Se NÃO está visualizando, limpa tudo
+    if (viewMode !== 'view') {
+      setViewingProduct(null)
+    }
     
     // Se veio de página externa (vendas, dashboard), voltar
     if (cameFromExternalPage) {
-      navigate(-1) // Volta para página anterior
+      navigate(-1)
+    }
+  }
+
+  const handleVoltarParaLista = () => {
+    setViewMode('list')
+    setViewingProduct(null)
+    setEditingProduct(null)
+    
+    // Se veio de página externa, voltar
+    if (cameFromExternalPage) {
+      navigate(-1)
     }
   }
 
@@ -231,6 +278,47 @@ export function ProductsPage() {
   const lowStockProducts = allProducts.filter(p => p.current_stock <= p.minimum_stock)
   const totalValue = allProducts.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
 
+  // Modal de Produto (Criar/Editar) - Declarado ANTES dos returns para evitar erro de referência
+  const renderProductModal = () => {
+    if (!isProductModalOpen) return null
+    
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCancelar} />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 flex items-center justify-center py-8">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden">
+              <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">
+                      {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                    </h1>
+                    <p className="text-sm text-gray-600">Preencha os dados do produto</p>
+                  </div>
+                </div>
+                <Button onClick={handleCancelar} variant="outline" size="sm">
+                  Fechar
+                </Button>
+              </div>
+              
+              <div className="p-6">
+                <ProductForm
+                  productId={editingProduct?.id}
+                  onSuccess={handleSalvarProduto}
+                  onCancel={handleCancelar}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   // View de visualização do produto
   if (viewMode === 'view' && viewingProduct) {
     return (
@@ -252,13 +340,13 @@ export function ProductsPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => handleEditarProduto(viewingProduct)}
-                variant="outline"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Editar Produto
               </Button>
               <Button
-                onClick={handleCancelar}
-                variant="outline"
+                onClick={handleVoltarParaLista}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 Voltar para Lista
               </Button>
@@ -370,6 +458,9 @@ export function ProductsPage() {
             </div>
           </div>
         </main>
+        
+        {/* Renderizar modal de produto se estiver aberto */}
+        {renderProductModal()}
       </div>
     )
   }
@@ -413,7 +504,7 @@ export function ProductsPage() {
             
             <Button
               onClick={handleCloseFornecedorModal}
-              variant="outline"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               Voltar para Produtos
             </Button>
@@ -538,47 +629,6 @@ export function ProductsPage() {
           )}
         </main>
       </div>
-    )
-  }
-
-  // Modal de Produto (Criar/Editar) - Renderiza dentro da página
-  const renderProductModal = () => {
-    if (!isProductModalOpen) return null
-    
-    return (
-      <>
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCancelar} />
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 flex items-center justify-center py-8">
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden">
-              <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <Package className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">
-                      {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                    </h1>
-                    <p className="text-sm text-gray-600">Preencha os dados do produto</p>
-                  </div>
-                </div>
-                <Button onClick={handleCancelar} variant="outline" size="sm">
-                  Fechar
-                </Button>
-              </div>
-              
-              <div className="p-6">
-                <ProductForm
-                  productId={editingProduct?.id}
-                  onSuccess={handleSalvarProduto}
-                  onCancel={handleCancelar}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
     )
   }
 

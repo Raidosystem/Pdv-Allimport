@@ -69,6 +69,16 @@ export function CategorySelector({
   const selectedCategory = categories.find(cat => cat.id === value)
   const displayValue = selectedCategory ? selectedCategory.name : ''
 
+  // Debug: Log quando value muda
+  useEffect(() => {
+    console.log('🎯 [CategorySelector] Value mudou:', {
+      value,
+      selectedCategory: selectedCategory?.name,
+      displayValue,
+      total_categories: categories.length
+    })
+  }, [value, categories.length])
+
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">

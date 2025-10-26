@@ -94,10 +94,16 @@ class OrdemServicoService {
   async buscarPorId(id: string): Promise<OrdemServico | null> {
     const user = await requireAuth()
 
+    console.log('🔍 [BUSCAR] Buscando ordem ID:', id)
+
     const { data, error } = await supabase
       .from('ordens_servico')
       .select(`
         *,
+        cor,
+        numero_serie,
+        senha_aparelho,
+        checklist,
         cliente:clientes(*)
       `)
       .eq('id', id)
@@ -108,6 +114,14 @@ class OrdemServicoService {
       console.error('Erro ao buscar ordem:', error)
       throw new Error(`Erro ao buscar ordem de serviço: ${error.message}`)
     }
+
+    console.log('✅ [BUSCAR] Ordem encontrada:', data)
+    console.log('🔍 [BUSCAR] Campos problemáticos:', {
+      cor: data?.cor,
+      numero_serie: data?.numero_serie,
+      senha_aparelho: data?.senha_aparelho,
+      checklist: data?.checklist
+    })
 
     return data
   }
@@ -144,6 +158,7 @@ class OrdemServicoService {
       cor: dadosForm.cor,
       numero_serie: dadosForm.numero_serie,
       checklist: dadosForm.checklist,
+      senha_aparelho: dadosForm.senha_aparelho || null,
       observacoes: dadosForm.observacoes,
       defeito_relatado: dadosForm.defeito_relatado,
       descricao_problema: dadosForm.defeito_relatado || 'Não informado', // Campo obrigatório
@@ -153,6 +168,24 @@ class OrdemServicoService {
       valor_orcamento: dadosForm.valor_orcamento,
       usuario_id: user.id
     }
+
+    console.log('🔍 [SERVICE] Dados recebidos do form:', {
+      cor: dadosForm.cor,
+      numero_serie: dadosForm.numero_serie,
+      senha_aparelho: dadosForm.senha_aparelho,
+      checklist: dadosForm.checklist
+    })
+    
+    console.log('🔍 [SERVICE] Objeto novaOrdem montado:', novaOrdem)
+    
+    // Log detalhado antes de inserir
+    console.log('📤 [SERVICE] Inserindo no Supabase com campos:', Object.keys(novaOrdem))
+    console.log('📋 [SERVICE] Valores específicos:', {
+      cor: novaOrdem.cor,
+      numero_serie: novaOrdem.numero_serie,
+      senha_aparelho: novaOrdem.senha_aparelho,
+      checklist: novaOrdem.checklist
+    })
 
     const { data, error } = await supabase
       .from('ordens_servico')
@@ -164,10 +197,17 @@ class OrdemServicoService {
       .single()
 
     if (error) {
-      console.error('Erro ao criar ordem:', error)
+      console.error('❌ [SERVICE] Erro ao criar ordem:', error)
       throw new Error(`Erro ao criar ordem de serviço: ${error.message}`)
     }
 
+    console.log('✅ [SERVICE] Ordem criada no banco:', data)
+    console.log('🔍 [SERVICE] Valores retornados do banco:', {
+      cor: data.cor,
+      numero_serie: data.numero_serie,
+      senha_aparelho: data.senha_aparelho,
+      checklist: data.checklist
+    })
     return data
   }
 
@@ -175,9 +215,18 @@ class OrdemServicoService {
   async atualizarOrdem(id: string, dados: Partial<OrdemServico>): Promise<OrdemServico> {
     const user = await requireAuth()
 
+    // Tratar campos de data vazios como null
+    const dadosLimpos = { ...dados }
+    if (dadosLimpos.data_previsao === '') {
+      dadosLimpos.data_previsao = null as any
+    }
+    if (dadosLimpos.data_entrega === '') {
+      dadosLimpos.data_entrega = null as any
+    }
+
     const { data, error } = await supabase
       .from('ordens_servico')
-      .update(dados)
+      .update(dadosLimpos)
       .eq('id', id)
       .eq('usuario_id', user.id)
       .select(`

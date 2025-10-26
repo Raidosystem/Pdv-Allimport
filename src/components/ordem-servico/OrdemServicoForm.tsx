@@ -17,6 +17,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { ClienteSelector } from '../ui/ClienteSelectorSimples'
 import { ordemServicoService } from '../../services/ordemServicoService'
+import { supabase } from '../../lib/supabase'
 import type { 
   NovaOrdemServicoForm, 
   TipoEquipamento 
@@ -57,11 +58,25 @@ const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
 ]
 
 export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps) {
+  console.log('🏗️ [COMPONENT] OrdemServicoForm montado/renderizado')
+  
   const [loading, setLoading] = useState(false)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [checklist, setChecklist] = useState<Record<string, boolean>>({})
   const [tipoPersonalizado, setTipoPersonalizado] = useState('')
   const [mostrarCampoPersonalizado, setMostrarCampoPersonalizado] = useState(false)
+  
+  // Estados para autocomplete de aparelhos
+  const [marcaSugestoes, setMarcaSugestoes] = useState<string[]>([])
+  const [modeloSugestoes, setModeloSugestoes] = useState<string[]>([])
+  const [marcaBusca, setMarcaBusca] = useState('')
+  const [modeloBusca, setModeloBusca] = useState('')
+  const [aparelhosCadastrados, setAparelhosCadastrados] = useState<Array<{
+    tipo: string
+    marca: string
+    modelo: string
+    cor?: string
+  }>>([])
   
   // Estados para checklist dinâmico
   const [itensChecklist, setItensChecklist] = useState<Array<{id: string, label: string}>>([
@@ -98,19 +113,320 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     }
   })
 
-  // Função para buscar equipamentos anteriores do cliente - BACKUP DESABILITADO
-  const buscarEquipamentosAnteriores = async (_clienteId: string) => {
-    console.log('🔍 BACKUP DESABILITADO - Não buscando equipamentos do backup')
-    // BACKUP DESABILITADO - Retorna array vazio
-    setEquipamentosAnteriores([])
+  // Buscar todos os aparelhos cadastrados no Supabase
+  useEffect(() => {
+    const buscarAparelhosCadastrados = async () => {
+      try {
+        const data = await ordemServicoService.buscarOrdens()
+        
+        if (data) {
+          // Extrair aparelhos únicos
+          const aparelhosUnicos = new Map<string, {tipo: string, marca: string, modelo: string, cor?: string}>()
+          
+          data.forEach((ordem: any) => {
+            const chave = `${ordem.tipo}-${ordem.marca}-${ordem.modelo}`
+            if (!aparelhosUnicos.has(chave)) {
+              aparelhosUnicos.set(chave, {
+                tipo: ordem.tipo,
+                marca: ordem.marca,
+                modelo: ordem.modelo,
+                cor: ordem.cor
+              })
+            }
+          })
+          
+          setAparelhosCadastrados(Array.from(aparelhosUnicos.values()))
+          console.log('📱 Aparelhos cadastrados carregados:', aparelhosUnicos.size)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar aparelhos:', error)
+      }
+    }
+    
+    buscarAparelhosCadastrados()
+  }, [])
+
+  // Filtrar marcas baseado na busca
+  useEffect(() => {
+    if (marcaBusca.length >= 2) {
+      const marcasUnicas = [...new Set(aparelhosCadastrados.map(a => a.marca))]
+      const filtradas = marcasUnicas.filter(marca => 
+        marca.toLowerCase().includes(marcaBusca.toLowerCase())
+      )
+      setMarcaSugestoes(filtradas.slice(0, 5))
+    } else {
+      setMarcaSugestoes([])
+    }
+  }, [marcaBusca, aparelhosCadastrados])
+
+  // Filtrar modelos baseado na busca e marca selecionada
+  useEffect(() => {
+    if (modeloBusca.length >= 2) {
+      const aparelhosDaMarca = marcaBusca 
+        ? aparelhosCadastrados.filter(a => a.marca.toLowerCase() === marcaBusca.toLowerCase())
+        : aparelhosCadastrados
+      
+      const modelosUnicos = [...new Set(aparelhosDaMarca.map(a => a.modelo))]
+      const filtrados = modelosUnicos.filter(modelo => 
+        modelo.toLowerCase().includes(modeloBusca.toLowerCase())
+      )
+      setModeloSugestoes(filtrados.slice(0, 5))
+    } else {
+      setModeloSugestoes([])
+    }
+  }, [modeloBusca, marcaBusca, aparelhosCadastrados])
+
+  // Função para buscar equipamentos anteriores do cliente no Supabase
+  const buscarEquipamentosAnteriores = async (clienteId: string) => {
+    try {
+      console.log('🔍 [BUSCAR EQUIPAMENTOS] ============ INICIANDO ===========')
+      console.log('🔍 [BUSCAR EQUIPAMENTOS] Iniciando busca para:', clienteId)
+      console.log('🔍 [BUSCAR EQUIPAMENTOS] Cliente selecionado completo:', clienteSelecionado)
+      console.log('🔍 [BUSCAR EQUIPAMENTOS] Função chamada com sucesso!')
+      
+      // Buscar todas as ordens do Supabase
+      const ordens = await ordemServicoService.buscarOrdens()
+      
+      console.log('📋 [BUSCAR EQUIPAMENTOS] Total de ordens retornadas:', ordens?.length || 0)
+      
+      if (!ordens || ordens.length === 0) {
+        console.log('❌ [BUSCAR EQUIPAMENTOS] Nenhuma ordem encontrada no Supabase')
+        setEquipamentosAnteriores([])
+        return
+      }
+
+      // Log das primeiras 3 ordens para debug
+      console.log('� [BUSCAR EQUIPAMENTOS] Primeiras 3 ordens:', ordens.slice(0, 3).map((o: any) => ({
+        id: o.id,
+        cliente_id: o.cliente_id,
+        client_name: o.client_name,
+        cliente_nome: o.cliente_nome,
+        tipo: o.tipo,
+        marca: o.marca,
+        modelo: o.modelo
+      })))
+      
+      // 🆕 LOG CRÍTICO: Verificar se ALGUMA ordem tem cliente_id
+      const ordensComClienteId = ordens.filter((o: any) => o.cliente_id).length
+      const ordensComClientName = ordens.filter((o: any) => o.client_name && o.client_name !== 'Cliente não informado').length
+      console.log('🔍 [ANÁLISE] Das 328 ordens:')
+      console.log(`   - ${ordensComClienteId} têm cliente_id preenchido`)
+      console.log(`   - ${ordensComClientName} têm client_name válido`)
+      console.log(`   - Exemplo de ordem COM dados:`, ordens.find((o: any) => o.cliente_id))
+      
+      // 🆕 VERIFICAR se alguma ordem tem o cliente_id que estamos procurando
+      const ordensComEsteCliente = ordens.filter((o: any) => o.cliente_id === clienteId)
+      console.log(`🔎 [VERIFICAÇÃO] Ordens com cliente_id = ${clienteId}:`, ordensComEsteCliente.length)
+      
+      // Se não encontrou por ID, listar os IDs únicos para debug
+      if (ordensComEsteCliente.length === 0) {
+        const idsUnicos = [...new Set(ordens.map((o: any) => o.cliente_id))].slice(0, 20)
+        console.log('📋 [DEBUG] Primeiros 20 cliente_id diferentes nas ordens:', idsUnicos)
+        console.log('🎯 [DEBUG] Cliente que estamos buscando:', clienteId, '-', clienteSelecionado?.nome)
+        
+        // 🆕 VERIFICAR: Buscar nos clientes se esses IDs existem
+        console.log('🔍 [INVESTIGAÇÃO] Buscando quais desses IDs correspondem a clientes cadastrados...')
+        const { data: clientesExistentes } = await supabase
+          .from('clientes')
+          .select('id, nome, cpf_cnpj, telefone')
+          .in('id', idsUnicos.slice(0, 10))
+        
+        console.log('📊 [RESULTADO] Clientes encontrados para esses IDs:', clientesExistentes?.length || 0)
+        if (clientesExistentes && clientesExistentes.length > 0) {
+          console.log('👥 [CLIENTES] Primeiros clientes das ordens:')
+          clientesExistentes.slice(0, 5).forEach((c: any, i: number) => {
+            console.log(`   ${i + 1}. ${c.nome} (ID: ${c.id}) - CPF: ${c.cpf_cnpj}`)
+          })
+        }
+        
+        // 🆕 VERIFICAR: Cliente com mesmo CPF/telefone mas ID diferente?
+        console.log('🔍 [INVESTIGAÇÃO] Buscando se existe outro cliente com mesmo CPF ou telefone...')
+        const { data: clientesDuplicados } = await supabase
+          .from('clientes')
+          .select('id, nome, cpf_cnpj, telefone, created_at')
+          .or(`cpf_cnpj.eq.${clienteSelecionado?.cpf_cnpj},telefone.eq.${clienteSelecionado?.telefone}`)
+          .order('created_at', { ascending: false })
+        
+        console.log(`🔎 [DUPLICAÇÃO] Resultado da busca:`, clientesDuplicados?.length || 0, 'registros encontrados')
+        
+        if (clientesDuplicados && clientesDuplicados.length > 1) {
+          console.log('⚠️ [DUPLICAÇÃO DETECTADA] Encontrados', clientesDuplicados.length, 'clientes com mesmo CPF/telefone:')
+          clientesDuplicados.forEach((c: any, i: number) => {
+            const isAtual = c.id === clienteId ? '⭐ ATUAL' : ''
+            console.log(`   ${i + 1}. ID: ${c.id} ${isAtual}`)
+            console.log(`      Nome: ${c.nome}`)
+            console.log(`      CPF: ${c.cpf_cnpj} | Tel: ${c.telefone}`)
+            console.log(`      Criado em: ${c.created_at}`)
+          })
+        } else if (clientesDuplicados && clientesDuplicados.length === 1) {
+          console.log('✅ [DUPLICAÇÃO] Apenas 1 cliente encontrado - SEM duplicação')
+        } else {
+          console.log('❌ [DUPLICAÇÃO] NENHUM cliente encontrado com esse CPF/telefone!')
+        }
+      }
+      
+      // Buscar ordens onde o cliente_id OU usuario_id corresponda ao ID do cliente
+      console.log('🔎 [DEBUG] Buscando com clienteId:', clienteId, 'e nome:', clienteSelecionado?.nome)
+      
+      const ordensDoCliente = ordens.filter((ordem: any) => {
+        // Tentar match por ID do cliente
+        if (ordem.cliente_id === clienteId || ordem.usuario_id === clienteId || ordem.user_id === clienteId) {
+          console.log('✅ Match por ID:', ordem.id)
+          return true
+        }
+        
+        // Tentar match por nome
+        const nomeClienteBusca = clienteSelecionado?.nome?.toLowerCase() || ''
+        if (nomeClienteBusca) {
+          const nomes = [
+            ordem.client_name,
+            ordem.cliente_nome,
+            typeof ordem.cliente === 'string' ? ordem.cliente : ordem.cliente?.nome
+          ].filter(Boolean)
+          
+          for (const nome of nomes) {
+            const nomeStr = String(nome).toLowerCase()
+            if (nomeStr.includes(nomeClienteBusca)) {
+              console.log('✅ Match por nome:', ordem.id, 'Nome encontrado:', nomeStr)
+              return true
+            }
+          }
+        }
+        
+        return false
+      })
+
+      console.log('📱 [BUSCAR EQUIPAMENTOS] Ordens deste cliente:', ordensDoCliente.length)
+
+      if (ordensDoCliente.length === 0) {
+        console.log('⚠️ [BUSCAR EQUIPAMENTOS] Nenhuma ordem encontrada pelo ID ou nome')
+        
+        // 🆕 ESTRATÉGIA ALTERNATIVA: Buscar TODOS os IDs de clientes com mesmo CPF/telefone
+        console.log('🔄 [BUSCAR ÓRFÃS] Buscando outros IDs do mesmo cliente (CPF/telefone)...')
+        
+        try {
+          // Buscar todos os clientes que tenham o mesmo CPF ou telefone
+          const { data: clientesComMesmoDado, error: errorClientes } = await supabase
+            .from('clientes')
+            .select('id, nome, cpf_cnpj, telefone, created_at')
+            .or(`cpf_cnpj.eq.${clienteSelecionado?.cpf_cnpj},telefone.eq.${clienteSelecionado?.telefone}`)
+          
+          if (errorClientes) {
+            console.error('❌ [BUSCAR ÓRFÃS] Erro ao buscar clientes:', errorClientes)
+          } else if (clientesComMesmoDado && clientesComMesmoDado.length > 0) {
+            console.log(`✅ [BUSCAR ÓRFÃS] Encontrados ${clientesComMesmoDado.length} registros com mesmo CPF/telefone:`)
+            clientesComMesmoDado.forEach((c: any, i: number) => {
+              const isAtual = c.id === clienteId ? '⭐' : ''
+              console.log(`   ${i + 1}. ${isAtual} ${c.nome} - ID: ${c.id} - Criado: ${c.created_at}`)
+            })
+            
+            // Buscar ordens usando TODOS esses IDs
+            const idsParaBuscar = clientesComMesmoDado.map((c: any) => c.id)
+            console.log('🔍 [BUSCAR ÓRFÃS] Buscando ordens com IDs:', idsParaBuscar)
+            
+            const ordensEncontradas = ordens.filter((ordem: any) => 
+              idsParaBuscar.includes(ordem.cliente_id)
+            )
+            
+            console.log(`✅ [BUSCAR ÓRFÃS] Encontradas ${ordensEncontradas.length} ordens com IDs alternativos`)
+            
+            if (ordensEncontradas.length > 0) {
+              ordensDoCliente.push(...ordensEncontradas)
+            }
+          }
+        } catch (err) {
+          console.error('❌ [BUSCAR ÓRFÃS] Exceção:', err)
+        }
+        
+        // Se ainda não encontrou nada, desistir
+        if (ordensDoCliente.length === 0) {
+          console.log('❌ [FINAL] Nenhuma ordem encontrada após todas as tentativas')
+          setEquipamentosAnteriores([])
+          return
+        } else {
+          console.log(`✅ [FINAL] Total de ${ordensDoCliente.length} ordens encontradas!`)
+        }
+      }
+
+      // Agrupar por equipamento (tipo + marca + modelo)
+      const equipamentosMap = new Map<string, any>()
+
+      ordensDoCliente.forEach((ordem: any) => {
+        const chave = `${ordem.tipo}-${ordem.marca}-${ordem.modelo}`.toLowerCase()
+        
+        if (!equipamentosMap.has(chave)) {
+          equipamentosMap.set(chave, {
+            tipo: ordem.tipo || 'Não informado',
+            marca: ordem.marca || 'Não informado',
+            modelo: ordem.modelo || 'Não informado',
+            cor: ordem.cor || null,
+            defeitos: [],
+            ordens: [],
+            totalReparos: 0
+          })
+        }
+
+        const equipamento = equipamentosMap.get(chave)
+        
+        // Garantir que defeitos e ordens são arrays
+        if (!equipamento.defeitos) equipamento.defeitos = []
+        if (!equipamento.ordens) equipamento.ordens = []
+        
+        // Adicionar defeito se existir
+        if (ordem.defeito_relatado) {
+          equipamento.defeitos.push(ordem.defeito_relatado)
+        }
+        
+        // Adicionar ordem
+        equipamento.ordens.push({
+          id: ordem.id,
+          data: ordem.data_entrada,
+          defeito: ordem.defeito_relatado || 'Não informado',
+          status: ordem.status,
+          valor: ordem.valor_final || ordem.valor_orcamento || 0
+        })
+        equipamento.totalReparos++
+      })
+
+      const equipamentosArray = Array.from(equipamentosMap.values())
+      console.log('✅ [BUSCAR EQUIPAMENTOS] Equipamentos encontrados:', equipamentosArray.length)
+      console.log('✅ [BUSCAR EQUIPAMENTOS] Equipamentos:', equipamentosArray)
+      
+      // Validação final: verificar se algum equipamento tem defeitos ou ordens null
+      equipamentosArray.forEach((eq, index) => {
+        if (!eq.defeitos) {
+          console.warn(`⚠️ Equipamento ${index} tem defeitos NULL - corrigindo`)
+          eq.defeitos = []
+        }
+        if (!eq.ordens) {
+          console.warn(`⚠️ Equipamento ${index} tem ordens NULL - corrigindo`)
+          eq.ordens = []
+        }
+        console.log(`📱 Equipamento ${index + 1}:`, {
+          tipo: eq.tipo,
+          marca: eq.marca,
+          modelo: eq.modelo,
+          defeitos: eq.defeitos?.length || 0,
+          ordens: eq.ordens?.length || 0
+        })
+      })
+      
+      console.log('🎯 [FINAL] Atualizando estado com', equipamentosArray.length, 'equipamentos')
+      setEquipamentosAnteriores(equipamentosArray)
+      console.log('✅ [FINAL] Estado atualizado!')
+      
+    } catch (error) {
+      console.error('❌ [BUSCAR EQUIPAMENTOS] Erro ao buscar equipamentos:', error)
+      setEquipamentosAnteriores([])
+    }
   }
 
   // Efeito para buscar equipamentos quando cliente é selecionado
   useEffect(() => {
     console.log('👤 Cliente selecionado mudou:', clienteSelecionado)
     if (clienteSelecionado?.nome) {
-      console.log('🔍 Iniciando busca para cliente Nome:', clienteSelecionado.nome)
-      // Usar o nome como ID se não tiver ID
+      console.log('🔍 Iniciando busca para cliente:', clienteSelecionado.nome)
+      // Usar o ID ou nome como identificador
       const idParaBusca = clienteSelecionado.id || clienteSelecionado.nome
       buscarEquipamentosAnteriores(idParaBusca)
     } else {
@@ -118,6 +434,14 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       setEquipamentosAnteriores([])
     }
   }, [clienteSelecionado])
+
+  // Efeito para monitorar mudanças no estado equipamentosAnteriores
+  useEffect(() => {
+    console.log('🔄 [ESTADO] equipamentosAnteriores mudou:', equipamentosAnteriores.length, 'itens')
+    if (equipamentosAnteriores.length > 0) {
+      console.log('📋 [ESTADO] Equipamentos no estado:', equipamentosAnteriores.map(e => `${e.marca} ${e.modelo}`))
+    }
+  }, [equipamentosAnteriores])
 
   // Função de teste para buscar um cliente específico (apenas para debug)
   const testarBuscaCliente = async (nomeCliente: string) => {
@@ -270,6 +594,15 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
         />
 
         {/* Seção: Equipamentos Anteriores */}
+        {(() => {
+          console.log('🎨 [RENDER] Verificando renderização de equipamentos:', {
+            length: equipamentosAnteriores.length,
+            shouldRender: equipamentosAnteriores.length > 0,
+            equipamentos: equipamentosAnteriores.map(e => `${e.marca} ${e.modelo}`)
+          })
+          return null
+        })()}
+        
         {equipamentosAnteriores.length > 0 && (
           <Card className="p-6 bg-blue-50 border-blue-200">
             <div className="flex items-center gap-2 mb-4">
@@ -317,7 +650,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
                   </div>
                   
                   {/* Defeito mais recente (só 1) */}
-                  {equipamento.defeitos.length > 0 && (
+                  {equipamento.defeitos && equipamento.defeitos.length > 0 && (
                     <div className="mb-2">
                       <div className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs truncate" title={equipamento.defeitos[0]}>
                         {equipamento.defeitos[0].length > 20 ? 
@@ -334,7 +667,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
                   )}
                   
                   {/* Última ordem (ultra resumida) */}
-                  {equipamento.ordens.length > 0 && (
+                  {equipamento.ordens && equipamento.ordens.length > 0 && (
                     <div className="bg-gray-50 p-2 rounded border-l-2 border-blue-300">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs text-gray-500">
@@ -424,33 +757,85 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
               </div>
             )}
             
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Marca *
               </label>
               <input
                 {...register('marca')}
                 type="text"
+                value={marcaBusca}
+                onChange={(e) => {
+                  setMarcaBusca(e.target.value)
+                  setValue('marca', e.target.value)
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Samsung, Apple, Dell..."
+                autoComplete="off"
               />
               {errors.marca && (
                 <span className="text-red-500 text-sm">{errors.marca.message}</span>
               )}
+              
+              {/* Sugestões de marcas */}
+              {marcaSugestoes.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {marcaSugestoes.map((marca, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        setMarcaBusca(marca)
+                        setValue('marca', marca)
+                        setMarcaSugestoes([])
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 focus:bg-blue-50 text-sm"
+                    >
+                      📱 {marca}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Modelo *
               </label>
               <input
                 {...register('modelo')}
                 type="text"
+                value={modeloBusca}
+                onChange={(e) => {
+                  setModeloBusca(e.target.value)
+                  setValue('modelo', e.target.value)
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Galaxy S21, iPhone 13..."
+                autoComplete="off"
               />
               {errors.modelo && (
                 <span className="text-red-500 text-sm">{errors.modelo.message}</span>
+              )}
+              
+              {/* Sugestões de modelos */}
+              {modeloSugestoes.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {modeloSugestoes.map((modelo, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        setModeloBusca(modelo)
+                        setValue('modelo', modelo)
+                        setModeloSugestoes([])
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 focus:bg-blue-50 text-sm"
+                    >
+                      📱 {modelo}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
             

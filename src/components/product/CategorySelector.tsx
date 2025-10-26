@@ -24,6 +24,8 @@ export function CategorySelector({
   const [isCreating, setIsCreating] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   // ✅ Debug: Log quando as categorias mudam
   useEffect(() => {
@@ -57,6 +59,15 @@ export function CategorySelector({
     setIsCreating(false)
     setNewCategoryName('')
   }
+
+  // Filtrar categorias com base na busca
+  const filteredCategories = categories.filter(cat =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  // Obter nome da categoria selecionada
+  const selectedCategory = categories.find(cat => cat.id === value)
+  const displayValue = selectedCategory ? selectedCategory.name : ''
 
   return (
     <div className="space-y-2">
@@ -107,28 +118,66 @@ export function CategorySelector({
       ) : (
         <div className="space-y-2">
           <div className="flex space-x-2">
-            <select
-              value={value}
-              onChange={(e) => {
-                const selectedId = e.target.value
-                // ✅ Validar se a categoria existe
-                if (selectedId && !categories.some(cat => cat.id === selectedId)) {
-                  console.warn('⚠️ [CategorySelector] Tentativa de selecionar categoria inexistente:', selectedId)
-                }
-                onChange(selectedId)
-              }}
-              disabled={disabled}
-              className={`flex-1 px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
-                error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
-              } ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'}`}
-            >
-              <option value="">Selecione uma categoria</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex-1 relative">
+              {/* Campo de busca/input */}
+              <input
+                type="text"
+                value={isDropdownOpen ? searchTerm : displayValue}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  setIsDropdownOpen(true)
+                }}
+                onFocus={() => setIsDropdownOpen(true)}
+                placeholder="Digite para buscar ou selecione"
+                disabled={disabled}
+                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                  error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
+                } ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'}`}
+              />
+              
+              {/* Dropdown com lista de categorias */}
+              {isDropdownOpen && !disabled && (
+                <>
+                  {/* Overlay para fechar ao clicar fora */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => {
+                      setIsDropdownOpen(false)
+                      setSearchTerm('')
+                    }}
+                  />
+                  
+                  {/* Lista de opções */}
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCategories.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-gray-500">
+                        Nenhuma categoria encontrada
+                      </div>
+                    ) : (
+                      filteredCategories.map((category) => (
+                        <button
+                          key={category.id}
+                          type="button"
+                          onClick={() => {
+                            onChange(category.id)
+                            setIsDropdownOpen(false)
+                            setSearchTerm('')
+                          }}
+                          className={`w-full text-left px-3 py-2 hover:bg-orange-50 transition-colors ${
+                            value === category.id ? 'bg-orange-100 text-orange-900 font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          {category.name}
+                          {value === category.id && (
+                            <Check className="w-4 h-4 inline ml-2 text-orange-600" />
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
             
             <Button
               type="button"

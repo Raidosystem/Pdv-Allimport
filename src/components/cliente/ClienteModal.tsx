@@ -37,11 +37,11 @@ export function ClienteModal({ cliente, onClose, onEdit }: ClienteModalProps) {
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                cliente.tipo === 'Física' 
+                cliente.tipo === 'fisica' 
                   ? 'bg-blue-100 text-blue-600' 
                   : 'bg-purple-100 text-purple-600'
               }`}>
-                {cliente.tipo === 'Física' ? (
+                {cliente.tipo === 'fisica' ? (
                   <User className="w-6 h-6" />
                 ) : (
                   <Building2 className="w-6 h-6" />
@@ -50,7 +50,7 @@ export function ClienteModal({ cliente, onClose, onEdit }: ClienteModalProps) {
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{cliente.nome}</h2>
                 <p className="text-sm text-gray-600">
-                  {cliente.tipo === 'Física' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                  {cliente.tipo === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'}
                 </p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export function ClienteModal({ cliente, onClose, onEdit }: ClienteModalProps) {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">
-                        {cliente.tipo === 'Física' ? 'CPF' : 'CNPJ'}
+                        {cliente.tipo === 'fisica' ? 'CPF' : 'CNPJ'}
                       </p>
                       <p className="font-medium text-gray-900">{cliente.cpf_cnpj}</p>
                     </div>

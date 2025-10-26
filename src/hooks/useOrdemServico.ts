@@ -110,7 +110,7 @@ export function useOrdemServico() {
           cidade: '',
           estado: '',
           cep: '',
-          tipo: 'Física',
+          tipo: 'fisica',
           ativo: true,
           criado_em: new Date().toISOString(),
           atualizado_em: new Date().toISOString()

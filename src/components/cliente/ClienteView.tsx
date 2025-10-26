@@ -101,16 +101,9 @@ export function ClienteView({ cliente, onEdit, onBack }: ClienteViewProps) {
                 <label className="text-sm font-medium">Endereço</label>
               </div>
               <div className="text-base text-gray-900">
-                {cliente.endereco || cliente.logradouro ? (
+                {cliente.endereco ? (
                   <div className="space-y-1">
-                    {cliente.endereco && <p>{cliente.endereco}</p>}
-                    {cliente.logradouro && (
-                      <p>
-                        {[cliente.tipo_logradouro, cliente.logradouro, cliente.numero].filter(Boolean).join(' ')}
-                        {cliente.complemento && `, ${cliente.complemento}`}
-                      </p>
-                    )}
-                    {cliente.bairro && <p>{cliente.bairro}</p>}
+                    <p>{cliente.endereco}</p>
                     {(cliente.cidade || cliente.estado || cliente.cep) && (
                       <p>
                         {[cliente.cidade, cliente.estado, cliente.cep].filter(Boolean).join(', ')}

@@ -11,7 +11,7 @@ const fornecedorSchema = z.object({
   telefone: z.string().optional(),
   email: z.string().email('E-mail inválido').or(z.literal('')).optional(),
   endereco: z.string().optional(),
-  ativo: z.boolean().default(true),
+  ativo: z.boolean(),
 });
 
 interface FornecedorFormProps {

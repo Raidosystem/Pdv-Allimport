@@ -20,7 +20,7 @@ const clienteSchema = z.object({
   }, 'CPF/CNPJ inválido'),
   email: z.string().email('E-mail inválido').optional().or(z.literal('')),
   endereco: z.string().optional(),
-  tipo: z.enum(['Física', 'Jurídica']),
+  tipo: z.enum(['fisica', 'juridica']),
   observacoes: z.string().optional(),
   ativo: z.boolean()
 })
@@ -53,7 +53,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
       cpf_cnpj: '',
       email: '',
       endereco: '',
-      tipo: 'Física',
+      tipo: 'fisica',
       observacoes: '',
       ativo: true
     }
@@ -170,7 +170,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
                 setTelefoneValue(clienteEncontrado.telefone || '')
                 setValue('email', clienteEncontrado.email || '')
                 setValue('endereco', clienteEncontrado.endereco || '')
-                setValue('tipo', clienteEncontrado.tipo || 'Física')
+                setValue('tipo', clienteEncontrado.tipo || 'fisica')
                 setValue('observacoes', clienteEncontrado.observacoes || '')
               }}
               onEditarCliente={(clienteParaEditar) => {
@@ -178,7 +178,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
                 console.log('Editar cliente:', clienteParaEditar)
                 // TODO: Implementar modal de edição
               }}
-              placeholder={tipoSelecionado === 'Física' ? '000.000.000-00' : '00.000.000/0000-00'}
+              placeholder={tipoSelecionado === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
               error={errors.cpf_cnpj?.message}
             />
           </div>
@@ -205,7 +205,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
                 <input
                   {...register('tipo')}
                   type="radio"
-                  value="Física"
+                  value="fisica"
                   className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">Pessoa Física</span>
@@ -214,7 +214,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, loading }: ClienteFor
                 <input
                   {...register('tipo')}
                   type="radio"
-                  value="Jurídica"
+                  value="juridica"
                   className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">Pessoa Jurídica</span>

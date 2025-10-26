@@ -420,6 +420,7 @@ export function OrdensServicoPage() {
   }
 
   const handleEditarOrdem = (ordem: OrdemServico) => {
+    console.log('✏️ [EDITAR] Ordem selecionada para edição:', ordem)
     setEditingOrdem(ordem)
     setViewMode('form')
   }
@@ -851,6 +852,8 @@ export function OrdensServicoPage() {
 
   // View de formulário (nova/editar ordem)
   if (viewMode === 'form') {
+    console.log('📝 [FORM MODE] editingOrdem:', editingOrdem ? `ID: ${editingOrdem.id}` : 'null')
+    
     return (
       <>
         <div className="min-h-screen bg-gray-50">
@@ -864,7 +867,12 @@ export function OrdensServicoPage() {
                   <h1 className="text-xl font-bold text-gray-900">
                     {editingOrdem ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
                   </h1>
-                  <p className="text-sm text-gray-600">Preencha os dados da ordem de serviço</p>
+                  <p className="text-sm text-gray-600">
+                    {editingOrdem 
+                      ? `Editando OS #${editingOrdem.numero_os || editingOrdem.id?.slice(-6)}`
+                      : 'Preencha os dados da ordem de serviço'
+                    }
+                  </p>
                 </div>
               </div>
               
@@ -877,6 +885,7 @@ export function OrdensServicoPage() {
             </div>
 
             <OrdemServicoForm
+              ordem={editingOrdem}
               onSuccess={handleSalvarOrdem}
               onCancel={handleCancelar}
             />

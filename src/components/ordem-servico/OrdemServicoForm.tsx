@@ -46,6 +46,7 @@ const ordemServicoSchema = z.object({
 type FormData = z.infer<typeof ordemServicoSchema>
 
 interface OrdemServicoFormProps {
+  ordem?: any // Ordem para edição
   onSuccess?: (ordem: Record<string, unknown>) => void
   onCancel?: () => void
 }
@@ -57,8 +58,8 @@ const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
   { value: 'Tablet', label: 'Tablet' }
 ]
 
-export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps) {
-  console.log('🏗️ [COMPONENT] OrdemServicoForm montado/renderizado')
+export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFormProps) {
+  console.log('🏗️ [COMPONENT] OrdemServicoForm montado/renderizado', ordem ? 'EDITANDO' : 'NOVO')
   
   const [loading, setLoading] = useState(false)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
@@ -105,7 +106,8 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     register,
     handleSubmit,
     formState: { errors },
-    setValue
+    setValue,
+    reset
   } = useForm<FormData>({
     resolver: zodResolver(ordemServicoSchema),
     defaultValues: {
@@ -145,6 +147,42 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     
     buscarAparelhosCadastrados()
   }, [])
+
+  // Popular formulário quando estiver editando uma ordem
+  useEffect(() => {
+    if (ordem) {
+      console.log('✏️ [EDITAR] Populando formulário com ordem:', ordem)
+      
+      // Popular campos do formulário com reset para garantir que valores vazios sejam definidos
+      reset({
+        tipo: ordem.tipo || 'Celular',
+        marca: ordem.marca || '',
+        modelo: ordem.modelo || '',
+        cor: ordem.cor || '',
+        numero_serie: ordem.numero_serie || '',
+        defeito_relatado: ordem.defeito_relatado || ordem.descricao_problema || '',
+        observacoes: ordem.observacoes || '',
+        data_previsao: ordem.data_previsao || '',
+        valor_orcamento: ordem.valor_orcamento || 0
+      })
+      
+      // Popular campos de busca para exibição visual
+      setMarcaBusca(ordem.marca || '')
+      setModeloBusca(ordem.modelo || '')
+      
+      // Se houver cliente, setar
+      if (ordem.cliente) {
+        setClienteSelecionado(ordem.cliente)
+      }
+      
+      // Se houver checklist, setar
+      if (ordem.checklist && Array.isArray(ordem.checklist)) {
+        setChecklist(ordem.checklist)
+      }
+      
+      console.log('✅ [EDITAR] Formulário populado com sucesso!')
+    }
+  }, [ordem, reset])
 
   // Filtrar marcas baseado na busca
   useEffect(() => {
@@ -421,9 +459,16 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     }
   }
 
-  // Efeito para buscar equipamentos quando cliente é selecionado
+  // Efeito para buscar equipamentos quando cliente é selecionado (APENAS em modo de criação)
   useEffect(() => {
     console.log('👤 Cliente selecionado mudou:', clienteSelecionado)
+    
+    // NÃO buscar equipamentos se estiver editando
+    if (ordem) {
+      console.log('🚫 Modo de edição - não buscar equipamentos anteriores')
+      return
+    }
+    
     if (clienteSelecionado?.nome) {
       console.log('🔍 Iniciando busca para cliente:', clienteSelecionado.nome)
       // Usar o ID ou nome como identificador
@@ -433,7 +478,7 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
       console.log('❌ Nenhum cliente selecionado, limpando equipamentos')
       setEquipamentosAnteriores([])
     }
-  }, [clienteSelecionado])
+  }, [clienteSelecionado, ordem])
 
   // Efeito para monitorar mudanças no estado equipamentosAnteriores
   useEffect(() => {
@@ -548,35 +593,65 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
     setLoading(true)
     
     try {
-      const novaOrdem: NovaOrdemServicoForm = {
-        cliente_nome: clienteSelecionado.nome,
-        cliente_telefone: clienteSelecionado.telefone,
-        cliente_email: clienteSelecionado.email,
-        tipo: data.tipo,
-        marca: data.marca,
-        modelo: data.modelo,
-        cor: data.cor,
-        numero_serie: data.numero_serie,
-        checklist,
-        observacoes: data.observacoes,
-        defeito_relatado: data.defeito_relatado,
-        data_previsao: data.data_previsao,
-        valor_orcamento: data.valor_orcamento
-      }
+      if (ordem) {
+        // MODO EDIÇÃO - Atualizar ordem existente
+        console.log('✏️ [EDITAR] Atualizando ordem:', ordem.id)
+        
+        const dadosAtualizados = {
+          tipo: data.tipo,
+          marca: data.marca,
+          modelo: data.modelo,
+          cor: data.cor,
+          numero_serie: data.numero_serie,
+          observacoes: data.observacoes,
+          defeito_relatado: data.defeito_relatado,
+          data_previsao: data.data_previsao,
+          valor_orcamento: data.valor_orcamento,
+          cliente_id: clienteSelecionado.id
+        }
 
-      const ordem = await ordemServicoService.criarOrdem(novaOrdem)
-      
-      toast.success('Ordem de serviço criada com sucesso!')
-      
-      // Sinalizar que a lista de OS precisa ser recarregada
-      localStorage.setItem('os_list_needs_refresh', 'true')
-      
-      if (onSuccess) {
-        onSuccess(ordem as unknown as Record<string, unknown>)
+        await ordemServicoService.atualizarOrdem(ordem.id, dadosAtualizados)
+        
+        toast.success('Ordem de serviço atualizada com sucesso!')
+        
+        // Sinalizar que a lista de OS precisa ser recarregada
+        localStorage.setItem('os_list_needs_refresh', 'true')
+        
+        if (onSuccess) {
+          onSuccess({ ...ordem, ...dadosAtualizados } as unknown as Record<string, unknown>)
+        }
+      } else {
+        // MODO CRIAÇÃO - Criar nova ordem
+        const novaOrdem: NovaOrdemServicoForm = {
+          cliente_nome: clienteSelecionado.nome,
+          cliente_telefone: clienteSelecionado.telefone,
+          cliente_email: clienteSelecionado.email,
+          tipo: data.tipo,
+          marca: data.marca,
+          modelo: data.modelo,
+          cor: data.cor,
+          numero_serie: data.numero_serie,
+          checklist,
+          observacoes: data.observacoes,
+          defeito_relatado: data.defeito_relatado,
+          data_previsao: data.data_previsao,
+          valor_orcamento: data.valor_orcamento
+        }
+
+        const ordemCriada = await ordemServicoService.criarOrdem(novaOrdem)
+        
+        toast.success('Ordem de serviço criada com sucesso!')
+        
+        // Sinalizar que a lista de OS precisa ser recarregada
+        localStorage.setItem('os_list_needs_refresh', 'true')
+        
+        if (onSuccess) {
+          onSuccess(ordemCriada as unknown as Record<string, unknown>)
+        }
       }
     } catch (error: unknown) {
-      console.error('Erro ao criar ordem:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar ordem de serviço'
+      console.error('Erro ao salvar ordem:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar ordem de serviço'
       toast.error(errorMessage)
     } finally {
       setLoading(false)
@@ -593,17 +668,18 @@ export function OrdemServicoForm({ onSuccess, onCancel }: OrdemServicoFormProps)
           clienteSelecionado={clienteSelecionado}
         />
 
-        {/* Seção: Equipamentos Anteriores */}
+        {/* Seção: Equipamentos Anteriores - APENAS no modo de CRIAÇÃO */}
         {(() => {
           console.log('🎨 [RENDER] Verificando renderização de equipamentos:', {
+            isEditMode: !!ordem,
             length: equipamentosAnteriores.length,
-            shouldRender: equipamentosAnteriores.length > 0,
+            shouldRender: !ordem && equipamentosAnteriores.length > 0,
             equipamentos: equipamentosAnteriores.map(e => `${e.marca} ${e.modelo}`)
           })
           return null
         })()}
         
-        {equipamentosAnteriores.length > 0 && (
+        {!ordem && equipamentosAnteriores.length > 0 && (
           <Card className="p-6 bg-blue-50 border-blue-200">
             <div className="flex items-center gap-2 mb-4">
               <History className="w-5 h-5 text-blue-600" />

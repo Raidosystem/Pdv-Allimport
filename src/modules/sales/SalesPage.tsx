@@ -146,11 +146,8 @@ export function SalesPage() {
 
   // Adicionar produto ao carrinho
   const handleProductSelect = (product: Product, quantity: number = 1) => {
-    if (product.stock_quantity < quantity) {
-      toast.error(`Estoque insuficiente. Disponível: ${product.stock_quantity}`)
-      return
-    }
-
+    // Permite adicionar ao carrinho independentemente do estoque
+    // O sistema agora trabalha com estoque negativo
     addItem(product, quantity)
     toast.success(`${product.name} adicionado ao carrinho`)
   }
@@ -408,52 +405,55 @@ export function SalesPage() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Seção de Venda Rápida - Destaque Separado */}
-            <Card className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <FileText className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">Venda Rápida</h3>
-                    <p className="text-sm text-gray-600">Venda sem cadastrar produto no estoque</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowQuickSaleModal(true)}
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg px-8 h-12"
-                >
-                  <FileText className="w-5 h-5 mr-2" />
-                  Iniciar Venda Rápida
-                </Button>
-              </div>
-            </Card>
-
-            {/* Layout Principal - 2 Colunas */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Coluna Esquerda - Busca e Cliente */}
-              <div className="space-y-6">
+            {/* Layout Principal - 3 Colunas em Desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Coluna Esquerda - Busca e Cliente (Compacta) */}
+              <div className="space-y-4 lg:col-span-3">
                 {/* Card de Busca de Produtos */}
-                <ProductSearch 
-                  onProductSelect={handleProductSelect}
-                  onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
-                  onCreateProduct={handleCreateProduct}
-                />
+                <div className="scale-90 origin-top">
+                  <ProductSearch 
+                    onProductSelect={handleProductSelect}
+                    onBarcodeSearch={(barcode) => console.log('Barcode:', barcode)}
+                    onCreateProduct={handleCreateProduct}
+                  />
+                </div>
 
                 {/* Card de Cliente */}
-                <ClienteSelector 
-                  clienteSelecionado={clienteSelecionado}
-                  onClienteSelect={setClienteSelecionado}
-                  titulo="Cliente da Venda"
-                  showCard={false}
-                />
+                <div className="scale-90 origin-top">
+                  <ClienteSelector 
+                    clienteSelecionado={clienteSelecionado}
+                    onClienteSelect={setClienteSelecionado}
+                    titulo="Cliente da Venda"
+                    showCard={false}
+                  />
+                </div>
+
+                {/* Seção de Venda Avulsa */}
+                <Card className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-gray-900">Venda Avulsa</h3>
+                        <p className="text-xs text-gray-600">Sem cadastro no estoque</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setShowQuickSaleModal(true)}
+                      size="sm"
+                      className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Iniciar Venda Avulsa
+                    </Button>
+                  </div>
+                </Card>
               </div>
 
-              {/* Coluna Direita - Carrinho e Pagamento */}
-              <div className="space-y-6">
-                {/* Carrinho de Compras */}
+              {/* Coluna do Meio - Carrinho */}
+              <div className="lg:col-span-5">
                 <SaleResumo
                   items={items}
                   onUpdateQuantity={updateQuantity}
@@ -468,7 +468,10 @@ export function SalesPage() {
                   onDiscountTypeChange={setDiscountType}
                   onDiscountValueChange={setDiscountValue}
                 />
+              </div>
 
+              {/* Coluna Direita - Pagamento */}
+              <div className="space-y-4 lg:col-span-4">
                 {/* Formulário de Pagamento */}
                 <PagamentoForm
                   totalAmount={totalAmount}

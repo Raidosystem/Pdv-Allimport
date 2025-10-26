@@ -65,6 +65,10 @@ export function ClienteFormUnificado({
   // Atualizar dados quando cliente prop mudar
   useEffect(() => {
     if (cliente) {
+      // Se o endereço unificado existe mas não tem campos separados, deixar no campo endereco
+      // Caso contrário, usar os campos separados
+      const temCamposSeparados = cliente.rua || cliente.numero || cliente.cidade
+      
       setFormData({
         nome: cliente.nome || '',
         cpf: cliente.cpf_cnpj || '',
@@ -75,7 +79,8 @@ export function ClienteFormUnificado({
         cep: cliente.cep || '',
         cidade: cliente.cidade || '',
         estado: cliente.estado || '',
-        endereco: cliente.endereco || ''
+        // Se não tem campos separados, colocar o endereço completo no campo "endereco"
+        endereco: !temCamposSeparados ? (cliente.endereco || '') : ''
       })
       setIsEditMode(true)
     }
@@ -246,10 +251,10 @@ export function ClienteFormUnificado({
       // Preparar dados para inserção/atualização
       const cpfDigits = onlyDigits(formData.cpf)
       
-      // Determinar tipo baseado no CPF (se houver)
-      let tipo = 'Física' // Padrão
+      // Determinar tipo baseado no CPF (se houver) - IMPORTANTE: usar minúsculas
+      let tipo = 'fisica' // Padrão
       if (cpfDigits) {
-        tipo = cpfDigits.length === 11 ? 'Física' : cpfDigits.length === 14 ? 'Jurídica' : 'Física'
+        tipo = cpfDigits.length === 11 ? 'fisica' : cpfDigits.length === 14 ? 'juridica' : 'fisica'
       }
       
       // Montar endereço unificado a partir dos campos detalhados
@@ -269,7 +274,13 @@ export function ClienteFormUnificado({
         cpf_digits: cpfDigits || null,
         email: formData.email?.trim() || null,
         telefone: formData.telefone?.trim() || null,
-        endereco: montarEnderecoCompleto(), // Endereço unificado
+        endereco: montarEnderecoCompleto(), // Endereço unificado para compatibilidade
+        // Campos de endereço separados
+        rua: formData.rua?.trim() || null,
+        numero: formData.numero?.trim() || null,
+        cidade: formData.cidade?.trim() || null,
+        estado: formData.estado?.trim() || null,
+        cep: formData.cep?.trim() || null,
         empresa_id: empresaId || null,
         tipo,
         ativo: true
@@ -411,6 +422,7 @@ export function ClienteFormUnificado({
             value={formData.cpf}
             onChange={handleCpfChange}
             empresaId={empresaId}
+            excludeId={cliente?.id} // Excluir o próprio cliente em modo de edição
             placeholder="000.000.000-00 (opcional)"
           />
           

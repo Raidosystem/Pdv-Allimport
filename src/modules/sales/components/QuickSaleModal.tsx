@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, ShoppingBag } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
@@ -21,6 +21,20 @@ export function QuickSaleModal({ isOpen, onClose, onSubmit }: QuickSaleModalProp
   const [productName, setProductName] = useState('')
   const [productPrice, setProductPrice] = useState('')
   const [quantity, setQuantity] = useState(1)
+
+  // Scroll para o topo quando o modal abrir
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -60,12 +74,12 @@ export function QuickSaleModal({ isOpen, onClose, onSubmit }: QuickSaleModalProp
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md my-8 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Venda Rápida</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Venda Avulsa</h2>
           </div>
           <Button variant="secondary" size="sm" onClick={handleClose}>
             <X className="w-4 h-4" />

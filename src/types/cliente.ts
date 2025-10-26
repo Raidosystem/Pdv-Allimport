@@ -7,16 +7,12 @@ export interface Cliente {
   email?: string
   endereco?: string
   // Campos específicos de endereço
-  tipo_logradouro?: string  // Rua, Avenida, Travessa, etc.
-  logradouro?: string       // Nome da rua/avenida
+  rua?: string              // Rua/Avenida
   numero?: string           // Número do imóvel
-  complemento?: string      // Apartamento, bloco, etc.
-  bairro?: string           // Bairro/distrito
   cidade?: string           // Cidade
   estado?: string           // Estado (UF)
   cep?: string              // CEP
-  ponto_referencia?: string // Ponto de referência
-  tipo: 'Física' | 'Jurídica'
+  tipo: 'fisica' | 'juridica'
   observacoes?: string
   ativo: boolean
   criado_em: string
@@ -31,16 +27,12 @@ export interface ClienteInput {
   email?: string
   endereco?: string
   // Campos específicos de endereço
-  tipo_logradouro?: string  // Rua, Avenida, Travessa, etc.
-  logradouro?: string       // Nome da rua/avenida
+  rua?: string              // Rua/Avenida
   numero?: string           // Número do imóvel
-  complemento?: string      // Apartamento, bloco, etc.
-  bairro?: string           // Bairro/distrito
   cidade?: string           // Cidade
   estado?: string           // Estado (UF)
   cep?: string              // CEP
-  ponto_referencia?: string // Ponto de referência
-  tipo: 'Física' | 'Jurídica'
+  tipo: 'fisica' | 'juridica'
   observacoes?: string
   ativo: boolean
 }
@@ -49,6 +41,6 @@ export interface ClienteFilters {
   search?: string
   searchType?: 'geral' | 'telefone' // Tipo de busca específica
   ativo?: boolean | null
-  tipo?: 'Física' | 'Jurídica' | null
+  tipo?: 'fisica' | 'juridica' | null
   limit?: number
 }

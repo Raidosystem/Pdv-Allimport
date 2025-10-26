@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import { Package, Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
+import { Package, Plus, Search, Edit, Trash2, Eye, Users } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import { Modal } from '../components/ui/Modal'
 import ProductForm from '../components/product/ProductForm'
+import { FornecedorForm } from '../components/fornecedor/FornecedorForm'
 import { useProdutos } from '../hooks/useProdutos'
 import { usePermissions } from '../hooks/usePermissions'
+import { supabase } from '../lib/supabase'
+import { toast } from 'react-hot-toast'
+import type { Fornecedor, FornecedorFormData } from '../types/fornecedor'
 
 interface Product {
   id: string
@@ -41,6 +46,13 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // Estados para modal de fornecedores
+  const [isFornecedorModalOpen, setIsFornecedorModalOpen] = useState(false)
+  const [isFornecedorFormOpen, setIsFornecedorFormOpen] = useState(false)
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
+  const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | undefined>()
+  const [isSubmittingFornecedor, setIsSubmittingFornecedor] = useState(false)
 
   const handleNovoProduto = () => {
     setEditingProduct(null)
@@ -72,6 +84,99 @@ export function ProductsPage() {
     setViewMode('list')
     setEditingProduct(null)
     setViewingProduct(null)
+  }
+
+  // Funções para gerenciar fornecedores
+  const loadFornecedores = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('fornecedores')
+        .select('*')
+        .order('nome', { ascending: true })
+
+      if (error) throw error
+      setFornecedores(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar fornecedores:', error)
+      toast.error('Erro ao carregar fornecedores')
+    }
+  }
+
+  const handleOpenFornecedorModal = () => {
+    loadFornecedores()
+    setIsFornecedorModalOpen(true)
+  }
+
+  const handleCloseFornecedorModal = () => {
+    setIsFornecedorModalOpen(false)
+    setIsFornecedorFormOpen(false)
+    setSelectedFornecedor(undefined)
+  }
+
+  const handleNewFornecedor = () => {
+    setSelectedFornecedor(undefined)
+    setIsFornecedorFormOpen(true)
+  }
+
+  const handleEditFornecedor = (fornecedor: Fornecedor) => {
+    setSelectedFornecedor(fornecedor)
+    setIsFornecedorFormOpen(true)
+  }
+
+  const handleSubmitFornecedor = async (data: FornecedorFormData) => {
+    try {
+      setIsSubmittingFornecedor(true)
+
+      if (selectedFornecedor) {
+        const { error } = await supabase
+          .from('fornecedores')
+          .update({ ...data, updated_at: new Date().toISOString() })
+          .eq('id', selectedFornecedor.id)
+
+        if (error) throw error
+        toast.success('Fornecedor atualizado!')
+      } else {
+        const { error } = await supabase
+          .from('fornecedores')
+          .insert([data])
+
+        if (error) throw error
+        toast.success('Fornecedor cadastrado!')
+      }
+
+      setIsFornecedorFormOpen(false)
+      setSelectedFornecedor(undefined)
+      loadFornecedores()
+      
+      // Recarrega fornecedores no ProductForm
+      window.dispatchEvent(new CustomEvent('fornecedorUpdated'))
+    } catch (error) {
+      console.error('Erro ao salvar fornecedor:', error)
+      toast.error('Erro ao salvar fornecedor')
+    } finally {
+      setIsSubmittingFornecedor(false)
+    }
+  }
+
+  const handleDeleteFornecedor = async (id: string) => {
+    if (!confirm('Deseja realmente excluir este fornecedor?')) return
+
+    try {
+      const { error } = await supabase
+        .from('fornecedores')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      toast.success('Fornecedor excluído!')
+      loadFornecedores()
+      
+      // Recarrega fornecedores no ProductForm
+      window.dispatchEvent(new CustomEvent('fornecedorUpdated'))
+    } catch (error) {
+      console.error('Erro ao excluir fornecedor:', error)
+      toast.error('Erro ao excluir fornecedor')
+    }
   }
 
   const formatPrice = (price: number) => {
@@ -287,6 +392,162 @@ export function ProductsPage() {
     )
   }
 
+  // View de gerenciamento de fornecedores (fullscreen)
+  if (isFornecedorModalOpen) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {isFornecedorFormOpen 
+                    ? (selectedFornecedor ? 'Editar Fornecedor' : 'Novo Fornecedor')
+                    : 'Gerenciar Fornecedores'
+                  }
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {isFornecedorFormOpen 
+                    ? 'Preencha os dados do fornecedor'
+                    : `${fornecedores.length} fornecedor(es) cadastrado(s)`
+                  }
+                </p>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleCloseFornecedorModal}
+              variant="outline"
+            >
+              Voltar para Produtos
+            </Button>
+          </div>
+
+          {!isFornecedorFormOpen ? (
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6 border-b flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Lista de Fornecedores</h2>
+                  <p className="text-sm text-gray-600 mt-1">Cadastre e gerencie seus fornecedores</p>
+                </div>
+                <Button onClick={handleNewFornecedor}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Fornecedor
+                </Button>
+              </div>
+
+              <div className="p-6">
+                {fornecedores.length === 0 ? (
+                  <div className="text-center py-16">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Nenhum fornecedor cadastrado
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Comece cadastrando seu primeiro fornecedor
+                    </p>
+                    <Button onClick={handleNewFornecedor}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Cadastrar Primeiro Fornecedor
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {fornecedores.map((fornecedor) => (
+                      <div
+                        key={fornecedor.id}
+                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-semibold text-gray-900 text-lg">{fornecedor.nome}</h3>
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              fornecedor.ativo
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {fornecedor.ativo ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm text-gray-600 mb-4">
+                          {fornecedor.cnpj && (
+                            <div>
+                              <span className="font-medium">CNPJ:</span> {fornecedor.cnpj}
+                            </div>
+                          )}
+                          {fornecedor.telefone && (
+                            <div>
+                              <span className="font-medium">Tel:</span> {fornecedor.telefone}
+                            </div>
+                          )}
+                          {fornecedor.email && (
+                            <div>
+                              <span className="font-medium">E-mail:</span> {fornecedor.email}
+                            </div>
+                          )}
+                          {fornecedor.endereco && (
+                            <div>
+                              <span className="font-medium">End:</span> {fornecedor.endereco}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-2 pt-3 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditFornecedor(fornecedor)}
+                            className="flex-1"
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteFornecedor(fornecedor.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-6">
+              <button
+                onClick={() => {
+                  setIsFornecedorFormOpen(false)
+                  setSelectedFornecedor(undefined)
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 mb-6 flex items-center gap-1 font-medium"
+              >
+                ← Voltar para lista de fornecedores
+              </button>
+              <FornecedorForm
+                fornecedor={selectedFornecedor}
+                onSubmit={handleSubmitFornecedor}
+                onCancel={() => {
+                  setIsFornecedorFormOpen(false)
+                  setSelectedFornecedor(undefined)
+                }}
+                isSubmitting={isSubmittingFornecedor}
+              />
+            </div>
+          )}
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -301,10 +562,20 @@ export function ProductsPage() {
           </div>
         </div>
         
-        <Button onClick={handleNovoProduto} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleOpenFornecedorModal} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Users className="w-4 h-4" />
+            Fornecedores
+          </Button>
+          <Button onClick={handleNovoProduto} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -482,6 +753,8 @@ export function ProductsPage() {
           </div>
         )}
       </div>
+
+
     </div>
   )
 }

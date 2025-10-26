@@ -206,44 +206,60 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                     {products.length} produto{products.length !== 1 ? 's' : ''} encontrado{products.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-200">
                   {products.map((product, index) => {
                     console.log(`🔍 Renderizando produto ${index}:`, product.name, product);
                     return (
                     <div
                       key={product.id}
                       onClick={() => handleProductSelect(product)}
-                      className={`p-3 cursor-pointer transition-colors ${
+                      className={`p-4 cursor-pointer transition-all duration-150 ${
                         index === selectedIndex
-                          ? 'bg-blue-50 border-l-2 border-blue-500'
-                          : 'hover:bg-gray-50'
+                          ? 'bg-blue-50 border-l-4 border-blue-500 shadow-sm'
+                          : 'hover:bg-gray-50 hover:shadow-sm'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Package className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                            <h4 className="font-medium text-gray-900 text-sm truncate">
-                              {product.name}
-                            </h4>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-600">
-                            <span className="bg-gray-100 px-2 py-0.5 rounded">
-                              SKU: {product.sku}
-                            </span>
-                            <span>
-                              Estoque: {product.stock_quantity}
-                            </span>
-                            {product.stock_quantity <= (product.min_stock || 0) && (
-                              <span className="text-red-600 font-medium">
-                                ⚠️ Baixo
-                              </span>
-                            )}
+                      <div className="flex items-start justify-between gap-4">
+                        {/* Informações do Produto */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          {/* Nome do Produto */}
+                          <div className="flex items-start gap-2">
+                            <Package className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-base leading-tight mb-1">
+                                {product.name}
+                              </h4>
+                              {/* Badges de Informação */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="inline-flex items-center bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md text-xs font-medium">
+                                  SKU: {product.sku}
+                                </span>
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${
+                                  product.stock_quantity < 0
+                                    ? 'bg-red-100 text-red-800'
+                                    : product.stock_quantity === 0
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : product.stock_quantity <= (product.min_stock || 0)
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : product.stock_quantity < 10
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-green-100 text-green-800'
+                                }`}>
+                                  {product.stock_quantity < 0 && '⚠️ '}
+                                  {product.stock_quantity === 0 && '⚠️ '}
+                                  {product.stock_quantity > 0 && product.stock_quantity <= (product.min_stock || 0) && '⚠️ '}
+                                  Estoque: {product.stock_quantity}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+
+                        {/* Preço e Ação */}
+                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
                           <div className="text-right">
-                            <div className="text-base font-bold text-blue-600">
+                            <div className="text-xs text-gray-500 mb-0.5">Preço</div>
+                            <div className="text-xl font-bold text-blue-600">
                               {formatCurrency(product.price)}
                             </div>
                           </div>
@@ -253,9 +269,9 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
                               e.stopPropagation()
                               handleProductSelect(product)
                             }}
-                            className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5"
+                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm px-4 py-2 font-medium shadow-md"
                           >
-                            Adicionar
+                            + Adicionar
                           </Button>
                         </div>
                       </div>

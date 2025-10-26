@@ -30,8 +30,8 @@ export function ClientesPage() {
 
   // Estatísticas dos clientes - usar o cache completo em vez dos clientes exibidos
   const clientesAtivos = todosClientesCache.filter((c: Cliente) => c.ativo).length
-  const pessoasFisicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'Física').length
-  const pessoasJuridicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'Jurídica').length
+  const pessoasFisicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'fisica').length
+  const pessoasJuridicas = todosClientesCache.filter((c: Cliente) => c.tipo === 'juridica').length
 
   const handleNovoCliente = () => {
     setClienteEditando(null)
@@ -40,11 +40,13 @@ export function ClientesPage() {
 
   const handleEditarCliente = (cliente: Cliente) => {
     setClienteEditando(cliente)
+    setClienteVisualizando(null)
     setViewMode('form')
   }
 
   const handleVisualizarCliente = (cliente: Cliente) => {
     setClienteVisualizando(cliente)
+    setClienteEditando(null)
     setViewMode('view')
   }
 

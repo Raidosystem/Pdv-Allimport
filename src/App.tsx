@@ -15,6 +15,7 @@ import { DashboardPage } from './modules/dashboard/DashboardPageNew'
 import { SalesPage } from './modules/sales/SalesPage'
 import { ClientesPage } from './modules/clientes/ClientesPage'
 import { ProductsPage } from './pages/ProductsPage'
+import { FornecedoresPage } from './pages/FornecedoresPage'
 import { TestePage } from './pages/TestePage'
 import { TestPage } from './pages/TestPage'
 import { CaixaPage } from './pages/CaixaPageNew'
@@ -252,6 +253,16 @@ function App() {
           <Route 
             path="/produtos" 
             element={<ProductsPage />} 
+          />
+          <Route 
+            path="/fornecedores" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <FornecedoresPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
           />
           <Route 
             path="/teste" 

@@ -39,17 +39,17 @@ export const productService = {
 
       // Adaptar formato do Supabase para o frontend
       const adaptedProducts: Product[] = (data || []).map(produto => {
-        // Tentar vários campos possíveis de estoque
-        const stockValue = produto.current_stock || 
-                          produto.estoque_atual || 
-                          produto.estoque || 
-                          produto.quantidade || 
-                          produto.qty || 
-                          produto.stock ||
-                          produto.quantidade_estoque ||
-                          999; // TEMPORÁRIO: Estoque alto para permitir vendas
+        // Buscar estoque corretamente - a coluna principal é "estoque"
+        const stockValue = produto.estoque ?? 
+                          produto.current_stock ?? 
+                          produto.estoque_atual ?? 
+                          produto.quantidade ?? 
+                          produto.qty ?? 
+                          produto.stock ??
+                          produto.quantidade_estoque ??
+                          0; // Valor padrão 0 ao invés de 999
         
-        console.log(`📦 [${produto.nome}] Estoque mapeado: ${stockValue} (current_stock: ${produto.current_stock}, estoque: ${produto.estoque}, quantidade: ${produto.quantidade})`);
+        console.log(`📦 [${produto.nome}] Estoque mapeado: ${stockValue} (estoque: ${produto.estoque}, current_stock: ${produto.current_stock}, quantidade: ${produto.quantidade})`);
         
         return {
           id: produto.id,
@@ -98,7 +98,7 @@ export const productService = {
         sku: data.sku || '',
         barcode: data.codigo_barras || '',
         price: data.preco || 0,
-        stock_quantity: data.current_stock || data.estoque_atual || data.estoque || data.quantidade || 999,
+        stock_quantity: data.estoque ?? data.current_stock ?? data.estoque_atual ?? data.quantidade ?? 0,
         min_stock: data.minimum_stock || data.estoque_minimo || 0,
         unit: data.unit_measure || data.unidade || 'un',
         active: data.ativo || true,

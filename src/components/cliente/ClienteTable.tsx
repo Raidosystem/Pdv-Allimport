@@ -255,12 +255,12 @@ export function ClienteTable({
                   <tr key={cliente.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          cliente.tipo === 'Física' 
+                        <div className={`flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full ${
+                          cliente.tipo === 'fisica' 
                             ? 'bg-blue-100 text-blue-600' 
                             : 'bg-purple-100 text-purple-600'
                         }`}>
-                          {cliente.tipo === 'Física' ? (
+                          {cliente.tipo === 'fisica' ? (
                             <User className="w-5 h-5" />
                           ) : (
                             <Building2 className="w-5 h-5" />
@@ -271,7 +271,7 @@ export function ClienteTable({
                             {cliente.nome}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {cliente.tipo === 'Física' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                            {cliente.tipo === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'}
                           </div>
                         </div>
                       </div>

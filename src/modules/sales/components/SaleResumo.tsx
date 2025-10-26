@@ -124,9 +124,14 @@ export function SaleResumo({
                     </div>
                     <div className="flex items-center space-x-4 text-xs text-gray-600">
                       <span className="bg-gray-200 px-2 py-1 rounded">{item.product.sku}</span>
-                      <span>Estoque: {item.product.stock_quantity}</span>
-                      {item.product.stock_quantity <= item.product.min_stock && (
-                        <span className="text-red-500 font-medium">⚠️ Baixo</span>
+                      <span className={item.product.stock_quantity < 0 ? 'text-red-600 font-bold' : ''}>
+                        Estoque: {item.product.stock_quantity}
+                      </span>
+                      {item.product.stock_quantity <= 0 && (
+                        <span className="text-red-600 font-medium">⚠️ {item.product.stock_quantity < 0 ? 'Negativo' : 'Zerado'}</span>
+                      )}
+                      {item.product.stock_quantity > 0 && item.product.stock_quantity <= item.product.min_stock && (
+                        <span className="text-yellow-600 font-medium">⚠️ Baixo</span>
                       )}
                     </div>
                   </div>
@@ -168,7 +173,6 @@ export function SaleResumo({
                         variant="outline"
                         size="sm"
                         onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
-                        disabled={item.quantity >= item.product.stock_quantity}
                         className="w-8 h-8 p-0 rounded-lg"
                       >
                         <Plus className="w-3 h-3" />

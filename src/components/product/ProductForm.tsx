@@ -8,6 +8,8 @@ import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
 import { useProducts } from '../../hooks/useProducts'
 import { CategorySelector } from './CategorySelector'
+import { supabase } from '../../lib/supabase'
+import type { Fornecedor } from '../../types/fornecedor'
 
 const ProductFormSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -17,6 +19,7 @@ const ProductFormSchema = z.object({
   preco_venda: z.number().min(0, 'Preço de venda deve ser maior que zero'),
   preco_custo: z.number().min(0, 'Preço de custo deve ser maior ou igual a zero'),
   estoque: z.number().min(0, 'Estoque deve ser maior ou igual a zero'),
+  fornecedor: z.string().optional(),
   ativo: z.boolean()
 })
 
@@ -30,6 +33,7 @@ interface ProductFormProps {
 
 function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
   const { categories, fetchCategories, createCategory, saveProduct } = useProducts()
 
   const {
@@ -46,13 +50,41 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
       preco_venda: 0,
       preco_custo: 0,
       estoque: 0,
+      fornecedor: '',
       ativo: true
     }
   })
 
   useEffect(() => {
     fetchCategories()
+    loadFornecedores()
+    
+    // Escutar evento de atualização de fornecedores
+    const handleFornecedorUpdate = () => {
+      loadFornecedores()
+    }
+    
+    window.addEventListener('fornecedorUpdated', handleFornecedorUpdate)
+    
+    return () => {
+      window.removeEventListener('fornecedorUpdated', handleFornecedorUpdate)
+    }
   }, [])
+
+  async function loadFornecedores() {
+    try {
+      const { data, error } = await supabase
+        .from('fornecedores')
+        .select('*')
+        .eq('ativo', true)
+        .order('nome', { ascending: true })
+
+      if (error) throw error
+      setFornecedores(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar fornecedores:', error)
+    }
+  }
 
   const getErrorMessage = (error: any): string => {
     if (!error) return ''
@@ -148,9 +180,6 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Categoria *
-            </label>
             <Controller
               name="categoria"
               control={control}
@@ -430,6 +459,37 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 </select>
               )}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fornecedor (opcional)
+            </label>
+            <Controller
+              name="fornecedor"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <select
+                  value={value || ''}
+                  onChange={onChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Selecione um fornecedor</option>
+                  {fornecedores.map((fornecedor) => (
+                    <option key={fornecedor.id} value={fornecedor.id}>
+                      {fornecedor.nome}
+                    </option>
+                  ))}
+                </select>
+              )}
+            />
+            {fornecedores.length === 0 && (
+              <p className="mt-1 text-xs text-gray-500">
+                <a href="/fornecedores" target="_blank" className="text-blue-600 hover:underline">
+                  Cadastre fornecedores aqui
+                </a>
+              </p>
+            )}
           </div>
 
           <div>

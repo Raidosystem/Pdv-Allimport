@@ -24,6 +24,42 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (!permissionsLoading) {
       loadDashboardData();
+      
+      // ✅ TEMPO REAL: Atualizar stats a cada 30 segundos
+      const statsInterval = setInterval(() => {
+        loadAtividadeStats().then(atividadeData => {
+          setStats(prev => prev ? { ...prev, atividade: atividadeData } : null);
+        });
+      }, 30000); // 30 segundos
+
+      // ✅ TEMPO REAL: Escutar novos logs de auditoria via Supabase Realtime
+      const logsChannel = supabase
+        .channel('audit_logs_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'audit_logs'
+          },
+          (payload) => {
+            console.log('🔔 Novo log de auditoria:', payload);
+            // Recarregar logs recentes
+            if (can('administracao.logs', 'read')) {
+              loadRecentLogs();
+            }
+            // Atualizar contadores de atividade
+            loadAtividadeStats().then(atividadeData => {
+              setStats(prev => prev ? { ...prev, atividade: atividadeData } : null);
+            });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        clearInterval(statsInterval);
+        supabase.removeChannel(logsChannel);
+      };
     }
   }, [permissionsLoading]);
 
@@ -404,7 +440,15 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Atividade */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative">
+          {/* Indicador de tempo real */}
+          <div className="absolute top-2 right-2">
+            <div className="flex items-center gap-1 text-xs text-green-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Tempo Real</span>
+            </div>
+          </div>
+          
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Atividade Hoje</p>
@@ -418,7 +462,7 @@ const AdminDashboard: React.FC = () => {
               <span>Ações: {stats.atividade.acoes_hoje}</span>
             </div>
             <div className="mt-1 text-xs">
-              Último backup: {new Date(stats.atividade.ultimo_backup!).toLocaleDateString('pt-BR')}
+              Último backup: {stats.atividade.ultimo_backup ? new Date(stats.atividade.ultimo_backup).toLocaleDateString('pt-BR') : 'Nunca'}
             </div>
           </div>
         </div>
@@ -447,7 +491,15 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         {/* Log de Auditoria Recente */}
         {can('administracao.logs', 'read') && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative">
+            {/* Indicador de tempo real */}
+            <div className="absolute top-4 right-16">
+              <div className="flex items-center gap-1 text-xs text-green-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Tempo Real</span>
+              </div>
+            </div>
+            
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Atividade Recente</h3>
               <button 

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
 import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
+import { usePermissions } from '../hooks/usePermissions'
 import { EmpresaView } from '../components/EmpresaView'
 import toast from 'react-hot-toast'
 
@@ -238,6 +239,7 @@ export function ConfiguracoesPage() {
   const [loading, setLoading] = useState(false)
   const [unsavedChanges, setUnsavedChanges] = useState(false)
   const { isActive, isInTrial, daysRemaining } = useSubscription()
+  const { can } = usePermissions()
   
   // Hook de configurações de aparência
   const { settings: appearanceSettings, saveSettings, loading: loadingAppearance } = useAppearanceSettings()
@@ -1371,69 +1373,79 @@ export function ConfiguracoesPage() {
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="flex flex-wrap gap-2">
             {/* Dashboard - Azul (Controle/Gestão) */}
-            <button
-              onClick={() => setViewMode('dashboard')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'dashboard'
-                  ? 'bg-blue-100 text-blue-700 border-2 border-blue-400'
-                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'
-              }`}
-            >
-              <Settings className="h-4 w-4 inline mr-2" />
-              Dashboard
-            </button>
+            {can('configuracoes.dashboard', 'read') && (
+              <button
+                onClick={() => setViewMode('dashboard')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  viewMode === 'dashboard'
+                    ? 'bg-blue-100 text-blue-700 border-2 border-blue-400'
+                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'
+                }`}
+              >
+                <Settings className="h-4 w-4 inline mr-2" />
+                Dashboard
+              </button>
+            )}
             
             {/* Empresa - Verde (Negócio/Crescimento) */}
-            <button
-              onClick={() => setViewMode('empresa')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'empresa'
-                  ? 'bg-green-100 text-green-700 border-2 border-green-400'
-                  : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
-              }`}
-            >
-              <Building className="h-4 w-4 inline mr-2" />
-              Empresa
-            </button>
+            {can('configuracoes.empresa', 'read') && (
+              <button
+                onClick={() => setViewMode('empresa')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  viewMode === 'empresa'
+                    ? 'bg-green-100 text-green-700 border-2 border-green-400'
+                    : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                }`}
+              >
+                <Building className="h-4 w-4 inline mr-2" />
+                Empresa
+              </button>
+            )}
             
             {/* Aparência - Roxo (Criatividade/Design) */}
-            <button
-              onClick={() => setViewMode('aparencia')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'aparencia'
-                  ? 'bg-purple-100 text-purple-700 border-2 border-purple-400'
-                  : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-200'
-              }`}
-            >
-              <Palette className="h-4 w-4 inline mr-2" />
-              Aparência
-            </button>
+            {can('configuracoes.aparencia', 'read') && (
+              <button
+                onClick={() => setViewMode('aparencia')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  viewMode === 'aparencia'
+                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-400'
+                    : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-200'
+                }`}
+              >
+                <Palette className="h-4 w-4 inline mr-2" />
+                Aparência
+              </button>
+            )}
             
             {/* Impressão - Laranja (Ação/Produção) */}
-            <button
-              onClick={() => setViewMode('impressao')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'impressao'
-                  ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
-                  : 'bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200'
-              }`}
-            >
-              <Printer className="h-4 w-4 inline mr-2" />
-              Impressão
-            </button>
+            {can('configuracoes.impressao', 'read') && (
+              <button
+                onClick={() => setViewMode('impressao')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  viewMode === 'impressao'
+                    ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
+                    : 'bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200'
+                }`}
+              >
+                <Printer className="h-4 w-4 inline mr-2" />
+                Impressão
+              </button>
+            )}
             
             {/* Assinatura - Amarelo/Dourado (Premium/Valor) */}
-            <button
-              onClick={() => setViewMode('assinatura')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'assinatura'
-                  ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-400'
-                  : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200'
-              }`}
-            >
-              <Crown className="h-4 w-4 inline mr-2" />
-              Assinatura
-            </button>
+            {can('configuracoes.assinatura', 'read') && (
+              <button
+                onClick={() => setViewMode('assinatura')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  viewMode === 'assinatura'
+                    ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-400'
+                    : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200'
+                }`}
+              >
+                <Crown className="h-4 w-4 inline mr-2" />
+                Assinatura
+              </button>
+            )}
           </div>
         </div>
 

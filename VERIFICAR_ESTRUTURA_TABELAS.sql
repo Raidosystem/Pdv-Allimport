@@ -1,14 +1,19 @@
--- Verificar estrutura da tabela funcao_permissoes
-SELECT column_name, data_type, is_nullable, column_default
+-- Verificar estrutura das tabelas do sistema de permissões
+SELECT 
+  table_name,
+  column_name,
+  data_type,
+  is_nullable
 FROM information_schema.columns
-WHERE table_name = 'funcao_permissoes'
-ORDER BY ordinal_position;
+WHERE table_name IN ('permissoes', 'funcoes', 'funcao_permissoes', 'funcionarios')
+  AND table_schema = 'public'
+ORDER BY table_name, ordinal_position;
 
--- Verificar estrutura da tabela audit_logs
-SELECT column_name, data_type, is_nullable, column_default
-FROM information_schema.columns
-WHERE table_name = 'audit_logs'
-ORDER BY ordinal_position;
+-- Ver exemplos da tabela permissoes
+SELECT * FROM permissoes LIMIT 5;
 
--- Ver algumas linhas de exemplo de funcao_permissoes
-SELECT * FROM funcao_permissoes LIMIT 3;
+-- Ver exemplos da tabela funcoes
+SELECT * FROM funcoes LIMIT 5;
+
+-- Ver exemplos da tabela funcao_permissoes
+SELECT * FROM funcao_permissoes LIMIT 5;

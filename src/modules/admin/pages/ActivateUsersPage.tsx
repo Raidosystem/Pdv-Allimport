@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { UserPlus, Eye, EyeOff, Trash2, Pause, Play, Users, AlertTriangle } from 'lucide-react'
+import { UserPlus, Eye, EyeOff, Trash2, Pause, Play, Users, AlertTriangle, Lock, Shield } from 'lucide-react'
 import { Card } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
 import { supabase } from '../../../lib/supabase'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../auth/AuthContext'
+import { useEmployeesStatus } from '../../../hooks/useEmployeesStatus'
+import { AdminCreationModal } from '../../../components/AdminCreationModal'
 
 interface Funcionario {
   id: string
@@ -36,9 +38,11 @@ interface DeleteConfirmation {
 
 export function ActivateUsersPage() {
   const { user } = useAuth()
+  const { hasEmployees, isLoading: checkingEmployees, refetch: refetchEmployeesStatus } = useEmployeesStatus()
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
   const [funcoes, setFuncoes] = useState<Funcao[]>([])
   const [loading, setLoading] = useState(true)
+  const [showAdminModal, setShowAdminModal] = useState(false)
   const [novoUsuario, setNovoUsuario] = useState<NovoUsuario>({
     nome: '',
     senha: '',
@@ -283,6 +287,96 @@ export function ActivateUsersPage() {
     }
   }
 
+  const handleAdminCreated = async () => {
+    // Recarregar status de funcionários
+    await refetchEmployeesStatus()
+    // Recarregar lista de funcionários
+    await carregarFuncionarios()
+  }
+
+  // TELA BLOQUEADA - Quando não há funcionários
+  if (checkingEmployees || (loading && !hasEmployees)) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!hasEmployees) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+        <div className="max-w-2xl mx-auto pt-12">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center border border-gray-200">
+            {/* Ícone de Cadeado */}
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+
+            {/* Título */}
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              Sistema de Funcionários Bloqueado
+            </h1>
+
+            {/* Descrição */}
+            <p className="text-base text-gray-600 mb-6">
+              Para ativar esta funcionalidade, crie o{' '}
+              <span className="font-semibold text-blue-600">Administrador Principal</span> primeiro.
+            </p>
+
+            {/* Informações */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+              <div className="flex items-start">
+                <Shield className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-2 text-sm">O que acontece ao criar o administrador?</h3>
+                  <ul className="space-y-1.5 text-sm text-blue-800">
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Sistema de funcionários será desbloqueado</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Poderá adicionar quantos funcionários precisar</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Administrador terá acesso completo ao sistema</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Nota sobre empresas pequenas */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+              <p className="text-xs text-amber-900">
+                <strong>💡 Dica:</strong> Empresas pequenas podem continuar usando o sistema sem ativar funcionários.
+              </p>
+            </div>
+
+            {/* Botão de Ação */}
+            <button
+              onClick={() => setShowAdminModal(true)}
+              className="inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              Criar Administrador Principal
+            </button>
+          </div>
+        </div>
+
+        {/* Modal de Criação de Admin */}
+        <AdminCreationModal
+          isOpen={showAdminModal}
+          onClose={() => setShowAdminModal(false)}
+          onSuccess={handleAdminCreated}
+        />
+      </div>
+    )
+  }
+
+  // TELA NORMAL - Quando já existem funcionários
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}

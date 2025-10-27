@@ -91,9 +91,25 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
   };
 
   const loadFuncoes = async () => {
+    if (!user?.id) return;
+
+    // Buscar empresa_id do usuário
+    const { data: empresaData, error: empresaError } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (empresaError || !empresaData) {
+      console.error('Erro ao buscar empresa:', empresaError);
+      return;
+    }
+
+    // Buscar apenas funções da empresa do usuário
     const { data, error } = await supabase
       .from('funcoes')
       .select('*')
+      .eq('empresa_id', empresaData.id)
       .order('nivel', { ascending: true });
 
     if (error) {

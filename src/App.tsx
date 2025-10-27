@@ -38,8 +38,7 @@ import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
 import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
-// import GerenciarFuncionarios from './pages/GerenciarFuncionarios' // REMOVIDO - Cliente tem acesso total
-// import FuncionariosPage from './pages/admin/FuncionariosPage' // REMOVIDO - Cliente tem acesso total
+import GerenciarFuncionarios from './pages/GerenciarFuncionarios'
 import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -372,7 +371,18 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          {/* Rota de funcionários removida - cliente tem acesso total através do sistema */}
+          
+          {/* Rota de Gerenciar Funcionários */}
+          <Route 
+            path="/gerenciar-funcionarios" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <GerenciarFuncionarios />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
           
           <Route 
             path="/admin/ativar-usuarios" 

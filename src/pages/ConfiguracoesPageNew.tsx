@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, RefreshCw, Check, X, Crown, AlertTriangle, Sun, Moon, FileText, Edit } from 'lucide-react'
+import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, RefreshCw, Check, X, Crown, AlertTriangle, Sun, Moon, FileText, Edit, Eye, EyeOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
@@ -7,7 +7,7 @@ import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import { EmpresaView } from '../components/EmpresaView'
 import toast from 'react-hot-toast'
 
-type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
+type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'visibilidade' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
 
 interface ConfiguracaoEmpresa {
   nome: string
@@ -1422,6 +1422,19 @@ export function ConfiguracoesPage() {
               Impressão
             </button>
             
+            {/* Visibilidade - Teal (Controle de Acesso) */}
+            <button
+              onClick={() => setViewMode('visibilidade')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'visibilidade'
+                  ? 'bg-teal-100 text-teal-700 border-2 border-teal-400'
+                  : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200'
+              }`}
+            >
+              <Eye className="h-4 w-4 inline mr-2" />
+              Visibilidade
+            </button>
+            
             {/* Assinatura - Amarelo/Dourado (Premium/Valor) */}
             <button
               onClick={() => setViewMode('assinatura')}
@@ -1453,6 +1466,7 @@ export function ConfiguracoesPage() {
           )}
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
+          {viewMode === 'visibilidade' && <VisibilidadeView />}
           {viewMode === 'assinatura' && <AssinaturaView />}
         </div>
       </div>

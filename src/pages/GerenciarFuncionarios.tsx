@@ -20,10 +20,13 @@ import {
   Sparkles,
   Shield,
   Briefcase,
-  DollarSign
+  DollarSign,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../modules/auth';
 import { supabase } from '../lib/supabase';
+import { useEmployeesStatus } from '../hooks/useEmployeesStatus';
+import { AdminCreationModal } from '../components/AdminCreationModal';
 
 interface Employee {
   id: string;
@@ -168,9 +171,11 @@ const PermissionCard = ({
 
 export default function GerenciarFuncionarios() {
   const { user, signUpEmployee } = useAuth();
+  const { hasEmployees, isLoading: checkingEmployees, refetch: refetchEmployeesStatus } = useEmployeesStatus();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   
@@ -202,12 +207,58 @@ export default function GerenciarFuncionarios() {
     if (!user) return;
 
     try {
+      let empresaId: string | null = null;
+
+      // Verificar se é um funcionário logado
+      if (user.user_metadata?.funcionario_id) {
+        // É um funcionário - buscar empresa_id do funcionário
+        const { data: funcionarioData, error: funcError } = await supabase
+          .from('funcionarios')
+          .select('empresa_id')
+          .eq('id', user.user_metadata.funcionario_id)
+          .single();
+
+        if (funcError) {
+          console.error('Erro ao buscar funcionário:', funcError);
+          return;
+        }
+
+        empresaId = funcionarioData?.empresa_id;
+      } else {
+        // É o dono da empresa - buscar empresa_id pela tabela empresas
+        const { data: empresaData, error: empresaError } = await supabase
+          .from('empresas')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (empresaError) {
+          console.error('Erro ao buscar empresa:', empresaError);
+          return;
+        }
+
+        empresaId = empresaData?.id;
+      }
+
+      if (!empresaId) {
+        console.error('Empresa não encontrada');
+        return;
+      }
+
+      // Buscar funcionários da empresa
       const { data, error } = await supabase
-        .from('user_approvals')
-        .select('*')
-        .eq('parent_user_id', user.id)
-        .eq('user_role', 'employee')
-        .eq('status', 'approved')
+        .from('funcionarios')
+        .select(`
+          id,
+          nome,
+          email,
+          status,
+          created_at,
+          funcao_id,
+          funcoes!inner(nome)
+        `)
+        .eq('empresa_id', empresaId)
+        .eq('status', 'ativo')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -215,7 +266,21 @@ export default function GerenciarFuncionarios() {
         return;
       }
 
-      setEmployees(data || []);
+      // Mapear para o formato antigo para compatibilidade
+      const mappedData = (data || []).map((func: any) => ({
+        id: func.id,
+        full_name: func.nome,
+        email: func.email || '',
+        company_name: '',
+        user_role: 'employee' as const,
+        status: 'approved' as const,
+        created_at: func.created_at,
+        approved_at: func.created_at,
+        parent_user_id: user.id,
+        funcao: func.funcoes?.nome || 'Sem função'
+      }));
+
+      setEmployees(mappedData);
     } catch (error) {
       console.error('Erro ao buscar funcionários:', error);
     } finally {
@@ -330,7 +395,14 @@ export default function GerenciarFuncionarios() {
 
   const activePermissionsCount = Object.values(permissions).filter(Boolean).length;
 
-  if (loading) {
+  const handleAdminCreated = async () => {
+    // Recarregar status de funcionários
+    await refetchEmployeesStatus();
+    // Recarregar lista de funcionários
+    await fetchEmployees();
+  };
+
+  if (loading || checkingEmployees) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -338,6 +410,81 @@ export default function GerenciarFuncionarios() {
     );
   }
 
+  // TELA BLOQUEADA - Quando não há funcionários
+  if (!hasEmployees) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+        <div className="max-w-2xl mx-auto pt-12">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center border border-gray-200">
+            {/* Ícone de Cadeado */}
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+
+            {/* Título */}
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              Sistema de Funcionários Bloqueado
+            </h1>
+
+            {/* Descrição */}
+            <p className="text-base text-gray-600 mb-6">
+              Para ativar esta funcionalidade, crie o{' '}
+              <span className="font-semibold text-blue-600">Administrador Principal</span> primeiro.
+            </p>
+
+            {/* Informações */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+              <div className="flex items-start">
+                <Shield className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-2 text-sm">O que acontece ao criar o administrador?</h3>
+                  <ul className="space-y-1.5 text-sm text-blue-800">
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Sistema de funcionários será desbloqueado</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Poderá adicionar quantos funcionários precisar</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>Administrador terá acesso completo ao sistema</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Nota sobre empresas pequenas */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+              <p className="text-xs text-amber-900">
+                <strong>💡 Dica:</strong> Empresas pequenas podem continuar usando o sistema sem ativar funcionários.
+              </p>
+            </div>
+
+            {/* Botão de Ação */}
+            <button
+              onClick={() => setShowAdminModal(true)}
+              className="inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              Criar Administrador Principal
+            </button>
+          </div>
+        </div>
+
+        {/* Modal de Criação de Admin */}
+        <AdminCreationModal
+          isOpen={showAdminModal}
+          onClose={() => setShowAdminModal(false)}
+          onSuccess={handleAdminCreated}
+        />
+      </div>
+    );
+  }
+
+  // TELA NORMAL - Quando já existem funcionários
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">

@@ -1466,7 +1466,12 @@ export function ConfiguracoesPage() {
           )}
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
-          {viewMode === 'visibilidade' && <VisibilidadeView />}
+          {viewMode === 'visibilidade' && (
+            <div className="p-6 text-center text-gray-500">
+              <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Configurações de Visibilidade em desenvolvimento</p>
+            </div>
+          )}
           {viewMode === 'assinatura' && <AssinaturaView />}
         </div>
       </div>

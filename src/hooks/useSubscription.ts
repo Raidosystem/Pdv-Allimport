@@ -12,16 +12,20 @@ export function useSubscription() {
 
   const loadSubscriptionData = async () => {
     if (!user?.email) {
+      console.log('🔍 [useSubscription] Sem email de usuário, abortando...')
       setLoading(false)
       return
     }
 
     try {
+      console.log('🔍 [useSubscription] Iniciando loadSubscriptionData para:', user.email)
       setLoading(true)
       setError(null)
 
       // Buscar status da assinatura
+      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus...')
       const status = await SubscriptionService.checkSubscriptionStatus(user.email)
+      console.log('🔍 [useSubscription] Status retornado:', status)
       setSubscriptionStatus(status)
 
       // Buscar dados completos da assinatura se existir

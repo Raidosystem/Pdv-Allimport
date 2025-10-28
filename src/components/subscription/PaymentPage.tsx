@@ -619,7 +619,10 @@ export function PaymentPage({}: PaymentPageProps) {
                     Gerar novo QR Code
                   </Button>
                   <Button
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => {
+                      setPixData(null)
+                      setPaymentMethod('card')
+                    }}
                     variant="outline"
                   >
                     Pagar com cartão

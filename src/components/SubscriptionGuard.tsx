@@ -47,6 +47,19 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   // 2. OU não tem acesso E não tem assinatura ativa
   const shouldShowPayment = (isInTrial && isExpired) || (!hasAccess && !isActive)
   
+  // 🔍 DEBUG: Logar decisão de mostrar pagamento
+  console.log('🔍 [SubscriptionGuard] Decisão de acesso:', {
+    user: user?.email,
+    isAdmin: isAdmin(),
+    hasAccess,
+    isInTrial,
+    isExpired,
+    isActive,
+    needsPayment,
+    shouldShowPayment,
+    decisao: shouldShowPayment || needsPayment ? '❌ MOSTRAR PAGAMENTO' : '✅ PERMITIR ACESSO'
+  })
+  
   if (shouldShowPayment || needsPayment) {
     return <PaymentPage onPaymentSuccess={() => window.location.reload()} />
   }

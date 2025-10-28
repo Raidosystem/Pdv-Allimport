@@ -68,6 +68,18 @@ export function useSubscription() {
   // Verificar se precisa de pagamento
   const needsPayment = !hasAccess && subscriptionStatus?.has_subscription
 
+  // 🔍 DEBUG: Logar todos os valores calculados
+  console.log('🔍 [useSubscription] Estado calculado:', {
+    subscriptionStatus,
+    hasAccess,
+    isInTrial,
+    isExpired,
+    isActive,
+    daysRemaining,
+    needsPayment,
+    userEmail: user?.email
+  })
+
   // Ativar período de teste (para admin)
   const activateTrial = async (userEmail: string) => {
     try {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Calendar, Clock, Crown, AlertTriangle, Play, Pause, Plus, RefreshCw, TrendingUp } from 'lucide-react'
+import { Users, Calendar, Clock, Crown, AlertTriangle, Plus, RefreshCw, TrendingUp, Trash2 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../modules/auth'
@@ -17,10 +17,13 @@ interface Subscriber {
     trial_end_date?: string
     subscription_start_date?: string
     subscription_end_date?: string
-    payment_status?: string
     days_remaining: number
-    is_paused: boolean
+    is_paused: boolean // Apenas para compatibilidade da interface
     plan_type: string
+    payment_method?: string
+    last_payment_date?: string
+    next_payment_date?: string
+    amount?: number
   }
   created_at: string
 }
@@ -47,6 +50,7 @@ export function AdminDashboard() {
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null)
   const [showAddDaysModal, setShowAddDaysModal] = useState(false)
   const [daysToAdd, setDaysToAdd] = useState(30)
+  const [planType, setPlanType] = useState<'trial' | 'premium'>('premium')
   const [filterStatus, setFilterStatus] = useState<'all' | 'trial' | 'active' | 'expired'>('all')
 
   // Verificar se é admin
@@ -116,9 +120,6 @@ export function AdminDashboard() {
           daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
         }
 
-        // Verificar se está pausado
-        const isPaused = sub.payment_status === 'paused' || false
-
         return {
           user_id: sub.user_id,
           email: userData.email,
@@ -131,10 +132,13 @@ export function AdminDashboard() {
             trial_end_date: sub.trial_end_date,
             subscription_start_date: sub.subscription_start_date,
             subscription_end_date: sub.subscription_end_date,
-            payment_status: sub.payment_status,
             days_remaining: daysRemaining,
-            is_paused: isPaused,
-            plan_type: sub.status
+            is_paused: false, // Funcionalidade pausar não implementada
+            plan_type: sub.plan_type || sub.status,
+            payment_method: sub.payment_method,
+            last_payment_date: sub.last_payment_date,
+            next_payment_date: sub.next_payment_date,
+            amount: sub.amount
           },
           created_at: userApprovalData?.created_at || sub.created_at
         }
@@ -161,43 +165,20 @@ export function AdminDashboard() {
     }
   }
 
-  const togglePauseSubscription = async (subscriber: Subscriber) => {
-    const action = subscriber.subscription.is_paused ? 'reativar' : 'pausar'
-    const loadingToast = toast.loading(`${action === 'pausar' ? 'Pausando' : 'Reativando'} assinatura...`)
-
-    try {
-      const newStatus = subscriber.subscription.is_paused ? 'pending' : 'paused'
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ 
-          payment_status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', subscriber.user_id)
-
-      if (error) throw error
-
-      toast.dismiss(loadingToast)
-      toast.success(`✅ Assinatura ${action === 'pausar' ? 'pausada' : 'reativada'} com sucesso!`)
-      await loadSubscribers() // Recarregar dados
-    } catch (error) {
-      console.error('Erro ao alterar status:', error)
-      toast.dismiss(loadingToast)
-      toast.error(`Erro ao ${action} assinatura`)
-    }
-  }
+  // Função pausar removida - funcionalidade não implementada no banco
 
   const openAddDaysModal = (subscriber: Subscriber) => {
     setSelectedSubscriber(subscriber)
     setShowAddDaysModal(true)
     setDaysToAdd(30)
+    setPlanType('premium') // Default: Premium
   }
 
   const closeAddDaysModal = () => {
     setShowAddDaysModal(false)
     setSelectedSubscriber(null)
     setDaysToAdd(30)
+    setPlanType('premium')
   }
 
   const addDays = async () => {
@@ -210,42 +191,164 @@ export function AdminDashboard() {
 
     try {
       // Calcular nova data de expiração
+      const now = new Date()
       const currentEndDate = selectedSubscriber.subscription.status === 'trial'
-        ? new Date(selectedSubscriber.subscription.trial_end_date || Date.now())
-        : new Date(selectedSubscriber.subscription.subscription_end_date || Date.now())
+        ? new Date(selectedSubscriber.subscription.trial_end_date || now)
+        : new Date(selectedSubscriber.subscription.subscription_end_date || now)
 
-      const newEndDate = new Date(currentEndDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+      // Se a data já passou, começar de agora
+      const baseDate = currentEndDate > now ? currentEndDate : now
+      const newEndDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
 
-      // Atualizar no banco
-      const updateData: any = { updated_at: new Date().toISOString() }
+      // Usar o tipo selecionado pelo admin (CONTROLE MANUAL)
+      const activateAsPremium = planType === 'premium'
 
-      if (selectedSubscriber.subscription.status === 'trial') {
-        updateData.trial_end_date = newEndDate.toISOString()
-      } else {
-        updateData.subscription_end_date = newEndDate.toISOString()
+      // Garantir que as datas sejam timestamps válidos
+      const nowTimestamp = now.toISOString()
+      const endTimestamp = newEndDate.toISOString()
+
+      // Atualizar no banco com CONTROLE TOTAL - INCLUINDO TODAS AS COLUNAS
+      const updateData: any = {
+        updated_at: nowTimestamp,
+        status: activateAsPremium ? 'active' : 'trial'
       }
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .update(updateData)
-        .eq('user_id', selectedSubscriber.user_id)
+      if (activateAsPremium) {
+        // Ativar como PREMIUM
+        updateData.plan_type = 'yearly' // ou 'monthly' conforme necessário
+        updateData.subscription_start_date = nowTimestamp
+        updateData.subscription_end_date = endTimestamp
+        updateData.payment_method = 'manual_activation' // Indica que foi ativado pelo admin
+        updateData.last_payment_date = nowTimestamp
+        updateData.next_payment_date = endTimestamp
+        updateData.amount = 99.90 // Valor padrão para yearly
+        // Limpar dados do trial (explicitamente NULL)
+        updateData.trial_start_date = null
+        updateData.trial_end_date = null
+      } else {
+        // Adicionar como TESTE
+        updateData.plan_type = 'trial'
+        updateData.trial_end_date = endTimestamp
+        updateData.trial_start_date = selectedSubscriber.subscription.trial_start_date || nowTimestamp
+        // Para trial, manter payment info como null ou valores padrão
+        updateData.payment_method = 'trial'
+        updateData.amount = 0.00
+        // Limpar dados premium se estava ativo (explicitamente NULL)
+        updateData.subscription_start_date = null
+        updateData.subscription_end_date = null
+        updateData.last_payment_date = null
+        updateData.next_payment_date = null
+      }
 
-      if (error) throw error
+      console.log('🔍 Dados que serão enviados para o Supabase:', updateData)
+      console.log('🔍 user_id:', selectedSubscriber.user_id)
+
+      // Usar RPC para bypassar RLS (admin tem permissão total)
+      const { data, error } = await supabase.rpc('admin_update_subscription', {
+        p_user_id: selectedSubscriber.user_id,
+        p_updates: updateData
+      })
+
+      if (error) {
+        console.error('❌ Erro detalhado do Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ Atualização bem-sucedida:', data)
 
       toast.dismiss(loadingToast)
-      toast.success(`✅ ${daysToAdd} dias adicionados para ${selectedSubscriber.full_name || selectedSubscriber.email}!`)
+      
+      const statusMsg = activateAsPremium ? '⭐ PREMIUM' : '🎁 TESTE'
+      toast.success(`✅ ${daysToAdd} dias ${statusMsg} adicionados!\n${selectedSubscriber.full_name || selectedSubscriber.email}`)
       
       closeAddDaysModal()
       await loadSubscribers() // Recarregar dados
-    } catch (error) {
-      console.error('Erro ao adicionar dias:', error)
+    } catch (error: any) {
+      console.error('❌ Erro ao adicionar dias:', error)
+      console.error('❌ Detalhes completos:', JSON.stringify(error, null, 2))
       toast.dismiss(loadingToast)
-      toast.error('Erro ao adicionar dias')
+      
+      // Melhor tratamento de erro
+      const errorMessage = error?.message || error?.hint || error?.details || 'Erro desconhecido'
+      toast.error('Erro ao adicionar dias: ' + errorMessage)
+    }
+  }
+
+  // Função para excluir usuário COMPLETAMENTE do sistema
+  const deleteUser = async (subscriber: Subscriber) => {
+    // Confirmação dupla para evitar exclusões acidentais
+    const confirmEmail = window.prompt(
+      `⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\n` +
+      `Você está prestes a EXCLUIR PERMANENTEMENTE:\n` +
+      `• Usuário: ${subscriber.full_name || subscriber.email}\n` +
+      `• Email: ${subscriber.email}\n\n` +
+      `Todos os dados serão removidos:\n` +
+      `✗ Assinatura\n` +
+      `✗ Produtos\n` +
+      `✗ Clientes\n` +
+      `✗ Vendas\n` +
+      `✗ Ordens de Serviço\n` +
+      `✗ Caixas\n` +
+      `✗ Conta de acesso\n\n` +
+      `Para confirmar, digite o EMAIL do usuário:`
+    )
+
+    // Verificar se digitou o email correto
+    if (confirmEmail !== subscriber.email) {
+      if (confirmEmail !== null) { // null = cancelou, não mostrar erro
+        toast.error('❌ Email incorreto. Exclusão cancelada.')
+      }
+      return
+    }
+
+    const loadingToast = toast.loading(`🗑️ Excluindo ${subscriber.email} completamente...`)
+
+    try {
+      // 1. Excluir produtos do usuário
+      await supabase.from('produtos').delete().eq('user_id', subscriber.user_id)
+      
+      // 2. Excluir clientes do usuário
+      await supabase.from('clientes').delete().eq('user_id', subscriber.user_id)
+      
+      // 3. Excluir vendas do usuário
+      await supabase.from('vendas').delete().eq('user_id', subscriber.user_id)
+      
+      // 4. Excluir ordens de serviço
+      await supabase.from('ordens_servico').delete().eq('user_id', subscriber.user_id)
+      
+      // 5. Excluir caixas
+      await supabase.from('caixas').delete().eq('user_id', subscriber.user_id)
+      
+      // 6. Excluir de funcionarios (se existir)
+      await supabase.from('funcionarios').delete().eq('user_id', subscriber.user_id)
+      
+      // 7. Excluir de empresas (se for empresa)
+      await supabase.from('empresas').delete().eq('user_id', subscriber.user_id)
+      
+      // 8. Excluir subscription
+      await supabase.from('subscriptions').delete().eq('user_id', subscriber.user_id)
+      
+      // 9. Excluir de user_approvals
+      await supabase.from('user_approvals').delete().eq('user_id', subscriber.user_id)
+      
+      // 10. Excluir da tabela auth.users (usando Admin API)
+      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(subscriber.user_id)
+      
+      if (deleteAuthError) throw deleteAuthError
+
+      toast.dismiss(loadingToast)
+      toast.success(`✅ Usuário ${subscriber.email} excluído completamente!\nTodos os dados foram removidos permanentemente.`)
+      
+      // Recarregar lista
+      await loadSubscribers()
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error)
+      toast.dismiss(loadingToast)
+      toast.error('❌ Erro ao excluir usuário: ' + (error as Error).message)
     }
   }
 
   const getStatusColor = (subscriber: Subscriber) => {
-    if (subscriber.subscription.is_paused) return 'bg-gray-100 border-gray-300'
     if (subscriber.subscription.days_remaining === 0) return 'bg-red-50 border-red-300'
     if (subscriber.subscription.days_remaining <= 5) return 'bg-orange-50 border-orange-300'
     if (subscriber.subscription.status === 'trial') return 'bg-blue-50 border-blue-300'
@@ -253,9 +356,6 @@ export function AdminDashboard() {
   }
 
   const getStatusBadge = (subscriber: Subscriber) => {
-    if (subscriber.subscription.is_paused) {
-      return <span className="px-3 py-1 bg-gray-600 text-white text-xs font-bold rounded-full">⏸️ PAUSADO</span>
-    }
     if (subscriber.subscription.days_remaining === 0) {
       return <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">❌ EXPIRADO</span>
     }
@@ -520,25 +620,12 @@ export function AdminDashboard() {
                             Dias
                           </button>
                           <button
-                            onClick={() => togglePauseSubscription(subscriber)}
-                            className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                              subscriber.subscription.is_paused
-                                ? 'bg-green-600 hover:bg-green-700 text-white'
-                                : 'bg-orange-600 hover:bg-orange-700 text-white'
-                            }`}
-                            title={subscriber.subscription.is_paused ? 'Reativar' : 'Pausar'}
+                            onClick={() => deleteUser(subscriber)}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                            title="Excluir usuário permanentemente"
                           >
-                            {subscriber.subscription.is_paused ? (
-                              <>
-                                <Play className="w-3 h-3 mr-1" />
-                                Reativar
-                              </>
-                            ) : (
-                              <>
-                                <Pause className="w-3 h-3 mr-1" />
-                                Pausar
-                              </>
-                            )}
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Excluir
                           </button>
                         </div>
                       </td>
@@ -631,24 +718,64 @@ export function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Tipo de Plano */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Tipo de Plano</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setPlanType('trial')}
+                        className={`p-4 rounded-xl border-2 font-bold transition-all ${
+                          planType === 'trial'
+                            ? 'border-blue-500 bg-blue-50 text-blue-900'
+                            : 'border-gray-300 bg-white hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">🎁</div>
+                        <div className="text-sm">TESTE</div>
+                        <div className="text-xs text-gray-600 mt-1">Período gratuito</div>
+                      </button>
+                      <button
+                        onClick={() => setPlanType('premium')}
+                        className={`p-4 rounded-xl border-2 font-bold transition-all ${
+                          planType === 'premium'
+                            ? 'border-green-500 bg-green-50 text-green-900'
+                            : 'border-gray-300 bg-white hover:border-green-300'
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">⭐</div>
+                        <div className="text-sm">PREMIUM</div>
+                        <div className="text-xs text-gray-600 mt-1">Assinatura paga</div>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Preview */}
                   {daysToAdd > 0 && (
-                    <div className="p-4 bg-green-50 border-2 border-green-300 rounded-xl mb-6">
-                      <p className="text-sm text-green-800 mb-1 font-semibold">✨ Nova Expiração:</p>
-                      <p className="text-2xl font-bold text-green-900">
-                        {(() => {
-                          const currentEnd = selectedSubscriber.subscription.status === 'trial'
-                            ? new Date(selectedSubscriber.subscription.trial_end_date || Date.now())
-                            : new Date(selectedSubscriber.subscription.subscription_end_date || Date.now())
-                          const newEnd = new Date(currentEnd.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
-                          return newEnd.toLocaleDateString('pt-BR')
-                        })()}
+                    <div className={`p-4 border-2 rounded-xl mb-6 ${
+                      planType === 'premium' 
+                        ? 'bg-green-50 border-green-300' 
+                        : 'bg-blue-50 border-blue-300'
+                    }`}>
+                      <p className={`text-sm mb-1 font-semibold ${
+                        planType === 'premium' ? 'text-green-800' : 'text-blue-800'
+                      }`}>
+                        ✨ Será adicionado {daysToAdd} dias como {planType === 'premium' ? '⭐ PREMIUM' : '🎁 TESTE'}
                       </p>
-                      <p className="text-xs text-green-700 mt-1">
+                      <p className={`text-lg font-bold ${
+                        planType === 'premium' ? 'text-green-900' : 'text-blue-900'
+                      }`}>
                         Total: {selectedSubscriber.subscription.days_remaining + daysToAdd} dias
                       </p>
                     </div>
                   )}
+
+                  {/* Alerta importante */}
+                  <div className="p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl mb-6">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ <strong>Atenção:</strong> Ao selecionar PREMIUM, o usuário será ativado imediatamente e poderá acessar o sistema completo.
+                      TESTE mantém o usuário em período gratuito.
+                    </p>
+                  </div>
 
                   {/* Botões */}
                   <div className="flex gap-4">

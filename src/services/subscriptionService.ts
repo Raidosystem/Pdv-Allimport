@@ -6,26 +6,103 @@ export class SubscriptionService {
   // Verificar status da assinatura do usuário
   static async checkSubscriptionStatus(userEmail: string): Promise<SubscriptionStatus> {
     try {
-      const { data, error } = await supabase.rpc('check_subscription_status', {
+      console.log('🔍 Verificando status da assinatura para:', userEmail)
+      
+      // TENTAR usar a função RPC primeiro
+      const { data: rpcData, error: rpcError } = await supabase.rpc('check_subscription_status', {
         user_email: userEmail
       })
 
+      if (!rpcError && rpcData) {
+        console.log('✅ Status retornado pelo banco (RPC):', rpcData)
+        return rpcData as SubscriptionStatus
+      }
+
+      // SE A FUNÇÃO NÃO EXISTE, fazer a verificação manualmente
+      console.warn('⚠️ Função RPC não encontrada, fazendo verificação manual')
+      
+      const { data: subscriptions, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('email', userEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
       if (error) {
-        console.error('Erro ao verificar status da assinatura:', error)
+        console.error('❌ Erro ao buscar subscription:', error)
         return {
           has_subscription: false,
           status: 'no_subscription',
-          access_allowed: false
+          access_allowed: false,
+          days_remaining: 0
         }
       }
 
-      return data as SubscriptionStatus
+      if (!subscriptions || subscriptions.length === 0) {
+        console.log('ℹ️ Nenhuma subscription encontrada')
+        return {
+          has_subscription: false,
+          status: 'no_subscription',
+          access_allowed: false,
+          days_remaining: 0
+        }
+      }
+
+      const sub = subscriptions[0]
+      const now = new Date()
+      let status = sub.status
+      let accessAllowed = false
+      let daysRemaining = 0
+
+      // Verificar PREMIUM ATIVO
+      if (sub.status === 'active' && sub.subscription_end_date) {
+        const endDate = new Date(sub.subscription_end_date)
+        if (endDate > now) {
+          const diffTime = endDate.getTime() - now.getTime()
+          daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          accessAllowed = true
+          status = 'active'
+          console.log('✅ Premium ativo:', { daysRemaining, endDate })
+        } else {
+          status = 'expired'
+          console.log('❌ Premium expirado:', { endDate })
+        }
+      }
+      // Verificar TRIAL ATIVO
+      else if (sub.status === 'trial' && sub.trial_end_date) {
+        const endDate = new Date(sub.trial_end_date)
+        if (endDate > now) {
+          const diffTime = endDate.getTime() - now.getTime()
+          daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          accessAllowed = true
+          status = 'trial'
+          console.log('✅ Trial ativo:', { daysRemaining, endDate })
+        } else {
+          status = 'expired'
+          console.log('❌ Trial expirado:', { endDate })
+        }
+      }
+
+      const result = {
+        has_subscription: true,
+        status,
+        access_allowed: accessAllowed,
+        days_remaining: daysRemaining,
+        plan_type: sub.plan_type,
+        subscription_end_date: sub.subscription_end_date,
+        trial_end_date: sub.trial_end_date
+      }
+
+      console.log('✅ Status calculado manualmente:', result)
+      return result
+
     } catch (error) {
-      console.error('Erro ao verificar status da assinatura:', error)
+      console.error('❌ Erro ao verificar status da assinatura:', error)
       return {
         has_subscription: false,
         status: 'no_subscription',
-        access_allowed: false
+        access_allowed: false,
+        days_remaining: 0
       }
     }
   }

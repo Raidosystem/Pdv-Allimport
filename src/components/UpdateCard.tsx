@@ -55,16 +55,24 @@ export function UpdateCard() {
     console.log('🔄 Usuário iniciou atualização')
     setIsUpdating(true)
     
-    // Limpar cache e recarregar MANTENDO o login
+    // 1. Salvar o estado de autenticação ANTES de limpar cache
+    const authData = localStorage.getItem('supabase.auth.token')
+    const hasAuth = !!authData
+    
+    console.log('💾 Estado de autenticação salvo:', hasAuth ? 'Usuário logado' : 'Sem login')
+    
+    // 2. Limpar APENAS cache do service worker (não localStorage!)
     if ('caches' in window) {
       caches.keys().then(names => {
+        console.log('🧹 Limpando', names.length, 'caches')
         names.forEach(name => caches.delete(name))
       })
     }
     
-    // Forçar reload mantendo estado de autenticação
-    // window.location.reload() mantém cookies e localStorage do Supabase
+    // 3. Forçar reload SEM limpar localStorage (mantém login)
+    // O hard reload (true) força buscar do servidor mas preserva localStorage
     setTimeout(() => {
+      console.log('🔄 Recarregando página (mantendo login)...')
       window.location.reload()
     }, 500)
   }
@@ -186,11 +194,18 @@ export function useUpdateNotification() {
   }, [])
 
   const updateNow = () => {
+    // Salvar estado de autenticação
+    const authData = localStorage.getItem('supabase.auth.token')
+    console.log('💾 [Hook] Estado de autenticação salvo:', !!authData)
+    
+    // Limpar cache
     if ('caches' in window) {
       caches.keys().then(names => {
         names.forEach(name => caches.delete(name))
       })
     }
+    
+    // Recarregar mantendo login
     setTimeout(() => {
       window.location.reload()
     }, 500)

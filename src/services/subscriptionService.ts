@@ -15,6 +15,7 @@ export class SubscriptionService {
 
       if (!rpcError && rpcData) {
         console.log('✅ Status retornado pelo banco (RPC):', rpcData)
+        console.log('📊 RPC JSON:', JSON.stringify(rpcData, null, 2))
         return rpcData as SubscriptionStatus
       }
 

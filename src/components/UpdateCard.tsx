@@ -61,20 +61,37 @@ export function UpdateCard() {
     
     console.log('💾 Estado de autenticação salvo:', hasAuth ? 'Usuário logado' : 'Sem login')
     
-    // 2. Limpar APENAS cache do service worker (não localStorage!)
-    if ('caches' in window) {
-      caches.keys().then(names => {
-        console.log('🧹 Limpando', names.length, 'caches')
-        names.forEach(name => caches.delete(name))
+    // 2. Desregistrar Service Worker antigo
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        console.log('🗑️ Desregistrando', registrations.length, 'Service Workers')
+        registrations.forEach(registration => {
+          registration.unregister()
+        })
       })
     }
     
-    // 3. Forçar reload SEM limpar localStorage (mantém login)
-    // O hard reload (true) força buscar do servidor mas preserva localStorage
+    // 3. Limpar TODO o cache (service worker + browser)
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        console.log('🧹 Limpando', names.length, 'caches')
+        return Promise.all(
+          names.map(name => {
+            console.log('🗑️ Deletando cache:', name)
+            return caches.delete(name)
+          })
+        )
+      }).then(() => {
+        console.log('✅ Todos os caches limpos!')
+      })
+    }
+    
+    // 4. Forçar reload SEM limpar localStorage (mantém login)
     setTimeout(() => {
       console.log('🔄 Recarregando página (mantendo login)...')
+      // Hard reload: força buscar do servidor
       window.location.reload()
-    }, 500)
+    }, 1000) // Aumentado para 1 segundo para dar tempo de limpar tudo
   }
 
   const handleDismiss = () => {
@@ -198,17 +215,24 @@ export function useUpdateNotification() {
     const authData = localStorage.getItem('supabase.auth.token')
     console.log('💾 [Hook] Estado de autenticação salvo:', !!authData)
     
+    // Desregistrar Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => registration.unregister())
+      })
+    }
+    
     // Limpar cache
     if ('caches' in window) {
       caches.keys().then(names => {
-        names.forEach(name => caches.delete(name))
+        return Promise.all(names.map(name => caches.delete(name)))
       })
     }
     
     // Recarregar mantendo login
     setTimeout(() => {
       window.location.reload()
-    }, 500)
+    }, 1000)
   }
 
   const dismissUpdate = () => {

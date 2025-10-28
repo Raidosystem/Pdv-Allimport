@@ -73,7 +73,7 @@ export function useSubscription() {
   const needsPayment = !hasAccess && subscriptionStatus?.has_subscription
 
   // 🔍 DEBUG: Logar todos os valores calculados
-  console.log('🔍 [useSubscription] Estado calculado:', {
+  const estadoCalculado = {
     subscriptionStatus,
     hasAccess,
     isInTrial,
@@ -82,7 +82,9 @@ export function useSubscription() {
     daysRemaining,
     needsPayment,
     userEmail: user?.email
-  })
+  }
+  console.log('🔍 [useSubscription] Estado calculado:', estadoCalculado)
+  console.log('📊 [useSubscription] Estado JSON:', JSON.stringify(estadoCalculado, null, 2))
 
   // Ativar período de teste (para admin)
   const activateTrial = async (userEmail: string) => {

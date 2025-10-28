@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap } from 'lucide-react'
+import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap, LogOut } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../modules/auth/AuthContext'
@@ -8,6 +8,7 @@ import { useSubscription } from '../../hooks/useSubscription'
 import { mercadoPagoApiService as mercadoPagoService } from '../../services/mercadoPagoApiService'
 import { PAYMENT_PLANS } from '../../types/subscription'
 import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
 
 interface PaymentPageProps {
   onPaymentSuccess?: () => void
@@ -35,6 +36,18 @@ export function PaymentPage({}: PaymentPageProps) {
   const isMountedRef = useRef(true)
 
   const plan = PAYMENT_PLANS[0] // Plano mensal
+
+  // Função de logout
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      navigate('/login')
+      toast.success('Logout realizado com sucesso')
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+      toast.error('Erro ao fazer logout')
+    }
+  }
 
   // Garantir que o componente foi montado
   useEffect(() => {
@@ -445,6 +458,17 @@ export function PaymentPage({}: PaymentPageProps) {
     return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
+        {/* Botão de Logout - Topo Direito */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sair do Sistema</span>
+          </button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">

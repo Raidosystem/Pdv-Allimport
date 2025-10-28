@@ -20,6 +20,7 @@ export function PaymentPage({}: PaymentPageProps) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const isRenewal = searchParams.get('action') === 'renew'
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('monthly')
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
   const [pixData, setPixData] = useState<{
@@ -35,7 +36,7 @@ export function PaymentPage({}: PaymentPageProps) {
   // Ref para controlar se o componente ainda está montado
   const isMountedRef = useRef(true)
 
-  const plan = PAYMENT_PLANS[0] // Plano mensal
+  const plan = PAYMENT_PLANS.find(p => p.id === selectedPlanId) || PAYMENT_PLANS[0]
 
   // Função de logout
   const handleLogout = async () => {
@@ -507,12 +508,58 @@ export function PaymentPage({}: PaymentPageProps) {
 
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
           <div className="p-8">
-            {/* Plano */}
-            <div className="text-center mb-8">
+            {/* Seleção de Planos */}
+            <div className="mb-8">
+              <h3 className="font-semibold text-secondary-900 text-center mb-4">Escolha seu plano:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PAYMENT_PLANS.map((planOption) => (
+                  <button
+                    key={planOption.id}
+                    onClick={() => setSelectedPlanId(planOption.id)}
+                    className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+                      selectedPlanId === planOption.id
+                        ? 'border-primary-600 bg-primary-50 shadow-lg'
+                        : 'border-secondary-200 hover:border-primary-300 hover:shadow-md'
+                    }`}
+                  >
+                    {planOption.popular && (
+                      <div className="absolute -top-3 right-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        ⭐ MAIS ECONÔMICO
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <h4 className="text-xl font-bold text-secondary-900">{planOption.name}</h4>
+                    </div>
+                    <div className="text-3xl font-bold text-primary-600 mb-1">
+                      {formatPrice(planOption.price)}
+                    </div>
+                    {planOption.monthlyEquivalent && planOption.id !== 'monthly' && (
+                      <div className="text-sm text-secondary-600 mb-2">
+                        {formatPrice(planOption.monthlyEquivalent)}/mês
+                      </div>
+                    )}
+                    <p className="text-sm text-secondary-600 mb-3">{planOption.description}</p>
+                    {planOption.savings && (
+                      <div className="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1.5 rounded-lg inline-block">
+                        💰 Economize {formatPrice(planOption.savings)}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Plano Selecionado */}
+            <div className="text-center mb-8 pb-8 border-b border-secondary-200">
               <h2 className="text-2xl font-bold text-secondary-900 mb-2">{plan.name}</h2>
               <div className="text-4xl font-bold text-primary-600 mb-2">
                 {formatPrice(plan.price)}
-                <span className="text-lg font-normal text-secondary-500">/mês</span>
+                {plan.id === 'annual' && (
+                  <span className="text-lg font-normal text-secondary-500"> por ano</span>
+                )}
+                {plan.id === 'monthly' && (
+                  <span className="text-lg font-normal text-secondary-500">/mês</span>
+                )}
               </div>
               <p className="text-secondary-600">{plan.description}</p>
             </div>

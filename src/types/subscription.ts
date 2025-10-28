@@ -95,6 +95,9 @@ export interface PaymentPlan {
   currency: string
   duration_days: number
   features: string[]
+  popular?: boolean
+  savings?: number
+  monthlyEquivalent?: number
 }
 
 // Planos disponíveis
@@ -105,7 +108,8 @@ export const PAYMENT_PLANS: PaymentPlan[] = [
     description: 'Acesso completo por 30 dias',
     price: 59.90,
     currency: 'BRL',
-    duration_days: 30,
+    duration_days: 31,
+    monthlyEquivalent: 59.90,
     features: [
       'Sistema PDV completo',
       'Gestão de estoque',
@@ -113,6 +117,27 @@ export const PAYMENT_PLANS: PaymentPlan[] = [
       'Controle de caixa',
       'Suporte técnico',
       'Atualizações automáticas'
+    ]
+  },
+  {
+    id: 'annual',
+    name: 'Plano Anual',
+    description: 'Acesso completo por 12 meses',
+    price: 550.00,
+    currency: 'BRL',
+    duration_days: 365,
+    monthlyEquivalent: 45.83,
+    savings: 168.80,
+    popular: true,
+    features: [
+      'Sistema PDV completo',
+      'Gestão de estoque',
+      'Relatórios detalhados',
+      'Controle de caixa',
+      'Suporte técnico prioritário',
+      'Atualizações automáticas',
+      '💰 Economia de R$ 168,80 (23%)',
+      '🎁 Equivale a 2 meses grátis'
     ]
   }
 ]

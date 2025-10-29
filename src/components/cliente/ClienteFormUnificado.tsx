@@ -4,6 +4,7 @@ import { onlyDigits } from '../../lib/cpf'
 import { CpfInput, type CpfInputRef } from '../CpfInput'
 import { toast } from 'react-hot-toast'
 import { X, Save } from 'lucide-react'
+import { useEmpresaId } from '../../hooks/useEmpresaId'
 
 interface ClienteFormData {
   nome: string
@@ -19,7 +20,7 @@ interface ClienteFormData {
 }
 
 interface ClienteFormUnificadoProps {
-  empresaId?: string
+  empresaId?: string // Opcional - se não fornecido, usa o hook
   cliente?: any // Cliente para edição
   onSuccess?: (cliente: any) => void
   onCancel?: () => void
@@ -32,7 +33,7 @@ interface ClienteFormUnificadoProps {
 }
 
 export function ClienteFormUnificado({ 
-  empresaId, 
+  empresaId: empresaIdProp, 
   cliente,
   onSuccess, 
   onCancel,
@@ -43,6 +44,10 @@ export function ClienteFormUnificado({
   allowClientEdit = false, // Mudado para false - remover "Editar Dados" em todos os contextos
   showUseClientButton = true // VOLTOU para true - por padrão mostra o botão "Usar Cliente"
 }: ClienteFormUnificadoProps) {
+  // Usar hook para pegar empresa_id automaticamente se não foi fornecido
+  const { empresaId: empresaIdFromHook } = useEmpresaId()
+  const empresaId = empresaIdProp || empresaIdFromHook
+  
   const [formData, setFormData] = useState<ClienteFormData>({
     nome: cliente?.nome || '',
     cpf: cliente?.cpf_cnpj || '',
@@ -421,7 +426,7 @@ export function ClienteFormUnificado({
             ref={cpfInputRef}
             value={formData.cpf}
             onChange={handleCpfChange}
-            empresaId={empresaId}
+            empresaId={empresaId || undefined}
             excludeId={cliente?.id} // Excluir o próprio cliente em modo de edição
             placeholder="000.000.000-00 (opcional)"
           />

@@ -130,16 +130,16 @@ export function LocalLoginPage() {
         return
       }
 
-      // Verificar resposta
-      if (!data || data.length === 0 || !data[0].sucesso) {
-        toast.error('Senha incorreta')
+      // Verificar resposta (RPC retorna objeto JSON direto, não array)
+      if (!data || !data.sucesso) {
+        toast.error(data?.mensagem || 'Senha incorreta')
         setSenha('')
         setLoginLoading(false)
         return
       }
 
       // Login bem-sucedido
-      const userData = data[0]
+      const userData = data
       
       // Salvar sessão local
       localStorage.setItem('pdv_local_session', JSON.stringify({

@@ -95,6 +95,8 @@ class SimpleReportsService {
       const { startDate, endDate } = this.getDateRange(period);
       
       console.log('🔍 [SIMPLE] Buscando vendas do período:', { startDate, endDate, period });
+      console.log('🔍 [SIMPLE] Data de início:', startDate.toISOString());
+      console.log('🔍 [SIMPLE] Data de fim:', endDate.toISOString());
 
       // Buscar vendas do período (usando created_at que é o campo correto)
       const { data: sales, error: salesError } = await supabase
@@ -105,10 +107,20 @@ class SimpleReportsService {
 
       if (salesError) {
         console.error('❌ Erro ao buscar vendas:', salesError);
+        console.error('❌ Detalhes:', JSON.stringify(salesError, null, 2));
         throw salesError;
       }
 
       console.log('✅ Vendas encontradas:', sales?.length || 0);
+      console.log('✅ Primeira venda (se existir):', sales?.[0]);
+      
+      // DEBUG: Buscar TODAS as vendas sem filtro para verificar
+      const { data: allSales } = await supabase
+        .from('vendas')
+        .select('*')
+        .limit(10);
+      console.log('🔍 [DEBUG] Total de vendas na tabela (últimas 10):', allSales?.length);
+      console.log('🔍 [DEBUG] Amostra de vendas:', allSales);
 
       // Calcular totais (campos em português: total e desconto)
       const totalSales = sales?.length || 0;

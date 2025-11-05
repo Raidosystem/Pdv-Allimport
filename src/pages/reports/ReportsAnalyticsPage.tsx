@@ -10,7 +10,7 @@ import {
   DollarSign, Calendar, Clock, AlertTriangle, CheckCircle, Info 
 } from "lucide-react";
 import { formatCurrency } from "../../utils/format";
-import { realReportsService } from "../../services/realReportsService";
+import { realReportsService } from "../../services/simpleReportsService";
 
 // ===== Helper: Filters (same as overview) =====
 type FilterState = {
@@ -247,14 +247,37 @@ const ReportsAnalyticsPage: React.FC = () => {
       
       // Load all analytics data
       const [insightsData, predictionsData, anomaliesData] = await Promise.all([
-        realReportsService.getAnalyticsInsights(servicePeriod),
-        realReportsService.getAnalyticsPredictions(servicePeriod),
-        realReportsService.getAnalyticsAnomalies(servicePeriod)
+        realReportsService.getAnalyticsInsights(servicePeriod === 'all' ? 'quarter' : servicePeriod),
+        realReportsService.getAnalyticsPredictions(servicePeriod === 'all' ? 'quarter' : servicePeriod),
+        realReportsService.getAnalyticsAnomalies(servicePeriod === 'all' ? 'quarter' : servicePeriod)
       ]);
       
-      setInsights(insightsData);
-      setPredictions(predictionsData);
-      setAnomalies(anomaliesData);
+      setInsights(insightsData.map((item: any, index: number) => ({
+        id: `insight-${index}`,
+        type: 'info' as const,
+        title: item.title,
+        description: item.description,
+        impact: item.impact,
+        value: item.value
+      })));
+      setPredictions(predictionsData.map((item: any) => ({
+        metric: item.title,
+        current: 0,
+        predicted: 0,
+        confidence: item.confidence,
+        trend: 'stable' as const,
+        timeframe: item.timeline
+      })));
+      setAnomalies(anomaliesData.map((item: any, index: number) => ({
+        id: `anomaly-${index}`,
+        metric: item.title,
+        detected: new Date(),
+        severity: item.severity,
+        description: item.description,
+        expectedValue: 0,
+        actualValue: 0,
+        deviation: 0
+      })));
       
     } catch (err) {
       console.error('Error loading analytics data:', err);

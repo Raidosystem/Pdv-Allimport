@@ -88,9 +88,9 @@ class RealReportsService {
 
     console.log('🔍 Buscando vendas do período:', { startDate, endDate, period });
 
-    // Buscar vendas do período (query simplificada)
+    // Buscar vendas do período com campos corretos
     const { data: sales, error: salesError } = await supabase
-      .from('vendas')
+      .from('sales')
       .select('*')
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString());
@@ -125,23 +125,23 @@ class RealReportsService {
 
     // Buscar produtos mais vendidos (dados reais)
     const { data: salesItems, error: itemsError } = await supabase
-      .from('vendas_itens')
-      .select('produto_id, quantidade, preco_unitario, subtotal')
-      .in('venda_id', sales?.map(s => s.id) || []);
+      .from('sale_items')
+      .select('product_id, quantity, unit_price, total_price')
+      .in('sale_id', sales?.map(s => s.id) || []);
 
     if (itemsError) {
       console.error('❌ Erro ao buscar itens de vendas:', itemsError);
     }
 
     // Buscar nomes dos produtos (usando os produtos embutidos como fallback)
-    const productIds = salesItems?.map(item => item.produto_id).filter(Boolean) || [];
+    const productIds = salesItems?.map(item => item.product_id).filter(Boolean) || [];
     let productsData: any[] = [];
     
     if (productIds.length > 0) {
       // Buscar primeiro do banco de dados
       const { data: dbProducts } = await supabase
-        .from('produtos')
-        .select('id, nome')
+        .from('products')
+        .select('id, name')
         .in('id', productIds);
       
       if (dbProducts) {
@@ -156,19 +156,19 @@ class RealReportsService {
     const productSalesMap = new Map<string, { quantity: number; revenue: number; name: string }>();
     
     salesItems?.forEach(item => {
-      if (item.produto_id) {
-        const product = productsData.find(p => p.id === item.produto_id);
-        const productName = product?.nome || `Produto ${item.produto_id}`;
+      if (item.product_id) {
+        const product = productsData.find(p => p.id === item.product_id);
+        const productName = product?.name || `Produto ${item.product_id}`;
         
-        const current = productSalesMap.get(item.produto_id) || { 
+        const current = productSalesMap.get(item.product_id) || { 
           quantity: 0, 
           revenue: 0, 
           name: productName 
         };
         
-        productSalesMap.set(item.produto_id, {
-          quantity: current.quantity + (item.quantidade || 0),
-          revenue: current.revenue + (item.subtotal || 0),
+        productSalesMap.set(item.product_id, {
+          quantity: current.quantity + (item.quantity || 0),
+          revenue: current.revenue + (item.total_price || 0),
           name: productName
         });
       }
@@ -236,7 +236,7 @@ class RealReportsService {
 
     // Buscar todos os clientes
     const { data: allClients, error: clientsError } = await supabase
-      .from('clientes')
+      .from('customers')
       .select('*');
 
     if (clientsError) {
@@ -246,10 +246,10 @@ class RealReportsService {
 
     // Clientes novos no período
     const { data: newClientsData, error: newClientsError } = await supabase
-      .from('clientes')
+      .from('customers')
       .select('*')
-      .gte('criado_em', startDate.toISOString())
-      .lte('criado_em', endDate.toISOString());
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
 
     if (newClientsError) {
       console.error('❌ Erro ao buscar novos clientes:', newClientsError);
@@ -258,7 +258,7 @@ class RealReportsService {
 
     // Vendas por cliente (query simplificada)
     const { data: salesByClient, error: salesError } = await supabase
-      .from('vendas')
+      .from('sales')
       .select('*')
       .not('cliente_id', 'is', null)
       .gte('created_at', startDate.toISOString())
@@ -271,11 +271,11 @@ class RealReportsService {
 
     // Ordens de serviço por cliente (query simplificada)
     const { data: serviceOrdersByClient, error: serviceError } = await supabase
-      .from('ordens_servico')
+      .from('service_orders')
       .select('*')
-      .not('cliente_id', 'is', null)
-      .gte('criado_em', startDate.toISOString())
-      .lte('criado_em', endDate.toISOString());
+      .not('customer_id', 'is', null)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
 
     if (serviceError) {
       console.error('❌ Erro ao buscar OS por cliente:', serviceError);
@@ -300,7 +300,7 @@ class RealReportsService {
 
     // Adicionar vendas
     salesByClient?.forEach(sale => {
-      const clientId = sale.cliente_id;
+      const clientId = sale.customer_id;
       const clientName = clientsMap.get(clientId) || `Cliente ${clientId}`;
       const current = clientStatsMap.get(clientId) || {
         clientName,
@@ -796,7 +796,7 @@ class RealReportsService {
     }
 
     let query = supabase
-      .from('vendas_itens')
+      .from('sale_items')
       .select(`
         produto_id,
         quantidade,

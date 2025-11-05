@@ -5,6 +5,7 @@ import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
 import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import { usePermissions } from '../hooks/usePermissions'
+import { usePrintSettings } from '../hooks/usePrintSettings'
 import { EmpresaView } from '../components/EmpresaView'
 import toast from 'react-hot-toast'
 
@@ -253,6 +254,15 @@ export function ConfiguracoesPage() {
     uploading: uploadingLogo
   } = useEmpresaSettings()
   
+  // Hook de configurações de impressão
+  const { 
+    settings: printSettings, 
+    saveCabecalho, 
+    saveRodape,
+    loading: loadingPrint,
+    saving: savingPrint
+  } = usePrintSettings()
+  
   // Estado local para edição de aparência
   const [configAparencia, setConfigAparencia] = useState<ConfiguracaoAparencia>({
     ...appearanceSettings,
@@ -358,12 +368,12 @@ export function ConfiguracoesPage() {
     fonte_tamanho: 'media',
     fonte_intensidade: 'normal',
     fonte_negrito: false,
-    // Cabeçalho e Rodapé
-    cabecalho_personalizado: 'PDV ALLIMPORT - Eletrônicos e Acessórios',
-    rodape_linha1: 'Obrigado pela preferência!',
-    rodape_linha2: 'Volte sempre!',
-    rodape_linha3: 'www.allimport.com.br',
-    rodape_linha4: 'WhatsApp: (11) 99999-9999'
+    // Cabeçalho e Rodapé (vem do hook printSettings)
+    cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
+    rodape_linha1: printSettings.rodapeLinha1,
+    rodape_linha2: printSettings.rodapeLinha2,
+    rodape_linha3: printSettings.rodapeLinha3,
+    rodape_linha4: printSettings.rodapeLinha4
   })
 
   // Estados para os modais
@@ -373,46 +383,25 @@ export function ConfiguracoesPage() {
   // Estados locais temporários para edição no modal de cabeçalho
   const [tempCabecalho, setTempCabecalho] = useState('')
 
-  // Handler memorizado para cabeçalho
-  const handleTempCabecalhoChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // Handler simples para cabeçalho (sem useCallback que pode causar problemas)
+  const handleTempCabecalhoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTempCabecalho(e.target.value)
-  }, [])
+  }
 
-  // Salvar configurações de impressão no localStorage automaticamente
+  // Sincronizar com as configurações de impressão carregadas do banco
   useEffect(() => {
-    try {
-      const printConfig = {
-        // Textos personalizados
-        cabecalho_personalizado: configImpressao.cabecalho_personalizado,
-        rodape_linha1: configImpressao.rodape_linha1,
-        rodape_linha2: configImpressao.rodape_linha2,
-        rodape_linha3: configImpressao.rodape_linha3,
-        rodape_linha4: configImpressao.rodape_linha4,
-        // Configurações de fonte
-        fonte_tamanho: configImpressao.fonte_tamanho,
-        fonte_intensidade: configImpressao.fonte_intensidade,
-        fonte_negrito: configImpressao.fonte_negrito,
-        // Outras configurações
-        papel_tamanho: configImpressao.papel_tamanho,
-        logo_recibo: configImpressao.logo_recibo
-      };
-      localStorage.setItem('print_config', JSON.stringify(printConfig));
-      console.log('✅ Configurações de impressão salvas:', printConfig);
-    } catch (error) {
-      console.error('Erro ao salvar configurações de impressão:', error);
+    if (!loadingPrint) {
+      console.log('🔄 Sincronizando configurações do hook:', printSettings);
+      setConfigImpressao(prev => ({
+        ...prev,
+        cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
+        rodape_linha1: printSettings.rodapeLinha1,
+        rodape_linha2: printSettings.rodapeLinha2,
+        rodape_linha3: printSettings.rodapeLinha3,
+        rodape_linha4: printSettings.rodapeLinha4
+      }))
     }
-  }, [
-    configImpressao.cabecalho_personalizado,
-    configImpressao.rodape_linha1,
-    configImpressao.rodape_linha2,
-    configImpressao.rodape_linha3,
-    configImpressao.rodape_linha4,
-    configImpressao.fonte_tamanho,
-    configImpressao.fonte_intensidade,
-    configImpressao.fonte_negrito,
-    configImpressao.papel_tamanho,
-    configImpressao.logo_recibo
-  ])
+  }, [printSettings, loadingPrint])
 
   // Mock data para configurações não implementadas nesta versão
   // const [configNotificacao, setConfigNotificacao] = useState<ConfiguracaoNotificacao>({
@@ -1205,7 +1194,10 @@ export function ConfiguracoesPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setTempCabecalho(gerarCabecalhoEmpresa(configEmpresa))
+                  console.log('🔄 Recarregando dados da empresa:', empresaSettings);
+                  const novosCabecalho = gerarCabecalhoEmpresa(empresaSettings)
+                  console.log('📝 Novo cabeçalho gerado:', novosCabecalho);
+                  setTempCabecalho(novosCabecalho)
                   toast.success('Dados da empresa recarregados!')
                 }}
                 className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-2"
@@ -1228,15 +1220,24 @@ export function ConfiguracoesPage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setConfigImpressao(prev => ({ ...prev, cabecalho_personalizado: tempCabecalho }))
-                  setModalCabecalhoOpen(false)
-                  setTempCabecalho('')
-                  toast.success('Cabeçalho atualizado!')
+                onClick={async () => {
+                  console.log('💾 Tentando salvar cabeçalho:', tempCabecalho);
+                  const success = await saveCabecalho(tempCabecalho)
+                  if (success) {
+                    console.log('✅ Cabeçalho salvo, atualizando estado local');
+                    setConfigImpressao(prev => ({ ...prev, cabecalho_personalizado: tempCabecalho }))
+                    setModalCabecalhoOpen(false)
+                    setTempCabecalho('')
+                    toast.success('Cabeçalho salvo no banco de dados!')
+                  } else {
+                    console.log('❌ Falha ao salvar cabeçalho');
+                    toast.error('Erro ao salvar cabeçalho. Tente novamente.')
+                  }
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                disabled={savingPrint}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
-                Salvar Cabeçalho
+                {savingPrint ? 'Salvando...' : 'Salvar Cabeçalho'}
               </button>
             </div>
           </div>
@@ -1251,15 +1252,25 @@ export function ConfiguracoesPage() {
         linha2={configImpressao.rodape_linha2}
         linha3={configImpressao.rodape_linha3}
         linha4={configImpressao.rodape_linha4}
-        onSave={(l1, l2, l3, l4) => {
-          setConfigImpressao(prev => ({
-            ...prev,
-            rodape_linha1: l1,
-            rodape_linha2: l2,
-            rodape_linha3: l3,
-            rodape_linha4: l4
-          }))
-          toast.success('Rodapé atualizado!')
+        onSave={async (l1, l2, l3, l4) => {
+          const success = await saveRodape({
+            linha1: l1,
+            linha2: l2,
+            linha3: l3,
+            linha4: l4
+          })
+          if (success) {
+            setConfigImpressao(prev => ({
+              ...prev,
+              rodape_linha1: l1,
+              rodape_linha2: l2,
+              rodape_linha3: l3,
+              rodape_linha4: l4
+            }))
+            toast.success('Rodapé salvo no banco de dados!')
+          } else {
+            toast.error('Erro ao salvar rodapé. Tente novamente.')
+          }
         }}
       />
     </div>

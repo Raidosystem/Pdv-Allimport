@@ -129,10 +129,34 @@ function AdministracaoContent() {
                 <button
                   key={item.id}
                   onClick={() => setViewMode(item.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    viewMode === item.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                    item.id === 'dashboard' 
+                      ? viewMode === item.id 
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                        : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 hover:from-blue-200 hover:to-blue-300'
+                    : item.id === 'usuarios'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 hover:from-green-200 hover:to-green-300'
+                    : item.id === 'ativar-usuarios'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 hover:from-emerald-200 hover:to-emerald-300'
+                    : item.id === 'permissoes'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 hover:from-purple-200 hover:to-purple-300'
+                    : item.id === 'backup'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300'
+                    : item.id === 'super-admin'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 hover:from-red-200 hover:to-red-300'
+                    : viewMode === item.id
+                      ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg'
+                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 hover:from-gray-200 hover:to-gray-300'
                   }`}
                 >
                   <Icon className="w-4 h-4" />

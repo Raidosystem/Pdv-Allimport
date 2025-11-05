@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap, LogOut } from 'lucide-react'
+import { CreditCard, QrCode, CheckCircle, Clock, AlertCircle, Zap, LogOut, Home } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../modules/auth/AuthContext'
@@ -459,8 +459,15 @@ export function PaymentPage({}: PaymentPageProps) {
     return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Botão de Logout - Topo Direito */}
-        <div className="flex justify-end mb-4">
+        {/* Botões - Topo Direito */}
+        <div className="flex justify-end gap-3 mb-4">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+          >
+            <Home className="w-4 h-4" />
+            <span>Voltar para Dashboard</span>
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-lg hover:shadow-xl"
@@ -511,7 +518,7 @@ export function PaymentPage({}: PaymentPageProps) {
             {/* Seleção de Planos */}
             <div className="mb-8">
               <h3 className="font-semibold text-secondary-900 text-center mb-4">Escolha seu plano:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {PAYMENT_PLANS.map((planOption) => (
                   <button
                     key={planOption.id}
@@ -556,6 +563,9 @@ export function PaymentPage({}: PaymentPageProps) {
                 {formatPrice(plan.price)}
                 {plan.id === 'annual' && (
                   <span className="text-lg font-normal text-secondary-500"> por ano</span>
+                )}
+                {plan.id === 'semiannual' && (
+                  <span className="text-lg font-normal text-secondary-500"> por 6 meses</span>
                 )}
                 {plan.id === 'monthly' && (
                   <span className="text-lg font-normal text-secondary-500">/mês</span>

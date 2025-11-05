@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { realReportsService } from '../services/realReportsService';
+import { realReportsService } from '../services/simpleReportsService';
 
 // Import all report components
 import ReportsOverviewPage from './reports/ReportsOverviewPage';
@@ -9,16 +9,17 @@ import ReportsRankingPage from './reports/ReportsRankingPage';
 import ReportsChartsPage from './reports/ReportsChartsPage';
 import ReportsExportsPage from './reports/ReportsExportsPage';
 import ReportsAnalyticsPage from './reports/ReportsAnalyticsPage';
+import DREPage from './DREPage';
 
 // Tab navigation constants
 const TABS = [
   { id: 'overview', label: 'Visão Geral', emoji: '📊' },
-  { id: 'detailed', label: 'Detalhado', emoji: '📋' },
+  { id: 'dre', label: 'DRE', emoji: '📋' },
   { id: 'ranking', label: 'Rankings', emoji: '🏆' },
   { id: 'charts', label: 'Gráficos', emoji: '📈' },
   { id: 'exports', label: 'Exportações', emoji: '📤' },
   { id: 'analytics', label: 'Analytics', emoji: '🧠' }
-] as const;
+];
 
 const RelatoriosPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ const RelatoriosPage: React.FC = () => {
       const [sales, clients, services] = await Promise.all([
         realReportsService.getSalesReport(period === 'all' ? 'quarter' : period),
         realReportsService.getClientsReport(period === 'all' ? 'quarter' : period),
-        realReportsService.getServiceOrdersReport(period)
+        realReportsService.getServiceOrdersReport(period === 'all' ? 'quarter' : period)
       ]);
       
       console.log('✅ Dados carregados:', { sales, clients, services });
@@ -57,8 +58,8 @@ const RelatoriosPage: React.FC = () => {
     switch (activeSection) {
       case 'overview':
         return <ReportsOverviewPage />;
-      case 'detailed':
-        return <ReportsDetailedTable />;
+      case 'dre':
+        return <DREPage />;
       case 'ranking':
         return <ReportsRankingPage />;
       case 'charts':
@@ -131,10 +132,34 @@ const RelatoriosPage: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeSection === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
+                  tab.id === 'overview'
+                    ? activeSection === tab.id
+                      ? 'border-blue-500 text-blue-600 bg-blue-50'
+                      : 'border-transparent text-blue-500 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50'
+                  : tab.id === 'dre'
+                    ? activeSection === tab.id
+                      ? 'border-green-500 text-green-600 bg-green-50'
+                      : 'border-transparent text-green-500 hover:text-green-700 hover:border-green-300 hover:bg-green-50'
+                  : tab.id === 'ranking'
+                    ? activeSection === tab.id
+                      ? 'border-yellow-500 text-yellow-600 bg-yellow-50'
+                      : 'border-transparent text-yellow-600 hover:text-yellow-700 hover:border-yellow-300 hover:bg-yellow-50'
+                  : tab.id === 'charts'
+                    ? activeSection === tab.id
+                      ? 'border-purple-500 text-purple-600 bg-purple-50'
+                      : 'border-transparent text-purple-500 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50'
+                  : tab.id === 'exports'
+                    ? activeSection === tab.id
+                      ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
+                      : 'border-transparent text-indigo-500 hover:text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50'
+                  : tab.id === 'analytics'
+                    ? activeSection === tab.id
+                      ? 'border-rose-500 text-rose-600 bg-rose-50'
+                      : 'border-transparent text-rose-500 hover:text-rose-700 hover:border-rose-300 hover:bg-rose-50'
+                  : activeSection === tab.id
+                    ? 'border-gray-500 text-gray-600 bg-gray-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-lg">{tab.emoji}</span>

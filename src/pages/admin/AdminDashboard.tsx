@@ -548,23 +548,23 @@ const AdminDashboard: React.FC = () => {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           {can('administracao.usuarios', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-              <Users className="w-5 h-5" />
-              <span className="text-sm font-medium">Usuários</span>
+            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg hover:from-green-500/30 hover:to-green-600/30 transition-all duration-200 border border-green-300/30">
+              <Users className="w-5 h-5 text-green-300" />
+              <span className="text-sm font-medium text-green-100">Usuários</span>
             </button>
           )}
           
           {can('administracao.funcoes', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-              <ShieldCheck className="w-5 h-5" />
-              <span className="text-sm font-medium">Permissões</span>
+            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-lg hover:from-purple-500/30 hover:to-purple-600/30 transition-all duration-200 border border-purple-300/30">
+              <ShieldCheck className="w-5 h-5 text-purple-300" />
+              <span className="text-sm font-medium text-purple-100">Permissões</span>
             </button>
           )}
           
           {can('administracao.backups', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-              <Database className="w-5 h-5" />
-              <span className="text-sm font-medium">Backups</span>
+            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 transition-all duration-200 border border-orange-300/30">
+              <Database className="w-5 h-5 text-orange-300" />
+              <span className="text-sm font-medium text-orange-100">Backups</span>
             </button>
           )}
           

@@ -359,12 +359,40 @@ export const saleService = {
       
       console.log('🎉 Venda completa criada:', adaptedSale);
       
+      // ✅ APLICAR VENDA: Atualizar estoque e registrar CMV
+      try {
+        console.log('📦 Aplicando venda no estoque (fn_aplicar_venda)...');
+        const { error: vendaError } = await supabase.rpc('fn_aplicar_venda', {
+          p_venda_id: adaptedSale.id
+        });
+        
+        if (vendaError) {
+          console.error('❌ Erro ao aplicar venda no estoque:', vendaError);
+          // Não falha a venda, mas registra o erro
+        } else {
+          console.log('✅ Venda aplicada no estoque com sucesso');
+        }
+      } catch (estoqueError) {
+        console.warn('⚠️ Erro ao processar estoque:', estoqueError);
+      }
+      
       // ✅ NOVA FUNCIONALIDADE: Registrar movimentação de caixa automaticamente
       try {
         await saleService.registrarMovimentacaoCaixa(adaptedSale);
       } catch (caixaError) {
         console.warn('⚠️ Erro ao registrar movimentação de caixa:', caixaError);
         // Não falha a venda se houver erro no caixa
+      }
+      
+      // ✅ DISPARA EVENTO PARA ATUALIZAR RELATÓRIOS EM TEMPO REAL
+      try {
+        const event = new CustomEvent('saleCompleted', { 
+          detail: { sale: adaptedSale } 
+        });
+        window.dispatchEvent(event);
+        console.log('📢 Evento saleCompleted disparado para atualizar relatórios');
+      } catch (eventError) {
+        console.warn('⚠️ Erro ao disparar evento:', eventError);
       }
       
       return adaptedSale;

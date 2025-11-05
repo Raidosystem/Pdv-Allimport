@@ -109,15 +109,45 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`${
-                  isActive
+                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-l-lg transition-all duration-200 ${
+                  item.name === 'Dashboard'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-r-2 border-blue-600 shadow-sm'
+                      : 'text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-700'
+                  : item.name === 'Usuários'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border-r-2 border-green-600 shadow-sm'
+                      : 'text-green-600 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-700'
+                  : item.name === 'Funções & Permissões'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-r-2 border-purple-600 shadow-sm'
+                      : 'text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:text-purple-700'
+                  : item.name === 'Backups'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border-r-2 border-orange-600 shadow-sm'
+                      : 'text-orange-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:text-orange-700'
+                  : item.name === 'Configurações'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-r-2 border-gray-600 shadow-sm'
+                      : 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-700'
+                  : isActive
                     ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                } group flex items-center px-3 py-2 text-sm font-medium rounded-l-lg transition-colors`}
+                }`}
               >
-                <Icon className={`${
-                  isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
-                } mr-3 flex-shrink-0 h-5 w-5`} />
+                <Icon className={`mr-3 flex-shrink-0 h-5 w-5 transition-colors ${
+                  item.name === 'Dashboard'
+                    ? isActive ? 'text-blue-600' : 'text-blue-500 group-hover:text-blue-600'
+                  : item.name === 'Usuários'
+                    ? isActive ? 'text-green-600' : 'text-green-500 group-hover:text-green-600'
+                  : item.name === 'Funções & Permissões'
+                    ? isActive ? 'text-purple-600' : 'text-purple-500 group-hover:text-purple-600'
+                  : item.name === 'Backups'
+                    ? isActive ? 'text-orange-600' : 'text-orange-500 group-hover:text-orange-600'
+                  : item.name === 'Configurações'
+                    ? isActive ? 'text-gray-600' : 'text-gray-500 group-hover:text-gray-600'
+                  : isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                }`} />
                 {item.name}
                 {isActive && (
                   <ChevronRight className="ml-auto h-4 w-4 text-blue-600" />

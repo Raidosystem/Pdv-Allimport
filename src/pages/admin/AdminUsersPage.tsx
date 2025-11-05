@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
-  UserPlus, 
   Search, 
   Filter, 
   Clock,
@@ -10,13 +9,11 @@ import {
   AlertTriangle,
   Edit3,
   Trash2,
-  Send,
   RefreshCw
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
 import AccessFixer from '../../components/AccessFixer';
-import InviteUserFullPage from '../../components/admin/InviteUserFullPage';
 import type { Funcionario, Funcao } from '../../types/admin';
 
 interface FuncionarioWithDetails {
@@ -43,7 +40,7 @@ const AdminUsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'todos' | 'ativo' | 'inativo' | 'pendente'>('todos');
   const [selectedUser, setSelectedUser] = useState<FuncionarioWithDetails | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [currentView, setCurrentView] = useState<'list' | 'invite'>('list');
+  const [currentView, setCurrentView] = useState<'list'>('list');
 
   useEffect(() => {
     if (can('administracao.usuarios', 'read')) {
@@ -222,119 +219,6 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  const handleInviteUser = async (userData: { email: string; nome?: string; telefone?: string; funcaoIds: string[] }) => {
-    if (!can('administracao.usuarios', 'create') && !isAdminEmpresa) return;
-
-    try {
-      console.log('🚀 Iniciando criação de convite para:', userData);
-      
-      // Gerar token de convite
-      const inviteToken = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
-
-      console.log('🔑 Token gerado:', inviteToken);
-      console.log('⏰ Expira em:', expiresAt);
-
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Usuário não autenticado');
-
-      console.log('👤 Empresa ID:', user.user.id);
-
-      // Criar funcionário
-      const { data: funcionario, error } = await supabase
-        .from('funcionarios')
-        .insert({
-          empresa_id: user.user.id,
-          email: userData.email,
-          nome: userData.nome || null,
-          telefone: userData.telefone || null,
-          status: 'pendente',
-          convite_token: inviteToken,
-          convite_expires_at: expiresAt.toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Erro ao criar funcionário:', error);
-        
-        // Tratamento específico para diferentes tipos de erro
-        if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('unique')) {
-          console.error('💥 Email já existe no sistema');
-          alert('Este email já está cadastrado no sistema. Use um email diferente.');
-          return;
-        }
-        
-        if (error.code === 'PGRST204' || error.message?.includes('column')) {
-          console.error('💥 Problema de schema - coluna ausente');
-          alert('Erro de configuração do banco de dados. Contate o suporte técnico.');
-          return;
-        }
-        
-        throw error;
-      }
-
-      console.log('✅ Funcionário criado:', funcionario);
-
-      // Associar funções
-      if (userData.funcaoIds.length > 0) {
-        console.log('🔗 Associando funções:', userData.funcaoIds);
-        
-        const funcionarioFuncoes = userData.funcaoIds.map((funcaoId: string) => ({
-          funcionario_id: funcionario.id,
-          funcao_id: funcaoId,
-          empresa_id: user.user.id
-        }));
-
-        const { error: funcaoError } = await supabase
-          .from('funcionario_funcoes')
-          .insert(funcionarioFuncoes);
-          
-        if (funcaoError) {
-          console.error('❌ Erro ao associar funções:', funcaoError);
-          throw funcaoError;
-        }
-        
-        console.log('✅ Funções associadas com sucesso');
-      }
-
-      // Enviar e-mail de convite (implementar depois)
-      console.log('📧 Enviando convite por email...');
-      await sendInviteEmail(userData.email, inviteToken);
-
-      // Recarregar dados
-      console.log('🔄 Recarregando lista de funcionários...');
-      await loadFuncionarios();
-      setCurrentView('list');
-
-      console.log('🎉 Convite criado com sucesso!');
-
-      // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
-      // await supabase.from('audit_logs').insert({
-      //   recurso: 'administracao.usuarios',
-      //   acao: 'create',
-      //   entidade_tipo: 'funcionario',
-      //   entidade_id: funcionario.id,
-      //   detalhes: { userData }
-      // });
-
-    } catch (error: any) {
-      console.error('Erro ao convidar usuário:', error);
-      
-      // Mensagens de erro mais específicas
-      if (error?.code === '23505' || error?.message?.includes('duplicate')) {
-        alert('❌ Este email já está cadastrado no sistema.');
-      } else if (error?.code === 'PGRST204' || error?.message?.includes('column')) {
-        alert('❌ Erro de configuração do banco de dados. Execute o script de correção do schema.');
-      } else if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
-        alert('❌ Tabela não encontrada. Verifique a configuração do banco de dados.');
-      } else {
-        alert('❌ Erro ao enviar convite. Verifique os dados e tente novamente.');
-      }
-    }
-  };
-
   const handleEditUser = async (userId: string, data: Partial<Funcionario>, newFuncaoIds: string[]) => {
     if (!can('administracao.usuarios', 'update') && !isAdminEmpresa) return;
 
@@ -413,41 +297,6 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  const handleResendInvite = async (userId: string, email: string) => {
-    if (!can('administracao.usuarios', 'update') && !isAdminEmpresa) return;
-
-    try {
-      // Gerar novo token
-      const newToken = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-
-      await supabase
-        .from('funcionarios')
-        .update({
-          convite_token: newToken,
-          convite_expires_at: expiresAt.toISOString()
-        })
-        .eq('id', userId);
-
-      await sendInviteEmail(email, newToken);
-      await loadFuncionarios();
-
-    } catch (error) {
-      console.error('Erro ao reenviar convite:', error);
-      alert('Erro ao reenviar convite. Tente novamente.');
-    }
-  };
-
-  const sendInviteEmail = async (email: string, token: string) => {
-    // TODO: Implementar envio de email real
-    const inviteLink = `${window.location.origin}/convite/${token}`;
-    console.log(`Convite enviado para ${email}: ${inviteLink}`);
-    
-    // Para teste, mostramos o link em um alert
-    alert(`Convite criado com sucesso!\n\nEmail: ${email}\nLink de convite: ${inviteLink}\n\n(Em produção, este link seria enviado por email)`);
-  };
-
   const filteredFuncionarios = funcionarios.filter(func => {
     const matchesSearch = func.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          func.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -509,10 +358,8 @@ const AdminUsersPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {currentView === 'list' ? (
-        <>
-          {/* Header */}
-          <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-600">
@@ -520,22 +367,13 @@ const AdminUsersPage: React.FC = () => {
           </p>
         </div>
         
-        {(can('administracao.usuarios', 'create') || isAdminEmpresa) && (
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm text-gray-500">
-                {funcionarios.length} usuário(s) cadastrado(s)
-              </p>
-            </div>
-            <button
-              onClick={() => setCurrentView('invite')}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span className="font-medium">Convidar Usuário</span>
-            </button>
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm text-gray-500">
+              {funcionarios.length} usuário(s) cadastrado(s)
+            </p>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Filtros */}
@@ -669,16 +507,6 @@ const AdminUsersPage: React.FC = () => {
                     
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        {funcionario.convitePendente && (can('administracao.usuarios', 'update') || isAdminEmpresa) && (
-                          <button
-                            onClick={() => handleResendInvite(funcionario.id, funcionario.email)}
-                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                            title="Reenviar convite"
-                          >
-                            <Send className="w-4 h-4" />
-                          </button>
-                        )}
-                        
                         {(can('administracao.usuarios', 'update') || isAdminEmpresa) && (
                           <button
                             onClick={() => {
@@ -722,31 +550,13 @@ const AdminUsersPage: React.FC = () => {
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   {searchTerm || statusFilter !== 'todos'
                     ? 'Tente ajustar os filtros de busca ou remover termos específicos para ver mais resultados.'
-                    : 'Comece adicionando funcionários à sua empresa. Eles receberão um convite por e-mail para acessar o sistema.'
+                    : 'Nenhum funcionário encontrado. Entre em contato com o administrador do sistema para adicionar usuários.'
                   }
                 </p>
-                {(!searchTerm && statusFilter === 'todos') && (can('administracao.usuarios', 'create') || isAdminEmpresa) && (
-                  <button
-                    onClick={() => setCurrentView('invite')}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    <UserPlus className="w-5 h-5" />
-                    Convidar Primeiro Usuário
-                  </button>
-                )}
               </div>
             )}
           </div>
         </div>
-      )}
-        </>
-      ) : (
-        /* View de Convite - Página completa */
-        <InviteUserFullPage 
-          funcoes={funcoes}
-          onInvite={handleInviteUser}
-          onBack={() => setCurrentView('list')}
-        />
       )}
 
       {/* Modal de edição (permanece como modal) */}

@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from "react";
 import { Trophy, TrendingUp, TrendingDown, Award, Crown, Target, Star, Medal } from "lucide-react";
 import { formatCurrency } from "../../utils/format";
-import { realReportsService } from "../../services/realReportsService";
+import { realReportsService } from "../../services/simpleReportsService";
 
 // ===== Helper: Filters (same as overview) =====
 type FilterState = {
@@ -132,6 +132,25 @@ const ReportsRankingPage: React.FC = () => {
     };
 
     loadRealData();
+    
+    // ✅ ATUALIZAÇÃO AUTOMÁTICA A CADA 30 SEGUNDOS
+    const interval = setInterval(() => {
+      console.log('🔄 Atualizando rankings automaticamente...');
+      loadRealData();
+    }, 30000);
+    
+    // ✅ LISTENER PARA NOVA VENDA
+    const handleUpdate = () => {
+      console.log('🎉 Atualização detectada! Recarregando rankings...');
+      loadRealData();
+    };
+    
+    window.addEventListener('saleCompleted', handleUpdate);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('saleCompleted', handleUpdate);
+    };
   }, [filters, activeView]);
 
   const handleViewChange = (view: 'orders' | 'products' | 'categories') => {
@@ -308,30 +327,30 @@ const ReportsRankingPage: React.FC = () => {
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => handleViewChange('orders')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
               activeView === 'orders' 
-                ? 'bg-white text-gray-900 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105' 
+                : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-md'
             }`}
           >
-            �️ Ordens de Serviço
+            🛠️ Ordens de Serviço
           </button>
           <button
             onClick={() => handleViewChange('products')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
               activeView === 'products' 
-                ? 'bg-white text-gray-900 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg transform scale-105' 
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-md'
             }`}
           >
             📦 Produtos
           </button>
           <button
             onClick={() => handleViewChange('categories')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
               activeView === 'categories' 
-                ? 'bg-white text-gray-900 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transform scale-105' 
+                : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 hover:shadow-md'
             }`}
           >
             🏷️ Categorias
@@ -345,7 +364,7 @@ const ReportsRankingPage: React.FC = () => {
           <select
             value={filters.period}
             onChange={(e) => setFilters({ ...filters, period: e.target.value })}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 font-medium"
           >
             <option value="7d">Últimos 7 dias</option>
             <option value="30d">Últimos 30 dias</option>
@@ -498,13 +517,14 @@ const ReportsRankingPage: React.FC = () => {
           </div>
         </div>
 
+        {/* TODO: Implementar dados reais de competitividade */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-2">
             <Medal className="w-6 h-6 text-gray-500" />
             <span className="text-sm font-medium text-gray-600">Competitividade</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">Alta</div>
-          <div className="text-sm text-gray-600">Top 3 representam 65%</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">-</div>
+          <div className="text-sm text-gray-600">Aguardando dados</div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -512,8 +532,8 @@ const ReportsRankingPage: React.FC = () => {
             <TrendingUp className="w-6 h-6 text-green-500" />
             <span className="text-sm font-medium text-gray-600">Crescimento Médio</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">+12.4%</div>
-          <div className="text-sm text-gray-600">vs período anterior</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">-</div>
+          <div className="text-sm text-gray-600">Aguardando dados</div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -521,8 +541,8 @@ const ReportsRankingPage: React.FC = () => {
             <Target className="w-6 h-6 text-blue-500" />
             <span className="text-sm font-medium text-gray-600">Oportunidades</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">3</div>
-          <div className="text-sm text-gray-600">Posições para melhorar</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">-</div>
+          <div className="text-sm text-gray-600">Aguardando dados</div>
         </div>
       </div>
     </div>

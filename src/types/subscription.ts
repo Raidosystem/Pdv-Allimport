@@ -120,6 +120,26 @@ export const PAYMENT_PLANS: PaymentPlan[] = [
     ]
   },
   {
+    id: 'semiannual',
+    name: 'Plano Semestral',
+    description: 'Acesso completo por 6 meses',
+    price: 312.00,
+    currency: 'BRL',
+    duration_days: 180,
+    monthlyEquivalent: 52.00,
+    savings: 47.40,
+    features: [
+      'Sistema PDV completo',
+      'Gestão de estoque',
+      'Relatórios detalhados',
+      'Controle de caixa',
+      'Suporte técnico',
+      'Atualizações automáticas',
+      '💰 Economia de R$ 47,40 (13%)',
+      '🎯 R$ 52,00 por mês'
+    ]
+  },
+  {
     id: 'annual',
     name: 'Plano Anual',
     description: 'Acesso completo por 12 meses',

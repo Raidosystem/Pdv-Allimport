@@ -6,6 +6,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Download, FileText, Mail, Clock, CheckCircle, AlertCircle, Loader } from "lucide-react";
+import { exportService } from '../../services/simpleExportService';
+import type { ExportOptions } from '../../services/simpleExportService';
+import { realReportsService } from '../../services/simpleReportsService';
 
 // ===== Helper: Filters (same as overview) =====
 type FilterState = {
@@ -55,40 +58,8 @@ interface ExportJob {
   downloadUrl?: string;
 }
 
-// ===== Mock Data =====
-const mockExportHistory: ExportJob[] = [
-  {
-    id: "exp-001",
-    type: "vendas",
-    format: "excel",
-    filters: { period: "30d" },
-    status: "ready",
-    created: new Date("2025-09-22T14:30:00"),
-    completed: new Date("2025-09-22T14:32:15"),
-    size: "2.4 MB",
-    downloadUrl: "#"
-  },
-  {
-    id: "exp-002", 
-    type: "produtos",
-    format: "pdf",
-    filters: { period: "7d", category: "eletronicos" },
-    status: "ready",
-    created: new Date("2025-09-22T10:15:00"),
-    completed: new Date("2025-09-22T10:17:30"),
-    size: "1.8 MB",
-    downloadUrl: "#"
-  },
-  {
-    id: "exp-003",
-    type: "completo", 
-    format: "excel",
-    filters: { period: "90d" },
-    status: "generating",
-    created: new Date("2025-09-22T15:45:00"),
-    size: "Estimado: 8.5 MB"
-  },
-];
+// ===== Mock Data REMOVIDO - Histórico de exportações será carregado do banco =====
+const mockExportHistory: ExportJob[] = [];
 
 // ===== Export Templates =====
 const exportTemplates = [
@@ -231,32 +202,94 @@ const ReportsExportsPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [filters]);
 
-  const handleGenerate = (templateId: string, format: ExportFormat) => {
-    console.log('exports_generate_report', { templateId, format, filters });
+  const handleGenerate = async (templateId: string, format: ExportFormat) => {
+    console.log('🎯 [EXPORTS] Gerando relatório...', { templateId, format, filters });
     
     setGeneratingId(templateId);
     
-    // Simulate export generation
-    setTimeout(() => {
+    try {
+      const template = exportTemplates.find(t => t.id === templateId);
+      if (!template) {
+        throw new Error('Template não encontrado');
+      }
+
+      // Converter período para formato do serviço
+      let period: 'week' | 'month' | 'quarter' = 'month';
+      if (filters.period === '7d') period = 'week';
+      else if (filters.period === '30d') period = 'month';
+      else if (filters.period === '90d') period = 'quarter';
+
+      const exportOptions: ExportOptions = {
+        format: format === 'excel' || format === 'json' ? 'csv' : format as 'pdf' | 'csv',
+        period,
+        filters
+      };
+
+      let filename: string;
+      
+      // Executar exportação baseada no tipo
+      switch (template.type) {
+        case 'vendas':
+          filename = await exportService.exportSalesReport(exportOptions);
+          break;
+        case 'clientes':
+          filename = await exportService.exportClientsReport(exportOptions);
+          break;
+        case 'ordens':
+          filename = await exportService.exportServiceOrdersReport(exportOptions);
+          break;
+        case 'completo':
+          filename = await exportService.exportAllReports(exportOptions);
+          break;
+        default:
+          // Para outros tipos (produtos, financeiro), usar relatório de vendas como fallback
+          filename = await exportService.exportSalesReport(exportOptions);
+          break;
+      }
+
+      // Criar entrada no histórico
       const newJob: ExportJob = {
         id: `exp-${Date.now()}`,
-        type: exportTemplates.find(t => t.id === templateId)?.type || 'vendas',
+        type: template.type,
         format,
         filters: { ...filters },
         status: 'ready',
         created: new Date(),
         completed: new Date(),
-        size: `${(Math.random() * 5 + 1).toFixed(1)} MB`,
-        downloadUrl: "#"
+        size: '1.2 MB',
+        downloadUrl: filename
       };
       
       setExportHistory(prev => [newJob, ...prev]);
       setGeneratingId(null);
       
+      console.log('✅ [EXPORTS] Relatório gerado com sucesso:', filename);
+      
       if (autoEmail && emailRecipient) {
-        console.log('exports_auto_email', { email: emailRecipient, jobId: newJob.id });
+        console.log('📧 [EXPORTS] Enviando por email:', { email: emailRecipient, jobId: newJob.id });
       }
-    }, 2000);
+      
+    } catch (error) {
+      console.error('❌ [EXPORTS] Erro ao gerar relatório:', error);
+      
+      // Criar entrada de erro no histórico
+      const failedJob: ExportJob = {
+        id: `exp-${Date.now()}`,
+        type: exportTemplates.find(t => t.id === templateId)?.type || 'vendas',
+        format,
+        filters: { ...filters },
+        status: 'failed',
+        created: new Date(),
+        size: '0 MB',
+        downloadUrl: "#"
+      };
+      
+      setExportHistory(prev => [failedJob, ...prev]);
+      setGeneratingId(null);
+      
+      // Mostrar alerta de erro
+      alert(`Erro ao gerar relatório: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   };
 
   const handleDownload = (job: ExportJob) => {

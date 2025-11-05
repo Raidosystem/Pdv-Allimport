@@ -130,6 +130,25 @@ const ReportsOverviewPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    
+    // ✅ ATUALIZAÇÃO AUTOMÁTICA A CADA 30 SEGUNDOS
+    const interval = setInterval(() => {
+      console.log('🔄 Atualizando relatórios automaticamente...');
+      loadData();
+    }, 30000); // 30 segundos
+    
+    // ✅ LISTENER PARA NOVA VENDA
+    const handleNewSale = () => {
+      console.log('🎉 Nova venda detectada! Atualizando relatórios...');
+      loadData();
+    };
+    
+    window.addEventListener('saleCompleted', handleNewSale);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('saleCompleted', handleNewSale);
+    };
   }, [filters.period]);
 
   const handleOpenDetailed = () => {

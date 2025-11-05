@@ -452,7 +452,10 @@ class DREService {
 
       if (error) throw error;
 
-      const dre: DRE = data[0];
+      console.log('🔍 [DRE] Dados retornados:', data);
+
+      // A função SQL retorna JSONB direto, não array
+      const dre: DRE = data as DRE;
 
       // Calcular KPIs
       const kpis = this.calcularKPIs(dre);

@@ -119,6 +119,9 @@ const ReportsOverviewPage: React.FC = () => {
       console.log('overview_timeseries_brush', { filters });
       const period = periodMapping[filters.period as keyof typeof periodMapping] || 'month';
       const data = await realReportsService.getSalesReport(period);
+      console.log('📊 [OVERVIEW] Dados recebidos:', data);
+      console.log('📊 [OVERVIEW] totalSales:', data?.totalSales);
+      console.log('📊 [OVERVIEW] totalAmount:', data?.totalAmount);
       setSalesData(data);
     } catch (err) {
       console.error('Error loading overview data:', err);

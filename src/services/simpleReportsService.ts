@@ -96,9 +96,9 @@ class SimpleReportsService {
       
       console.log('🔍 [SIMPLE] Buscando vendas do período:', { startDate, endDate, period });
 
-      // Buscar vendas do período
+      // Buscar vendas do período (usando created_at que é o campo correto)
       const { data: sales, error: salesError } = await supabase
-        .from('sales')
+        .from('vendas')
         .select('*')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
@@ -110,18 +110,27 @@ class SimpleReportsService {
 
       console.log('✅ Vendas encontradas:', sales?.length || 0);
 
-      // Calcular totais
+      // Calcular totais (campos em português: total e desconto)
       const totalSales = sales?.length || 0;
-      const totalAmount = sales?.reduce((sum, sale) => sum + (Number(sale.total_amount) || 0), 0) || 0;
+      const totalAmount = sales?.reduce((sum, sale) => {
+        const total = Number(sale.total) || 0;
+        const desconto = Number(sale.desconto) || 0;
+        return sum + (total - desconto);
+      }, 0) || 0;
 
-      // Métodos de pagamento
+      console.log(`💰 Total calculado: R$ ${totalAmount.toFixed(2)} de ${totalSales} vendas`);
+
+      // Métodos de pagamento (campo: metodo_pagamento)
       const paymentMethodsMap = new Map();
       sales?.forEach(sale => {
-        const method = sale.payment_method || 'cash';
+        const method = sale.metodo_pagamento || 'dinheiro';
+        const total = Number(sale.total) || 0;
+        const desconto = Number(sale.desconto) || 0;
+        const amount = total - desconto;
         const current = paymentMethodsMap.get(method) || { count: 0, amount: 0 };
         paymentMethodsMap.set(method, {
           count: current.count + 1,
-          amount: current.amount + (Number(sale.total_amount) || 0)
+          amount: current.amount + amount
         });
       });
 
@@ -131,30 +140,75 @@ class SimpleReportsService {
         amount: data.amount
       }));
 
-      // Vendas diárias (dados simulados baseados no total)
-      const dailySales = [];
-      const daysInPeriod = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-      const avgDailyAmount = totalAmount / daysInPeriod;
-      const avgDailyCount = totalSales / daysInPeriod;
-
-      for (let i = 0; i < Math.min(daysInPeriod, 30); i++) {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + i);
-        dailySales.push({
-          date: format(date, 'dd/MM'),
-          amount: Math.round(avgDailyAmount * (0.8 + Math.random() * 0.4)),
-          count: Math.round(avgDailyCount * (0.8 + Math.random() * 0.4))
+      // Vendas diárias (agrupar por data real usando created_at)
+      const dailySalesMap = new Map<string, { amount: number; count: number }>();
+      
+      sales?.forEach(sale => {
+        const dateKey = format(new Date(sale.created_at), 'dd/MM');
+        const total = Number(sale.total) || 0;
+        const desconto = Number(sale.desconto) || 0;
+        const amount = total - desconto;
+        const current = dailySalesMap.get(dateKey) || { amount: 0, count: 0 };
+        
+        dailySalesMap.set(dateKey, {
+          amount: current.amount + amount,
+          count: current.count + 1
         });
+      });
+
+      const dailySales = Array.from(dailySalesMap.entries())
+        .map(([date, data]) => ({
+          date,
+          amount: data.amount,
+          count: data.count
+        }))
+        .sort((a, b) => {
+          // Ordenar por data
+          const [dayA, monthA] = a.date.split('/').map(Number);
+          const [dayB, monthB] = b.date.split('/').map(Number);
+          return monthA === monthB ? dayA - dayB : monthA - monthB;
+        });
+
+      // Buscar produtos mais vendidos (da tabela vendas_itens)
+      const { data: salesItems, error: itemsError } = await supabase
+        .from('vendas_itens')
+        .select(`
+          produto_id,
+          quantidade,
+          subtotal,
+          produtos (nome)
+        `)
+        .in('venda_id', sales?.map(s => s.id) || []);
+
+      if (itemsError) {
+        console.error('❌ Erro ao buscar itens:', itemsError);
       }
 
-      // Produtos mais vendidos (simulado por enquanto)
-      const topProducts = [
-        { productName: 'Produto A', quantity: Math.round(totalSales * 0.3), revenue: Math.round(totalAmount * 0.25) },
-        { productName: 'Produto B', quantity: Math.round(totalSales * 0.2), revenue: Math.round(totalAmount * 0.20) },
-        { productName: 'Produto C', quantity: Math.round(totalSales * 0.15), revenue: Math.round(totalAmount * 0.15) },
-        { productName: 'Produto D', quantity: Math.round(totalSales * 0.1), revenue: Math.round(totalAmount * 0.10) },
-        { productName: 'Produto E', quantity: Math.round(totalSales * 0.05), revenue: Math.round(totalAmount * 0.05) }
-      ];
+      // Agrupar produtos
+      const productMap = new Map<string, { name: string; quantity: number; revenue: number }>();
+      
+      salesItems?.forEach(item => {
+        const productId = item.produto_id || 'unknown';
+        const productName = (item.produtos as any)?.nome || 'Produto sem nome';
+        const quantity = Number(item.quantidade) || 0;
+        const revenue = Number(item.subtotal) || 0;
+        
+        const current = productMap.get(productId) || { name: productName, quantity: 0, revenue: 0 };
+        productMap.set(productId, {
+          name: productName,
+          quantity: current.quantity + quantity,
+          revenue: current.revenue + revenue
+        });
+      });
+
+      const topProducts = Array.from(productMap.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10)
+        .map(p => ({
+          productName: p.name,
+          quantity: p.quantity,
+          revenue: p.revenue
+        }));
 
       return {
         totalSales,
@@ -184,9 +238,9 @@ class SimpleReportsService {
       
       console.log('🔍 [SIMPLE] Buscando dados de clientes do período:', { startDate, endDate, period });
 
-      // Buscar todos os clientes
+      // Buscar todos os clientes (tabela clientes no sistema)
       const { data: allClients, error: clientsError } = await supabase
-        .from('customers')
+        .from('clientes')
         .select('*');
 
       if (clientsError) {
@@ -196,7 +250,7 @@ class SimpleReportsService {
 
       // Clientes novos no período
       const { data: newClientsData, error: newClientsError } = await supabase
-        .from('customers')
+        .from('clientes')
         .select('*')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
@@ -258,9 +312,9 @@ class SimpleReportsService {
       
       console.log('🔍 [SIMPLE] Buscando ordens de serviço do período:', { startDate, endDate, period });
 
-      // Buscar ordens de serviço do período
+      // Buscar ordens de serviço do período (tabela ordens_servico no sistema)
       const { data: orders, error: ordersError } = await supabase
-        .from('service_orders')
+        .from('ordens_servico')
         .select('*')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
@@ -273,16 +327,19 @@ class SimpleReportsService {
       console.log('✅ Ordens de serviço encontradas:', orders?.length || 0);
 
       const totalOrders = orders?.length || 0;
-      const totalRevenue = orders?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
+      const totalRevenue = orders?.reduce((sum, order) => sum + (Number(order.valor_final) || Number(order.valor_estimado) || 0), 0) || 0;
+
+      console.log(`💰 Total OS: R$ ${totalRevenue.toFixed(2)} de ${totalOrders} ordens`);
 
       // Estatísticas de equipamentos
       const equipmentMap = new Map();
       orders?.forEach(order => {
-        const equipment = order.equipment || 'Não informado';
+        const equipment = order.equipamento || order.equipment || 'Não informado';
+        const revenue = Number(order.valor_final) || Number(order.valor_estimado) || 0;
         const current = equipmentMap.get(equipment) || { count: 0, revenue: 0 };
         equipmentMap.set(equipment, {
           count: current.count + 1,
-          revenue: current.revenue + (Number(order.total_amount) || 0)
+          revenue: current.revenue + revenue
         });
       });
 

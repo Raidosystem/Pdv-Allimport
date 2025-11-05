@@ -445,9 +445,9 @@ class DREService {
 
       // Chamar função RPC do banco
       const { data, error } = await supabase.rpc('fn_calcular_dre', {
-        p_data_inicio: filtros.data_inicio.toISOString().split('T')[0],
-        p_data_fim: filtros.data_fim.toISOString().split('T')[0],
-        p_empresa_id: empresa_id,
+        p_data_inicio: filtros.data_inicio.toISOString(),
+        p_data_fim: filtros.data_fim.toISOString(),
+        p_user_id: empresa_id,
       });
 
       if (error) throw error;

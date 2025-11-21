@@ -860,12 +860,12 @@ export function OrdensServicoPage() {
     }
     
     const searchNormalized = searchTerm.toLowerCase().replace(/\D/g, '')
-    const nomeCliente = (ordem.cliente?.nome?.toLowerCase() || '')
+    const nomeCliente = (ordem.cliente?.nome || '').toLowerCase()
     const cpfCnpj = (ordem.cliente?.cpf_cnpj || '').replace(/\D/g, '')
     const telefone = (ordem.cliente?.telefone || '').replace(/\D/g, '')
-    const marca = (ordem.marca?.toLowerCase() || '')
-    const modelo = (ordem.modelo?.toLowerCase() || '')
-    const numeroOs = (ordem.numero_os?.toLowerCase() || '')
+    const marca = (ordem.marca || '').toLowerCase()
+    const modelo = (ordem.modelo || '').toLowerCase()
+    const numeroOs = (ordem.numero_os || '').toLowerCase()
     
     // Busca específica por tipo
     switch (filtros.searchType) {

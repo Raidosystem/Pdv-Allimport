@@ -332,7 +332,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
     if (marcaBusca && marcaBusca.length >= 2) {
       const marcasUnicas = [...new Set(aparelhosCadastrados.map(a => a.marca))]
       const filtradas = marcasUnicas.filter(marca => 
-        marca.toLowerCase().includes(marcaBusca.toLowerCase())
+        (marca || '').toLowerCase().includes((marcaBusca || '').toLowerCase())
       )
       setMarcaSugestoes(filtradas.slice(0, 5))
     } else {
@@ -350,12 +350,12 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
     
     if (modeloBusca && modeloBusca.length >= 2) {
       const aparelhosDaMarca = marcaBusca 
-        ? aparelhosCadastrados.filter(a => a.marca.toLowerCase() === marcaBusca.toLowerCase())
+        ? aparelhosCadastrados.filter(a => (a.marca || '').toLowerCase() === (marcaBusca || '').toLowerCase())
         : aparelhosCadastrados
       
       const modelosUnicos = [...new Set(aparelhosDaMarca.map(a => a.modelo))]
       const filtrados = modelosUnicos.filter(modelo => 
-        modelo.toLowerCase().includes(modeloBusca.toLowerCase())
+        (modelo || '').toLowerCase().includes((modeloBusca || '').toLowerCase())
       )
       setModeloSugestoes(filtrados.slice(0, 5))
     } else {
@@ -539,7 +539,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
       const equipamentosMap = new Map<string, any>()
 
       ordensDoCliente.forEach((ordem: any) => {
-        const chave = `${ordem.tipo}-${ordem.marca}-${ordem.modelo}`.toLowerCase()
+        const chave = `${ordem.tipo || ''}-${ordem.marca || ''}-${ordem.modelo || ''}`.toLowerCase()
         
         if (!equipamentosMap.has(chave)) {
           equipamentosMap.set(chave, {
@@ -683,7 +683,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
     if (equipamento.cor) setValue('cor', equipamento.cor)
     
     // Tentar identificar o tipo
-    const tipoEquipamento = equipamento.tipo.toLowerCase()
+    const tipoEquipamento = (equipamento.tipo || '').toLowerCase()
     if (tipoEquipamento.includes('celular') || tipoEquipamento.includes('smartphone')) {
       setValue('tipo', 'Celular')
     } else if (tipoEquipamento.includes('notebook') || tipoEquipamento.includes('laptop')) {

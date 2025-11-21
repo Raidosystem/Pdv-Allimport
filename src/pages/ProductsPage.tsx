@@ -16,6 +16,7 @@ interface Product {
   user_id?: string
   name: string
   barcode: string
+  codigo_interno?: string  // Código interno automático
   category_id?: string
   sale_price: number
   cost_price: number
@@ -41,7 +42,8 @@ export function ProductsPage() {
     todosProdutos: allProducts,
     loading,
     mostrarTodos,
-    toggleMostrarTodos
+    toggleMostrarTodos,
+    carregarProdutos
   } = useProdutos()
 
   const { can } = usePermissions()
@@ -90,8 +92,6 @@ export function ProductsPage() {
 
   const handleSalvarProduto = async () => {
     try {
-      setIsProductModalOpen(false)
-      
       // Se estava visualizando um produto, recarregar os dados dele
       if (viewMode === 'view' && editingProduct) {
         // Buscar dados atualizados do produto
@@ -108,6 +108,7 @@ export function ProductsPage() {
             user_id: data.user_id,
             name: data.nome || '',
             barcode: data.codigo_barras || '',
+            codigo_interno: data.codigo_interno || '',
             category_id: data.categoria_id,
             sale_price: data.preco || 0,
             cost_price: data.preco_custo || 0,
@@ -123,7 +124,14 @@ export function ProductsPage() {
         }
       }
       
+      // Fechar modal e limpar estado de edição para forçar recriação
+      setIsProductModalOpen(false)
       setEditingProduct(null)
+      
+      // Recarregar apenas a lista de produtos (sem recarregar página completa)
+      console.log('🔄 [ProductsPage] Recarregando lista de produtos...')
+      await carregarProdutos()
+      console.log('✅ [ProductsPage] Lista de produtos atualizada!')
       
       // Se veio de página externa, voltar
       if (cameFromExternalPage) {
@@ -165,9 +173,17 @@ export function ProductsPage() {
   // Funções para gerenciar fornecedores
   const loadFornecedores = async () => {
     try {
+      // Buscar user_id para filtrar fornecedores (RLS)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('Usuário não autenticado')
+        return
+      }
+
       const { data, error } = await supabase
         .from('fornecedores')
         .select('*')
+        .eq('user_id', user.id)
         .order('nome', { ascending: true })
 
       if (error) throw error
@@ -203,10 +219,14 @@ export function ProductsPage() {
     try {
       setIsSubmittingFornecedor(true)
 
+      // Buscar user_id da sessão atual (necessário para RLS)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Usuário não autenticado')
+
       if (selectedFornecedor) {
         const { error } = await supabase
           .from('fornecedores')
-          .update({ ...data, updated_at: new Date().toISOString() })
+          .update({ ...data, user_id: user.id, updated_at: new Date().toISOString() })
           .eq('id', selectedFornecedor.id)
 
         if (error) throw error
@@ -214,7 +234,7 @@ export function ProductsPage() {
       } else {
         const { error } = await supabase
           .from('fornecedores')
-          .insert([data])
+          .insert([{ ...data, user_id: user.id }])
 
         if (error) throw error
         toast.success('Fornecedor cadastrado!')
@@ -278,44 +298,44 @@ export function ProductsPage() {
   const lowStockProducts = allProducts.filter(p => p.current_stock <= p.minimum_stock)
   const totalValue = allProducts.reduce((acc, p) => acc + (p.sale_price * p.current_stock), 0)
 
-  // Modal de Produto (Criar/Editar) - Declarado ANTES dos returns para evitar erro de referência
+  // Modal de Produto (Criar/Editar) - FULLSCREEN em vez de flutuante
   const renderProductModal = () => {
     if (!isProductModalOpen) return null
     
     return (
-      <>
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCancelar} />
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 flex items-center justify-center py-8">
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden">
-              <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <Package className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">
-                      {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                    </h1>
-                    <p className="text-sm text-gray-600">Preencha os dados do produto</p>
-                  </div>
-                </div>
-                <Button onClick={handleCancelar} variant="outline" size="sm">
-                  Fechar
-                </Button>
+      <div className="pb-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
               </div>
-              
-              <div className="p-6">
-                <ProductForm
-                  productId={editingProduct?.id}
-                  onSuccess={handleSalvarProduto}
-                  onCancel={handleCancelar}
-                />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                </h1>
+                <p className="text-sm text-gray-600">Preencha os dados do produto</p>
               </div>
             </div>
+            
+            <Button
+              onClick={handleCancelar}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Voltar para Lista
+            </Button>
           </div>
-        </div>
-      </>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <ProductForm
+              key={editingProduct?.id ? `edit-${editingProduct.id}-${Date.now()}` : `new-${Date.now()}`}
+              productId={editingProduct?.id}
+              onSuccess={handleSalvarProduto}
+              onCancel={handleCancelar}
+            />
+          </div>
+        </main>
+      </div>
     )
   }
 
@@ -474,6 +494,11 @@ export function ProductsPage() {
         </div>
       </div>
     )
+  }
+
+  // View de edição/criação de produto (fullscreen)
+  if (isProductModalOpen) {
+    return renderProductModal()
   }
 
   // View de gerenciamento de fornecedores (fullscreen)
@@ -730,7 +755,7 @@ export function ProductsPage() {
                     <div className="font-medium text-gray-900 truncate max-w-xs">{product.name}</div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {product.barcode || '-'}
+                    {(product as any).codigo_interno || '-'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="text-sm">

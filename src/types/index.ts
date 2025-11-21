@@ -37,6 +37,7 @@ export interface Product {
   price: number
   cost?: number
   barcode?: string
+  codigo_interno?: string
   category?: ProductCategory
   stock: number
   minStock?: number

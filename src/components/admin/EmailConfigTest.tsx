@@ -233,14 +233,14 @@ export default function EmailConfigTest() {
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium mb-2 text-gray-900">Site URL:</div>
-                <div className="font-mono text-sm text-gray-700">https://pdv-allimport.vercel.app</div>
+                <div className="font-mono text-sm text-gray-700">https://pdv.gruporaval.com.br</div>
               </div>
               
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium mb-2 text-gray-900">Redirect URLs:</div>
                 <div className="space-y-1 font-mono text-sm text-gray-700">
-                  <div>https://pdv-allimport.vercel.app/reset-password</div>
-                  <div>https://pdv-allimport.vercel.app/auth/callback</div>
+                  <div>https://pdv.gruporaval.com.br/reset-password</div>
+                  <div>https://pdv.gruporaval.com.br/auth/callback</div>
                   <div>http://localhost:5174/reset-password</div>
                   <div>http://localhost:5174/auth/callback</div>
                 </div>

@@ -24,7 +24,7 @@ export function EmailDiagnostic() {
         email: testEmail,
         password: 'teste123456',
         options: {
-          emailRedirectTo: 'https://pdv-allimport.vercel.app/confirm-email'
+          emailRedirectTo: 'https://pdv.gruporaval.com.br/confirm-email'
         }
       })
       
@@ -52,7 +52,7 @@ export function EmailDiagnostic() {
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(testEmail, {
-        redirectTo: 'https://pdv-allimport.vercel.app/reset-password'
+        redirectTo: 'https://pdv.gruporaval.com.br/reset-password'
       })
       
       if (error) {
@@ -70,7 +70,7 @@ export function EmailDiagnostic() {
   const configuracoes = [
     {
       item: 'Site URL',
-      esperado: 'https://pdv-allimport.vercel.app',
+      esperado: 'https://pdv.gruporaval.com.br',
       status: 'manual'
     },
     {

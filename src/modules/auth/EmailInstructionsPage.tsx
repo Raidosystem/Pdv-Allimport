@@ -7,7 +7,7 @@ import { Card } from '../../components/ui/Card'
 export function EmailInstructionsPage() {
   const [copied, setCopied] = useState(false)
 
-  const correctUrl = 'https://pdv-allimport.vercel.app/confirm-email'
+  const correctUrl = 'https://pdv.gruporaval.com.br/confirm-email'
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(correctUrl)
@@ -72,7 +72,7 @@ export function EmailInstructionsPage() {
                   <div className="bg-white p-4 rounded-lg border border-green-200">
                     <h4 className="font-semibold text-green-800 mb-2">1. Substituir a URL manualmente</h4>
                     <p className="text-green-700 text-sm mb-3">
-                      Quando o link abrir, substitua <code className="bg-green-100 px-1 rounded">localhost:5173</code> por <code className="bg-green-100 px-1 rounded">pdv-allimport.vercel.app</code>
+                      Quando o link abrir, substitua <code className="bg-green-100 px-1 rounded">localhost:5173</code> por <code className="bg-green-100 px-1 rounded">pdv.gruporaval.com.br</code>
                     </p>
                     <div className="bg-green-100 p-3 rounded border border-green-300">
                       <p className="text-sm text-green-800 mb-2">URL correta para colar na barra de endereços:</p>

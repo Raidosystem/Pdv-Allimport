@@ -11,7 +11,7 @@ Sistema completo de **Ponto de Venda** desenvolvido em **React + TypeScript** co
 ## 🚀 **Acesso ao Sistema**
 
 ### 🌐 **Sites Ativos**
-- **Produção Principal**: [https://pdv.crmvsystem.com/](https://pdv.crmvsystem.com/)
+- **Produção Principal**: [https://pdv.gruporaval.com.br/](https://pdv.gruporaval.com.br/)
 - **Backup Surge**: [https://pdv-producao.surge.sh/](https://pdv-producao.surge.sh/)
 - **Backup Final**: [https://pdv-final.surge.sh/](https://pdv-final.surge.sh/)
 

@@ -41,7 +41,7 @@ export default function AuthConfigTest() {
     try {
       // Simular verificação das URLs
       const currentUrl = window.location.origin;
-      const expectedUrl = 'https://pdv-allimport.vercel.app';
+      const expectedUrl = 'https://pdv.gruporaval.com.br';
       
       if (currentUrl === expectedUrl) {
         setTestResult('✅ URL de produção correta detectada');
@@ -160,17 +160,17 @@ export default function AuthConfigTest() {
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2 text-gray-900">1. Site URL</h4>
                 <div className="font-mono text-sm text-gray-700 bg-white p-2 rounded border">
-                  https://pdv-allimport.vercel.app
+                  https://pdv.gruporaval.com.br
                 </div>
               </div>
               
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2 text-gray-900">2. Redirect URLs (adicionar todas)</h4>
                 <div className="space-y-1 font-mono text-sm text-gray-700">
-                  <div className="bg-white p-2 rounded border">https://pdv-allimport.vercel.app</div>
-                  <div className="bg-white p-2 rounded border">https://pdv-allimport.vercel.app/confirm-email</div>
-                  <div className="bg-white p-2 rounded border">https://pdv-allimport.vercel.app/auth/callback</div>
-                  <div className="bg-white p-2 rounded border">https://pdv-allimport.vercel.app/reset-password</div>
+                  <div className="bg-white p-2 rounded border">https://pdv.gruporaval.com.br</div>
+                  <div className="bg-white p-2 rounded border">https://pdv.gruporaval.com.br/confirm-email</div>
+                  <div className="bg-white p-2 rounded border">https://pdv.gruporaval.com.br/auth/callback</div>
+                  <div className="bg-white p-2 rounded border">https://pdv.gruporaval.com.br/reset-password</div>
                   <div className="bg-white p-2 rounded border">http://localhost:5174</div>
                   <div className="bg-white p-2 rounded border">http://localhost:5174/confirm-email</div>
                 </div>
@@ -216,7 +216,7 @@ export default function AuthConfigTest() {
                 <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
                 <div>
                   <h4 className="font-medium">Configure Site URL</h4>
-                  <p className="text-gray-600 text-sm">Altere de localhost para: https://pdv-allimport.vercel.app</p>
+                  <p className="text-gray-600 text-sm">Altere de localhost para: https://pdv.gruporaval.com.br</p>
                 </div>
               </div>
               

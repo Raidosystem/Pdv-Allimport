@@ -110,7 +110,7 @@ const AdminRolesPermissionsPage: React.FC = () => {
       // Contar funcionários por função
       const funcaoIds = funcoesData.map(f => f.id);
       const { data: funcionariosFuncoes } = await supabase
-        .from('funcionario_funcoes')
+        .from('funcionarios')
         .select('funcao_id')
         .in('funcao_id', funcaoIds);
 

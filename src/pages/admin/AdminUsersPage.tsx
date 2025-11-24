@@ -66,36 +66,52 @@ const AdminUsersPage: React.FC = () => {
     try {
       console.log('🔄 Carregando funcionários...');
       
+      // Buscar empresa_id do usuário logado
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        console.error('❌ Usuário não autenticado');
+        return;
+      }
+
+      const { data: empresaData } = await supabase
+        .from('empresas')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .single();
+
+      if (!empresaData) {
+        console.error('❌ Empresa não encontrada para o usuário');
+        return;
+      }
+
+      const empresaId = empresaData.id;
+      console.log('🏢 Empresa ID:', empresaId);
+      
+      // Buscar APENAS funcionários da empresa do usuário logado
       let query = supabase
         .from('funcionarios')
         .select(`
           id,
           empresa_id,
+          user_id,
+          funcao_id,
           email,
           nome,
           telefone,
+          ativo,
           status,
           convite_token,
           convite_expires_at,
           created_at,
           updated_at,
-          funcionario_funcoes (
-            funcoes (
-              id,
-              nome,
-              descricao,
-              nivel
-            )
+          funcoes (
+            id,
+            nome,
+            descricao,
+            nivel
           )
-        `);
-
-      // Admin da empresa só vê funcionários da sua empresa (não super admins)
-      if (isAdminEmpresa) {
-        const { data: user } = await supabase.auth.getUser();
-        if (user.user) {
-          query = query.eq('empresa_id', user.user.id);
-        }
-      }
+        `)
+        .eq('empresa_id', empresaId);
 
       const { data, error } = await query.order('created_at', { ascending: false });
       
@@ -117,7 +133,7 @@ const AdminUsersPage: React.FC = () => {
         convite_expires_at: func.convite_expires_at,
         created_at: func.created_at,
         updated_at: func.updated_at,
-        funcoes: func.funcionario_funcoes?.map((ff: any) => ff.funcoes) || [],
+        funcoes: func.funcoes ? [func.funcoes] : [],
         convitePendente: func.status === 'pendente' && !!func.convite_token
       })) || [];
 

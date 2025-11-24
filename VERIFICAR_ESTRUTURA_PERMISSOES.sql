@@ -1,17 +1,25 @@
--- ============================================
--- VERIFICAR ESTRUTURA DA TABELA funcao_permissoes
--- ============================================
+-- =============================================
+-- VERIFICAR ESTRUTURA DA TABELA permissoes
+-- =============================================
 
--- Ver todas as colunas da tabela
+-- Ver estrutura completa da tabela permissoes
 SELECT 
-  column_name,
-  data_type,
-  column_default,
-  is_nullable
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
 FROM information_schema.columns
 WHERE table_schema = 'public'
-  AND table_name = 'funcao_permissoes'
+AND table_name = 'permissoes'
 ORDER BY ordinal_position;
 
--- Ver dados de exemplo
-SELECT * FROM funcao_permissoes LIMIT 5;
+-- Ver todas as permissões existentes
+SELECT * FROM public.permissoes ORDER BY recurso, acao;
+
+-- Contar permissões por recurso
+SELECT 
+    recurso,
+    COUNT(*) as total_acoes
+FROM public.permissoes
+GROUP BY recurso
+ORDER BY recurso;

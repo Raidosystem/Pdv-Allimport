@@ -262,7 +262,7 @@ export function SalesPage() {
           phone: clienteParaImprimir.phone,
           document: clienteParaImprimir.document
         } : null,
-        storeName: empresaSettings.nome || "PDV Allimport",
+        storeName: empresaSettings.nome || "RaVal pdv",
         storeInfo: {
           logo: empresaSettings.logo,
           razao_social: empresaSettings.razao_social,

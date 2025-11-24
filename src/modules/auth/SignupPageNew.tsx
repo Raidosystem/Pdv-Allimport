@@ -239,7 +239,7 @@ export function SignupPageNew() {
         <Card className="w-full max-w-2xl">
           <div className="flex items-center justify-center mb-6">
             <ShoppingCart className="w-8 h-8 text-blue-600 mr-2" />
-            <h1 className="text-2xl font-bold text-gray-900">PDV Allimport</h1>
+            <h1 className="text-2xl font-bold text-gray-900">RaVal pdv</h1>
           </div>
 
           <h2 className="text-xl font-semibold text-gray-900 mb-2 text-center">

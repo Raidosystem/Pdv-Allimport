@@ -1,6 +1,6 @@
 {
-  "name": "PDV Allimport - Sistema de Ponto de Venda",
-  "short_name": "PDV Allimport",
+  "name": "RaVal pdv - Sistema de Ponto de Venda",
+  "short_name": "RaVal pdv",
   "description": "Sistema completo de ponto de venda com controle de estoque, vendas e relatórios",
   "start_url": "/",
   "display": "standalone",

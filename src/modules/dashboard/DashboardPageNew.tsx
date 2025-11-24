@@ -383,7 +383,7 @@ export function DashboardPage() {
                 <ShoppingCart className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">PDV Allimport</h1>
+                <h1 className="text-xl font-bold text-gray-900">RaVal pdv</h1>
                 <p className="text-sm text-gray-600 hidden sm:block">Sistema de Ponto de Venda</p>
               </div>
             </div>
@@ -688,7 +688,7 @@ export function DashboardPage() {
               <ShoppingCart className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Bem-vindo ao PDV Allimport
+              Bem-vindo ao RaVal pdv
             </h3>
             <p className="text-gray-600 max-w-md mx-auto mb-8">
               Clique em um dos menus acima para ver as opções disponíveis e começar a usar o sistema.

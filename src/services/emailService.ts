@@ -34,9 +34,9 @@ async function sendEmailWithResend(to: string, code: string): Promise<boolean> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Allimport PDV <onboarding@resend.dev>',
+        from: 'RaVal pdv <onboarding@resend.dev>',
         to: [to],
-        subject: '🔐 Código de Verificação - Allimport',
+        subject: '🔐 Código de Verificação - RaVal pdv',
         html: `
 <!DOCTYPE html>
 <html>
@@ -46,7 +46,7 @@ async function sendEmailWithResend(to: string, code: string): Promise<boolean> {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0;">Allimport PDV</h1>
+    <h1 style="color: white; margin: 0;">RaVal pdv</h1>
   </div>
   
   <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
@@ -67,7 +67,7 @@ async function sendEmailWithResend(to: string, code: string): Promise<boolean> {
     <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
     
     <p style="color: #666; font-size: 12px; text-align: center;">
-      © ${new Date().getFullYear()} Allimport. Todos os direitos reservados.
+      © ${new Date().getFullYear()} RaVal pdv. Todos os direitos reservados.
     </p>
   </div>
 </body>

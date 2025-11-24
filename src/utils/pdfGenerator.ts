@@ -189,7 +189,7 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text(
-      `PDV AllImport - Relatório de Produtos | Página ${i} de ${pageCount}`,
+      `RaVal pdv - Relatório de Produtos | Página ${i} de ${pageCount}`,
       pageWidth / 2,
       doc.internal.pageSize.height - 10,
       { align: 'center' }

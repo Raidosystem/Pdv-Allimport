@@ -10,7 +10,7 @@ const getApiBaseUrl = () => {
     return '';
   } else {
     // Em produção, usar o domínio personalizado que o Vercel está redirecionando
-    return 'https://pdv.crmvsystem.com';
+    return 'https://pdv.gruporaval.com.br/';
   }
 };
 
@@ -70,7 +70,7 @@ class MercadoPagoApiService {
       }
 
       // Para produção, usar a API do Vercel
-      const baseUrl = 'https://pdv.crmvsystem.com';
+      const baseUrl = 'https://pdv.gruporaval.com.br/';
       const url = `${baseUrl}${endpoint}`;
       
       console.log(`🌐 API Call: ${method} ${url}`);
@@ -89,8 +89,7 @@ class MercadoPagoApiService {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined,
-        mode: 'cors',
-        credentials: 'include'
+        mode: 'cors'
       });
 
       if (!response.ok) {

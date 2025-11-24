@@ -89,7 +89,7 @@ export function useOrdemServico() {
         id: Date.now().toString(),
         cliente_id: Date.now().toString(),
         data_entrada: new Date().toISOString().split('T')[0],
-        status: osData.status || 'Em análise',
+        status: osData.status || 'Fazendo orçamento',
         tipo: osData.tipo,
         marca: osData.marca,
         modelo: osData.modelo,

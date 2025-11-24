@@ -40,7 +40,7 @@ const ordemServicoEditSchema = z.object({
   }, 'Data deve ser válida'),
   valor_orcamento: z.number().min(0, 'Valor deve ser positivo').optional(),
   valor_final: z.number().min(0, 'Valor deve ser positivo').optional(),
-  status: z.enum(['Em análise', 'Orçamento', 'Aguardando aprovação', 'Aguardando peças', 'Em conserto', 'Pronto', 'Entregue', 'Cancelado']),
+  status: z.enum(['Fazendo orçamento', 'Em conserto', 'Pronto', 'Entregue']),
   garantia_meses: z.number().min(0).max(120).optional()
 })
 
@@ -54,13 +54,10 @@ const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
 ]
 
 const STATUS_OPTIONS: { value: StatusOS; label: string; color: string }[] = [
-  { value: 'Em análise', label: 'Em análise', color: 'bg-blue-100 text-blue-800' },
-  { value: 'Aguardando aprovação', label: 'Aguardando aprovação', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'Aguardando peças', label: 'Aguardando peças', color: 'bg-orange-100 text-orange-800' },
-  { value: 'Em conserto', label: 'Em conserto', color: 'bg-purple-100 text-purple-800' },
-  { value: 'Pronto', label: 'Pronto', color: 'bg-green-100 text-green-800' },
-  { value: 'Entregue', label: 'Entregue', color: 'bg-gray-100 text-gray-800' },
-  { value: 'Cancelado', label: 'Cancelado', color: 'bg-red-100 text-red-800' }
+  { value: 'Fazendo orçamento', label: 'Fazendo orçamento', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'Em conserto', label: 'Em conserto', color: 'bg-blue-100 text-blue-800' },
+  { value: 'Pronto', label: 'Pronto', color: 'bg-cyan-500 text-white' },
+  { value: 'Entregue', label: 'Entregue', color: 'bg-green-100 text-green-800' }
 ]
 
 export function OrdemServicoEditPage() {

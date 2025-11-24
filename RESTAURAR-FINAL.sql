@@ -1,178 +1,26 @@
 -- =============================================
--- RESTAURAÇÃO COMPLETA COM UPSERT
+-- RESTAURAÇÃO COM EMPRESA_ID CORRETO
+-- Empresa: f7fdf4cf-7101-45ab-86db-5248a7ac58c1
 -- 141 clientes do backup
--- Gerado em 19/10/2025, 23:46:50
+-- Gerado em 19/10/2025, 23:49:50
 -- =============================================
 
 SET session_replication_role = replica;
 
--- PASSO 1: Limpar clientes órfãos ou duplicados
--- Deleta clientes que não estão na lista de IDs do backup
-
-DELETE FROM clientes
-WHERE empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id NOT IN (
-    '795481e5-5f71-46f5-aebf-80cc91031227',
-    'fb78f0fa-1c56-4bf1-b783-8c5a60c00c62',
-    '67526f20-485e-40a0-b448-303ce34932fc',
-    '98e0b7d7-7362-4855-89f0-fa7c1644964f',
-    '7af82c1b-9588-471f-b700-d2427b18c6ec',
-    'fd5eb3bf-4054-430f-9f28-647b785dd2b8',
-    '3c26ce91-1a8b-4a18-8e63-37244ee21d9e',
-    '66727ef3-2636-49fd-969f-233e1cc07f13',
-    '7b05bd0a-1fc7-4334-8576-c4e77d27b196',
-    '1de38261-6f87-45fb-966f-74f80d9a2b82',
-    'd8995586-abf4-457a-9756-735f5606e41c',
-    '159ef458-4b88-422f-b6b5-98d99d53bd95',
-    '81402fa3-218d-470d-b679-b477902b08ec',
-    '1a735ff3-17fb-41d7-9e44-e6ae6515b713',
-    'd1c2b00e-4923-42a8-bd93-de8d2d18cfdd',
-    '5c8b794a-ff86-4106-99af-43936b883814',
-    '0de00017-d115-484d-9800-a2e818be06e0',
-    'cec352ec-fd75-46f8-885e-f97c204ec860',
-    '57abc05f-f89f-4214-89f4-7c2419c1d8ec',
-    '8e5f7dad-f0b8-4108-8df8-a5d72b71b091',
-    'fa2c9924-ad76-4174-bfa8-c738facbc740',
-    'e6ad0da5-e52c-44db-9303-c51b6224f5d7',
-    'b8a4a1cc-80ab-420b-b720-eb4798e77c77',
-    '698ca802-0757-4442-9189-904b031b73ae',
-    '66e6e8d8-44d6-48de-8e45-3ea38d16cbc8',
-    '3e706edc-3e4c-412a-b806-ba9ab6adbedc',
-    '1a684b17-330b-46e9-9b78-bb36fc213b74',
-    'b84d45af-8e02-4296-9ef7-30dfffe05754',
-    'ddbe4aae-4f51-4d41-bb29-53492d0b1343',
-    '8139ca41-e231-49e9-b8a3-d7266552bb93',
-    '1a1ffa9c-b2f8-4ea3-8fc9-e875cd05d180',
-    'fa24c59c-38bd-4e12-a9ca-87d267f61ad6',
-    'b003b09f-423b-4587-a007-aa0daa5d9dfa',
-    'c7cddd7c-ce2b-4040-bf6d-48fa899289e1',
-    'bb9ffa5d-e7c4-42ac-b03d-142f0e44f387',
-    'cf3869e6-ec88-428a-af48-e7fc8ae74867',
-    '809316fe-c175-4d05-b735-5d3fd215d955',
-    'a78f10de-a548-4890-b8bd-4b66f512c1b4',
-    'ade9a716-2479-44c4-a405-fe97970149b5',
-    '5c3f2244-1899-4c3b-bd49-afd6c5e24be3',
-    '34d03de0-1545-4d24-ac72-7d75577a3697',
-    '6bd751c7-a33f-49eb-a21c-1e76dc9c59d5',
-    '604c4701-d666-4422-b870-39ecdccacd77',
-    '9f4c0884-bf60-40a3-bca5-cb5b04bcf10f',
-    '35ddca11-a4b7-4989-b5a8-56cc672a8d1e',
-    'f18c4f04-7829-4d62-8c65-5484173e0659',
-    '82d9c39d-f5e4-49ca-b07c-74204ea768c7',
-    '8841b79a-af00-4b18-b12c-2ee28eaa9648',
-    'feab2273-8e47-4147-b813-e1fbe555e562',
-    '9149ae67-077d-4b9d-b0ff-26314e221838',
-    'b7832b5f-04af-4692-8ce5-7b191af49506',
-    'ebf9273f-7a34-4a17-9d78-eb0431a20d22',
-    'b9beffce-eb06-4a17-ae27-acaefa71bc8d',
-    '37909573-d8eb-4110-bd05-f53bc065c218',
-    '955f6165-be0b-4aad-856a-badb9016a00c',
-    '55c84001-83c9-43a5-aaf1-6b37974164c9',
-    'fb405b8e-c47b-4cca-ab26-d9601769f7c2',
-    '35b6fb5c-45f6-4257-a7fe-e1744d475c0d',
-    '3dc3e949-f54e-45f3-bff8-3a887f068d56',
-    '817ca735-c027-47ef-8339-01f51c7a1a3e',
-    '0785fc34-bbc5-42a6-adf5-87e5e8334a4f',
-    '2916edbe-88cd-4b52-8096-6a23c8051127',
-    'e996b904-ab4f-48cd-bc27-9a3a111230e9',
-    'cdeaa159-0c2a-498e-b229-3e4ca0740694',
-    '2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a',
-    'b5c5c7b8-ccb6-4f32-9f34-949ca12ebd45',
-    '0bbf9bb0-4a3a-47dd-955f-2f7e87875417',
-    '35c5f024-c9b0-4dfa-b37d-54ae13349318',
-    'fecf496e-9991-4cb4-a66e-b9bfd761d5c1',
-    '059ee7ac-66c9-4212-915b-077814b74010',
-    'f9ad1aaf-75bd-4c2a-a152-100ad806b9ea',
-    'f8eaa952-ba4a-48af-8af0-b8252477f9ac',
-    '9c5ddf65-713e-4ffe-aa54-b86746b3da99',
-    '1f044170-d8cd-462f-a2e7-b36c5688aa6c',
-    'bbc37e46-1971-4c24-b602-e6f725424982',
-    '3aefe9d8-e78c-494b-9bc9-b841bd34a645',
-    '48ad1879-63a7-421c-a4fc-fdb33cb45127',
-    '1e03897b-633e-46ec-90bb-5a12dc99698e',
-    '1bb74617-424f-4c0b-bcfc-2de5e87faf80',
-    'd92548f8-b488-4246-8f8d-f3e42f243fb1',
-    '2181c9cb-fcb9-4148-b55a-19f0144c1975',
-    '497352d6-c054-4c9e-ad12-ad8a568f183f',
-    '3d6fda07-bf9a-4746-b050-73e7ead568aa',
-    '067e4459-c80b-434b-bfef-bd3018d0424d',
-    '0f7e4449-6876-4362-8afa-d410f9c32a6b',
-    '9ddd4f52-f2d7-400d-bad9-3e6ff55d64a2',
-    '7dc2d6f3-4033-4506-a195-1931a601d1bd',
-    '6c644847-f4f6-452c-bca5-fbe646a6ed1c',
-    '8638766e-3406-4274-8463-db5b82ea21ad',
-    '03baff14-c408-472e-bce7-ec48646a370e',
-    '4c3b4b09-32cd-4d15-98ea-1b8878121f80',
-    '65084213-045c-428c-afb4-afba359cc486',
-    '75b108c1-e5d8-4c19-9fd9-e97516ec4b01',
-    '4e905e3d-8b94-48e2-a4aa-de5879e592ae',
-    '6ae15fcc-9409-47de-ba9a-d6920a70f73a',
-    '985bd782-ea67-4237-99bf-889eeaaa7108',
-    'cab561cb-890f-4afc-b249-3e9ddaf2626e',
-    '85460a9d-3277-4d82-9574-39cd914028c6',
-    'df7e11e2-3856-4b11-8df7-40ad0465a54d',
-    '4a60083b-113f-42db-a163-b35cb738fc9f',
-    '87a08f99-196d-44af-930d-fa8ff3d3e0e5',
-    '73b62e47-eca9-45a4-bed8-705ca9f5ddc8',
-    '50e05cb2-6587-4ebf-8cec-33b52037f93f',
-    'e8c33d27-ebd6-49e2-82a7-2d4aab7883c2',
-    '231c72a1-2a56-4f0b-a6ae-dce0da1e44f4',
-    '823f02e0-dc7c-407c-94eb-29b415d2120d',
-    'b80944ee-91c7-4109-9698-18596d006321',
-    '0f5f5458-b45b-408f-82f9-8f1053969c17',
-    'd9d8853a-b8bc-41a7-ade6-fcaccc7146f0',
-    '5d289b72-c214-4f59-a73c-68d2642518ef',
-    '8b3fadbc-273d-402f-8de8-5a46fca50ca1',
-    'fc7cb829-0208-4f73-bdb6-cbaf96f5117b',
-    'b8485121-7418-463d-ac9e-d955f60b9a10',
-    '2b2e6d7f-6c38-4648-96a4-c47005ae0a5e',
-    '77e3cf28-ea42-4cae-b5b5-7d3a7db2a073',
-    '5ea16650-778e-4ae4-8598-fca206c7dff1',
-    '9fba2dcd-5b6b-4778-8702-ce6cdd8cbf48',
-    'e4aa6d76-2168-4c06-ac88-3c619aff787b',
-    'e956c295-b989-406a-ae1a-44ea6503b2e6',
-    '3f805d2c-c858-48b3-98c2-ff570a7331e5',
-    '1736c2f0-7acd-49ee-bb2e-dd44d858ee7b',
-    '45a74957-2a39-4890-afdf-3869f387a3d1',
-    '4d9d3d2e-b209-436b-a950-9e9589df5165',
-    'd942be79-f8ab-4300-b5e1-408b4de2fdad',
-    '94606b30-8603-4773-87ea-0207d3043045',
-    '2a49ab83-e053-418b-9d16-88f14ff2d028',
-    'd2b69b59-b14d-4563-ab72-40a41f728cf7',
-    '6ff3b90e-ecb0-48b8-814e-52567807c752',
-    '5487ccc9-e53a-4a83-b29f-46e8297c842a',
-    'f1afda76-5bbf-410f-a007-36775ef2cf1d',
-    'bce4a60f-ce64-4114-9f6c-cc377171b978',
-    '7bd6c0d8-e754-4de4-9918-a890d59f07a9',
-    'c10ae076-2713-4ce1-9d46-91736af859b3',
-    '3dd98e80-a9bc-409b-bbc3-d3069202f766',
-    'd87374ff-86cd-4872-9684-bec98c167ca9',
-    'd4ed0f0b-82ec-46cd-9906-871f97065b5a',
-    '0a812f7f-5c68-4044-a6c3-f2e8ae8a2d32',
-    'ffbceb28-0219-4eef-81f6-4238586e03a9',
-    '719a0456-02b7-4934-b9d8-fa68cefa4822',
-    'a07aeea2-bd3b-4b5c-9a1a-b3c87f50cfcd',
-    '4af50a1b-acf2-4229-b806-f0ce578119ac'
-  );
-
--- Deletar clientes com empresa_id NULL
+-- Limpar clientes existentes
+DELETE FROM clientes WHERE empresa_id = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
 DELETE FROM clientes WHERE empresa_id IS NULL;
 
--- PASSO 2: Inserir ou atualizar clientes
-
 -- 1/141: ANTONIO CLAUDIO FIGUEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '33393732803'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '795481e5-5f71-46f5-aebf-80cc91031227';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '795481e5-5f71-46f5-aebf-80cc91031227',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANTONIO CLAUDIO FIGUEIRA',
   '17999740896',
   '',
@@ -187,34 +35,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-17T20:36:15.817985+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 2/141: EDVANIA DA SILVA
-DELETE FROM clientes 
-WHERE cpf_digits = '37511773885'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fb78f0fa-1c56-4bf1-b783-8c5a60c00c62';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fb78f0fa-1c56-4bf1-b783-8c5a60c00c62',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'EDVANIA DA SILVA',
   '17999790061',
   'BRANCAFABIANA@GMAIL.COM',
@@ -229,34 +60,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-17T21:14:28.92461+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 3/141: SAULO DE TARSO
-DELETE FROM clientes 
-WHERE cpf_digits = '32870183968'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '67526f20-485e-40a0-b448-303ce34932fc';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '67526f20-485e-40a0-b448-303ce34932fc',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'SAULO DE TARSO',
   '17991784929',
   '',
@@ -271,34 +85,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T13:27:30.544639+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 4/141: ALINE CRISTINA CAMARGO
-DELETE FROM clientes 
-WHERE cpf_digits = '37784514808'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '98e0b7d7-7362-4855-89f0-fa7c1644964f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '98e0b7d7-7362-4855-89f0-fa7c1644964f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ALINE CRISTINA CAMARGO',
   '17999746003',
   '',
@@ -313,34 +110,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T13:47:31.189798+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 5/141: WINDERSON RODRIGUES LELIS
-DELETE FROM clientes 
-WHERE cpf_digits = '23510133870'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '7af82c1b-9588-471f-b700-d2427b18c6ec';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '7af82c1b-9588-471f-b700-d2427b18c6ec',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'WINDERSON RODRIGUES LELIS',
   '16991879011',
   '',
@@ -355,34 +135,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T16:28:42.232978+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 6/141: ALINE MARIA PEREIRA DA CRUZ
-DELETE FROM clientes 
-WHERE cpf_digits = '37736820856'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fd5eb3bf-4054-430f-9f28-647b785dd2b8';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fd5eb3bf-4054-430f-9f28-647b785dd2b8',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ALINE MARIA PEREIRA DA CRUZ',
   '17999765852',
   '',
@@ -397,34 +160,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T16:57:07.630239+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 7/141: JORGE FRANCISCO RIBEIRO
-DELETE FROM clientes 
-WHERE cpf_digits = '03243736862'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3c26ce91-1a8b-4a18-8e63-37244ee21d9e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3c26ce91-1a8b-4a18-8e63-37244ee21d9e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JORGE FRANCISCO RIBEIRO',
   '999790204',
   '',
@@ -439,34 +185,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T19:55:37.778877+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 8/141: Giane Bitencourt
-DELETE FROM clientes 
-WHERE cpf_digits = '13873708809'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '66727ef3-2636-49fd-969f-233e1cc07f13';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '66727ef3-2636-49fd-969f-233e1cc07f13',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Giane Bitencourt',
   '17999795647',
   '',
@@ -481,34 +210,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T20:40:34.724816+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 9/141: EVALDO ANDRE MAZIETO
-DELETE FROM clientes 
-WHERE cpf_digits = '12652723871'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '7b05bd0a-1fc7-4334-8576-c4e77d27b196';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '7b05bd0a-1fc7-4334-8576-c4e77d27b196',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'EVALDO ANDRE MAZIETO',
   '17991230981',
   '',
@@ -523,34 +235,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-18T20:42:48.976204+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 10/141: Ertili Alves Brandão
-DELETE FROM clientes 
-WHERE cpf_digits = '15674946418'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1de38261-6f87-45fb-966f-74f80d9a2b82';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1de38261-6f87-45fb-966f-74f80d9a2b82',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Ertili Alves Brandão',
   '17991412197',
   '',
@@ -565,34 +260,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T13:27:38.554856+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 11/141: JOSLIANA ERIDES DE PAULA FREITAS
-DELETE FROM clientes 
-WHERE cpf_digits = '19504768806'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd8995586-abf4-457a-9756-735f5606e41c';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd8995586-abf4-457a-9756-735f5606e41c',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOSLIANA ERIDES DE PAULA FREITAS',
   '17981544129',
   '',
@@ -607,34 +285,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T13:31:27.248986+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 12/141: FLAVIA MARQUES FIGUEIREDO DE PAULA
-DELETE FROM clientes 
-WHERE cpf_digits = '13873648806'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '159ef458-4b88-422f-b6b5-98d99d53bd95';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '159ef458-4b88-422f-b6b5-98d99d53bd95',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'FLAVIA MARQUES FIGUEIREDO DE PAULA',
   '17999758595',
   '',
@@ -649,34 +310,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T18:39:48.799224+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 13/141: CELIO SANTOS DE SOUSA
-DELETE FROM clientes 
-WHERE cpf_digits = '28911352888'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '81402fa3-218d-470d-b679-b477902b08ec';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '81402fa3-218d-470d-b679-b477902b08ec',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'CELIO SANTOS DE SOUSA',
   '17999787190',
   '',
@@ -691,34 +335,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T19:51:50.126577+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 14/141: ODAIR FERREIRA DE SOUSA
-DELETE FROM clientes 
-WHERE cpf_digits = '13454225809'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1a735ff3-17fb-41d7-9e44-e6ae6515b713';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1a735ff3-17fb-41d7-9e44-e6ae6515b713',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ODAIR FERREIRA DE SOUSA',
   '17999790003',
   '',
@@ -733,34 +360,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T19:52:35.036402+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 15/141: Vitor Aleixo
-DELETE FROM clientes 
-WHERE cpf_digits = '10422546801'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd1c2b00e-4923-42a8-bd93-de8d2d18cfdd';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd1c2b00e-4923-42a8-bd93-de8d2d18cfdd',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Vitor Aleixo',
   '17999763679',
   '',
@@ -775,34 +385,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T20:06:11.979807+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 16/141: Tiago Luiz Da Silva
-DELETE FROM clientes 
-WHERE cpf_digits = '35457420833'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '5c8b794a-ff86-4106-99af-43936b883814';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '5c8b794a-ff86-4106-99af-43936b883814',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Tiago Luiz Da Silva',
   '17999797127',
   '',
@@ -817,34 +410,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-20T20:30:38.666175+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 17/141: EDSON RODRIGO
-DELETE FROM clientes 
-WHERE cpf_digits = '30119076845'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0de00017-d115-484d-9800-a2e818be06e0';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0de00017-d115-484d-9800-a2e818be06e0',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'EDSON RODRIGO',
   '17999750395',
   '',
@@ -859,34 +435,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-21T12:49:41.642789+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 18/141: Lucinei Batista
-DELETE FROM clientes 
-WHERE cpf_digits = '05052705875'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'cec352ec-fd75-46f8-885e-f97c204ec860';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'cec352ec-fd75-46f8-885e-f97c204ec860',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Lucinei Batista',
   '(17)99979-7787',
   '',
@@ -901,34 +460,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-21T14:54:52.836878+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 19/141: cristiane matos
-DELETE FROM clientes 
-WHERE cpf_digits = '44408932876'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '57abc05f-f89f-4214-89f4-7c2419c1d8ec';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '57abc05f-f89f-4214-89f4-7c2419c1d8ec',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'cristiane matos',
   '1733311381',
   '',
@@ -943,34 +485,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T12:32:25.942236+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 20/141: ROBERTO BEL  PRESENTES
-DELETE FROM clientes 
-WHERE cpf_digits = '01806598639'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '8e5f7dad-f0b8-4108-8df8-a5d72b71b091';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '8e5f7dad-f0b8-4108-8df8-a5d72b71b091',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ROBERTO BEL  PRESENTES',
   '17991061836',
   '',
@@ -985,34 +510,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T12:52:37.160898+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 21/141: LUIZ CARLOS ESTEVES
-DELETE FROM clientes 
-WHERE cpf_digits = '05344087888'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fa2c9924-ad76-4174-bfa8-c738facbc740';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fa2c9924-ad76-4174-bfa8-c738facbc740',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUIZ CARLOS ESTEVES',
   '17999784472',
   '',
@@ -1027,34 +535,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T13:02:23.200329+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 22/141: Sirlene Janaina Amancio
-DELETE FROM clientes 
-WHERE cpf_digits = '33640336844'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'e6ad0da5-e52c-44db-9303-c51b6224f5d7';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'e6ad0da5-e52c-44db-9303-c51b6224f5d7',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Sirlene Janaina Amancio',
   '98128-2418',
   '',
@@ -1069,34 +560,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T15:41:18.203002+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 23/141: ADRIANA DA SILVA CIPRIANO
-DELETE FROM clientes 
-WHERE cpf_digits = '33024082859'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b8a4a1cc-80ab-420b-b720-eb4798e77c77';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b8a4a1cc-80ab-420b-b720-eb4798e77c77',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ADRIANA DA SILVA CIPRIANO',
   '(17)99978-9106',
   '',
@@ -1111,34 +585,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T15:42:43.178918+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 24/141: MARISSELMA DE OLIVEIRA BORGES
-DELETE FROM clientes 
-WHERE cpf_digits = '06834934693'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '698ca802-0757-4442-9189-904b031b73ae';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '698ca802-0757-4442-9189-904b031b73ae',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MARISSELMA DE OLIVEIRA BORGES',
   '017999765810',
   '',
@@ -1153,34 +610,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T16:23:22.04139+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 25/141: maria vitoria medeiros
-DELETE FROM clientes 
-WHERE cpf_digits = '44478437881'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '66e6e8d8-44d6-48de-8e45-3ea38d16cbc8';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '66e6e8d8-44d6-48de-8e45-3ea38d16cbc8',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'maria vitoria medeiros',
   '17',
   '',
@@ -1195,34 +635,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-27T14:52:44.488653+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 26/141: DARIO RODRIGO
-DELETE FROM clientes 
-WHERE cpf_digits = '12443429636'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3e706edc-3e4c-412a-b806-ba9ab6adbedc';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3e706edc-3e4c-412a-b806-ba9ab6adbedc',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DARIO RODRIGO',
   '999771325',
   '',
@@ -1237,34 +660,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-23T20:44:11.133276+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 27/141: IGOR DAHER RAMOS
-DELETE FROM clientes 
-WHERE cpf_digits = '22920585886'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1a684b17-330b-46e9-9b78-bb36fc213b74';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1a684b17-330b-46e9-9b78-bb36fc213b74',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'IGOR DAHER RAMOS',
   '16989958303',
   '',
@@ -1279,34 +685,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-24T13:00:40.552359+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 28/141: RAFAELA BRUNA BARROS
-DELETE FROM clientes 
-WHERE cpf_digits = '38025416852'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b84d45af-8e02-4296-9ef7-30dfffe05754';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b84d45af-8e02-4296-9ef7-30dfffe05754',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'RAFAELA BRUNA BARROS',
   '017999758149',
   '',
@@ -1321,34 +710,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-24T16:06:00.944733+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 29/141: adriana moraes
-DELETE FROM clientes 
-WHERE cpf_digits = '17869855863'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'ddbe4aae-4f51-4d41-bb29-53492d0b1343';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'ddbe4aae-4f51-4d41-bb29-53492d0b1343',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'adriana moraes',
   '17991343770',
   '',
@@ -1363,34 +735,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-24T18:11:26.83835+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 30/141: DOUGLAS RODRIGUES FERREIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '45085989864'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '8139ca41-e231-49e9-b8a3-d7266552bb93';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '8139ca41-e231-49e9-b8a3-d7266552bb93',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DOUGLAS RODRIGUES FERREIRA',
   '17999754390',
   'douuglinha@gmail.com',
@@ -1405,34 +760,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-24T20:24:19.357898+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 31/141: JULIANA ALVES DE SOUZA
-DELETE FROM clientes 
-WHERE cpf_digits = '32744523860'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1a1ffa9c-b2f8-4ea3-8fc9-e875cd05d180';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1a1ffa9c-b2f8-4ea3-8fc9-e875cd05d180',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JULIANA ALVES DE SOUZA',
   '11993242073',
   '',
@@ -1447,34 +785,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-24T21:12:02.001278+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 32/141: CRISTIANO LUIZ 
-DELETE FROM clientes 
-WHERE cpf_digits = '11840713810'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fa24c59c-38bd-4e12-a9ca-87d267f61ad6';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fa24c59c-38bd-4e12-a9ca-87d267f61ad6',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'CRISTIANO LUIZ ',
   '17996821951',
   '',
@@ -1489,34 +810,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-25T12:28:44.595176+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 33/141: JAQUELINE CARDOSO
-DELETE FROM clientes 
-WHERE cpf_digits = '35444342880'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b003b09f-423b-4587-a007-aa0daa5d9dfa';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b003b09f-423b-4587-a007-aa0daa5d9dfa',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JAQUELINE CARDOSO',
   '17992061589',
   '',
@@ -1531,34 +835,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-25T15:58:05.935337+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 34/141: GABRIEL VICTOR DOS SANTOS
-DELETE FROM clientes 
-WHERE cpf_digits = '44366925826'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'c7cddd7c-ce2b-4040-bf6d-48fa899289e1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'c7cddd7c-ce2b-4040-bf6d-48fa899289e1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'GABRIEL VICTOR DOS SANTOS',
   '17999791152',
   '',
@@ -1573,34 +860,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-25T16:34:57.954511+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 35/141: Daiane Hukumoto
-DELETE FROM clientes 
-WHERE cpf_digits = '10976139413'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'bb9ffa5d-e7c4-42ac-b03d-142f0e44f387';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'bb9ffa5d-e7c4-42ac-b03d-142f0e44f387',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Daiane Hukumoto',
   '17999742737',
   '',
@@ -1615,34 +885,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-25T18:35:56.614586+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 36/141: raimundo da silva barcelar
-DELETE FROM clientes 
-WHERE cpf_digits = '01389283399'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'cf3869e6-ec88-428a-af48-e7fc8ae74867';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'cf3869e6-ec88-428a-af48-e7fc8ae74867',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'raimundo da silva barcelar',
   '17999748155',
   '',
@@ -1657,34 +910,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-25T19:22:41.44893+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 37/141: gabriela domiciano soares
-DELETE FROM clientes 
-WHERE cpf_digits = '42710463881'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '809316fe-c175-4d05-b735-5d3fd215d955';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '809316fe-c175-4d05-b735-5d3fd215d955',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'gabriela domiciano soares',
   '17991193787',
   '',
@@ -1699,34 +935,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T12:58:14.672517+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 38/141: marco aurélio becari 
-DELETE FROM clientes 
-WHERE cpf_digits = '18184335830'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'a78f10de-a548-4890-b8bd-4b66f512c1b4';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'a78f10de-a548-4890-b8bd-4b66f512c1b4',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'marco aurélio becari ',
   '17997070468',
   '',
@@ -1741,34 +960,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T14:51:56.404127+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 39/141: JEAN JUNIOR RIBEIRO
-DELETE FROM clientes 
-WHERE cpf_digits = '37816971850'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'ade9a716-2479-44c4-a405-fe97970149b5';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'ade9a716-2479-44c4-a405-fe97970149b5',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JEAN JUNIOR RIBEIRO',
   '17999710015',
   '',
@@ -1783,34 +985,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T16:09:06.667725+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 40/141: FRANCISCO GENILDO
-DELETE FROM clientes 
-WHERE cpf_digits = '49725683803'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '5c3f2244-1899-4c3b-bd49-afd6c5e24be3';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '5c3f2244-1899-4c3b-bd49-afd6c5e24be3',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'FRANCISCO GENILDO',
   '',
   '',
@@ -1825,34 +1010,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T18:35:49.343509+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 41/141: LUCIANO TAVARES
-DELETE FROM clientes 
-WHERE cpf_digits = '45758194840'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '34d03de0-1545-4d24-ac72-7d75577a3697';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '34d03de0-1545-4d24-ac72-7d75577a3697',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUCIANO TAVARES',
   '17999766445',
   '',
@@ -1867,34 +1035,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T20:21:56.581635+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 42/141: Aguetoni Transportes LTDA
-DELETE FROM clientes 
-WHERE cpf_digits = '65744138000140'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '6bd751c7-a33f-49eb-a21c-1e76dc9c59d5';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '6bd751c7-a33f-49eb-a21c-1e76dc9c59d5',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Aguetoni Transportes LTDA',
   '33302400',
   'aguetoni@aguetoni.com.br',
@@ -1909,34 +1060,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-27T15:37:59.629117+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 43/141: Laurence wilians
-DELETE FROM clientes 
-WHERE cpf_digits = '49107558880'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '604c4701-d666-4422-b870-39ecdccacd77';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '604c4701-d666-4422-b870-39ecdccacd77',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Laurence wilians',
   '17991669948',
   '',
@@ -1951,34 +1085,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-27T19:51:04.772555+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 44/141: joana darc teixeira
-DELETE FROM clientes 
-WHERE cpf_digits = '27444011885'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '9f4c0884-bf60-40a3-bca5-cb5b04bcf10f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '9f4c0884-bf60-40a3-bca5-cb5b04bcf10f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'joana darc teixeira',
   '',
   '',
@@ -1993,34 +1110,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-27T15:22:40.774691+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 45/141: WILSON JOSE SERIBELI JUNIOR
-DELETE FROM clientes 
-WHERE cpf_digits = '41330085884'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '35ddca11-a4b7-4989-b5a8-56cc672a8d1e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '35ddca11-a4b7-4989-b5a8-56cc672a8d1e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'WILSON JOSE SERIBELI JUNIOR',
   '17991636614',
   '',
@@ -2035,34 +1135,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-28T13:18:28.48103+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 46/141: Lucas Caio dos Santos
-DELETE FROM clientes 
-WHERE cpf_digits = '42802293842'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'f18c4f04-7829-4d62-8c65-5484173e0659';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'f18c4f04-7829-4d62-8c65-5484173e0659',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Lucas Caio dos Santos',
   '179965639578',
   '',
@@ -2077,34 +1160,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-28T14:20:25.759413+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 47/141: GABRIEL FLORA
-DELETE FROM clientes 
-WHERE cpf_digits = '53783269822'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '82d9c39d-f5e4-49ca-b07c-74204ea768c7';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '82d9c39d-f5e4-49ca-b07c-74204ea768c7',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'GABRIEL FLORA',
   '17991301037',
   '',
@@ -2119,34 +1185,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T13:41:03.789163+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 48/141: ALEXANDRE BUENO
-DELETE FROM clientes 
-WHERE cpf_digits = '35625393800'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '8841b79a-af00-4b18-b12c-2ee28eaa9648';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '8841b79a-af00-4b18-b12c-2ee28eaa9648',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ALEXANDRE BUENO',
   '17991318714',
   '',
@@ -2161,34 +1210,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T14:16:50.681485+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 49/141: JOVAN NASCIMENTO
-DELETE FROM clientes 
-WHERE cpf_digits = '00579409830'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'feab2273-8e47-4147-b813-e1fbe555e562';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'feab2273-8e47-4147-b813-e1fbe555e562',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOVAN NASCIMENTO',
   '17999761669',
   '',
@@ -2203,34 +1235,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T14:48:01.373104+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 50/141: MARCELO ARAUJO FARIAS
-DELETE FROM clientes 
-WHERE cpf_digits = '09453025500'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '9149ae67-077d-4b9d-b0ff-26314e221838';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '9149ae67-077d-4b9d-b0ff-26314e221838',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MARCELO ARAUJO FARIAS',
   '75998842139',
   '',
@@ -2245,34 +1260,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T16:01:41.839837+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 51/141: LUIZ CARLOS XAVIER
-DELETE FROM clientes 
-WHERE cpf_digits = '07743304817'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b7832b5f-04af-4692-8ce5-7b191af49506';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b7832b5f-04af-4692-8ce5-7b191af49506',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUIZ CARLOS XAVIER',
   '17999797470',
   '',
@@ -2287,34 +1285,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T16:57:21.608435+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 52/141: ROBERTO CARLOS  OLIVEIRA SILVA 
-DELETE FROM clientes 
-WHERE cpf_digits = '16721681803'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'ebf9273f-7a34-4a17-9d78-eb0431a20d22';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'ebf9273f-7a34-4a17-9d78-eb0431a20d22',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ROBERTO CARLOS  OLIVEIRA SILVA ',
   '17999753155',
   '',
@@ -2329,34 +1310,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T17:31:50.817455+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 53/141: SANDRO ROCHA
-DELETE FROM clientes 
-WHERE cpf_digits = '09178360811'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b9beffce-eb06-4a17-ae27-acaefa71bc8d';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b9beffce-eb06-4a17-ae27-acaefa71bc8d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'SANDRO ROCHA',
   '17991215666',
   'sousajeni25@gmail.com',
@@ -2371,34 +1335,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T18:28:21.65765+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 54/141: VANESIO MARTINS GUEDES
-DELETE FROM clientes 
-WHERE cpf_digits = '18640769842'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '37909573-d8eb-4110-bd05-f53bc065c218';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '37909573-d8eb-4110-bd05-f53bc065c218',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'VANESIO MARTINS GUEDES',
   '17992862930',
   '',
@@ -2413,34 +1360,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-30T18:50:22.307087+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 55/141: liliane maria dos santos
-DELETE FROM clientes 
-WHERE cpf_digits = '14776462486'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '955f6165-be0b-4aad-856a-badb9016a00c';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '955f6165-be0b-4aad-856a-badb9016a00c',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'liliane maria dos santos',
   '',
   '',
@@ -2455,34 +1385,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-01T12:32:12.99733+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 56/141: milena aparecida rico
-DELETE FROM clientes 
-WHERE cpf_digits = '26034330831'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '55c84001-83c9-43a5-aaf1-6b37974164c9';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '55c84001-83c9-43a5-aaf1-6b37974164c9',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'milena aparecida rico',
   '17992151977',
   '',
@@ -2497,34 +1410,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-01T18:22:55.659617+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 57/141: gustavo henrique
-DELETE FROM clientes 
-WHERE cpf_digits = '44733118805'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fb405b8e-c47b-4cca-ab26-d9601769f7c2';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fb405b8e-c47b-4cca-ab26-d9601769f7c2',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'gustavo henrique',
   '17991885720',
   '',
@@ -2539,34 +1435,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-01T19:46:28.936462+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 58/141: Luka Guia Guaira
-DELETE FROM clientes 
-WHERE cpf_digits = '11868877884'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '35b6fb5c-45f6-4257-a7fe-e1744d475c0d';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '35b6fb5c-45f6-4257-a7fe-e1744d475c0d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Luka Guia Guaira',
   '(17)99975-7575',
   '',
@@ -2581,34 +1460,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-01T20:39:47.28029+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 59/141: leticia costa 
-DELETE FROM clientes 
-WHERE cpf_digits = '36049382875'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3dc3e949-f54e-45f3-bff8-3a887f068d56';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3dc3e949-f54e-45f3-bff8-3a887f068d56',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'leticia costa ',
   '17991108057',
   '',
@@ -2623,34 +1485,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-02T12:27:43.449261+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 60/141: OTAVIO DE OLIVEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '12944092120'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '817ca735-c027-47ef-8339-01f51c7a1a3e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '817ca735-c027-47ef-8339-01f51c7a1a3e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'OTAVIO DE OLIVEIRA',
   '17999793159 17999792414',
   '',
@@ -2665,34 +1510,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-02T13:59:32.436819+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 61/141: DENIS VIEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '06971944690'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0785fc34-bbc5-42a6-adf5-87e5e8334a4f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0785fc34-bbc5-42a6-adf5-87e5e8334a4f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DENIS VIEIRA',
   '34999989601',
   '',
@@ -2707,34 +1535,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-02T18:57:19.272094+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 62/141: SILVIO BRITO
-DELETE FROM clientes 
-WHERE cpf_digits = '30370900812'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '2916edbe-88cd-4b52-8096-6a23c8051127';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '2916edbe-88cd-4b52-8096-6a23c8051127',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'SILVIO BRITO',
   '17999794951',
   '',
@@ -2749,34 +1560,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-02T19:06:37.897434+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 63/141: JOEMERSON SILVEIRA DOS SANTOS
-DELETE FROM clientes 
-WHERE cpf_digits = '42961494826'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'e996b904-ab4f-48cd-bc27-9a3a111230e9';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'e996b904-ab4f-48cd-bc27-9a3a111230e9',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOEMERSON SILVEIRA DOS SANTOS',
   '17999784526',
   '',
@@ -2791,34 +1585,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-02T19:27:34.302279+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 64/141: joão batista serafim gonçalves
-DELETE FROM clientes 
-WHERE cpf_digits = '05256498835'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'cdeaa159-0c2a-498e-b229-3e4ca0740694';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'cdeaa159-0c2a-498e-b229-3e4ca0740694',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'joão batista serafim gonçalves',
   '999742270',
   '',
@@ -2833,34 +1610,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-03T15:14:59.177319+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 65/141: larissa de oliveira espacini
-DELETE FROM clientes 
-WHERE cpf_digits = '45615712879'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '2ecb5b24-f0b6-4c84-a80a-30a55b7cdd2a',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'larissa de oliveira espacini',
   '17992359416',
   '',
@@ -2875,34 +1635,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-03T16:18:35.119254+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 66/141: DEIVID RUBIO 
-DELETE FROM clientes 
-WHERE cpf_digits = '21657438856'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b5c5c7b8-ccb6-4f32-9f34-949ca12ebd45';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b5c5c7b8-ccb6-4f32-9f34-949ca12ebd45',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DEIVID RUBIO ',
   '17999786757 017999783068',
   '',
@@ -2917,34 +1660,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-03T16:41:16.427505+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 67/141: Valter  Baudoino
-DELETE FROM clientes 
-WHERE cpf_digits = '10949782807'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0bbf9bb0-4a3a-47dd-955f-2f7e87875417';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0bbf9bb0-4a3a-47dd-955f-2f7e87875417',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Valter  Baudoino',
   '17991304712',
   '',
@@ -2959,34 +1685,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-03T17:56:38.757315+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 68/141: rogerio basilio de araujo
-DELETE FROM clientes 
-WHERE cpf_digits = '28938245870'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '35c5f024-c9b0-4dfa-b37d-54ae13349318';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '35c5f024-c9b0-4dfa-b37d-54ae13349318',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'rogerio basilio de araujo',
   '17991217180',
   '',
@@ -3001,34 +1710,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T12:39:34.379623+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 69/141: BEATRIZ DE SOUZA DA SILVA
-DELETE FROM clientes 
-WHERE cpf_digits = '08154604574'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fecf496e-9991-4cb4-a66e-b9bfd761d5c1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fecf496e-9991-4cb4-a66e-b9bfd761d5c1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'BEATRIZ DE SOUZA DA SILVA',
   '17997879280',
   '',
@@ -3043,34 +1735,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T14:47:31.735586+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 70/141: ANA CAROLNA SANTOS DE OLIVEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '44787946854'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '059ee7ac-66c9-4212-915b-077814b74010';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '059ee7ac-66c9-4212-915b-077814b74010',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANA CAROLNA SANTOS DE OLIVEIRA',
   '17992310882',
   '',
@@ -3085,34 +1760,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T15:01:48.46822+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 71/141: MATHEUS CIRINO
-DELETE FROM clientes 
-WHERE cpf_digits = '48358542844'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'f9ad1aaf-75bd-4c2a-a152-100ad806b9ea';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'f9ad1aaf-75bd-4c2a-a152-100ad806b9ea',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MATHEUS CIRINO',
   '17991530919',
   '',
@@ -3127,34 +1785,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T15:42:36.693893+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 72/141: JOILSON DARLAN
-DELETE FROM clientes 
-WHERE cpf_digits = '42198637880'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'f8eaa952-ba4a-48af-8af0-b8252477f9ac';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'f8eaa952-ba4a-48af-8af0-b8252477f9ac',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOILSON DARLAN',
   '17997413689',
   '',
@@ -3169,34 +1810,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T16:16:39.108294+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 73/141: ELIAS MATIAS
-DELETE FROM clientes 
-WHERE cpf_digits = '386623748088'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '9c5ddf65-713e-4ffe-aa54-b86746b3da99';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '9c5ddf65-713e-4ffe-aa54-b86746b3da99',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ELIAS MATIAS',
   '17999775678',
   '',
@@ -3211,34 +1835,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T16:58:02.328894+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 74/141: ANTONIO MORAES
-DELETE FROM clientes 
-WHERE cpf_digits = '08416705879'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1f044170-d8cd-462f-a2e7-b36c5688aa6c';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1f044170-d8cd-462f-a2e7-b36c5688aa6c',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANTONIO MORAES',
   '17999790117',
   '',
@@ -3253,34 +1860,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T19:19:54.853287+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 75/141: ADRIAN RENAN GONÇALVES PEREIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '50039370836'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'bbc37e46-1971-4c24-b602-e6f725424982';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'bbc37e46-1971-4c24-b602-e6f725424982',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ADRIAN RENAN GONÇALVES PEREIRA',
   '16994008655',
   '',
@@ -3295,34 +1885,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-04T20:38:25.929374+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 76/141: JOÃO VITOR RIBEIRO DOS REIS
-DELETE FROM clientes 
-WHERE cpf_digits = '15143463629'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3aefe9d8-e78c-494b-9bc9-b841bd34a645';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3aefe9d8-e78c-494b-9bc9-b841bd34a645',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOÃO VITOR RIBEIRO DOS REIS',
   '17997544156',
   '',
@@ -3337,34 +1910,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-05T13:59:15.155099+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 77/141: DARCI ORTIGOSO
-DELETE FROM clientes 
-WHERE cpf_digits = '04419717840'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '48ad1879-63a7-421c-a4fc-fdb33cb45127';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '48ad1879-63a7-421c-a4fc-fdb33cb45127',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DARCI ORTIGOSO',
   '17999793639',
   '',
@@ -3379,34 +1935,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-07T15:39:38.173921+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 78/141: MARIA JULIA
-DELETE FROM clientes 
-WHERE cpf_digits = '47530774891'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1e03897b-633e-46ec-90bb-5a12dc99698e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1e03897b-633e-46ec-90bb-5a12dc99698e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MARIA JULIA',
   '17991914170',
   '',
@@ -3421,34 +1960,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-07T17:05:34.769042+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 79/141: ALEX VACARO
-DELETE FROM clientes 
-WHERE cpf_digits = '17214975874'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1bb74617-424f-4c0b-bcfc-2de5e87faf80';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1bb74617-424f-4c0b-bcfc-2de5e87faf80',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ALEX VACARO',
   '17999791111',
   '',
@@ -3463,34 +1985,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-07T17:12:40.782568+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 80/141: RENATA CRISTINA CAETANO
-DELETE FROM clientes 
-WHERE cpf_digits = '22209680816'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd92548f8-b488-4246-8f8d-f3e42f243fb1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd92548f8-b488-4246-8f8d-f3e42f243fb1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'RENATA CRISTINA CAETANO',
   '17981463015',
   '',
@@ -3505,34 +2010,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-08T17:17:07.513419+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 81/141: FRANCIsNEI DA SILVA
-DELETE FROM clientes 
-WHERE cpf_digits = '29426291857'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '2181c9cb-fcb9-4148-b55a-19f0144c1975';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '2181c9cb-fcb9-4148-b55a-19f0144c1975',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'FRANCIsNEI DA SILVA',
   '17999783166',
   '',
@@ -3547,34 +2035,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-07T16:51:09.210042+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 82/141: mMARIA BENEDITA DE ALMEIDA FOGAÇA
-DELETE FROM clientes 
-WHERE cpf_digits = '4968350991'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '497352d6-c054-4c9e-ad12-ad8a568f183f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '497352d6-c054-4c9e-ad12-ad8a568f183f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'mMARIA BENEDITA DE ALMEIDA FOGAÇA',
   '43991784929',
   '',
@@ -3589,34 +2060,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-08T21:13:11.350998+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 83/141: Roseli Lacerda Cartola
-DELETE FROM clientes 
-WHERE cpf_digits = '37725481800'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3d6fda07-bf9a-4746-b050-73e7ead568aa';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3d6fda07-bf9a-4746-b050-73e7ead568aa',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Roseli Lacerda Cartola',
   '999745417',
   'sousajeni25@gmail.com',
@@ -3631,34 +2085,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T12:05:52.616172+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 84/141: MATEUS PAVANELLO
-DELETE FROM clientes 
-WHERE cpf_digits = '29739689841'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '067e4459-c80b-434b-bfef-bd3018d0424d';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '067e4459-c80b-434b-bfef-bd3018d0424d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MATEUS PAVANELLO',
   '01799975-2725',
   '',
@@ -3673,34 +2110,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T12:51:06.445273+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 85/141: DANIELE CUSTODIO DE MELO
-DELETE FROM clientes 
-WHERE cpf_digits = '32157483802'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0f7e4449-6876-4362-8afa-d410f9c32a6b';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0f7e4449-6876-4362-8afa-d410f9c32a6b',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DANIELE CUSTODIO DE MELO',
   '17999760238',
   '',
@@ -3715,34 +2135,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T13:11:40.361293+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 86/141: JOSIANE VENTURA
-DELETE FROM clientes 
-WHERE cpf_digits = '29995627809'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '9ddd4f52-f2d7-400d-bad9-3e6ff55d64a2';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '9ddd4f52-f2d7-400d-bad9-3e6ff55d64a2',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOSIANE VENTURA',
   '017991952462',
   '',
@@ -3757,34 +2160,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T15:41:12.388621+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 87/141: WELLINGTON LUIZ
-DELETE FROM clientes 
-WHERE cpf_digits = '26050956812'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '7dc2d6f3-4033-4506-a195-1931a601d1bd';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '7dc2d6f3-4033-4506-a195-1931a601d1bd',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'WELLINGTON LUIZ',
   '16997123251',
   '',
@@ -3799,34 +2185,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T17:12:12.191125+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 88/141: RAQUEL APARECIDA GOMES
-DELETE FROM clientes 
-WHERE cpf_digits = '17214937867'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '6c644847-f4f6-452c-bca5-fbe646a6ed1c';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '6c644847-f4f6-452c-bca5-fbe646a6ed1c',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'RAQUEL APARECIDA GOMES',
   '17999717214',
   '',
@@ -3841,34 +2210,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-10T17:24:25.93316+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 89/141: LUANA VAZ
-DELETE FROM clientes 
-WHERE cpf_digits = '40858834880'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '8638766e-3406-4274-8463-db5b82ea21ad';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '8638766e-3406-4274-8463-db5b82ea21ad',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUANA VAZ',
   '17999756366',
   '',
@@ -3883,34 +2235,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-11T12:28:47.489187+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 90/141: LUCAS LINO TEIXEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '47541396826'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '03baff14-c408-472e-bce7-ec48646a370e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '03baff14-c408-472e-bce7-ec48646a370e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUCAS LINO TEIXEIRA',
   '17992256085',
   '',
@@ -3925,34 +2260,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-11T13:09:29.870636+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 91/141: EDISON CAETANO
-DELETE FROM clientes 
-WHERE cpf_digits = '06545918818'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '4c3b4b09-32cd-4d15-98ea-1b8878121f80';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '4c3b4b09-32cd-4d15-98ea-1b8878121f80',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'EDISON CAETANO',
   '17999712389',
   '',
@@ -3967,34 +2285,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-11T13:22:26.546518+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 92/141: EDSON GUILHERME FONSECA
-DELETE FROM clientes 
-WHERE cpf_digits = '14450904818'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '65084213-045c-428c-afb4-afba359cc486';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '65084213-045c-428c-afb4-afba359cc486',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'EDSON GUILHERME FONSECA',
   '17981872044',
   '',
@@ -4009,34 +2310,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-11T13:25:38.85345+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 93/141: Elson Teixeira
-DELETE FROM clientes 
-WHERE cpf_digits = '28833150860'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '75b108c1-e5d8-4c19-9fd9-e97516ec4b01';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '75b108c1-e5d8-4c19-9fd9-e97516ec4b01',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Elson Teixeira',
   '17999750851',
   '',
@@ -4051,34 +2335,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-11T18:24:27.922062+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 94/141: Altamiro Antonio de Matos
-DELETE FROM clientes 
-WHERE cpf_digits = '26893639848'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '4e905e3d-8b94-48e2-a4aa-de5879e592ae';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '4e905e3d-8b94-48e2-a4aa-de5879e592ae',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Altamiro Antonio de Matos',
   '17999797840',
   '',
@@ -4093,34 +2360,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-12T12:50:44.774874+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 95/141: Pedro Henrique Eugenio
-DELETE FROM clientes 
-WHERE cpf_digits = '24747727825'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '6ae15fcc-9409-47de-ba9a-d6920a70f73a';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '6ae15fcc-9409-47de-ba9a-d6920a70f73a',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'Pedro Henrique Eugenio',
   '(17)98135-9545',
   '',
@@ -4135,34 +2385,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-14T12:10:52.309145+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 96/141: JAIR DELEFRATE 
-DELETE FROM clientes 
-WHERE cpf_digits = '98110012868'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '985bd782-ea67-4237-99bf-889eeaaa7108';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '985bd782-ea67-4237-99bf-889eeaaa7108',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JAIR DELEFRATE ',
   '17999794405',
   '',
@@ -4177,34 +2410,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-14T13:58:33.503607+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 97/141: jennifer maria de sousa
-DELETE FROM clientes 
-WHERE cpf_digits = '46524955870'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'cab561cb-890f-4afc-b249-3e9ddaf2626e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'cab561cb-890f-4afc-b249-3e9ddaf2626e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'jennifer maria de sousa',
   '17999754042',
   '',
@@ -4219,34 +2435,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-14T19:25:06.055988+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 98/141: DANIELA BARBOSA
-DELETE FROM clientes 
-WHERE cpf_digits = '48121494877'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '85460a9d-3277-4d82-9574-39cd914028c6';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '85460a9d-3277-4d82-9574-39cd914028c6',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DANIELA BARBOSA',
   '17991207314 - 17999795159-17988472165',
   '',
@@ -4261,34 +2460,17 @@ INSERT INTO clientes (
   NULL,
   '2025-06-26T13:24:14.285862+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 99/141: NEIDE FRAGUA
-DELETE FROM clientes 
-WHERE cpf_digits = '02020878836'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'df7e11e2-3856-4b11-8df7-40ad0465a54d';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'df7e11e2-3856-4b11-8df7-40ad0465a54d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'NEIDE FRAGUA',
   '01721430706',
   '',
@@ -4303,34 +2485,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-15T12:27:48.479799+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 100/141: TARINAN GOMES DOS SANTOS
-DELETE FROM clientes 
-WHERE cpf_digits = '37706722830'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '4a60083b-113f-42db-a163-b35cb738fc9f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '4a60083b-113f-42db-a163-b35cb738fc9f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'TARINAN GOMES DOS SANTOS',
   '17981612202',
   '',
@@ -4345,34 +2510,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-15T13:04:35.240407+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 101/141: mirela vitoria ferreira de sousa
-DELETE FROM clientes 
-WHERE cpf_digits = '49442948830'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '87a08f99-196d-44af-930d-fa8ff3d3e0e5';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '87a08f99-196d-44af-930d-fa8ff3d3e0e5',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'mirela vitoria ferreira de sousa',
   '17999758064',
   '',
@@ -4387,34 +2535,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-15T13:29:10.480524+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 102/141: edna cristina spigali
-DELETE FROM clientes 
-WHERE cpf_digits = '09991724842'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '73b62e47-eca9-45a4-bed8-705ca9f5ddc8';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '73b62e47-eca9-45a4-bed8-705ca9f5ddc8',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'edna cristina spigali',
   '17999794274',
   '',
@@ -4429,34 +2560,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-15T19:09:23.992254+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 103/141: LARICE DE CASTRO
-DELETE FROM clientes 
-WHERE cpf_digits = '37183938832'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '50e05cb2-6587-4ebf-8cec-33b52037f93f';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '50e05cb2-6587-4ebf-8cec-33b52037f93f',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LARICE DE CASTRO',
   '17999741581',
   '',
@@ -4471,34 +2585,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-15T19:34:06.428593+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 104/141: rafael borges
-DELETE FROM clientes 
-WHERE cpf_digits = '32438935855'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'e8c33d27-ebd6-49e2-82a7-2d4aab7883c2';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'e8c33d27-ebd6-49e2-82a7-2d4aab7883c2',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'rafael borges',
   '17992672844',
   '',
@@ -4513,34 +2610,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-16T12:45:38.920066+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 105/141: MAIRA GARCIA LELLIS
-DELETE FROM clientes 
-WHERE cpf_digits = '17528119000134'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '231c72a1-2a56-4f0b-a6ae-dce0da1e44f4';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '231c72a1-2a56-4f0b-a6ae-dce0da1e44f4',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MAIRA GARCIA LELLIS',
   '17999760079',
   '',
@@ -4555,29 +2635,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-16T13:42:09.878932+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 106/141: ana paula garcia barbosa
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '823f02e0-dc7c-407c-94eb-29b415d2120d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ana paula garcia barbosa',
   '17999790166',
   '',
@@ -4592,34 +2660,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-17T18:27:12.521709+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 107/141: rogerio de paiva
-DELETE FROM clientes 
-WHERE cpf_digits = '33004014882'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b80944ee-91c7-4109-9698-18596d006321';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b80944ee-91c7-4109-9698-18596d006321',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'rogerio de paiva',
   '17981617312',
   '',
@@ -4634,34 +2685,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T13:44:34.756596+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 108/141: CRISTIAN PAULINO 
-DELETE FROM clientes 
-WHERE cpf_digits = '25455434896'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0f5f5458-b45b-408f-82f9-8f1053969c17';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0f5f5458-b45b-408f-82f9-8f1053969c17',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'CRISTIAN PAULINO ',
   '17999766666',
   '',
@@ -4676,34 +2710,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T16:06:27.476498+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 109/141: ELAINE CRISTINA RIBEIRO
-DELETE FROM clientes 
-WHERE cpf_digits = '16216272845'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd9d8853a-b8bc-41a7-ade6-fcaccc7146f0';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd9d8853a-b8bc-41a7-ade6-fcaccc7146f0',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ELAINE CRISTINA RIBEIRO',
   '17999742346 - 17999761871',
   '',
@@ -4718,34 +2735,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T16:07:46.560158+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 110/141: PAULO SERGIO OLIMPIO
-DELETE FROM clientes 
-WHERE cpf_digits = '16401918870'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '5d289b72-c214-4f59-a73c-68d2642518ef';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '5d289b72-c214-4f59-a73c-68d2642518ef',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'PAULO SERGIO OLIMPIO',
   '17992329831',
   '',
@@ -4760,34 +2760,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T16:39:37.543529+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 111/141: LUIZ FABIO TALARICO DE OLIVEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '48555523800'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '8b3fadbc-273d-402f-8de8-5a46fca50ca1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '8b3fadbc-273d-402f-8de8-5a46fca50ca1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LUIZ FABIO TALARICO DE OLIVEIRA',
   '17991933809',
   '',
@@ -4802,34 +2785,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T17:12:45.672882+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 112/141: daltoni da cunha teixeira
-DELETE FROM clientes 
-WHERE cpf_digits = '06536272625'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'fc7cb829-0208-4f73-bdb6-cbaf96f5117b';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'fc7cb829-0208-4f73-bdb6-cbaf96f5117b',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'daltoni da cunha teixeira',
   '34991333654',
   '',
@@ -4844,34 +2810,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-19T12:24:44.118865+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 113/141: valeria cristina da costa 
-DELETE FROM clientes 
-WHERE cpf_digits = '17536826818'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'b8485121-7418-463d-ac9e-d955f60b9a10';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'b8485121-7418-463d-ac9e-d955f60b9a10',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'valeria cristina da costa ',
   '17991116588',
   '',
@@ -4886,34 +2835,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-19T13:42:32.694193+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 114/141: SULAMITA FERREIRA DE SOUZA
-DELETE FROM clientes 
-WHERE cpf_digits = '33998581839'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '2b2e6d7f-6c38-4648-96a4-c47005ae0a5e';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '2b2e6d7f-6c38-4648-96a4-c47005ae0a5e',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'SULAMITA FERREIRA DE SOUZA',
   '17991092353',
   '',
@@ -4928,34 +2860,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-19T14:16:30.382195+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 115/141: ANA LIVIA  FONSECA
-DELETE FROM clientes 
-WHERE cpf_digits = '39244943808'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '77e3cf28-ea42-4cae-b5b5-7d3a7db2a073';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '77e3cf28-ea42-4cae-b5b5-7d3a7db2a073',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANA LIVIA  FONSECA',
   '98791810214',
   'ANA@GMAIL.COM',
@@ -4970,34 +2885,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-18T16:59:44.026357+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 116/141: ANDREA LUGUE
-DELETE FROM clientes 
-WHERE cpf_digits = '17833757870'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '5ea16650-778e-4ae4-8598-fca206c7dff1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '5ea16650-778e-4ae4-8598-fca206c7dff1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANDREA LUGUE',
   '17981796738',
   '',
@@ -5012,34 +2910,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-22T13:18:23.06397+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 117/141: joao batista serafim gonçalves
-DELETE FROM clientes 
-WHERE cpf_digits = '05256498835'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '9fba2dcd-5b6b-4778-8702-ce6cdd8cbf48';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '9fba2dcd-5b6b-4778-8702-ce6cdd8cbf48',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'joao batista serafim gonçalves',
   '17999792270',
   '',
@@ -5054,34 +2935,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-22T16:16:56.212261+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 118/141: IRENE ROSA DE SOUZA VALENTI
-DELETE FROM clientes 
-WHERE cpf_digits = '19640932876'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'e4aa6d76-2168-4c06-ac88-3c619aff787b';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'e4aa6d76-2168-4c06-ac88-3c619aff787b',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'IRENE ROSA DE SOUZA VALENTI',
   '17999796224 -17991201805',
   '',
@@ -5096,34 +2960,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-22T17:52:06.106252+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 119/141: JOAO VITOR CAVENAG
-DELETE FROM clientes 
-WHERE cpf_digits = '40984285806'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'e956c295-b989-406a-ae1a-44ea6503b2e6';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'e956c295-b989-406a-ae1a-44ea6503b2e6',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOAO VITOR CAVENAG',
   '17981304376',
   '',
@@ -5138,34 +2985,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-23T12:11:45.483115+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 120/141: MAX MARQUES
-DELETE FROM clientes 
-WHERE cpf_digits = '29857273831'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3f805d2c-c858-48b3-98c2-ff570a7331e5';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3f805d2c-c858-48b3-98c2-ff570a7331e5',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MAX MARQUES',
   '17999793265',
   '',
@@ -5180,34 +3010,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-23T12:26:29.303922+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 121/141: marcos junior
-DELETE FROM clientes 
-WHERE cpf_digits = '38218957804'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '1736c2f0-7acd-49ee-bb2e-dd44d858ee7b';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '1736c2f0-7acd-49ee-bb2e-dd44d858ee7b',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'marcos junior',
   '17999751297',
   '',
@@ -5222,34 +3035,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-23T17:05:48.715809+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 122/141: josé reinaldo junior
-DELETE FROM clientes 
-WHERE cpf_digits = '15786172864'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '45a74957-2a39-4890-afdf-3869f387a3d1';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '45a74957-2a39-4890-afdf-3869f387a3d1',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'josé reinaldo junior',
   '17999792729',
   '',
@@ -5264,34 +3060,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-23T18:13:01.561044+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 123/141: DENIS VIEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '06971944690'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '4d9d3d2e-b209-436b-a950-9e9589df5165';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '4d9d3d2e-b209-436b-a950-9e9589df5165',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'DENIS VIEIRA',
   '3499989601',
   '',
@@ -5306,34 +3085,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T12:39:39.12398+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 124/141: LILIAN CRISTINA FLOR
-DELETE FROM clientes 
-WHERE cpf_digits = '29875741850'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd942be79-f8ab-4300-b5e1-408b4de2fdad';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd942be79-f8ab-4300-b5e1-408b4de2fdad',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'LILIAN CRISTINA FLOR',
   '33313150',
   '',
@@ -5348,34 +3110,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T12:45:03.563089+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 125/141: FERNANDA MARQUES DA SILVA CANDIDO
-DELETE FROM clientes 
-WHERE cpf_digits = '36980762842'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '94606b30-8603-4773-87ea-0207d3043045';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '94606b30-8603-4773-87ea-0207d3043045',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'FERNANDA MARQUES DA SILVA CANDIDO',
   '17991016837',
   '',
@@ -5390,34 +3135,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T13:30:06.234281+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 126/141: gabriel alves scarpelini dos santos
-DELETE FROM clientes 
-WHERE cpf_digits = '49556225854'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '2a49ab83-e053-418b-9d16-88f14ff2d028';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '2a49ab83-e053-418b-9d16-88f14ff2d028',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'gabriel alves scarpelini dos santos',
   '17992327268',
   '',
@@ -5432,34 +3160,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T19:38:19.223312+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 127/141: COOPERCITRUS VALTRA
-DELETE FROM clientes 
-WHERE cpf_digits = '452367910008176'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd2b69b59-b14d-4563-ab72-40a41f728cf7';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd2b69b59-b14d-4563-ab72-40a41f728cf7',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'COOPERCITRUS VALTRA',
   '016991925271',
   '',
@@ -5474,34 +3185,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T20:05:18.45802+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 128/141: gilson zanotelo
-DELETE FROM clientes 
-WHERE cpf_digits = '15612765886'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '6ff3b90e-ecb0-48b8-814e-52567807c752';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '6ff3b90e-ecb0-48b8-814e-52567807c752',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'gilson zanotelo',
   '17999797964 josi',
   '',
@@ -5516,34 +3210,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-24T20:39:51.950619+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 129/141: anizio gabriel
-DELETE FROM clientes 
-WHERE cpf_digits = '47929390896'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '5487ccc9-e53a-4a83-b29f-46e8297c842a';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '5487ccc9-e53a-4a83-b29f-46e8297c842a',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'anizio gabriel',
   '17991794274',
   '',
@@ -5558,34 +3235,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-25T13:15:49.787728+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 130/141: suelen carla davanço 
-DELETE FROM clientes 
-WHERE cpf_digits = '31514012871'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'f1afda76-5bbf-410f-a007-36775ef2cf1d';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'f1afda76-5bbf-410f-a007-36775ef2cf1d',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'suelen carla davanço ',
   '17991963907',
   '',
@@ -5600,34 +3260,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-25T14:59:20.926541+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 131/141: JOSE DE OLIVEIRA
-DELETE FROM clientes 
-WHERE cpf_digits = '01369425635'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'bce4a60f-ce64-4114-9f6c-cc377171b978';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'bce4a60f-ce64-4114-9f6c-cc377171b978',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'JOSE DE OLIVEIRA',
   '17997294388',
   '',
@@ -5642,34 +3285,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-25T18:10:25.506783+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 132/141: ANISIO GABRIEL
-DELETE FROM clientes 
-WHERE cpf_digits = '47929390896'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '7bd6c0d8-e754-4de4-9918-a890d59f07a9';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '7bd6c0d8-e754-4de4-9918-a890d59f07a9',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANISIO GABRIEL',
   '17991794274',
   '',
@@ -5684,34 +3310,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-26T14:04:40.568298+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 133/141: CRISTIANE APARECIDA SOUZA FERRAZ
-DELETE FROM clientes 
-WHERE cpf_digits = '33603005805'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'c10ae076-2713-4ce1-9d46-91736af859b3';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'c10ae076-2713-4ce1-9d46-91736af859b3',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'CRISTIANE APARECIDA SOUZA FERRAZ',
   '17991314775',
   '',
@@ -5726,34 +3335,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-28T13:12:37.490006+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 134/141: CARLOS DA SILVA BARBOSA
-DELETE FROM clientes 
-WHERE cpf_digits = '03345882408'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '3dd98e80-a9bc-409b-bbc3-d3069202f766';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '3dd98e80-a9bc-409b-bbc3-d3069202f766',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'CARLOS DA SILVA BARBOSA',
   '',
   '',
@@ -5768,34 +3360,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-28T13:38:27.555333+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 135/141: VALESCA RUBIA PAIVA TOLENTINO
-DELETE FROM clientes 
-WHERE cpf_digits = '40603851827'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd87374ff-86cd-4872-9684-bec98c167ca9';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd87374ff-86cd-4872-9684-bec98c167ca9',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'VALESCA RUBIA PAIVA TOLENTINO',
   '179992637183',
   '',
@@ -5810,34 +3385,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-28T16:27:40.200708+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 136/141: ANGELO GABRIEL 
-DELETE FROM clientes 
-WHERE cpf_digits = '48984593826'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'd4ed0f0b-82ec-46cd-9906-871f97065b5a';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'd4ed0f0b-82ec-46cd-9906-871f97065b5a',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANGELO GABRIEL ',
   '17',
   '',
@@ -5852,34 +3410,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-28T12:21:53.546679+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 137/141: MARCIO MB INFORMATICA
-DELETE FROM clientes 
-WHERE cpf_digits = '12419217850'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '0a812f7f-5c68-4044-a6c3-f2e8ae8a2d32';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '0a812f7f-5c68-4044-a6c3-f2e8ae8a2d32',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'MARCIO MB INFORMATICA',
   '17981260094',
   '',
@@ -5894,34 +3435,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-28T19:04:27.923603+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 138/141: andrea da silva brosco
-DELETE FROM clientes 
-WHERE cpf_digits = '11815499818'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'ffbceb28-0219-4eef-81f6-4238586e03a9';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'ffbceb28-0219-4eef-81f6-4238586e03a9',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'andrea da silva brosco',
   '33313646',
   '',
@@ -5936,34 +3460,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-29T14:27:03.288702+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 139/141: dara neves
-DELETE FROM clientes 
-WHERE cpf_digits = '47629721854'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '719a0456-02b7-4934-b9d8-fa68cefa4822';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '719a0456-02b7-4934-b9d8-fa68cefa4822',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'dara neves',
   '17',
   '',
@@ -5978,34 +3485,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-29T14:37:53.650301+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 140/141: maiza gonçalves
-DELETE FROM clientes 
-WHERE cpf_digits = '49538399862'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != 'a07aeea2-bd3b-4b5c-9a1a-b3c87f50cfcd';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   'a07aeea2-bd3b-4b5c-9a1a-b3c87f50cfcd',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'maiza gonçalves',
   '17981174856',
   '',
@@ -6020,34 +3510,17 @@ INSERT INTO clientes (
   NULL,
   '2025-07-29T15:41:05.427848+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 -- 141/141: daniel rosa de oliveira
-DELETE FROM clientes 
-WHERE cpf_digits = '32345556803'
-  AND empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00'
-  AND id != '4af50a1b-acf2-4229-b806-f0ce578119ac';
-
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '4af50a1b-acf2-4229-b806-f0ce578119ac',
-  'f1726fcf-d23b-4cca-8079-39314ae56e00',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'daniel rosa de oliveira',
   '',
   '',
@@ -6062,20 +3535,7 @@ INSERT INTO clientes (
   NULL,
   '2025-07-29T16:21:45.866399+00:00',
   NOW()
-) ON CONFLICT (id) DO UPDATE SET
-  nome = EXCLUDED.nome,
-  telefone = EXCLUDED.telefone,
-  email = EXCLUDED.email,
-  cpf_cnpj = EXCLUDED.cpf_cnpj,
-  cpf_digits = EXCLUDED.cpf_digits,
-  endereco = EXCLUDED.endereco,
-  cidade = EXCLUDED.cidade,
-  estado = EXCLUDED.estado,
-  cep = EXCLUDED.cep,
-  tipo = EXCLUDED.tipo,
-  ativo = EXCLUDED.ativo,
-  observacoes = EXCLUDED.observacoes,
-  updated_at = NOW();
+);
 
 SET session_replication_role = DEFAULT;
 
@@ -6084,11 +3544,13 @@ SELECT
   'Após restauração' as momento,
   COUNT(*) as total_clientes,
   COUNT(CASE WHEN telefone IS NOT NULL AND telefone != '' THEN 1 END) as com_telefone,
-  COUNT(CASE WHEN cpf_cnpj IS NOT NULL AND cpf_cnpj != '' THEN 1 END) as com_cpf,
-  COUNT(CASE WHEN empresa_id IS NULL THEN 1 END) as sem_empresa
+  COUNT(CASE WHEN cpf_cnpj IS NOT NULL AND cpf_cnpj != '' THEN 1 END) as com_cpf
 FROM clientes
-WHERE empresa_id = 'f1726fcf-d23b-4cca-8079-39314ae56e00';
+WHERE empresa_id = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
 
 -- =============================================
 -- FIM DA RESTAURAÇÃO
 -- =============================================
+
+
+

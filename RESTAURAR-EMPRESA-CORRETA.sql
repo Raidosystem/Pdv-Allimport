@@ -13,11 +13,12 @@ DELETE FROM clientes WHERE empresa_id IS NULL;
 
 -- 1/141: ANTONIO CLAUDIO FIGUEIRA
 INSERT INTO clientes (
-  id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
+  id, user_id, empresa_id, nome, telefone, email, cpf_cnpj, cpf_digits,
   endereco, cidade, estado, cep, tipo, ativo, observacoes,
   created_at, updated_at
 ) VALUES (
   '795481e5-5f71-46f5-aebf-80cc91031227',
+  'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'f7fdf4cf-7101-45ab-86db-5248a7ac58c1',
   'ANTONIO CLAUDIO FIGUEIRA',
   '17999740896',
@@ -3409,3 +3410,4 @@ WHERE empresa_id = 'f7fdf4cf-7101-45ab-86db-5248a7ac58c1';
 -- =============================================
 -- FIM DA RESTAURAÇÃO
 -- =============================================
+

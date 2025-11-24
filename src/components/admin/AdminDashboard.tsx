@@ -190,63 +190,15 @@ export function AdminDashboard() {
     const loadingToast = toast.loading('Adicionando dias...')
 
     try {
-      // Calcular nova data de expiração
-      const now = new Date()
-      const currentEndDate = selectedSubscriber.subscription.status === 'trial'
-        ? new Date(selectedSubscriber.subscription.trial_end_date || now)
-        : new Date(selectedSubscriber.subscription.subscription_end_date || now)
-
-      // Se a data já passou, começar de agora
-      const baseDate = currentEndDate > now ? currentEndDate : now
-      const newEndDate = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
-
-      // Usar o tipo selecionado pelo admin (CONTROLE MANUAL)
-      const activateAsPremium = planType === 'premium'
-
-      // Garantir que as datas sejam timestamps válidos
-      const nowTimestamp = now.toISOString()
-      const endTimestamp = newEndDate.toISOString()
-
-      // Atualizar no banco com CONTROLE TOTAL - INCLUINDO TODAS AS COLUNAS
-      const updateData: any = {
-        updated_at: nowTimestamp,
-        status: activateAsPremium ? 'active' : 'trial'
-      }
-
-      if (activateAsPremium) {
-        // Ativar como PREMIUM
-        updateData.plan_type = 'yearly' // ou 'monthly' conforme necessário
-        updateData.subscription_start_date = nowTimestamp
-        updateData.subscription_end_date = endTimestamp
-        updateData.payment_method = 'manual_activation' // Indica que foi ativado pelo admin
-        updateData.last_payment_date = nowTimestamp
-        updateData.next_payment_date = endTimestamp
-        updateData.amount = 99.90 // Valor padrão para yearly
-        // Limpar dados do trial (explicitamente NULL)
-        updateData.trial_start_date = null
-        updateData.trial_end_date = null
-      } else {
-        // Adicionar como TESTE
-        updateData.plan_type = 'trial'
-        updateData.trial_end_date = endTimestamp
-        updateData.trial_start_date = selectedSubscriber.subscription.trial_start_date || nowTimestamp
-        // Para trial, manter payment info como null ou valores padrão
-        updateData.payment_method = 'trial'
-        updateData.amount = 0.00
-        // Limpar dados premium se estava ativo (explicitamente NULL)
-        updateData.subscription_start_date = null
-        updateData.subscription_end_date = null
-        updateData.last_payment_date = null
-        updateData.next_payment_date = null
-      }
-
-      console.log('🔍 Dados que serão enviados para o Supabase:', updateData)
+      console.log('🔍 Adicionando dias para:', selectedSubscriber.email)
       console.log('🔍 user_id:', selectedSubscriber.user_id)
+      console.log('🔍 dias:', daysToAdd, 'tipo:', planType)
 
-      // Usar RPC para bypassar RLS (admin tem permissão total)
-      const { data, error } = await supabase.rpc('admin_update_subscription', {
+      // Usar a função admin_add_subscription_days que criamos
+      const { data, error } = await supabase.rpc('admin_add_subscription_days', {
         p_user_id: selectedSubscriber.user_id,
-        p_updates: updateData
+        p_days: daysToAdd,
+        p_plan_type: planType
       })
 
       if (error) {
@@ -254,11 +206,11 @@ export function AdminDashboard() {
         throw error
       }
 
-      console.log('✅ Atualização bem-sucedida:', data)
+      console.log('✅ Resultado da função:', data)
 
       toast.dismiss(loadingToast)
       
-      const statusMsg = activateAsPremium ? '⭐ PREMIUM' : '🎁 TESTE'
+      const statusMsg = planType === 'premium' ? '⭐ PREMIUM' : '🎁 TESTE'
       toast.success(`✅ ${daysToAdd} dias ${statusMsg} adicionados!\n${selectedSubscriber.full_name || selectedSubscriber.email}`)
       
       closeAddDaysModal()

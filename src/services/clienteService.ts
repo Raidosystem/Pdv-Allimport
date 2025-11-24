@@ -32,12 +32,13 @@ export class ClienteService {
             break
             
           default: // 'geral' - busca por nome e CPF/CNPJ
-            // Buscar em nome, telefone, endereço, cpf_cnpj e cpf_digits
+            // Buscar em nome, telefone, logradouro, cpf_cnpj e cpf_digits
             searchConditions = [
               `nome.ilike.%${filtros.search}%`,
               `telefone.ilike.%${filtros.search}%`,
               `cpf_cnpj.ilike.%${filtros.search}%`,
-              `endereco.ilike.%${filtros.search}%`
+              `logradouro.ilike.%${filtros.search}%`,
+              `cidade.ilike.%${filtros.search}%`
             ]
             
             // Se o termo de busca contém dígitos, também buscar em campos numéricos
@@ -271,9 +272,12 @@ export class ClienteService {
 
   // Criar novo cliente
   static async criarCliente(cliente: ClienteInput) {
+    // Remover campo 'endereco' que não existe mais no banco (foi substituído por rua, numero, cidade, estado, cep)
+    const { endereco, ...clienteSemEndereco } = cliente as any
+    
     const { data, error } = await supabase
       .from('clientes')
-      .insert([cliente])
+      .insert([clienteSemEndereco])
       .select()
       .single()
 
@@ -286,9 +290,12 @@ export class ClienteService {
 
   // Atualizar cliente
   static async atualizarCliente(id: string, cliente: Partial<ClienteInput>) {
+    // Remover campo 'endereco' que não existe mais no banco (foi substituído por rua, numero, cidade, estado, cep)
+    const { endereco, ...clienteSemEndereco } = cliente as any
+    
     const { data, error } = await supabase
       .from('clientes')
-      .update({ ...cliente, atualizado_em: new Date().toISOString() })
+      .update({ ...clienteSemEndereco, atualizado_em: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single()

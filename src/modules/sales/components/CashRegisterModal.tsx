@@ -16,15 +16,35 @@ export function CashRegisterModal({
   onClose, 
   onOpenRegister
 }: CashRegisterModalProps) {
-  const [openingAmount, setOpeningAmount] = useState<string>('0')
+  const [openingAmount, setOpeningAmount] = useState<string>('0,00')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
   if (!isOpen) return null
 
+  // Formatar valor com vírgula automática
+  const formatarValor = (valor: string): string => {
+    // Remove tudo que não é número
+    const numeros = valor.replace(/\D/g, '')
+    
+    if (!numeros) return '0,00'
+    
+    // Converte para número e divide por 100 para ter centavos
+    const valorNumerico = parseInt(numeros, 10) / 100
+    
+    // Formata com 2 casas decimais e vírgula
+    return valorNumerico.toFixed(2).replace('.', ',')
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valorFormatado = formatarValor(e.target.value)
+    setOpeningAmount(valorFormatado)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Converte o valor formatado para número
     const amount = parseFloat(openingAmount.replace(',', '.'))
     
     if (amount <= 0 || isNaN(amount)) {
@@ -89,12 +109,10 @@ export function CashRegisterModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Valor Inicial do Caixa"
-              type="number"
+              type="text"
               value={openingAmount}
-              onChange={(e) => setOpeningAmount(e.target.value)}
+              onChange={handleAmountChange}
               placeholder="0,00"
-              step="0.01"
-              min="0"
               required
               icon={<DollarSign className="w-5 h-5" />}
             />
@@ -114,7 +132,7 @@ export function CashRegisterModal({
               <div className="flex justify-between items-center">
                 <span className="text-secondary-600">Valor inicial:</span>
                 <span className="text-xl font-bold text-green-600">
-                  {formatCurrency(parseFloat(openingAmount) || 0)}
+                  R$ {openingAmount}
                 </span>
               </div>
             </div>

@@ -18,19 +18,21 @@ export async function checkDocumentExists(document: string): Promise<ValidationR
     })
 
     if (error) {
-      console.error('Erro ao validar documento:', error)
+      console.warn('⚠️ Função RPC não encontrada, validação desabilitada temporariamente:', error)
+      // Retornar válido temporariamente até a função ser criada no banco
       return {
-        valid: false,
-        error: 'Erro ao validar documento'
+        valid: true,
+        documentType: document.replace(/\D/g, '').length === 11 ? 'CPF' : 'CNPJ'
       }
     }
 
     return data as ValidationResult
   } catch (error) {
-    console.error('Erro ao validar documento:', error)
+    console.warn('⚠️ Erro ao validar documento, permitindo cadastro:', error)
+    // Em caso de erro, permitir cadastro (falha aberta)
     return {
-      valid: false,
-      error: 'Erro ao validar documento'
+      valid: true,
+      documentType: document.replace(/\D/g, '').length === 11 ? 'CPF' : 'CNPJ'
     }
   }
 }

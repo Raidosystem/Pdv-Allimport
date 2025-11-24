@@ -59,8 +59,23 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
           return
         }
         
-        // Se não tem 11 dígitos (CPF) ou 14 dígitos (CNPJ) ou é inválido, marcar como invalid
-        if ((digits.length !== 11 && digits.length !== 14) || !isValidCpfCnpj(digits)) {
+        // Se ainda está digitando (não tem 11 ou 14 dígitos completos), manter idle
+        if (digits.length !== 11 && digits.length !== 14) {
+          setStatus('idle')
+          setClienteEncontrado(undefined)
+          return
+        }
+        
+        // Se tem 11 ou 14 dígitos mas é inválido, marcar como invalid
+        const isValid = isValidCpfCnpj(digits)
+        console.log('🔍 [CPF INPUT] Validando documento:', { 
+          digits, 
+          length: digits.length,
+          isValid,
+          debouncedValue 
+        })
+        
+        if (!isValid) {
           setStatus('invalid')
           setClienteEncontrado(undefined)
           return
@@ -72,15 +87,15 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
         
         try {
           // Normalizar o valor para busca (apenas dígitos)
-          const normalizedValue = debouncedValue.replace(/\D/g, '')
+          const normalizedValue = digits
           
-          // Buscar tanto na coluna cpf_cnpj (com formatação) quanto cpf_digits (só números)
+          // Buscar tanto na coluna cpf_cnpj quanto cpf_digits (ambas com apenas dígitos)
           let query = supabase
             .from('clientes')
-            .select('id, nome, telefone, email, cpf_cnpj, endereco, criado_em')
+            .select('id, nome, telefone, email, cpf_cnpj, criado_em')
           
-          // Buscar em ambas as colunas: cpf_cnpj e cpf_digits
-          query = query.or(`cpf_cnpj.eq.${debouncedValue},cpf_digits.eq.${normalizedValue}`)
+          // Buscar em ambas as colunas usando apenas dígitos
+          query = query.or(`cpf_cnpj.eq.${normalizedValue},cpf_digits.eq.${normalizedValue}`)
           
           // Se empresaId for fornecido, filtrar por empresa
           if (empresaId) {
@@ -96,7 +111,8 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
             formatted: debouncedValue, 
             digits: normalizedValue,
             excludeId,
-            empresaId
+            empresaId,
+            searchQuery: `cpf_cnpj.eq.${normalizedValue},cpf_digits.eq.${normalizedValue}`
           })
           
           const { data, error } = await query
@@ -160,17 +176,22 @@ export const CpfInput = React.forwardRef<CpfInputRef, CpfInputProps>(
 
     // Determinar mensagem de ajuda
     const getHelpMessage = () => {
+      const digits = onlyDigits(value)
+      
       switch (status) {
         case 'idle':
-          return { text: 'Digite o CPF ou CNPJ.', color: 'text-gray-500' }
+          if (digits.length > 0 && digits.length < 11) {
+            return { text: 'Continue digitando...', color: 'text-gray-500' }
+          }
+          return { text: 'Digite o CPF (11 dígitos) ou CNPJ (14 dígitos).', color: 'text-gray-500' }
         case 'invalid':
-          return { text: 'CPF ou CNPJ inválido.', color: 'text-red-600' }
+          return { text: 'CPF ou CNPJ inválido. Verifique os dígitos.', color: 'text-red-600' }
         case 'checking':
-          return { text: 'Verificando…', color: 'text-yellow-600' }
+          return { text: 'Verificando no banco de dados…', color: 'text-yellow-600' }
         case 'duplicate':
           return { text: 'Este CPF/CNPJ já está cadastrado.', color: 'text-red-600' }
         case 'ok':
-          return { text: 'CPF/CNPJ válido.', color: 'text-green-600' }
+          return { text: '✓ CPF/CNPJ válido e disponível.', color: 'text-green-600' }
         default:
           return { text: '', color: 'text-gray-500' }
       }

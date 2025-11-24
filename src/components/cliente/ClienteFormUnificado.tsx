@@ -72,20 +72,20 @@ export function ClienteFormUnificado({
     if (cliente) {
       // Se o endereço unificado existe mas não tem campos separados, deixar no campo endereco
       // Caso contrário, usar os campos separados
-      const temCamposSeparados = cliente.rua || cliente.numero || cliente.cidade
+      const temCamposSeparados = cliente.logradouro || cliente.numero || cliente.cidade
       
       setFormData({
         nome: cliente.nome || '',
         cpf: cliente.cpf_cnpj || '',
         email: cliente.email || '',
         telefone: cliente.telefone || '',
-        rua: cliente.rua || '',
+        rua: cliente.logradouro || '', // CORRIGIDO: banco usa 'logradouro'
         numero: cliente.numero || '',
         cep: cliente.cep || '',
         cidade: cliente.cidade || '',
         estado: cliente.estado || '',
         // Se não tem campos separados, colocar o endereço completo no campo "endereco"
-        endereco: !temCamposSeparados ? (cliente.endereco || '') : ''
+        endereco: cliente.bairro || (!temCamposSeparados ? (cliente.endereco || '') : '')
       })
       setIsEditMode(true)
     }
@@ -279,10 +279,9 @@ export function ClienteFormUnificado({
         cpf_digits: cpfDigits || null,
         email: formData.email?.trim() || null,
         telefone: formData.telefone?.trim() || null,
-        endereco: montarEnderecoCompleto(), // Endereço unificado para compatibilidade
-        // Campos de endereço separados
-        rua: formData.rua?.trim() || null,
+        logradouro: formData.rua?.trim() || null,
         numero: formData.numero?.trim() || null,
+        bairro: formData.endereco?.trim() || null, // Usar campo endereco como bairro temporariamente
         cidade: formData.cidade?.trim() || null,
         estado: formData.estado?.trim() || null,
         cep: formData.cep?.trim() || null,
@@ -298,17 +297,35 @@ export function ClienteFormUnificado({
         // Usar cliente da prop ou clienteEncontrado (dupla funcionalidade)
         const clienteParaAtualizar = cliente || clienteEncontrado
         
-        // Atualizar cliente existente
-        const { data, error } = await supabase
-          .from('clientes')
-          .update(clienteData)
-          .eq('id', clienteParaAtualizar.id)
-          .select()
-          .single()
+        if (!clienteParaAtualizar?.id) {
+          toast.error('ID do cliente não encontrado')
+          return
+        }
+
+        console.log('🔍 [DEBUG] Dados do cliente a ser atualizado:', clienteData)
+
+        // Chamar RPC para atualizar
+        const { data, error } = await supabase.rpc('atualizar_cliente_seguro', {
+          p_cliente_id: clienteParaAtualizar.id,
+          p_nome: clienteData.nome,
+          p_cpf_cnpj: clienteData.cpf_cnpj,
+          p_cpf_digits: clienteData.cpf_digits,
+          p_email: clienteData.email,
+          p_telefone: clienteData.telefone,
+          p_logradouro: clienteData.logradouro,
+          p_numero: clienteData.numero,
+          p_bairro: clienteData.bairro,
+          p_cidade: clienteData.cidade,
+          p_estado: clienteData.estado,
+          p_cep: clienteData.cep,
+          p_tipo: clienteData.tipo
+        })
+
+        console.log('📊 [DEBUG] Resultado da atualização:', { data, error })
 
         if (error) {
           console.error('Erro ao atualizar cliente:', error)
-          toast.error('Erro ao atualizar cliente. Tente novamente.')
+          toast.error(`Erro ao atualizar cliente: ${error.message}`)
           return
         }
 
@@ -319,20 +336,31 @@ export function ClienteFormUnificado({
           onSuccess(data)
         }
       } else {
-        // Criar novo cliente
+        // Modo de criação de novo cliente
         console.log('🔍 [DEBUG] Dados do cliente a ser criado:', clienteData)
 
-        const { data, error } = await supabase
-          .from('clientes')
-          .insert([clienteData])
-          .select()
-          .single()
+        // Chamar RPC para criar
+        const { data, error } = await supabase.rpc('criar_cliente_seguro', {
+          p_nome: clienteData.nome,
+          p_cpf_cnpj: clienteData.cpf_cnpj,
+          p_cpf_digits: clienteData.cpf_digits,
+          p_email: clienteData.email,
+          p_telefone: clienteData.telefone,
+          p_logradouro: clienteData.logradouro,
+          p_numero: clienteData.numero,
+          p_bairro: clienteData.bairro,
+          p_cidade: clienteData.cidade,
+          p_estado: clienteData.estado,
+          p_cep: clienteData.cep,
+          p_empresa_id: clienteData.empresa_id,
+          p_tipo: clienteData.tipo
+        })
 
         console.log('📊 [DEBUG] Resultado da inserção:', { data, error })
 
         if (error) {
           // Verificar se é erro de duplicação
-          if (error.code === '23505') { // Unique violation
+          if (error.message && error.message.includes('duplicate')) {
             toast.error('Este CPF já está cadastrado.')
             return
           }

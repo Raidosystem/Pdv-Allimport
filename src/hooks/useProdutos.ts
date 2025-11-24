@@ -46,6 +46,7 @@ const loadAllProducts = async (): Promise<Product[]> => {
       user_id: produto.user_id,
       name: produto.nome || 'Produto sem nome',
       barcode: produto.codigo_barras || '',
+      codigo_interno: produto.codigo_interno || '',
       category_id: produto.categoria_id,
       sale_price: produto.preco || 0,
       cost_price: produto.preco_custo || 0,

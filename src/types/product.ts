@@ -3,6 +3,7 @@ export interface Product {
   nome: string
   codigo: string
   codigo_barras?: string
+  codigo_interno?: string  // Código interno sequencial automático
   categoria: string
   preco_venda: number
   preco_custo?: number

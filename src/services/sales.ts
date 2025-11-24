@@ -256,19 +256,35 @@ export const saleService = {
     console.log('🔄 Iniciando criação de venda...', sale);
     
     try {
-      // ✅ CORREÇÃO: Incluir user_id obrigatório para RLS
-      const vendaData = {
-        // cliente_id: sale.customer_id, // Temporariamente removido para teste
-        // Removendo caixa_id temporariamente para testar se esse é o problema
+      // ✅ CORREÇÃO: Incluir todos os campos necessários
+      const vendaData: any = {
         total: sale.total_amount,
         desconto: sale.discount_amount || 0,
         status: sale.status,
         metodo_pagamento: sale.payment_method,
-        observacoes: sale.notes || '',
-        user_id: sale.user_id  // ✅ Campo obrigatório adicionado
+        observacoes: sale.notes || ''
+        // user_id e empresa_id serão preenchidos pelo trigger automaticamente
       };
+
+      // Adicionar cliente_id apenas se fornecido
+      if (sale.customer_id) {
+        vendaData.cliente_id = sale.customer_id;
+      }
+
+      // Adicionar caixa_id apenas se fornecido
+      if (sale.cash_register_id) {
+        vendaData.caixa_id = sale.cash_register_id;
+      }
+
+      // Adicionar payment_details se fornecido
+      if (sale.payment_details) {
+        vendaData.detalhes_pagamento = sale.payment_details;
+      }
       
-      console.log('🔧 [DEBUG] Dados da venda MÍNIMOS:', vendaData);
+      console.log('🔧 [DEBUG] Dados da venda preparados:', vendaData);
+      console.log('📝 [DEBUG] sale.customer_id:', sale.customer_id);
+      console.log('📝 [DEBUG] sale.cash_register_id:', sale.cash_register_id);
+      console.log('📝 [DEBUG] sale.user_id:', sale.user_id);
       
       console.log('📝 Inserindo venda:', vendaData);
       
@@ -280,6 +296,10 @@ export const saleService = {
       
       if (error) {
         console.error('❌ Erro ao inserir venda:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem:', error.message);
+        console.error('❌ Detalhes:', error.details);
+        console.error('❌ Hint:', error.hint);
         console.error('❌ Detalhes do erro:', {
           message: error.message,
           details: error.details,
@@ -301,14 +321,15 @@ export const saleService = {
           const itemData = {
             venda_id: data.id,
             produto_id: item.product_id, // Pode ser null para produtos de venda rápida
-            // produto_nome: item.product_name || null, // Removido temporariamente
+            produto_nome: item.product_name || 'Produto sem nome', // Campo obrigatório
             quantidade: item.quantity,
             preco_unitario: item.unit_price,
-            subtotal: item.total_price
+            subtotal: item.total_price,
+            total: item.total_price // Campo obrigatório - mesmo valor que subtotal
             // user_id será setado automaticamente pelo trigger
           };
           
-          console.log('📝 Inserindo item (sem produto_nome):', itemData);
+          console.log('📝 Inserindo item com produto_nome e total:', itemData);
           
           const { data: itemResult, error: itemError } = await supabase
             .from('vendas_itens')

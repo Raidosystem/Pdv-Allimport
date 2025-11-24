@@ -182,7 +182,7 @@ export function useProducts() {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('empresa_id', empresa_id)
+        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categories usa user_id
         .order('name')
 
       if (error) throw error
@@ -213,12 +213,12 @@ export function useProducts() {
 
       const empresa_id = user.id
       
-      // Verificar se já existe uma categoria com este nome PARA ESTA EMPRESA
+      // Verificar se já existe uma categoria com este nome PARA ESTE USUÁRIO
       const { data: existing, error: checkError } = await supabase
         .from('categories')
         .select('id, name')
         .eq('name', name.trim())
-        .eq('empresa_id', empresa_id)
+        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categories usa user_id
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -232,10 +232,10 @@ export function useProducts() {
         return null
       }
 
-      // Criar nova categoria com empresa_id
+      // Criar nova categoria com user_id
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ name: name.trim(), empresa_id }])
+        .insert([{ name: name.trim(), user_id: empresa_id }])  // CORRIGIDO: usar user_id
         .select()
         .single()
 
@@ -305,9 +305,10 @@ export function useProducts() {
         descricao: productData.descricao || null,
         preco: productData.preco_venda,  // campo principal de preço
         categoria_id: productData.categoria || null,
-        estoque: productData.estoque,
+        estoque: productData.estoque !== undefined ? productData.estoque : 0,  // garantir que seja número
         codigo_barras: productData.codigo_barras || null,
         sku: productData.codigo || null,  // usar código como SKU
+        codigo_interno: productData.codigo || null,  // salvar como codigo_interno também
         estoque_minimo: 0,  // valor padrão
         unidade: productData.unidade || null,
         ativo: productData.ativo !== false,  // garantir boolean
@@ -322,6 +323,8 @@ export function useProducts() {
         categoria_id: productToSave.categoria_id,
         categoria_id_vazio: !productToSave.categoria_id,
         sku: productToSave.sku,
+        estoque: productToSave.estoque,
+        estoque_tipo: typeof productToSave.estoque,
         user_id: productToSave.user_id
       })
 
@@ -333,7 +336,7 @@ export function useProducts() {
           .from('categories')
           .select('id')
           .eq('id', productToSave.categoria_id)
-          .eq('empresa_id', user.id)  // garantir que é a categoria do usuario
+          .eq('user_id', user.id)  // CORRIGIDO: validar por user_id
           .limit(1)
 
         if (catError || !categoryExists || categoryExists.length === 0) {

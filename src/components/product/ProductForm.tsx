@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -34,18 +35,20 @@ interface ProductFormProps {
 function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
+  const [formKey, setFormKey] = useState(0) // Chave para forçar remontagem
+  const estoqueInputRef = useRef<HTMLInputElement>(null) // Ref para o input de estoque
   const { categories, fetchCategories, createCategory, saveProduct } = useProducts()
 
-  // Estados para exibição formatada dos campos
+  // Estados para exibição formatada dos campos (apenas preços)
   const [precoVendaDisplay, setPrecoVendaDisplay] = useState('0,00')
   const [precoCustoDisplay, setPrecoCustoDisplay] = useState('0,00')
-  const [estoqueDisplay, setEstoqueDisplay] = useState('0')
 
   const {
     control,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isSubmitting }
   } = useForm<ProductFormData>({
     resolver: zodResolver(ProductFormSchema),
@@ -62,7 +65,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   })
 
-  // Watch para sincronizar valores formatados
+  // Watch para sincronizar valores formatados dos preços
   const precoVenda = watch('preco_venda')
   const precoCusto = watch('preco_custo')
   const estoque = watch('estoque')
@@ -88,12 +91,6 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   }, [precoCusto])
 
-  useEffect(() => {
-    if (estoque >= 0) {
-      setEstoqueDisplay(estoque.toString())
-    }
-  }, [estoque])
-
   async function loadProductData(id: string) {
     try {
       setLoading(true)
@@ -116,12 +113,13 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
           estoque: data.estoque,
           sku: data.sku,
           codigo_barras: data.codigo_barras,
+          codigo_interno: data.codigo_interno,
           fornecedor: data.fornecedor
         })
 
         const formData = {
           nome: data.nome || '',
-          codigo: data.sku || data.codigo_barras || '',
+          codigo: data.codigo_interno || data.sku || data.codigo_barras || '',
           categoria: data.categoria_id || '',
           unidade: data.unidade || 'UN',
           preco_venda: Number(data.preco) || 0,
@@ -132,7 +130,29 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
         }
 
         console.log('📝 [ProductForm] Populando formulário com:', formData)
+        console.log('📦 [ProductForm] Estoque a ser exibido:', formData.estoque)
+        
+        // Resetar o formulário com os novos valores
         reset(formData)
+        
+        // Forçar atualização do estoque usando flushSync
+        flushSync(() => {
+          setValue('estoque', formData.estoque, { shouldValidate: false, shouldDirty: false })
+        })
+        
+        // Forçar remontagem do formulário incrementando a chave
+        setFormKey(prev => prev + 1)
+        
+        // Forçar atualização do input diretamente via ref
+        setTimeout(() => {
+          if (estoqueInputRef.current) {
+            estoqueInputRef.current.value = formData.estoque.toString()
+            console.log('🎯 [ProductForm] Input atualizado via ref:', formData.estoque)
+          }
+        }, 0)
+        
+        console.log('✅ [ProductForm] Formulário atualizado - estoque:', formData.estoque)
+        console.log('🔄 [ProductForm] Formulário remontado com nova chave')
       }
     } catch (error) {
       console.error('❌ [ProductForm] Erro ao carregar produto:', error)
@@ -196,7 +216,9 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
       nome: data.nome,
       categoria: data.categoria,
       categoria_vazio: !data.categoria,
-      sku: data.codigo
+      sku: data.codigo,
+      estoque: data.estoque,
+      estoque_tipo: typeof data.estoque
     })
 
     console.log('📂 [ProductForm] Categorias carregadas no momento do submit:', {
@@ -217,6 +239,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
         window.dispatchEvent(new CustomEvent('productAdded'))
         window.dispatchEvent(new CustomEvent('productUpdated'))
         
+        // Chamar onSuccess() para fechar o modal automaticamente
         if (onSuccess) {
           onSuccess()
         }
@@ -442,14 +465,24 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
               Estoque
             </label>
             <Controller
+              key={`estoque-${formKey}`}
               name="estoque"
               control={control}
               render={({ field: { onChange, value } }) => {
+                // Sempre exibir o valor atual do formulário
+                const displayValue = value?.toString() || '0'
+                
+                console.log('📊 [ProductForm] Controller Estoque render:', { 
+                  value, 
+                  displayValue, 
+                  formKey,
+                  tipo: typeof value 
+                })
+
                 const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   const input = e.target.value
                   
                   if (input === '') {
-                    setEstoqueDisplay('0')
                     onChange(0)
                     return
                   }
@@ -457,26 +490,20 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                   // Remove caracteres não numéricos
                   const numbers = input.replace(/\D/g, '')
                   if (numbers === '') {
-                    setEstoqueDisplay('0')
                     onChange(0)
                     return
                   }
 
                   const numericValue = parseInt(numbers) || 0
-                  setEstoqueDisplay(numericValue.toString())
                   onChange(numericValue)
                 }
 
                 const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-                  if (estoqueDisplay === '0' || value === 0) {
-                    setEstoqueDisplay('')
-                  }
                   e.target.select()
                 }
 
                 const handleBlur = () => {
-                  if (estoqueDisplay === '') {
-                    setEstoqueDisplay('0')
+                  if (!value || value === 0) {
                     onChange(0)
                   }
                 }
@@ -484,7 +511,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 return (
                   <Input
                     type="text"
-                    value={estoqueDisplay}
+                    value={displayValue}
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onBlur={handleBlur}

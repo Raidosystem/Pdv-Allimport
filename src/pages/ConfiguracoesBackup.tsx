@@ -162,7 +162,7 @@ export default function ConfiguracoesBackup() {
                         🚀 Sistema Universal de Backup
                       </h3>
                       <p className="text-purple-700 mb-4">
-                        Nosso sistema aceita <strong>qualquer backup JSON</strong> de outros sistemas e transforma automaticamente para funcionar no PDV Allimport.
+                        Nosso sistema aceita <strong>qualquer backup JSON</strong> de outros sistemas e transforma automaticamente para funcionar no RaVal pdv.
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="space-y-2">

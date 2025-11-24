@@ -144,7 +144,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ userEmail }) => {
           Ativar Assinatura
         </h1>
         <p className="text-gray-600">
-          PDV Allimport - 31 dias por R$ 59,90
+          RaVal pdv - 31 dias por R$ 59,90
         </p>
       </div>
 

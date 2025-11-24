@@ -136,7 +136,7 @@ function App() {
               <div className="flex items-center gap-3">
                 <span role="img" aria-label="mobile">📱</span>
                 <div className="flex-1">
-                  <div className="font-bold text-sm">Instalar PDV Allimport</div>
+                  <div className="font-bold text-sm">Instalar RaVal pdv</div>
                   <div className="text-xs opacity-90">Acesso rápido + offline</div>
               </div>
               <div className="flex gap-1">

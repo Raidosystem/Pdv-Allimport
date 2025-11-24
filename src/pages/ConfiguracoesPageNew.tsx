@@ -1183,7 +1183,7 @@ export function ConfiguracoesPage() {
                   value={tempCabecalho}
                   onChange={handleTempCabecalhoChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                  placeholder="Ex: PDV ALLIMPORT - Eletrônicos e Acessórios"
+                  placeholder="Ex: RAVAL PDV - Eletrônicos e Acessórios"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   💡 Este texto aparecerá no topo de todos os recibos impressos. Use quebras de linha para organizar as informações.

@@ -178,7 +178,7 @@ const RelatoriosPage: React.FC = () => {
         <div className="bg-white p-6 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Sistema PDV Allimport</p>
+              <p className="font-medium text-gray-900">Sistema RaVal pdv</p>
               <p className="text-sm text-gray-600">
                 Última atualização: {new Date().toLocaleString('pt-BR')} • 
                 {loading ? ' Sincronizando...' : ' Online'}

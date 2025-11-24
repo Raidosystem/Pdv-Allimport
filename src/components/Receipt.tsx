@@ -50,7 +50,7 @@ interface ReceiptProps {
 const Receipt: React.FC<ReceiptProps> = ({ 
   sale, 
   customer, 
-  storeName = "PDV Allimport",
+  storeName = "RaVal pdv",
   storeInfo,
   cashReceived = 0,
   changeAmount = 0
@@ -294,7 +294,7 @@ const Receipt: React.FC<ReceiptProps> = ({
           Volte sempre!
         </div>
         <div style={{ marginTop: '10px', fontSize: '8px' }}>
-          Sistema PDV Allimport
+          Sistema RaVal pdv
         </div>
         <div style={{ fontSize: '8px' }}>
           {new Date().toLocaleString('pt-BR')}

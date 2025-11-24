@@ -76,7 +76,7 @@ export function usePrintReceipt() {
   };
 
   const generateReceiptHTML = (data: PrintReceiptData) => {
-    const { sale, customer, storeName = "PDV Allimport", storeInfo, cashReceived = 0, changeAmount = 0, printConfig } = data;
+    const { sale, customer, storeName = "RaVal pdv", storeInfo, cashReceived = 0, changeAmount = 0, printConfig } = data;
     
     // Debug: verificar dados do cliente
     console.log('🧾 Gerando HTML do cupom:', {
@@ -410,7 +410,7 @@ export function usePrintReceipt() {
                 <div>Obrigado pela preferência!</div>
                 <div>Volte sempre!</div>
               ` : ''}
-              <div class="footer-info">Sistema PDV Allimport</div>
+              <div class="footer-info">Sistema RaVal pdv</div>
               <div class="footer-info">${new Date().toLocaleString('pt-BR')}</div>
             </div>
           </div>

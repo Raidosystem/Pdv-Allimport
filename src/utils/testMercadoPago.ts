@@ -41,7 +41,7 @@ export async function testSimplePixCreation() {
     
     const pixData = {
       transaction_amount: 1.00, // R$ 1,00 para teste
-      description: 'Teste PIX PDV Allimport',
+      description: 'Teste PIX RaVal pdv',
       payment_method_id: 'pix',
       payer: {
         email: 'teste@pdvallimport.com',

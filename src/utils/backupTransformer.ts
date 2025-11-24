@@ -86,7 +86,7 @@ export class BackupTransformer {
     
     // Se tem backup_info e data, é um backup PDV válido
     if (data.backup_info && data.data) {
-      console.log('✅ Backup PDV Allimport detectado');
+      console.log('✅ Backup RaVal pdv detectado');
       return true;
     }
     
@@ -229,7 +229,7 @@ export class BackupTransformer {
         user_email: userEmail,
         backup_date: new Date().toISOString(),
         backup_version: '2.0',
-        system: `PDV Allimport (Importado de ${this.detectBackupSystem(sourceData)})`
+        system: `RaVal pdv (Importado de ${this.detectBackupSystem(sourceData)})`
       },
       data: {
         clientes: [],

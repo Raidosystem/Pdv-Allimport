@@ -154,11 +154,11 @@ export function OfflineIndicator() {
               </div>
               
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Instalar PDV Allimport
+                Instalar RaVal pdv
               </h3>
               
               <p className="text-gray-600 mb-6">
-                Instale o PDV Allimport no seu computador para:
+                Instale o RaVal pdv no seu computador para:
               </p>
               
               <div className="text-left space-y-2 mb-6">
@@ -206,7 +206,7 @@ export function OfflineIndicator() {
         <button
           onClick={() => setShowInstallPrompt(true)}
           className="fixed bottom-4 left-4 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-40"
-          title="Instalar PDV Allimport"
+          title="Instalar RaVal pdv"
         >
           <Download className="w-5 h-5" />
         </button>

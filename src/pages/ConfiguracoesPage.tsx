@@ -305,7 +305,7 @@ export function ConfiguracoesPage() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Configurações do Sistema</h3>
               <p className="text-gray-600 mb-6">
-                Gerencie todas as configurações do seu sistema PDV Allimport.
+                Gerencie todas as configurações do seu sistema RaVal pdv.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {configSections.map((section) => {

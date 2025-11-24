@@ -268,7 +268,7 @@ export function useOfflineSync() {
       
       deferredPrompt.userChoice.then((choiceResult: any) => {
         if (choiceResult.outcome === 'accepted') {
-          toast.success('📱 PDV Allimport instalado com sucesso!', {
+          toast.success('📱 RaVal pdv instalado com sucesso!', {
             duration: 4000
           })
         }

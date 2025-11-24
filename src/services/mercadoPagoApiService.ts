@@ -172,7 +172,7 @@ class MercadoPagoApiService {
           success: true,
           paymentId: 'demo_' + Date.now(),
           status: 'pending',
-          qrCode: `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${data.amount.toFixed(2)}5802BR5925PDV ALLIMPORT LTDA6009SAO PAULO62070503***6304`,
+          qrCode: `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${data.amount.toFixed(2)}5802BR5925RAVAL PDV LTDA6009SAO PAULO62070503***6304`,
           qrCodeBase64: 'data:image/svg+xml;base64,' + btoa(svgContent),
           ticketUrl: ''
         };

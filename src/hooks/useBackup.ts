@@ -177,10 +177,10 @@ export const useBackup = () => {
       let backupData: BackupData;
       
       if (originalData.backup_info && originalData.data && 
-          originalData.backup_info.system?.includes('PDV Allimport')) {
+          originalData.backup_info.system?.includes('RaVal pdv')) {
         // Já está no formato correto
         backupData = originalData;
-        toast.success('🔄 Backup PDV Allimport detectado - importando diretamente');
+        toast.success('🔄 Backup RaVal pdv detectado - importando diretamente');
       } else {
         // Precisa transformar
         const systemType = BackupTransformer.detectBackupSystem(originalData);
@@ -189,7 +189,7 @@ export const useBackup = () => {
         try {
           backupData = await BackupTransformer.transformBackup(originalData, 'usuario@sistema.com');
           toast.dismiss();
-          toast.success(`✅ Backup transformado com sucesso! (${systemType} → PDV Allimport)`);
+          toast.success(`✅ Backup transformado com sucesso! (${systemType} → RaVal pdv)`);
         } catch (error) {
           toast.dismiss();
           console.error('Erro na transformação:', error);

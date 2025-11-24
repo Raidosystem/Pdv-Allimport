@@ -5,7 +5,7 @@ import App from './App.tsx'
 // Debug de autenticação - REMOVIDO para permitir login normal
 // import './debug-auth.js'
 
-console.log('🚀 PDV Allimport v2.2.3 - PWA Install Direto')
+console.log('🚀 RaVal pdv v2.2.3 - PWA Install Direto')
 
 // ===== SISTEMA DE LIMPEZA DE CACHE AUTOMÁTICO =====
 const CACHE_VERSION_KEY = 'pdv_cache_version'
@@ -136,7 +136,7 @@ const showBasicError = (message: string) => {
         width: 100%;
       ">
         <h1 style="color: #1f2937; margin: 0 0 1rem 0;">
-          🏪 PDV Allimport
+          🏪 RaVal pdv
         </h1>
         
         <p style="color: #6b7280; margin: 0 0 1rem 0;">
@@ -379,7 +379,7 @@ const showQuickTooltip = (button: HTMLElement) => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       animation: fadeInUp 0.3s ease;
     ">
-      Menu → Instalar PDV Allimport
+      Menu → Instalar RaVal pdv
       <div style="
         position: absolute;
         top: 100%;

@@ -302,7 +302,7 @@ const AdminBackupsPage: React.FC = () => {
       // Criar link de download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `backup-raval-pdv-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -356,7 +356,7 @@ const AdminBackupsPage: React.FC = () => {
       // Criar link de download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `backup-pdv-allimport-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `backup-raval-pdv-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

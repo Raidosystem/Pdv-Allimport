@@ -1,0 +1,124 @@
+name: Backup Automático Diário
+
+on:
+  # Executa todos os dias às 2:00 AM UTC (23:00 Brasília)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Permite execução manual pelo GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    name: Criar Backup Diário do PDV
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: 🔄 Executar Backup no Supabase
+        id: backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔄 Iniciando backup automático..."
+          echo "📅 Data/Hora: $(date)"
+          
+          # Executar função RPC de backup
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${SUPABASE_URL}/rest/v1/rpc/criar_backup_automatico_diario" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation")
+          
+          # Separar corpo e status code
+          HTTP_BODY=$(echo "$RESPONSE" | head -n -1)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          
+          echo "📊 Status HTTP: $HTTP_CODE"
+          echo "📦 Resposta:"
+          echo "$HTTP_BODY" | jq '.'
+          
+          # Verificar se a requisição foi bem-sucedida
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ Erro HTTP: Status $HTTP_CODE"
+            exit 1
+          fi
+          
+          # Verificar se o backup foi bem-sucedido
+          SUCESSO=$(echo "$HTTP_BODY" | jq -r '.sucesso // false')
+          if [ "$SUCESSO" != "true" ]; then
+            echo "❌ Backup falhou!"
+            echo "Erro: $(echo "$HTTP_BODY" | jq -r '.erro // "Desconhecido"')"
+            exit 1
+          fi
+          
+          echo "✅ Backup concluído com sucesso!"
+          echo "timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+      
+      - name: 📊 Verificar backups criados
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "📊 Verificando backups recentes..."
+          
+          curl -s -X GET \
+            "${SUPABASE_URL}/rest/v1/backups?select=id,tipo,status,total_clientes,total_produtos,tamanho_bytes,created_at&tipo=eq.automatico&order=created_at.desc&limit=5" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            | jq '.[] | {
+                id: .id,
+                status: .status,
+                clientes: .total_clientes,
+                produtos: .total_produtos,
+                tamanho_mb: (.tamanho_bytes / 1024 / 1024 | round),
+                criado_em: .created_at
+              }'
+      
+      - name: 🧹 Verificar limpeza de backups antigos
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🧹 Verificando total de backups automáticos..."
+          
+          TOTAL=$(curl -s -X GET \
+            "${SUPABASE_URL}/rest/v1/backups?select=count&tipo=eq.automatico" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Prefer: count=exact" \
+            | jq -r '.[0].count // 0')
+          
+          echo "📦 Total de backups automáticos: $TOTAL"
+          
+          if [ "$TOTAL" -gt 50 ]; then
+            echo "⚠️ Muitos backups automáticos ($TOTAL). Considere aumentar a limpeza."
+          else
+            echo "✅ Quantidade de backups OK"
+          fi
+      
+      - name: 📝 Resumo do Backup
+        if: always()
+        run: |
+          echo "## 📊 Resumo do Backup Automático" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data/Hora**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status == 'success' && '✅ Sucesso' || '❌ Falhou' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow**: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID**: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "### ✅ Backup concluído com sucesso!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Os dados foram salvos na tabela \`backups\` do Supabase." >> $GITHUB_STEP_SUMMARY
+            echo "Para visualizar, acesse: Admin > Backups no sistema PDV." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Falha no Backup" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Verifique os logs acima para mais detalhes." >> $GITHUB_STEP_SUMMARY
+          fi

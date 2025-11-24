@@ -1,0 +1,186 @@
+name: Backup Automático - Google Drive
+
+on:
+  # Executa todos os dias às 2:00 AM UTC (23:00 Brasília)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Permite execução manual
+  workflow_dispatch:
+
+jobs:
+  backup-to-drive:
+    runs-on: ubuntu-latest
+    name: Backup PDV → Google Drive
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: 🔄 Criar backup no Supabase
+        id: backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔄 Criando backup no Supabase..."
+          
+          RESPONSE=$(curl -s -X POST \
+            "${SUPABASE_URL}/rest/v1/rpc/criar_backup_automatico_diario" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation")
+          
+          echo "$RESPONSE" | jq '.'
+          
+          if echo "$RESPONSE" | jq -e '.sucesso == true' > /dev/null; then
+            echo "✅ Backup criado no Supabase!"
+          else
+            echo "❌ Erro ao criar backup!"
+            exit 1
+          fi
+      
+      - name: 📥 Baixar último backup do Supabase
+        id: download
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "📥 Baixando backup mais recente..."
+          
+          # Buscar último backup automático
+          BACKUP=$(curl -s -X GET \
+            "${SUPABASE_URL}/rest/v1/backups?select=id,data,empresa_id,created_at&tipo=eq.automatico&order=created_at.desc&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+          
+          echo "$BACKUP" | jq '.[0]' > backup-temp.json
+          
+          # Extrair apenas o campo 'data' (que contém o backup real)
+          cat backup-temp.json | jq '.data' > backup-pdv.json
+          
+          # Criar nome do arquivo com data
+          FILENAME="backup-pdv-$(date +%Y-%m-%d).json"
+          mv backup-pdv.json "$FILENAME"
+          
+          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+          echo "✅ Backup baixado: $FILENAME"
+      
+      - name: 📁 Configurar Google Drive
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 📦 Instalar dependências
+        run: |
+          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+      
+      - name: ☁️ Enviar para Google Drive
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          BACKUP_FILE: ${{ steps.download.outputs.filename }}
+        run: |
+          cat > upload_to_drive.py << 'EOF'
+          import os
+          import json
+          from datetime import datetime
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+
+          # Carregar credenciais
+          credentials_json = os.environ['GOOGLE_CREDENTIALS']
+          credentials_dict = json.loads(credentials_json)
+          credentials = service_account.Credentials.from_service_account_info(
+              credentials_dict,
+              scopes=['https://www.googleapis.com/auth/drive.file']
+          )
+
+          # Criar serviço do Drive
+          service = build('drive', 'v3', credentials=credentials)
+
+          # IDs e informações
+          root_folder_id = os.environ['FOLDER_ID']
+          backup_file = os.environ['BACKUP_FILE']
+          
+          # Obter data atual
+          now = datetime.now()
+          year = now.strftime('%Y')
+          month = now.strftime('%m-%B')  # Ex: 11-November
+          
+          print(f"📁 Organizando backup: {year}/{month}/")
+          
+          # Função para criar ou buscar pasta
+          def get_or_create_folder(parent_id, folder_name):
+              query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
+              results = service.files().list(q=query, fields='files(id, name)').execute()
+              folders = results.get('files', [])
+              
+              if folders:
+                  print(f"✅ Pasta encontrada: {folder_name}")
+                  return folders[0]['id']
+              else:
+                  folder_metadata = {
+                      'name': folder_name,
+                      'mimeType': 'application/vnd.google-apps.folder',
+                      'parents': [parent_id]
+                  }
+                  folder = service.files().create(body=folder_metadata, fields='id').execute()
+                  print(f"📁 Pasta criada: {folder_name}")
+                  return folder['id']
+          
+          # Criar estrutura de pastas: Backups PDV/2025/11-November/
+          year_folder_id = get_or_create_folder(root_folder_id, year)
+          month_folder_id = get_or_create_folder(year_folder_id, month)
+          
+          # Verificar se já existe backup com o mesmo nome
+          query = f"name='{backup_file}' and '{month_folder_id}' in parents and trashed=false"
+          existing = service.files().list(q=query, fields='files(id, name)').execute()
+          
+          if existing.get('files'):
+              print(f"🗑️ Removendo backup antigo do dia...")
+              for file in existing['files']:
+                  service.files().delete(fileId=file['id']).execute()
+          
+          # Upload do arquivo
+          print(f"☁️ Enviando {backup_file} para Google Drive...")
+          
+          file_metadata = {
+              'name': backup_file,
+              'parents': [month_folder_id]
+          }
+          
+          media = MediaFileUpload(backup_file, mimetype='application/json', resumable=True)
+          
+          file = service.files().create(
+              body=file_metadata,
+              media_body=media,
+              fields='id, name, size, webViewLink'
+          ).execute()
+          
+          print(f"✅ Backup enviado com sucesso!")
+          print(f"📄 Nome: {file['name']}")
+          print(f"📊 Tamanho: {int(file['size']) / 1024 / 1024:.2f} MB")
+          print(f"🔗 Link: {file['webViewLink']}")
+          EOF
+          
+          python upload_to_drive.py
+      
+      - name: 🧹 Limpar arquivos temporários
+        if: always()
+        run: |
+          rm -f backup-*.json upload_to_drive.py
+      
+      - name: 📊 Resumo
+        if: success()
+        run: |
+          echo "## ✅ Backup Enviado para Google Drive" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Arquivo**: ${{ steps.download.outputs.filename }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Destino**: Google Drive" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Sucesso ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Acesse seu Google Drive para visualizar o backup!" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,152 @@
+name: Backup Automático - Email
+
+on:
+  # Executa todos os dias às 2:00 AM UTC (23:00 Brasília)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Permite execução manual
+  workflow_dispatch:
+
+jobs:
+  backup-to-email:
+    runs-on: ubuntu-latest
+    name: Backup PDV → Email
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: 🔄 Criar backup no Supabase
+        id: backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔄 Criando backup no Supabase..."
+          
+          RESPONSE=$(curl -s -X POST \
+            "${SUPABASE_URL}/rest/v1/rpc/criar_backup_automatico_diario" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation")
+          
+          echo "$RESPONSE" | jq '.'
+          
+          if echo "$RESPONSE" | jq -e '.sucesso == true' > /dev/null; then
+            echo "✅ Backup criado no Supabase!"
+          else
+            echo "❌ Erro ao criar backup!"
+            exit 1
+          fi
+      
+      - name: 📥 Baixar backup do Supabase
+        id: download
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "📥 Baixando backup mais recente..."
+          
+          # Buscar último backup automático
+          BACKUP=$(curl -s -X GET \
+            "${SUPABASE_URL}/rest/v1/backups?select=id,data,total_clientes,total_produtos,total_vendas,total_ordens,created_at&tipo=eq.automatico&order=created_at.desc&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+          
+          # Salvar informações para o email
+          echo "$BACKUP" | jq '.[0]' > backup-info.json
+          
+          CLIENTES=$(cat backup-info.json | jq -r '.total_clientes')
+          PRODUTOS=$(cat backup-info.json | jq -r '.total_produtos')
+          VENDAS=$(cat backup-info.json | jq -r '.total_vendas')
+          ORDENS=$(cat backup-info.json | jq -r '.total_ordens')
+          
+          echo "total_clientes=$CLIENTES" >> $GITHUB_OUTPUT
+          echo "total_produtos=$PRODUTOS" >> $GITHUB_OUTPUT
+          echo "total_vendas=$VENDAS" >> $GITHUB_OUTPUT
+          echo "total_ordens=$ORDENS" >> $GITHUB_OUTPUT
+          
+          # Extrair apenas o campo 'data' (backup real)
+          cat backup-info.json | jq '.data' > backup-pdv.json
+          
+          # Criar nome do arquivo
+          FILENAME="backup-pdv-$(date +%Y-%m-%d).json"
+          mv backup-pdv.json "$FILENAME"
+          
+          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+          echo "✅ Backup baixado: $FILENAME"
+      
+      - name: 📧 Enviar backup por email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.EMAIL_SMTP_SERVER || 'smtp.gmail.com' }}
+          server_port: ${{ secrets.EMAIL_SMTP_PORT || '587' }}
+          username: ${{ secrets.EMAIL_SENDER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "[PDV] Backup Automático - $(date +%d/%m/%Y)"
+          to: ${{ secrets.EMAIL_RECEIVER }}
+          from: ${{ secrets.EMAIL_SENDER }}
+          body: |
+            🔄 Backup Automático do Sistema PDV
+            
+            📊 RESUMO DO BACKUP
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            📅 Data: $(date +"%d/%m/%Y às %H:%M")
+            
+            📦 DADOS SALVOS:
+            • Clientes: ${{ steps.download.outputs.total_clientes }}
+            • Produtos: ${{ steps.download.outputs.total_produtos }}
+            • Vendas: ${{ steps.download.outputs.total_vendas }}
+            • Ordens de Serviço: ${{ steps.download.outputs.total_ordens }}
+            
+            📎 ARQUIVO ANEXO:
+            • Nome: ${{ steps.download.outputs.filename }}
+            • Formato: JSON
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            💾 COMO RESTAURAR:
+            1. Baixe o arquivo JSON anexado
+            2. Acesse: Admin > Backups > Restaurar de PC
+            3. Selecione o arquivo baixado
+            4. Clique em "Restaurar"
+            
+            🔒 SEGURANÇA:
+            ✓ Backup criptografado em trânsito
+            ✓ Enviado apenas para seu email
+            ✓ Mantenha este email salvo
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            Este é um email automático do sistema PDV Allimport.
+            Não responda a este email.
+            
+            Sistema de Backup Automático v1.0
+          attachments: ${{ steps.download.outputs.filename }}
+          priority: normal
+      
+      - name: 🧹 Limpar arquivos temporários
+        if: always()
+        run: |
+          rm -f backup-*.json
+      
+      - name: 📊 Resumo
+        if: success()
+        run: |
+          echo "## ✅ Backup Enviado por Email" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data**: $(date +"%d/%m/%Y às %H:%M")" >> $GITHUB_STEP_SUMMARY
+          echo "- **Arquivo**: ${{ steps.download.outputs.filename }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Para**: ${{ secrets.EMAIL_RECEIVER }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Enviado ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Dados no Backup:" >> $GITHUB_STEP_SUMMARY
+          echo "- Clientes: ${{ steps.download.outputs.total_clientes }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Produtos: ${{ steps.download.outputs.total_produtos }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Vendas: ${{ steps.download.outputs.total_vendas }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Ordens: ${{ steps.download.outputs.total_ordens }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📧 Verifique sua caixa de entrada!" >> $GITHUB_STEP_SUMMARY

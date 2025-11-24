@@ -1,52 +1,75 @@
 -- =====================================================
--- 🔒 CORREÇÃO CRÍTICA - ISOLAMENTO TOTAL DE CLIENTES
+-- 🔒 ISOLAMENTO COMPLETO DE CLIENTES POR USUÁRIO
 -- =====================================================
--- PROBLEMA IDENTIFICADO:
--- 1. Clientes têm user_id mas não têm empresa_id
--- 2. Políticas RLS usam user_id ao invés de empresa_id
--- 3. Frontend não está enviando empresa_id ao criar clientes
---
--- SOLUÇÃO:
--- 1. Preencher empresa_id em clientes existentes
--- 2. Atualizar políticas RLS para usar empresa_id
--- 3. Frontend precisa ser corrigido para enviar empresa_id
+-- OBJETIVO: Garantir que cada usuário veja APENAS seus próprios clientes
+-- MÉTODO: Row Level Security (RLS) usando user_id
 -- =====================================================
 
 -- =====================================================
--- 1️⃣ REMOVER TODAS AS POLÍTICAS ANTIGAS DE CLIENTES
+-- PASSO 1: VERIFICAR ESTRUTURA ATUAL
 -- =====================================================
 
-DROP POLICY IF EXISTS clientes_select_policy ON clientes;
-DROP POLICY IF EXISTS clientes_insert_policy ON clientes;
-DROP POLICY IF EXISTS clientes_update_policy ON clientes;
-DROP POLICY IF EXISTS clientes_delete_policy ON clientes;
-DROP POLICY IF EXISTS clientes_all_policy ON clientes;
-DROP POLICY IF EXISTS clientes_all_simple ON clientes;
-DROP POLICY IF EXISTS clientes_select ON clientes;
-DROP POLICY IF EXISTS clientes_insert ON clientes;
-DROP POLICY IF EXISTS clientes_update ON clientes;
-DROP POLICY IF EXISTS clientes_delete ON clientes;
-DROP POLICY IF EXISTS clientes_select_own ON clientes;
-DROP POLICY IF EXISTS clientes_insert_own ON clientes;
-DROP POLICY IF EXISTS clientes_update_own ON clientes;
-DROP POLICY IF EXISTS clientes_delete_own ON clientes;
+-- Ver se user_id existe na tabela clientes
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'clientes' AND column_name = 'user_id'
+    ) THEN
+        RAISE EXCEPTION 'ERRO: Coluna user_id não existe na tabela clientes. Execute primeiro o script de criação da estrutura.';
+    END IF;
+    RAISE NOTICE '✅ Coluna user_id existe na tabela clientes';
+END $$;
 
 -- =====================================================
--- 2️⃣ GARANTIR QUE CLIENTES TEM EMPRESA_ID
+-- PASSO 2: PREENCHER user_id EM CLIENTES EXISTENTES
 -- =====================================================
 
--- Adicionar empresa_id se não existir
-ALTER TABLE clientes 
-  ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id);
-
--- Criar índice para performance
-CREATE INDEX IF NOT EXISTS idx_clientes_empresa_id ON clientes(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_clientes_user_id ON clientes(user_id);
+-- Contar clientes sem user_id
+DO $$
+DECLARE
+    clientes_sem_user INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO clientes_sem_user FROM clientes WHERE user_id IS NULL;
+    
+    IF clientes_sem_user > 0 THEN
+        RAISE NOTICE 'Encontrados % clientes sem user_id. Será necessário atribuí-los manualmente.', clientes_sem_user;
+        
+        -- Se você quiser atribuir todos ao primeiro usuário (APENAS PARA TESTES):
+        -- UPDATE clientes SET user_id = (SELECT id FROM auth.users ORDER BY created_at LIMIT 1) WHERE user_id IS NULL;
+    ELSE
+        RAISE NOTICE '✅ Todos os clientes já têm user_id';
+    END IF;
+END $$;
 
 -- =====================================================
--- 3️⃣ ATUALIZAR CLIENTES SEM EMPRESA_ID
+-- PASSO 3: REMOVER POLÍTICAS ANTIGAS (INSEGURAS)
 -- =====================================================
--- Associar clientes órfãos à empresa do user_id
+
+DROP POLICY IF EXISTS "clientes_select_policy" ON clientes;
+DROP POLICY IF EXISTS "clientes_insert_policy" ON clientes;
+DROP POLICY IF EXISTS "clientes_update_policy" ON clientes;
+DROP POLICY IF EXISTS "clientes_delete_policy" ON clientes;
+DROP POLICY IF EXISTS "clientes_all_policy" ON clientes;
+DROP POLICY IF EXISTS "clientes_all_simple" ON clientes;
+DROP POLICY IF EXISTS "clientes_select" ON clientes;
+DROP POLICY IF EXISTS "clientes_insert" ON clientes;
+DROP POLICY IF EXISTS "clientes_update" ON clientes;
+DROP POLICY IF EXISTS "clientes_delete" ON clientes;
+DROP POLICY IF EXISTS "clientes_select_own" ON clientes;
+DROP POLICY IF EXISTS "clientes_insert_own" ON clientes;
+DROP POLICY IF EXISTS "clientes_update_own" ON clientes;
+DROP POLICY IF EXISTS "clientes_delete_own" ON clientes;
+DROP POLICY IF EXISTS "enable_read_for_authenticated" ON clientes;
+DROP POLICY IF EXISTS "enable_insert_for_authenticated" ON clientes;
+DROP POLICY IF EXISTS "enable_update_for_authenticated" ON clientes;
+DROP POLICY IF EXISTS "enable_delete_for_authenticated" ON clientes;
+
+RAISE NOTICE '✅ Todas as políticas antigas foram removidas';
+
+-- =====================================================
+-- PASSO 4: ATIVAR RLS
+-- =====================================================
 
 UPDATE clientes c
 SET empresa_id = e.id

@@ -134,14 +134,14 @@ const AdminBackupsPage: React.FC = () => {
       // Converter dados do Supabase para o formato esperado
       const backupsFormatted: BackupInfo[] = (data || []).map(backup => ({
         id: backup.id,
-        nome: `Backup ${backup.status === 'pendente' ? 'em andamento' : 'concluído'} - ${new Date(backup.created_at).toLocaleDateString('pt-BR')}`,
-        tipo: 'manual' as const,
-        status: backup.status === 'pendente' ? 'em_andamento' : 
+        nome: `Backup ${backup.status === 'processando' ? 'em andamento' : 'concluído'} - ${new Date(backup.created_at).toLocaleDateString('pt-BR')}`,
+        tipo: backup.tipo || 'manual' as const,
+        status: backup.status === 'processando' ? 'em_andamento' : 
                backup.status === 'concluido' ? 'concluido' : 'erro',
         tamanho_mb: backup.tamanho_bytes ? Math.round(backup.tamanho_bytes / 1024 / 1024 * 100) / 100 : 0,
         created_at: backup.created_at,
         url_download: backup.arquivo_url || undefined,
-        erro_detalhes: backup.mensagem || undefined
+        erro_detalhes: backup.descricao || undefined
       }));
 
       setBackups(backupsFormatted);
@@ -222,8 +222,10 @@ const AdminBackupsPage: React.FC = () => {
         .from('backups')
         .insert({
           empresa_id: (await supabase.auth.getUser()).data.user?.id,
-          status: 'pendente',
-          mensagem: 'Backup iniciado manualmente'
+          tipo: 'manual',
+          status: 'processando',
+          data: {},
+          descricao: 'Backup iniciado manualmente'
         })
         .select()
         .single();
@@ -244,8 +246,7 @@ const AdminBackupsPage: React.FC = () => {
             .update({
               status: 'concluido',
               tamanho_bytes: tamanhoSimulado,
-              arquivo_url: `https://backup-storage.com/${backup.id}.sql`,
-              mensagem: 'Backup concluído com sucesso'
+              descricao: 'Backup concluído com sucesso'
             })
             .eq('id', backup.id);
 
@@ -270,8 +271,8 @@ const AdminBackupsPage: React.FC = () => {
           await supabase
             .from('backups')
             .update({
-              status: 'erro',
-              mensagem: 'Erro durante o processamento do backup'
+              status: 'falhou',
+              descricao: 'Erro durante o processamento do backup'
             })
             .eq('id', backup.id);
 
@@ -313,8 +314,10 @@ const AdminBackupsPage: React.FC = () => {
         .from('backups')
         .insert({
           empresa_id: (await supabase.auth.getUser()).data.user?.id,
+          tipo: 'manual',
           status: 'concluido',
-          mensagem: 'Backup baixado para o PC',
+          data: {},
+          descricao: 'Backup baixado para o PC',
           tamanho_bytes: blob.size
         })
         .select()
@@ -414,8 +417,10 @@ const AdminBackupsPage: React.FC = () => {
       // Criar registro do restore
       await supabase.from('backups').insert({
         empresa_id: (await supabase.auth.getUser()).data.user?.id,
+        tipo: 'sistema',
         status: 'concluido',
-        mensagem: `Backup restaurado do arquivo: ${file.name}`,
+        data: {},
+        descricao: `Backup restaurado do arquivo: ${file.name}`,
         tamanho_bytes: file.size
       });
 

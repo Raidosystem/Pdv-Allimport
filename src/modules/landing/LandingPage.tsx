@@ -54,8 +54,8 @@ export function LandingPage() {
                 <ShoppingCart className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-secondary-900 truncate">PDV Import</h1>
-                <p className="text-xs sm:text-sm md:text-base text-primary-600 font-medium hidden sm:block truncate">Sistema de Vendas</p>
+                <h1 className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-secondary-900 truncate">RaVal pdv</h1>
+                <p className="text-xs sm:text-sm md:text-base text-primary-600 font-medium hidden sm:block truncate">Sistema de Ponto de Venda</p>
               </div>
             </div>
 
@@ -87,11 +87,11 @@ export function LandingPage() {
             </div>
             
             <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-secondary-900 mb-2 xs:mb-3 sm:mb-4 md:mb-6 leading-tight px-1 xs:px-2">
-              <span className="block">Sistema PDV</span>
+              <span className="block">RaVal pdv</span>
               <span className="text-primary-500 block">Completo e Moderno</span>
             </h2>
             <p className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-secondary-600 mb-4 xs:mb-6 sm:mb-8 md:mb-10 lg:mb-12 max-w-4xl mx-auto leading-relaxed px-2 xs:px-3 sm:px-4">
-              Gerencie suas vendas, clientes, produtos e muito mais com o sistema PDV mais moderno e intuitivo do mercado.
+              Gerencie suas vendas, clientes, produtos e muito mais com o sistema mais moderno e intuitivo do mercado.
             </p>
             <div className="flex flex-col gap-2 xs:gap-3 sm:gap-4 md:gap-6 justify-center items-stretch px-2 xs:px-3 sm:px-4 max-w-sm sm:max-w-md mx-auto">
               <Link to="/signup" className="w-full">
@@ -171,7 +171,7 @@ export function LandingPage() {
               Pronto para começar?
             </h3>
             <p className="text-sm xs:text-base sm:text-lg md:text-xl text-secondary-200 mb-6 xs:mb-8 sm:mb-10 max-w-2xl mx-auto px-3 xs:px-4 leading-relaxed">
-              Junte-se a centenas de empresas que já transformaram suas vendas com o PDV Import
+              Junte-se a centenas de empresas que já transformaram suas vendas com o RaVal pdv
             </p>
             
             <div className="flex flex-col gap-2 xs:gap-3 sm:gap-4 md:gap-6 justify-center items-stretch px-2 xs:px-3 sm:px-4 max-w-sm sm:max-w-md mx-auto">
@@ -198,10 +198,10 @@ export function LandingPage() {
               <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 bg-primary-500 rounded-md xs:rounded-lg flex items-center justify-center flex-shrink-0">
                 <ShoppingCart className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="text-white font-semibold text-sm xs:text-base sm:text-lg">PDV Import</span>
+              <span className="text-white font-semibold text-sm xs:text-base sm:text-lg">RaVal pdv</span>
             </div>
             <p className="text-secondary-400 text-xs xs:text-sm text-center px-2">
-              © 2025 PDV Import. Todos os direitos reservados. v2.1
+              © 2025 RaVal pdv. Todos os direitos reservados. v2.1
             </p>
           </div>
         </div>

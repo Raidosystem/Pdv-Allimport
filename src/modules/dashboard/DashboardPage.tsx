@@ -115,7 +115,7 @@ export function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-secondary-900">
-                  PDV Import
+                  RaVal pdv
                 </h1>
                 <p className="text-primary-600 font-medium">Painel de Controle</p>
               </div>
@@ -175,7 +175,7 @@ export function DashboardPage() {
             <ShoppingCart className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-secondary-900 mb-4">
-            Bem-vindo ao PDV Import
+            Bem-vindo ao RaVal pdv
           </h2>
           <p className="text-xl text-secondary-600 max-w-2xl mx-auto">
             Selecione um módulo para começar a gerenciar seu negócio

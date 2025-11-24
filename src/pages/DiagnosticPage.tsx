@@ -73,7 +73,7 @@ export function DiagnosticPage() {
             Diagnóstico Completo do Sistema
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Use esta ferramenta para identificar e resolver problemas de autenticação e configuração do sistema PDV Import.
+            Use esta ferramenta para identificar e resolver problemas de autenticação e configuração do sistema.
           </p>
         </div>
 

@@ -734,7 +734,7 @@ export function AdminPanel() {
                 Criar Novo Proprietário
               </h2>
               <p className="text-blue-100 text-lg">
-                Adicione manualmente um novo proprietário do sistema PDV
+                Adicione manualmente um novo proprietário do sistema
               </p>
             </div>
           </div>
@@ -805,7 +805,7 @@ export function AdminPanel() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
               <Database className="w-7 h-7 text-blue-600" />
-              Proprietários do Sistema PDV
+              Proprietários do Sistema
             </h2>
             
             <Button

@@ -338,7 +338,7 @@ export function useUserHierarchy() {
           id: 'sales',
           name: 'sales', 
           display_name: 'Vendas',
-          description: 'Sistema de vendas',
+          description: 'Sistema de ponto de venda',
           is_active: true
         }
       ];

@@ -131,8 +131,8 @@ export function ForgotPasswordPage() {
                 <ShoppingCart className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-secondary-900">PDV Import</h1>
-                <p className="text-primary-600 font-medium">Sistema de Vendas</p>
+                <h1 className="text-3xl font-bold text-secondary-900">RaVal pdv</h1>
+                <p className="text-primary-600 font-medium">Sistema de Ponto de Venda</p>
               </div>
             </Link>
           </div>

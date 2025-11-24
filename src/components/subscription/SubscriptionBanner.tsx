@@ -22,7 +22,7 @@ export function SubscriptionBanner() {
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-4 border-b flex items-center justify-between">
-            <h2 className="text-xl font-bold">Assinar PDV Import</h2>
+            <h2 className="text-xl font-bold">Assinar RaVal pdv</h2>
             <Button
               variant="outline"
               size="sm"
@@ -52,7 +52,7 @@ export function SubscriptionBanner() {
       return {
         icon: <AlertTriangle className="w-5 h-5" />,
         title: 'Período de teste expirado',
-        message: 'Assine agora para continuar usando o PDV Import',
+        message: 'Assine agora para continuar usando o RaVal pdv',
         bgColor: 'bg-red-500',
         textColor: 'text-white',
         urgent: true
@@ -73,7 +73,7 @@ export function SubscriptionBanner() {
     return {
       icon: <Clock className="w-5 h-5" />,
       title: `${daysRemaining} dias restantes do teste`,
-      message: 'Assine o PDV Import e continue aproveitando todas as funcionalidades',
+      message: 'Assine o RaVal pdv e continue aproveitando todas as funcionalidades',
       bgColor: 'bg-blue-500',
       textColor: 'text-white',
       urgent: false

@@ -395,7 +395,7 @@ export function ConfiguracoesPage() {
             </h1>
             <p className="text-gray-600">
               {activeSection === 'dashboard' 
-                ? 'Gerencie as configurações do seu sistema PDV'
+                ? 'Gerencie as configurações do seu sistema'
                 : configSections.find(s => s.id === activeSection)?.description
               }
             </p>

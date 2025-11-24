@@ -82,7 +82,7 @@ export function HistoricoCaixaPage() {
       
       // Configuração do cabeçalho
       doc.setFontSize(20);
-      doc.text('PDV Import - Histórico do Caixa', 20, 20);
+      doc.text('RaVal pdv - Histórico do Caixa', 20, 20);
       
       doc.setFontSize(12);
       doc.text(`Relatório gerado em: ${formatDateTime(new Date().toISOString())}`, 20, 30);

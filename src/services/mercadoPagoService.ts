@@ -36,7 +36,7 @@ export class MercadoPagoService {
       items: [{
         id: 'pdv-subscription',
         title: planName,
-        description: 'Assinatura do Sistema PDV Allimport',
+        description: 'Assinatura do Sistema RaVal pdv',
         quantity: 1,
         currency_id: 'BRL',
         unit_price: planPrice
@@ -76,7 +76,7 @@ export class MercadoPagoService {
           {
             id: 'pdv-subscription',
             title: planName,
-            description: 'Assinatura do Sistema PDV Allimport',
+            description: 'Assinatura do Sistema RaVal pdv',
             quantity: 1,
             currency_id: 'BRL',
             unit_price: planPrice

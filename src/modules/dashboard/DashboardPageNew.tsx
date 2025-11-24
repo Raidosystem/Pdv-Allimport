@@ -5,6 +5,7 @@ import RelatoriosPage from '../../pages/RelatoriosPage'
 import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
 import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
 import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { 
   ShoppingCart, 
   Users, 
@@ -69,6 +70,7 @@ export function DashboardPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null)
   const [showMobileHint, setShowMobileHint] = useState(true)
+  const [empresaNome, setEmpresaNome] = useState<string>('RaVal pdv')
 
   // Ocultar as setas indicadoras do mobile após 3 segundos
   useEffect(() => {
@@ -77,6 +79,29 @@ export function DashboardPage() {
     }, 3000)
     return () => clearTimeout(timer)
   }, [])
+
+  // Carregar nome da empresa
+  useEffect(() => {
+    const loadEmpresaNome = async () => {
+      if (!user?.id) return
+      
+      try {
+        const { data, error } = await supabase
+          .from('empresas')
+          .select('nome')
+          .eq('user_id', user.id)
+          .single()
+        
+        if (data && data.nome) {
+          setEmpresaNome(data.nome)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar nome da empresa:', error)
+      }
+    }
+    
+    loadEmpresaNome()
+  }, [user])
 
   // Função para rolar os cards
   const scrollCards = (direction: 'left' | 'right') => {
@@ -383,7 +408,7 @@ export function DashboardPage() {
                 <ShoppingCart className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">RaVal pdv</h1>
+                <h1 className="text-xl font-bold text-gray-900">{empresaNome}</h1>
                 <p className="text-sm text-gray-600 hidden sm:block">Sistema de Ponto de Venda</p>
               </div>
             </div>
@@ -688,7 +713,7 @@ export function DashboardPage() {
               <ShoppingCart className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Bem-vindo ao RaVal pdv
+              Bem-vindo ao {empresaNome}
             </h3>
             <p className="text-gray-600 max-w-md mx-auto mb-8">
               Clique em um dos menus acima para ver as opções disponíveis e começar a usar o sistema.

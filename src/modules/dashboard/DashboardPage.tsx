@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { 
   ShoppingCart, 
   Users, 
@@ -22,6 +24,30 @@ import { SubscriptionBanner } from '../../components/subscription/SubscriptionBa
 export function DashboardPage() {
   const { user, signOut } = useAuth()
   const { isActive } = useSubscription()
+  const [empresaNome, setEmpresaNome] = useState<string>('RaVal pdv')
+
+  // Carregar nome da empresa
+  useEffect(() => {
+    const loadEmpresaNome = async () => {
+      if (!user?.id) return
+      
+      try {
+        const { data, error } = await supabase
+          .from('empresas')
+          .select('nome')
+          .eq('user_id', user.id)
+          .single()
+        
+        if (data && data.nome) {
+          setEmpresaNome(data.nome)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar nome da empresa:', error)
+      }
+    }
+    
+    loadEmpresaNome()
+  }, [user])
 
   const handleSignOut = async () => {
     await signOut()
@@ -115,7 +141,7 @@ export function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-secondary-900">
-                  RaVal pdv
+                  {empresaNome}
                 </h1>
                 <p className="text-primary-600 font-medium">Painel de Controle</p>
               </div>
@@ -175,7 +201,7 @@ export function DashboardPage() {
             <ShoppingCart className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-secondary-900 mb-4">
-            Bem-vindo ao RaVal pdv
+            Bem-vindo ao {empresaNome}
           </h2>
           <p className="text-xl text-secondary-600 max-w-2xl mx-auto">
             Selecione um módulo para começar a gerenciar seu negócio

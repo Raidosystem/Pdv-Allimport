@@ -119,17 +119,30 @@ const AdminRolesPermissionsPage: React.FC = () => {
         return acc;
       }, {} as Record<string, number>) || {};
 
-      const funcoesWithDetails: FuncaoWithPermissions[] = funcoesData.map(funcao => ({
-        ...funcao,
-        permissoes: funcao.funcao_permissoes
-          ?.map((fp: any) => fp.permissoes)
-          .filter((p: any) => p !== null) || [],
-        funcionarios_count: funcionariosCount[funcao.id] || 0,
-        nivel: 50, // Valor padrão temporário
-        sistema: funcao.is_system || false
-      }));
+      const funcoesWithDetails: FuncaoWithPermissions[] = funcoesData.map(funcao => {
+        // Extrair permissões da junction table
+        const permissoesArray = Array.isArray(funcao.funcao_permissoes) 
+          ? funcao.funcao_permissoes
+              .map((fp: any) => fp.permissoes)
+              .filter((p: any) => p !== null && p !== undefined)
+          : [];
 
-      console.log('📋 Funções carregadas:', funcoesWithDetails);
+        console.log(`🔍 Função "${funcao.nome}":`, {
+          funcao_permissoes: funcao.funcao_permissoes,
+          permissoesExtraidas: permissoesArray,
+          quantidade: permissoesArray.length
+        });
+
+        return {
+          ...funcao,
+          permissoes: permissoesArray,
+          funcionarios_count: funcionariosCount[funcao.id] || 0,
+          nivel: 50,
+          sistema: funcao.is_system || false
+        };
+      });
+
+      console.log('📋 Funções carregadas com detalhes completos:', funcoesWithDetails);
       setFuncoes(funcoesWithDetails);
     }
   };
@@ -759,7 +772,15 @@ interface PermissionsModalProps {
 }
 
 const PermissionsModal: React.FC<PermissionsModalProps> = ({ funcao, onClose }) => {
-  const groupedPermissions = groupPermissionsByResource(funcao.permissoes);
+  console.log('🎯 [PermissionsModal] Renderizando modal com função:', {
+    nome: funcao.nome,
+    permissoes: funcao.permissoes,
+    quantidade: funcao.permissoes?.length || 0
+  });
+
+  const groupedPermissions = groupPermissionsByResource(funcao.permissoes || []);
+
+  console.log('🗂️ [PermissionsModal] Permissões agrupadas:', groupedPermissions);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -777,28 +798,31 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ funcao, onClose }) 
         </div>
 
         <div className="space-y-4">
-          {Object.entries(groupedPermissions).map(([recurso, perms]) => (
-            <div key={recurso} className="space-y-2">
-              <h4 className="font-medium text-gray-900 text-sm border-b border-gray-200 pb-1">
-                {recurso.replace('_', ' ').toUpperCase()}
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {(perms as Permissao[]).map((permissao) => (
-                  <div key={permissao.id} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-gray-700">
-                      {traduzirAcao(permissao.acao)}
-                    </span>
-                  </div>
-                ))}
+          {Object.entries(groupedPermissions).length > 0 ? (
+            Object.entries(groupedPermissions).map(([recurso, perms]) => (
+              <div key={recurso} className="space-y-2">
+                <h4 className="font-medium text-gray-900 text-sm border-b border-gray-200 pb-1">
+                  {recurso.replace('_', ' ').toUpperCase()}
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {(perms as Permissao[]).map((permissao) => (
+                    <div key={permissao.id} className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-gray-700">
+                        {traduzirAcao(permissao.acao)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-
-          {funcao.permissoes.length === 0 && (
+            ))
+          ) : (
             <div className="text-center py-8">
               <Unlock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Esta função não possui permissões definidas</p>
+              <p className="text-gray-500 mb-2">Esta função não possui permissões definidas</p>
+              <p className="text-xs text-gray-400">
+                Use o botão "Editar" para atribuir permissões a esta função
+              </p>
             </div>
           )}
         </div>

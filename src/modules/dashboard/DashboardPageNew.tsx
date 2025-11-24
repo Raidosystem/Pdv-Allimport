@@ -240,7 +240,7 @@ export function DashboardPage() {
       priority: true,
       options: [
         { title: 'Empresa', path: '/configuracoes-empresa', icon: Settings, description: 'Configurar empresa' },
-        { title: 'Funcionários', path: '/funcionarios', icon: Users, description: 'Gerenciar equipe' }
+        { title: 'Funcionários', path: '/admin/usuarios', icon: Users, description: 'Gerenciar equipe' }
       ]
     })
   }

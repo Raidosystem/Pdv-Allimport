@@ -50,7 +50,7 @@ BEGIN
     LOOP
         RAISE NOTICE '➕ Criando funcionário para: %', v_user.email;
         
-        -- Criar funcionário
+        -- Criar funcionário (somente se não existir)
         INSERT INTO public.funcionarios (
             user_id,
             empresa_id,
@@ -70,14 +70,9 @@ BEGIN
             'ativo',
             v_user.created_at
         )
-        ON CONFLICT (user_id) DO NOTHING
         RETURNING id INTO v_funcionario_id;
         
-        IF v_funcionario_id IS NOT NULL THEN
-            RAISE NOTICE '✅ Funcionário criado: % (ID: %)', v_user.email, v_funcionario_id;
-        ELSE
-            RAISE NOTICE '⚠️ Funcionário já existe para: %', v_user.email;
-        END IF;
+        RAISE NOTICE '✅ Funcionário criado: % (ID: %)', v_user.email, v_funcionario_id;
     END LOOP;
     
     RAISE NOTICE '========================================';

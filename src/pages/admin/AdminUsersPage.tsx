@@ -133,7 +133,7 @@ const AdminUsersPage: React.FC = () => {
         convite_expires_at: func.convite_expires_at,
         created_at: func.created_at,
         updated_at: func.updated_at,
-        funcoes: func.funcoes ? [func.funcoes] : [],
+        funcoes: (func.funcoes ? [func.funcoes] : []) as unknown as Funcao[],
         convitePendente: func.status === 'pendente' && !!func.convite_token
       })) || [];
 

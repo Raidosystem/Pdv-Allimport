@@ -108,7 +108,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
   const [mostrandoFormNovoItem, setMostrandoFormNovoItem] = useState(false)
   
   // Estado para o status da ordem
-  const [statusOrdem, setStatusOrdem] = useState<'Em análise' | 'Orçamento' | 'Pronto'>('Em análise')
+  const [statusOrdem, setStatusOrdem] = useState<'Fazendo orçamento' | 'Em conserto' | 'Pronto'>('Fazendo orçamento')
   
   const [equipamentosAnteriores, setEquipamentosAnteriores] = useState<Array<{
     tipo: string
@@ -229,8 +229,8 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
       setModeloBusca(ordem.modelo || '')
       
       // Carregar status (apenas se for um dos editáveis)
-      if (ordem.status && ['Em análise', 'Orçamento', 'Pronto'].includes(ordem.status)) {
-        setStatusOrdem(ordem.status as 'Em análise' | 'Orçamento' | 'Pronto')
+      if (ordem.status && ['Fazendo orçamento', 'Em conserto', 'Pronto'].includes(ordem.status)) {
+        setStatusOrdem(ordem.status as 'Fazendo orçamento' | 'Em conserto' | 'Pronto')
       }
       
       // Se houver cliente, setar
@@ -1468,11 +1468,11 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
             </label>
             <select
               value={statusOrdem}
-              onChange={(e) => setStatusOrdem(e.target.value as 'Em análise' | 'Orçamento' | 'Pronto')}
+              onChange={(e) => setStatusOrdem(e.target.value as 'Fazendo orçamento' | 'Em conserto' | 'Pronto')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Em análise">Em análise</option>
-              <option value="Orçamento">Orçamento</option>
+              <option value="Fazendo orçamento">Fazendo orçamento</option>
+              <option value="Em conserto">Em conserto</option>
               <option value="Pronto">Pronto</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">

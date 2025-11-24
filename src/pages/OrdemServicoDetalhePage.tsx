@@ -250,15 +250,13 @@ export function OrdemServicoDetalhePage() {
                 <select
                   value={ordem.status}
                   onChange={(e) => atualizarStatus(e.target.value as StatusOS)}
-                  disabled={atualizandoStatus}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={atualizandoStatus || ordem.status === 'Entregue'}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  <option value="Em análise">Em análise</option>
-                  <option value="Aguardando aprovação">Aguardando aprovação</option>
-                  <option value="Aguardando peças">Aguardando peças</option>
+                  <option value="Fazendo orçamento">Fazendo orçamento</option>
                   <option value="Em conserto">Em conserto</option>
                   <option value="Pronto">Pronto</option>
-                  <option value="Cancelado">Cancelado</option>
+                  <option value="Entregue" disabled>Entregue (use o botão Encerrar OS)</option>
                 </select>
               </div>
               <div className="flex gap-2">
@@ -266,16 +264,6 @@ export function OrdemServicoDetalhePage() {
                   <Printer className="w-4 h-4" />
                   Imprimir
                 </Button>
-                {(ordem.status === 'Em conserto' || ordem.status === 'Aguardando peças') && (
-                  <Button 
-                    onClick={() => atualizarStatus('Pronto')}
-                    className="gap-2 bg-blue-600 hover:bg-blue-700"
-                    disabled={atualizandoStatus}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Finalizar Serviço
-                  </Button>
-                )}
               </div>
             </div>
           )}

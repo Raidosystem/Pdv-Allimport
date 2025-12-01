@@ -27,7 +27,7 @@ export async function createSampleData() {
           id: 'sample-sale-1',
           cliente_id: 'sample-1',
           total: 50.00,
-          data_venda: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           items: [
             {
               produto_id: 'sample-prod-1',

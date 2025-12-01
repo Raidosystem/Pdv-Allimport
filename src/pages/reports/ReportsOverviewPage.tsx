@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { DollarSign, ShoppingCart, TrendingUp, Users, ArrowUpRight } from "lucide-react";
 import { formatCurrency } from "../../utils/format";
-import { realReportsService } from "../../services/realReportsService";
+import { realReportsService } from "../../services/simpleReportsService";
 
 // ===== Helper: Filters in URL (preserve state across sections) =====
 type FilterState = {
@@ -97,7 +97,11 @@ const KPICard: React.FC<KPICardProps> = ({ icon, label, value, change, trend, on
 };
 
 // ===== Main Component =====
-const ReportsOverviewPage: React.FC = () => {
+interface ReportsOverviewPageProps {
+  period?: 'week' | 'month' | 'quarter' | 'all';
+}
+
+const ReportsOverviewPage: React.FC<ReportsOverviewPageProps> = ({ period: propPeriod }) => {
   const { filters, setFilters } = useFilters();
   const [loading, setLoading] = useState(false);
   const [salesData, setSalesData] = useState<any>(null);
@@ -116,18 +120,31 @@ const ReportsOverviewPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('overview_timeseries_brush', { filters });
-      const period = periodMapping[filters.period as keyof typeof periodMapping] || 'month';
-      const data = await realReportsService.getSalesReport(period);
-      console.log('📊 [OVERVIEW] Dados recebidos:', data);
-      console.log('📊 [OVERVIEW] totalSales:', data?.totalSales);
-      console.log('📊 [OVERVIEW] totalAmount:', data?.totalAmount);
+      console.log('🔵 [OVERVIEW] INÍCIO - Carregando dados...', { filters, propPeriod });
+      // Usar o período da prop se fornecido, senão usar o filtro
+      const period = propPeriod || periodMapping[filters.period as keyof typeof periodMapping] || 'month';
+      console.log('📅 [OVERVIEW] Período selecionado:', period);
+      
+      const data = await realReportsService.getSalesReport(period as 'week' | 'month' | 'quarter');
+      
+      console.log('✅ [OVERVIEW] Dados recebidos do serviço:', data);
+      console.log('💰 [OVERVIEW] totalAmount:', data?.totalAmount);
+      console.log('📦 [OVERVIEW] totalSales:', data?.totalSales);
+      console.log('📊 [OVERVIEW] dailySales length:', data?.dailySales?.length);
+      console.log('🏆 [OVERVIEW] topProducts length:', data?.topProducts?.length);
+      
+      if (!data || data.totalSales === 0) {
+        console.warn('⚠️ [OVERVIEW] ATENÇÃO: Dados vazios retornados!');
+      }
+      
       setSalesData(data);
+      console.log('✅ [OVERVIEW] State atualizado com sucesso');
     } catch (err) {
-      console.error('Error loading overview data:', err);
+      console.error('❌ [OVERVIEW] ERRO ao carregar dados:', err);
       setError('Erro ao carregar dados. Tente novamente.');
     } finally {
       setLoading(false);
+      console.log('🏁 [OVERVIEW] Loading finalizado');
     }
   };
 
@@ -152,7 +169,7 @@ const ReportsOverviewPage: React.FC = () => {
       clearInterval(interval);
       window.removeEventListener('saleCompleted', handleNewSale);
     };
-  }, [filters.period]);
+  }, [filters.period, propPeriod]);
 
   const handleOpenDetailed = () => {
     console.log('overview_open_detailed', { filters });
@@ -202,13 +219,13 @@ const ReportsOverviewPage: React.FC = () => {
   }
 
   // Empty State
-  if (!salesData || (!salesData.totalSales && !salesData.totalAmount)) {
+  if (!salesData) {
     return (
       <div className="p-6">
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
           <div className="text-gray-400 text-6xl mb-4">📊</div>
           <div className="text-gray-600 text-lg font-semibold mb-2">Nenhum dado encontrado</div>
-          <p className="text-gray-500 mb-4">Não há vendas para o período selecionado.</p>
+          <p className="text-gray-500 mb-4">Não há dados para o período selecionado.</p>
           <button 
             onClick={() => setFilters({ ...filters, period: '30d' })}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -220,7 +237,7 @@ const ReportsOverviewPage: React.FC = () => {
     );
   }
 
-  const ticketMedio = salesData.totalSales > 0 ? salesData.totalAmount / salesData.totalSales : 0;
+  const ticketMedio = (salesData.totalSales && salesData.totalSales > 0) ? salesData.totalAmount / salesData.totalSales : 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -349,30 +366,64 @@ const ReportsOverviewPage: React.FC = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h4 className="font-semibold mb-4">⏰ Pico de Vendas</h4>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">--:-- - --:--</div>
-            <p className="text-gray-600 mb-3">Nenhum movimento registrado</p>
-            <div className="text-lg font-semibold text-gray-600">
-              {formatCurrency(0)} em vendas
-            </div>
+            {salesData.dailySales && salesData.dailySales.length > 0 ? (
+              <>
+                <div className="text-3xl font-bold text-blue-600 mb-2">
+                  {salesData.dailySales.reduce((max: any, day: any) => 
+                    day.amount > (max?.amount || 0) ? day : max, 
+                    salesData.dailySales[0]
+                  )?.date || '--'}
+                </div>
+                <p className="text-gray-600 mb-3">Dia com mais vendas</p>
+                <div className="text-lg font-semibold text-gray-900">
+                  {formatCurrency(
+                    salesData.dailySales.reduce((max: any, day: any) => 
+                      day.amount > (max?.amount || 0) ? day : max, 
+                      salesData.dailySales[0]
+                    )?.amount || 0
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  {salesData.dailySales.reduce((max: any, day: any) => 
+                    day.amount > (max?.amount || 0) ? day : max, 
+                    salesData.dailySales[0]
+                  )?.count || 0} vendas
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-gray-400 mb-2">--:-- - --:--</div>
+                <p className="text-gray-600 mb-3">Nenhum movimento registrado</p>
+                <div className="text-lg font-semibold text-gray-600">
+                  {formatCurrency(0)} em vendas
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Categorias */}
+        {/* Categorias - Agora com dados reais dos produtos */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold mb-4">📊 Categorias</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-green-600">📱 Eletrônicos</span>
-              <span className="font-semibold">+23%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-blue-600">👕 Roupas</span>
-              <span className="font-semibold">+15%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-red-600">🏠 Casa</span>
-              <span className="font-semibold">-8%</span>
-            </div>
+          <h4 className="font-semibold mb-4">📊 Top Produtos</h4>
+          <div className="space-y-3">
+            {salesData.topProducts && salesData.topProducts.length > 0 ? (
+              salesData.topProducts.slice(0, 3).map((product: any, index: number) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className={`${
+                    index === 0 ? 'text-green-600' : 
+                    index === 1 ? 'text-blue-600' : 
+                    'text-purple-600'
+                  }`}>
+                    {index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉'} {product.productName}
+                  </span>
+                  <span className="font-semibold">{formatCurrency(product.revenue)}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                Nenhum produto vendido
+              </div>
+            )}
           </div>
         </div>
       </div>

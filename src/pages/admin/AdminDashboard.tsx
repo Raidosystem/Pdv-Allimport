@@ -21,6 +21,12 @@ const AdminDashboard: React.FC = () => {
   const [recentLogs, setRecentLogs] = useState<LogAuditoria[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Função para disparar evento de navegação customizado
+  const navigateTo = (view: string) => {
+    // Disparar evento customizado que será capturado pelo AdministracaoPageNew
+    window.dispatchEvent(new CustomEvent('admin-navigate', { detail: { view } }));
+  };
+
   useEffect(() => {
     if (!permissionsLoading) {
       loadDashboardData();
@@ -228,7 +234,6 @@ const AdminDashboard: React.FC = () => {
   };
 
   const loadRecentLogs = async () => {
-    // ⚠️ TEMPORÁRIO: Removido join com funcionarios devido a erro 400
     const { data: logs } = await supabase
       .from('audit_logs')
       .select(`
@@ -245,17 +250,28 @@ const AdminDashboard: React.FC = () => {
       .order('created_at', { ascending: false })
       .limit(10);
 
+    // Buscar nomes dos funcionários
+    const funcionarioIds = logs?.map(log => log.funcionario_id).filter(Boolean) || [];
+    const { data: funcionarios } = await supabase
+      .from('funcionarios')
+      .select('id, nome')
+      .in('id', funcionarioIds);
+
+    const funcionariosMap = new Map(
+      funcionarios?.map(f => [f.id, f.nome]) || []
+    );
+
     const formattedLogs: LogAuditoria[] = logs?.map(log => ({
       id: log.id,
       empresa_id: log.empresa_id,
       funcionario_id: log.funcionario_id,
-      recurso: log.recurso,
-      acao: log.acao,
+      recurso: log.recurso || 'sistema',
+      acao: log.acao || 'acao_desconhecida',
       entidade_tipo: log.entidade_tipo,
       entidade_id: log.entidade_id,
       sucesso: log.sucesso,
       created_at: log.created_at,
-      funcionario_nome: 'Sistema', // TODO: Buscar nome quando funcionarios tiver FK correta
+      funcionario_nome: funcionariosMap.get(log.funcionario_id) || 'Sistema',
       icon: getActionIcon(log.acao),
       color: getActionColor(log.acao),
       description: getActionDescription(log.recurso, log.acao, log.entidade_tipo)
@@ -264,7 +280,8 @@ const AdminDashboard: React.FC = () => {
     setRecentLogs(formattedLogs);
   };
 
-  const getActionIcon = (acao: string): string => {
+  const getActionIcon = (acao: string | null): string => {
+    if (!acao) return '📝';
     switch (acao) {
       case 'create': return '➕';
       case 'update': return '✏️';
@@ -275,7 +292,8 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const getActionColor = (acao: string): string => {
+  const getActionColor = (acao: string | null): string => {
+    if (!acao) return 'text-gray-600';
     switch (acao) {
       case 'create': return 'text-green-600';
       case 'update': return 'text-blue-600';
@@ -286,25 +304,31 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const getActionDescription = (recurso: string, acao: string, entidade?: string): string => {
+  const getActionDescription = (recurso: string | null, acao: string | null, entidade?: string | null): string => {
+    if (!recurso || !acao) {
+      return 'realizou uma ação no sistema';
+    }
+
     const recursoMap: Record<string, string> = {
       'vendas': 'venda',
       'clientes': 'cliente',
       'produtos': 'produto',
       'ordens_servico': 'ordem de serviço',
       'administracao.usuarios': 'usuário',
-      'administracao.funcoes': 'função'
+      'administracao.funcoes': 'função',
+      'sistema': 'sistema'
     };
 
     const acaoMap: Record<string, string> = {
       'create': 'criou',
-      'update': 'editou',
+      'update': 'atualizou',
       'delete': 'excluiu',
       'login': 'fez login',
-      'export': 'exportou'
+      'export': 'exportou',
+      'acao_desconhecida': 'realizou ação em'
     };
 
-    const recursoNome = recursoMap[recurso] || recurso;
+    const recursoNome = recursoMap[recurso] || recurso.replace('_', ' ');
     const acaoNome = acaoMap[acao] || acao;
 
     if (acao === 'login') {
@@ -548,28 +572,40 @@ const AdminDashboard: React.FC = () => {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           {can('administracao.usuarios', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg hover:from-green-500/30 hover:to-green-600/30 transition-all duration-200 border border-green-300/30">
+            <button 
+              onClick={() => navigateTo('usuarios')}
+              className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg hover:from-green-500/30 hover:to-green-600/30 transition-all duration-200 border border-green-300/30"
+            >
               <Users className="w-5 h-5 text-green-300" />
               <span className="text-sm font-medium text-green-100">Usuários</span>
             </button>
           )}
           
           {can('administracao.funcoes', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-lg hover:from-purple-500/30 hover:to-purple-600/30 transition-all duration-200 border border-purple-300/30">
+            <button 
+              onClick={() => navigateTo('permissoes')}
+              className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-lg hover:from-purple-500/30 hover:to-purple-600/30 transition-all duration-200 border border-purple-300/30"
+            >
               <ShieldCheck className="w-5 h-5 text-purple-300" />
               <span className="text-sm font-medium text-purple-100">Permissões</span>
             </button>
           )}
           
           {can('administracao.backups', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 transition-all duration-200 border border-orange-300/30">
+            <button 
+              onClick={() => navigateTo('backup')}
+              className="flex items-center gap-2 p-3 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 transition-all duration-200 border border-orange-300/30"
+            >
               <Database className="w-5 h-5 text-orange-300" />
               <span className="text-sm font-medium text-orange-100">Backups</span>
             </button>
           )}
           
           {can('administracao.sistema', 'read') && (
-            <button className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+            <button 
+              onClick={() => navigateTo('ativar-usuarios')}
+              className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            >
               <Settings className="w-5 h-5" />
               <span className="text-sm font-medium">Sistema</span>
             </button>

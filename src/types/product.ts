@@ -21,7 +21,7 @@ export interface ProductFormData {
   nome: string
   codigo: string
   codigo_barras?: string
-  categoria: string
+  categoria_id: string
   preco_venda: number
   preco_custo?: number
   estoque: number

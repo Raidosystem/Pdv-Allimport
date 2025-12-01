@@ -1,33 +1,107 @@
+#!/usr/bin/env node
+
+/**
+ * =====================================================
+ * SCRIPT: POPULAR PERMISSÕES DO SISTEMA
+ * =====================================================
+ * Popula a tabela 'permissoes' com todas as permissões
+ * necessárias para o sistema PDV.
+ * =====================================================
+ */
+
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
-const supabase = createClient(
-  'https://vfuglqcyrmgwvrlmmotm.supabase.co',
-  'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdWdscWN5cm1nd3ZybG1tb3RtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNzc0MDkwNiwiZXhwIjoyMDUzMzE2OTA2fQ.jWHBh2_U7q12QrLwsJ2jqcHbONlJLHh85sOI1_HUJCo'
-);
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-async function popularTabelaAprovacao() {
-  console.log('🔧 Populando tabela user_approvals com usuários existentes...');
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Variáveis de ambiente não configuradas!');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const permissoesSistema = [
+  // =====================================================
+  // MÓDULO: VENDAS
+  // =====================================================
+  { recurso: 'vendas', acao: 'create', descricao: 'Criar nova venda' },
+  { recurso: 'vendas', acao: 'read', descricao: 'Visualizar vendas' },
+  { recurso: 'vendas', acao: 'update', descricao: 'Editar vendas' },
+  { recurso: 'vendas', acao: 'delete', descricao: 'Excluir vendas' },
+  { recurso: 'vendas', acao: 'cancel', descricao: 'Cancelar vendas' },
+  { recurso: 'vendas', acao: 'discount', descricao: 'Aplicar descontos em vendas' },
+
+  // =====================================================
+  // MÓDULO: PRODUTOS
+  // =====================================================
+  { recurso: 'produtos', acao: 'create', descricao: 'Cadastrar novos produtos' },
+  { recurso: 'produtos', acao: 'read', descricao: 'Visualizar produtos' },
+  { recurso: 'produtos', acao: 'update', descricao: 'Editar produtos' },
+  { recurso: 'produtos', acao: 'delete', descricao: 'Excluir produtos' },
+  { recurso: 'produtos', acao: 'import', descricao: 'Importar produtos' },
+  { recurso: 'produtos', acao: 'export', descricao: 'Exportar produtos' },
+  { recurso: 'produtos', acao: 'manage_stock', descricao: 'Gerenciar estoque' },
+
+  // =====================================================
+  // MÓDULO: CLIENTES
+  // =====================================================
+  { recurso: 'clientes', acao: 'create', descricao: 'Cadastrar novos clientes' },
+  { recurso: 'clientes', acao: 'read', descricao: 'Visualizar clientes' },
+  { recurso: 'clientes', acao: 'update', descricao: 'Editar clientes' },
+  { recurso: 'clientes', acao: 'delete', descricao: 'Excluir clientes' },
+  { recurso: 'clientes', acao: 'export', descricao: 'Exportar clientes' },
+  { recurso: 'clientes', acao: 'view_history', descricao: 'Ver histórico de compras' },
+
+  // =====================================================
+  // MÓDULO: FINANCEIRO
+  // =====================================================
+  { recurso: 'financeiro', acao: 'read', descricao: 'Visualizar informações financeiras' },
+  { recurso: 'financeiro', acao: 'create', descricao: 'Criar movimentações financeiras' },
+  { recurso: 'financeiro', acao: 'update', descricao: 'Editar movimentações' },
+  { recurso: 'financeiro', acao: 'delete', descricao: 'Excluir movimentações' },
+  { recurso: 'financeiro', acao: 'open_cashier', descricao: 'Abrir caixa' },
+  { recurso: 'financeiro', acao: 'close_cashier', descricao: 'Fechar caixa' },
+  { recurso: 'financeiro', acao: 'manage_payments', descricao: 'Gerenciar formas de pagamento' },
+
+  // =====================================================
+  // MÓDULO: RELATÓRIOS
+  // =====================================================
+  { recurso: 'relatorios', acao: 'read', descricao: 'Visualizar relatórios' },
+  { recurso: 'relatorios', acao: 'export', descricao: 'Exportar relatórios' },
+  { recurso: 'relatorios', acao: 'sales', descricao: 'Relatórios de vendas' },
+  { recurso: 'relatorios', acao: 'financial', descricao: 'Relatórios financeiros' },
+  { recurso: 'relatorios', acao: 'products', descricao: 'Relatórios de produtos' },
+  { recurso: 'relatorios', acao: 'customers', descricao: 'Relatórios de clientes' },
+
+  // =====================================================
+  // MÓDULO: CONFIGURAÇÕES
+  // =====================================================
+  { recurso: 'configuracoes', acao: 'read', descricao: 'Visualizar configurações' },
+  { recurso: 'configuracoes', acao: 'update', descricao: 'Alterar configurações' },
+  { recurso: 'configuracoes', acao: 'print_settings', descricao: 'Configurar impressão' },
+  { recurso: 'configuracoes', acao: 'company_info', descricao: 'Editar informações da empresa' },
+  { recurso: 'configuracoes', acao: 'integrations', descricao: 'Gerenciar integrações' },
+  { recurso: 'configuracoes', acao: 'backup', descricao: 'Fazer backup de dados' },
+
+  // =====================================================
+  // MÓDULO: ADMINISTRAÇÃO
+  // =====================================================
+  { recurso: 'administracao', acao: 'read', descricao: 'Visualizar área administrativa' },
+  { recurso: 'administracao', acao: 'users', descricao: 'Gerenciar usuários' },
+  { recurso: 'administracao', acao: 'funcoes', descricao: 'Gerenciar funções' },
+  { recurso: 'administracao', acao: 'permissoes', descricao: 'Gerenciar permissões' },
+  { recurso: 'administracao', acao: 'logs', descricao: 'Visualizar logs do sistema' },
+  { recurso: 'administracao', acao: 'subscription', descricao: 'Gerenciar assinatura' },
+  { recurso: 'administracao', acao: 'full_access', descricao: 'Acesso total administrativo' },
   
-  try {
-    // Simular usuários que podem ter se cadastrado hoje
-    const usuariosSimulados = [
-      {
-        user_id: '12345678-1234-1234-1234-123456789001',
-        email: 'usuario.teste@example.com',
-        full_name: 'Usuario Teste',
-        company_name: 'Empresa Teste',
-        status: 'pending',
-        created_at: new Date().toISOString()
-      },
-      {
-        user_id: '12345678-1234-1234-1234-123456789002', 
-        email: 'novo.usuario@email.com',
-        full_name: 'Novo Usuario',
-        company_name: 'Nova Empresa',
-        status: 'pending',
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 horas atrás
-      }
-    ];
+  // Adicionar CREATE para funções
+  { recurso: 'administracao.funcoes', acao: 'create', descricao: 'Criar novas funções' },
+  { recurso: 'administracao.funcoes', acao: 'read', descricao: 'Visualizar funções' },
+  { recurso: 'administracao.funcoes', acao: 'update', descricao: 'Editar funções' },
+  { recurso: 'administracao.funcoes', acao: 'delete', descricao: 'Excluir funções' },
+];
     
     console.log('📝 Inserindo usuários de teste...');
     

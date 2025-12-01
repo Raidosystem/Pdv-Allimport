@@ -803,7 +803,7 @@ class RealReportsService {
         preco_unitario,
         total,
         vendas!inner(created_at),
-        produtos(nome, categoria)
+        produtos(nome, categorias(nome))
       `);
 
     if (period !== 'all' && startDate && endDate) {
@@ -825,7 +825,7 @@ class RealReportsService {
     salesItems?.forEach(item => {
       const productId = item.produto_id;
       const productName = (item.produtos as any)?.nome || `Produto ${productId}`;
-      const category = (item.produtos as any)?.categoria || 'Sem categoria';
+      const category = (item.produtos as any)?.categorias?.nome || 'Sem categoria';
       const revenue = item.total || (item.quantidade * item.preco_unitario);
       const quantity = item.quantidade || 0;
       // Estimativa de margem (30% - seria melhor ter dados reais de custo)

@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { formatCurrency } from '../utils/format';
 import { realReportsService } from './simpleReportsService';
 
@@ -250,22 +252,72 @@ class SimpleExportService {
     return filename;
   }
 
-  // Gerar PDF simples (texto)
+  // Gerar PDF usando jsPDF
   private generateSimplePDF(title: string, data: any, options: ExportOptions) {
-    const content = [
-      title,
-      `Período: ${this.getPeriodText(options.period)}`,
-      `Gerado em: ${new Date().toLocaleDateString('pt-BR')}`,
-      '',
-      'DADOS DO RELATÓRIO:',
-      JSON.stringify(data, null, 2)
-    ].join('\n');
+    const doc = new jsPDF();
     
-    // Criar um arquivo de texto simples
-    const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${options.period}-${new Date().toISOString().split('T')[0]}.txt`;
-    this.downloadText(content, filename);
+    // Título
+    doc.setFontSize(18);
+    doc.text(title, 20, 20);
     
-    console.log('✅ [EXPORT] Arquivo de texto gerado:', filename);
+    // Informações do relatório
+    doc.setFontSize(11);
+    doc.text(`Período: ${this.getPeriodText(options.period)}`, 20, 35);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, 45);
+    
+    // Resumo dos dados
+    doc.setFontSize(13);
+    doc.text('Resumo dos Dados:', 20, 60);
+    
+    doc.setFontSize(10);
+    let yPosition = 70;
+    
+    // Exibir dados principais
+    if (data.totalSales !== undefined) {
+      doc.text(`Total de Vendas: ${data.totalSales}`, 20, yPosition);
+      yPosition += 10;
+    }
+    
+    if (data.totalAmount !== undefined) {
+      doc.text(`Faturamento Total: ${formatCurrency(data.totalAmount)}`, 20, yPosition);
+      yPosition += 10;
+    }
+    
+    if (data.totalClients !== undefined) {
+      doc.text(`Total de Clientes: ${data.totalClients}`, 20, yPosition);
+      yPosition += 10;
+    }
+    
+    if (data.totalOrders !== undefined) {
+      doc.text(`Total de Ordens: ${data.totalOrders}`, 20, yPosition);
+      yPosition += 10;
+    }
+    
+    // Adicionar tabela se houver produtos ou itens
+    if (data.topProducts && data.topProducts.length > 0) {
+      yPosition += 10;
+      doc.setFontSize(12);
+      doc.text('Produtos Mais Vendidos:', 20, yPosition);
+      
+      const tableData = data.topProducts.slice(0, 10).map((product: any) => [
+        product.productName || product.name || 'N/A',
+        (product.quantity || 0).toString(),
+        formatCurrency(product.revenue || product.total || 0)
+      ]);
+      
+      autoTable(doc, {
+        startY: yPosition + 5,
+        head: [['Produto', 'Quantidade', 'Receita']],
+        body: tableData,
+        margin: { left: 20, right: 20 }
+      });
+    }
+    
+    // Salvar PDF
+    const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${options.period}-${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    console.log('✅ [EXPORT] PDF gerado:', filename);
     return filename;
   }
 
@@ -327,7 +379,18 @@ class SimpleExportService {
   }
 
   private downloadCSV(csvContent: string, filename: string) {
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Detectar tipo MIME baseado na extensão do arquivo
+    let mimeType = 'text/csv;charset=utf-8;';
+    
+    if (filename.endsWith('.xlsx')) {
+      // Excel: usar MIME type do Excel
+      mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    } else if (filename.endsWith('.json')) {
+      // JSON: usar MIME type JSON
+      mimeType = 'application/json;charset=utf-8;';
+    }
+    
+    const blob = new Blob([csvContent], { type: mimeType });
     const link = document.createElement('a');
     
     if (link.download !== undefined) {

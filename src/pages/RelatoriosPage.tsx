@@ -55,9 +55,13 @@ const RelatoriosPage: React.FC = () => {
 
   // Função para renderizar a seção ativa
   const renderActiveSection = () => {
+    console.log('🎯 Renderizando seção:', activeSection);
+    console.log('📦 Estado atual - loading:', loading, 'error:', error);
+    console.log('📅 Período atual:', period);
+    
     switch (activeSection) {
       case 'overview':
-        return <ReportsOverviewPage />;
+        return <ReportsOverviewPage period={period} />;
       case 'dre':
         return <DREPage />;
       case 'ranking':
@@ -69,7 +73,7 @@ const RelatoriosPage: React.FC = () => {
       case 'analytics':
         return <ReportsAnalyticsPage />;
       default:
-        return <ReportsOverviewPage />;
+        return <ReportsOverviewPage period={period} />;
     }
   };
 
@@ -131,7 +135,10 @@ const RelatoriosPage: React.FC = () => {
             {TABS.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveSection(tab.id)}
+                onClick={() => {
+                  console.log('🖱️ Tab clicada:', tab.id);
+                  setActiveSection(tab.id);
+                }}
                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
                   tab.id === 'overview'
                     ? activeSection === tab.id
@@ -170,7 +177,7 @@ const RelatoriosPage: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="min-h-screen">
+        <div className="pb-6">
           {renderActiveSection()}
         </div>
 

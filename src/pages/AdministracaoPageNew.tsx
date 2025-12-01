@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, Shield, Database, BarChart3, Crown, UserCheck } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
@@ -16,6 +16,18 @@ type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'super-admi
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
   const { isSuperAdmin } = usePermissions()
+
+  // Escutar eventos de navegação do AdminDashboard
+  useEffect(() => {
+    const handleNavigate = (event: CustomEvent<{ view: string }>) => {
+      setViewMode(event.detail.view as ViewMode);
+    };
+
+    window.addEventListener('admin-navigate', handleNavigate as EventListener);
+    return () => {
+      window.removeEventListener('admin-navigate', handleNavigate as EventListener);
+    };
+  }, []);
 
   const baseMenuItems = [
     {

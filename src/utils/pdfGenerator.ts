@@ -148,7 +148,7 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
   const tableData = products.map(product => ({
     codigo: product.codigo,
     nome: product.nome.length > 25 ? product.nome.substring(0, 22) + '...' : product.nome,
-    categoria: product.categoria || '-',
+    categoria: (product as any).categorias?.nome || product.categoria || '-',
     preco: formatCurrency(product.preco_venda),
     estoque: `${product.estoque} ${product.unidade}`,
     status: product.ativo ? 'Ativo' : 'Inativo'

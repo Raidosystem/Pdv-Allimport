@@ -78,6 +78,27 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
     };
   }, [showPermissionsModal, showModal]);
 
+  // 🔥 GARANTIR QUE TODAS AS CATEGORIAS SEJAM EXPANDIDAS QUANDO O MODAL ABRIR
+  useEffect(() => {
+    console.log('🔥 [useEffect] Disparado:', { 
+      showPermissionsModal, 
+      permissoesLength: permissoes.length 
+    });
+    
+    if (showPermissionsModal && permissoes.length > 0) {
+      const categorias = categorizarPermissoes();
+      const categoriasNomes = categorias.map(cat => cat.categoria);
+      console.log('🔥 [useEffect] Modal aberto. Expandindo categorias:', categoriasNomes);
+      console.log('🔥 [useEffect] Total de permissões:', permissoes.length);
+      setExpandedCategories(categoriasNomes);
+      
+      // Debug: Verificar após um delay se o estado foi setado
+      setTimeout(() => {
+        console.log('🔥 [useEffect] Estado após setTimeout:', expandedCategories);
+      }, 100);
+    }
+  }, [showPermissionsModal, permissoes]);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -121,6 +142,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
   };
 
   const loadPermissoes = async () => {
+    console.log('🔥 [loadPermissoes] Iniciando carregamento...');
     const { data, error } = await supabase
       .from('permissoes')
       .select('*')
@@ -131,6 +153,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
       return;
     }
 
+    console.log('🔥 [loadPermissoes] Carregou', data?.length, 'permissões');
     setPermissoes(data || []);
   };
 
@@ -314,6 +337,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
       setSelectedPermissoes(data.map(fp => fp.permissao_id));
     }
     
+    // Abrir modal - o useEffect vai expandir categorias automaticamente
     setShowPermissionsModal(true);
   };
 
@@ -387,6 +411,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
       setShowPermissionsModal(false);
       setSelectedFuncao(null);
       setSelectedPermissoes([]);
+      setExpandedCategories([]);
       loadData(); // Recarrega os dados
     } catch (error: any) {
       console.error('Erro ao salvar permissões:', error);
@@ -637,6 +662,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                   setShowPermissionsModal(false);
                   setSelectedFuncao(null);
                   setSelectedPermissoes([]);
+                  setExpandedCategories([]);
                 }}
                 className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors flex items-center justify-center"
               >
@@ -651,6 +677,13 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                 const categoriaSelecionadas = categoria.permissoes.filter(p => 
                   selectedPermissoes.includes(p.id)
                 ).length;
+
+                // 🔥 DEBUG
+                console.log(`🔍 Renderizando categoria "${categoria.categoria}":`, {
+                  isExpanded,
+                  expandedCategories,
+                  includes: expandedCategories.includes(categoria.categoria)
+                });
 
                 return (
                   <div
@@ -761,6 +794,7 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
                   setShowPermissionsModal(false);
                   setSelectedFuncao(null);
                   setSelectedPermissoes([]);
+                  setExpandedCategories([]);
                 }}
                 className="flex-1 px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
               >

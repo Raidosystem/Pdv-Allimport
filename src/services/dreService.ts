@@ -444,6 +444,12 @@ class DREService {
       const empresa_id = filtros.empresa_id || empresas.id;
 
       // Chamar função RPC do banco
+      console.log('🔍 [DRE Service] Parâmetros da chamada RPC:', {
+        p_data_inicio: filtros.data_inicio.toISOString(),
+        p_data_fim: filtros.data_fim.toISOString(),
+        p_user_id: empresa_id,
+      });
+      
       const { data, error } = await supabase.rpc('fn_calcular_dre', {
         p_data_inicio: filtros.data_inicio.toISOString(),
         p_data_fim: filtros.data_fim.toISOString(),
@@ -453,6 +459,8 @@ class DREService {
       if (error) throw error;
 
       console.log('🔍 [DRE] Dados retornados:', data);
+      console.log('🔍 [DRE] Receita bruta:', data?.receita_bruta);
+      console.log('🔍 [DRE] Receita líquida:', data?.receita_liquida);
 
       // A função SQL retorna JSONB direto, não array
       const dre: DRE = data as DRE;

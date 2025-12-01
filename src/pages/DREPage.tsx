@@ -4,12 +4,17 @@ import { Download, Calendar, TrendingUp, DollarSign, Package, AlertCircle } from
 
 export default function DREPage() {
   const { dre, kpis, loading, calcularDRE, exportarCSV } = useDRE();
-  const [dataInicio, setDataInicio] = useState(
-    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  );
-  const [dataFim, setDataFim] = useState(new Date());
+  
+  // Definir data de fim como hoje e data de início como 30 dias atrás
+  const hoje = new Date();
+  const trintaDiasAtras = new Date();
+  trintaDiasAtras.setDate(hoje.getDate() - 30);
+  
+  const [dataInicio, setDataInicio] = useState(trintaDiasAtras);
+  const [dataFim, setDataFim] = useState(hoje);
 
   const handleCalcular = () => {
+    console.log('🔍 [DRE] Calculando com período:', { dataInicio, dataFim });
     calcularDRE({ data_inicio: dataInicio, data_fim: dataFim });
   };
 

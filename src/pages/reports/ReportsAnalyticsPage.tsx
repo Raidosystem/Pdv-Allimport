@@ -157,6 +157,11 @@ interface PredictionCardProps {
 }
 
 const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
+  // Proteção contra dados inválidos
+  if (!prediction || !prediction.metric) {
+    return null;
+  }
+
   const getTrendIcon = () => {
     switch (prediction.trend) {
       case 'up': return <TrendingUp className="w-5 h-5 text-green-500" />;
@@ -166,13 +171,18 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
   };
 
   const formatValue = (value: number) => {
+    // Proteção contra undefined/null
+    if (!prediction?.metric) {
+      return value?.toString() || '0';
+    }
+    
     if (prediction.metric.includes('Faturamento') || prediction.metric.includes('Ticket')) {
-      return formatCurrency(value);
+      return formatCurrency(value || 0);
     }
     if (prediction.metric.includes('Taxa') || prediction.metric.includes('Conversão')) {
-      return `${value}%`;
+      return `${value || 0}%`;
     }
-    return value.toString();
+    return value?.toString() || '0';
   };
 
   return (
@@ -199,14 +209,14 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
             prediction.confidence >= 80 ? 'text-green-600' :
             prediction.confidence >= 60 ? 'text-yellow-600' : 'text-red-600'
           }`}>
-            {prediction.confidence}%
+            {prediction.confidence || 0}%
           </span>
         </div>
         
         <div className="pt-2 border-t border-gray-200">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-600">{prediction.timeframe}</span>
+            <span className="text-sm text-gray-600">{prediction.timeframe || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -252,32 +262,41 @@ const ReportsAnalyticsPage: React.FC = () => {
         realReportsService.getAnalyticsAnomalies(servicePeriod === 'all' ? 'quarter' : servicePeriod)
       ]);
       
-      setInsights(insightsData.map((item: any, index: number) => ({
-        id: `insight-${index}`,
-        type: 'info' as const,
-        title: item.title,
-        description: item.description,
-        impact: item.impact,
-        value: item.value
-      })));
-      setPredictions(predictionsData.map((item: any) => ({
-        metric: item.title,
-        current: 0,
-        predicted: 0,
-        confidence: item.confidence,
-        trend: 'stable' as const,
-        timeframe: item.timeline
-      })));
-      setAnomalies(anomaliesData.map((item: any, index: number) => ({
-        id: `anomaly-${index}`,
-        metric: item.title,
-        detected: new Date(),
-        severity: item.severity,
-        description: item.description,
-        expectedValue: 0,
-        actualValue: 0,
-        deviation: 0
-      })));
+      setInsights((insightsData || [])
+        .filter((item: any) => item && (item.title || item.metric))
+        .map((item: any, index: number) => ({
+          id: `insight-${index}`,
+          type: 'info' as const,
+          title: item.title || item.metric || 'Insight Desconhecido',
+          description: item.description || '',
+          impact: item.impact || 'medium',
+          value: item.value || 0
+        }))
+      );
+      setPredictions((predictionsData || [])
+        .filter((item: any) => item && item.metric) // Filtrar por 'metric', não 'title'
+        .map((item: any) => ({
+          metric: item.metric || 'Métrica Desconhecida',
+          current: item.current || 0,
+          predicted: item.predicted || 0,
+          confidence: item.confidence || 0,
+          trend: (item.trend || 'stable') as 'up' | 'down' | 'stable',
+          timeframe: item.timeline || item.timeframe || 'N/A'
+        }))
+      );
+      setAnomalies((anomaliesData || [])
+        .filter((item: any) => item && (item.metric || item.title))
+        .map((item: any, index: number) => ({
+          id: item.id || `anomaly-${index}`,
+          metric: item.metric || item.title || 'Anomalia Desconhecida',
+          detected: item.detected ? new Date(item.detected) : new Date(),
+          severity: item.severity || 'low',
+          description: item.description || '',
+          expectedValue: item.expectedValue || 0,
+          actualValue: item.actualValue || 0,
+          deviation: item.deviation || 0
+        }))
+      );
       
     } catch (err) {
       console.error('Error loading analytics data:', err);
@@ -450,9 +469,11 @@ const ReportsAnalyticsPage: React.FC = () => {
           {predictions.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {predictions.map((prediction, index) => (
-                  <PredictionCard key={index} prediction={prediction} />
-                ))}
+                {predictions
+                  .filter(p => p && p.metric) // Filtrar predições inválidas
+                  .map((prediction, index) => (
+                    <PredictionCard key={index} prediction={prediction} />
+                  ))}
               </div>
               
               {/* Model Performance */}
@@ -500,7 +521,9 @@ const ReportsAnalyticsPage: React.FC = () => {
           
           {anomalies.length > 0 ? (
             <div className="space-y-4">
-              {anomalies.map((anomaly) => (
+              {anomalies
+                .filter(anomaly => anomaly.id !== 'no-anomaly') // Filtrar "Sistema Normal"
+                .map((anomaly) => (
                 <div key={anomaly.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
@@ -552,6 +575,15 @@ const ReportsAnalyticsPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* Mostrar mensagem informativa se só houver "Sistema Normal" */}
+              {anomalies.length === 1 && anomalies[0].id === 'no-anomaly' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{anomalies[0].metric}</h3>
+                  <p className="text-gray-600">{anomalies[0].description}</p>
+                </div>
+              )}
             </div>
           ) : !loading ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
@@ -580,7 +612,9 @@ const ReportsAnalyticsPage: React.FC = () => {
               <div className="text-purple-100">Insights identificados</div>
             </div>
             <div>
-              <div className="text-2xl font-bold mb-1">{anomalies.length}</div>
+              <div className="text-2xl font-bold mb-1">
+                {anomalies.filter(a => a.id !== 'no-anomaly').length}
+              </div>
               <div className="text-purple-100">Anomalias detectadas</div>
             </div>
             <div>

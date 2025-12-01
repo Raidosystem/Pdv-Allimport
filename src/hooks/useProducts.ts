@@ -304,7 +304,7 @@ export function useProducts() {
         nome: productData.nome,
         descricao: productData.descricao || null,
         preco: productData.preco_venda,  // campo principal de preço
-        categoria_id: productData.categoria || null,
+        categoria_id: productData.categoria_id || null,
         estoque: productData.estoque !== undefined ? productData.estoque : 0,  // garantir que seja número
         codigo_barras: productData.codigo_barras || null,
         sku: productData.codigo || null,  // usar código como SKU

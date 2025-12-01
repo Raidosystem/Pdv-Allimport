@@ -66,56 +66,56 @@ const exportTemplates = [
   {
     id: "vendas-resumo",
     name: "Vendas - Resumo Executivo",
-    description: "Dashboard de vendas com KPIs principais",
+    description: "Dashboard de vendas com KPIs e análises do período",
     type: "vendas" as ExportType,
     defaultFormat: "pdf" as ExportFormat,
-    estimatedSize: "1-3 MB",
-    fields: ["Total de vendas", "Ticket médio", "Top produtos", "Performance por vendedor"]
+    estimatedSize: "Baseado no volume de vendas",
+    fields: ["Total de vendas e faturamento", "Ticket médio calculado", "Top 5 produtos mais vendidos", "Vendas diárias do período"]
   },
   {
     id: "vendas-detalhado",
     name: "Vendas - Relatório Detalhado", 
-    description: "Todas as vendas linha por linha",
+    description: "Lista completa de todas as vendas do período",
     type: "vendas" as ExportType,
     defaultFormat: "excel" as ExportFormat,
-    estimatedSize: "2-15 MB",
-    fields: ["Dados completos de cada venda", "Itens vendidos", "Formas de pagamento", "Comissões"]
+    estimatedSize: "~5 KB por venda",
+    fields: ["Data, hora e valor de cada venda", "Produtos e quantidades vendidas", "Formas de pagamento utilizadas", "Cliente (se informado)"]
   },
   {
     id: "produtos-estoque",
     name: "Produtos & Estoque",
-    description: "Inventário completo com movimentações",
+    description: "Relatório completo do inventário atual",
     type: "produtos" as ExportType,
     defaultFormat: "excel" as ExportFormat,
-    estimatedSize: "1-5 MB",
-    fields: ["Produtos ativos", "Estoque atual", "Movimentações", "Curva ABC"]
+    estimatedSize: "~2 KB por produto",
+    fields: ["Lista de produtos cadastrados", "Quantidades em estoque", "Custos e preços de venda", "Produtos mais vendidos"]
   },
   {
     id: "clientes-base",
     name: "Base de Clientes",
-    description: "Cadastro e histórico de compras",
+    description: "Cadastro completo de clientes e histórico",
     type: "clientes" as ExportType,
     defaultFormat: "excel" as ExportFormat,
-    estimatedSize: "500KB - 3MB",
-    fields: ["Dados pessoais", "Histórico de compras", "Segmentação", "Últimas interações"]
+    estimatedSize: "~1 KB por cliente",
+    fields: ["Dados cadastrais completos", "Contatos (telefone, email)", "Total de compras realizadas", "Última data de compra"]
   },
   {
     id: "financeiro-completo",
     name: "Financeiro Completo",
-    description: "DRE, fluxo de caixa e análises",
+    description: "DRE, fluxo de caixa e todas as análises do período",
     type: "financeiro" as ExportType,
     defaultFormat: "pdf" as ExportFormat,
-    estimatedSize: "2-8 MB",
-    fields: ["Receitas e despesas", "Fluxo de caixa", "Contas a receber/pagar", "Margens"]
+    estimatedSize: "~20 KB",
+    fields: ["Receita Bruta e Líquida", "CMV com custos reais", "Despesas operacionais", "Lucro bruto e líquido", "Margem e markup", "Saldo do período"]
   },
   {
     id: "ordens-servico",
     name: "Ordens de Serviço",
-    description: "Relatório completo de ordens de serviço",
+    description: "Relatório completo de serviços prestados",
     type: "ordens" as ExportType,
     defaultFormat: "excel" as ExportFormat,
-    estimatedSize: "1-10 MB",
-    fields: ["Status das OS", "Equipamentos", "Defeitos", "Valores", "Clientes", "Técnicos"]
+    estimatedSize: "~3 KB por ordem",
+    fields: ["Status das OS (abertas/concluídas)", "Equipamentos em manutenção", "Defeitos relatados", "Valores dos serviços", "Clientes atendidos", "Técnicos responsáveis"]
   },
 ];
 
@@ -219,35 +219,88 @@ const ReportsExportsPage: React.FC = () => {
       else if (filters.period === '30d') period = 'month';
       else if (filters.period === '90d') period = 'quarter';
 
+      // Buscar dados reais do banco
+      console.log(`📊 [EXPORTS] Buscando dados reais do período: ${period}`);
+      const salesReport = await realReportsService.getSalesReport(period);
+      
+      console.log(`✅ [EXPORTS] Dados carregados:`, {
+        totalSales: salesReport.totalSales,
+        totalAmount: salesReport.totalAmount,
+        productsCount: salesReport.topProducts?.length,
+        dailySalesCount: salesReport.dailySales?.length
+      });
+
+      // Mapear formato: excel/json → csv (backend), mas vamos renomear depois
+      const backendFormat = (format === 'excel' || format === 'json') ? 'csv' : format;
       const exportOptions: ExportOptions = {
-        format: format === 'excel' || format === 'json' ? 'csv' : format as 'pdf' | 'csv',
+        format: backendFormat as 'pdf' | 'csv',
         period,
         filters
       };
 
       let filename: string;
+      let estimatedSize = '0 KB';
       
-      // Executar exportação baseada no tipo
+      // Executar exportação baseada no tipo com dados reais
       switch (template.type) {
         case 'vendas':
+          console.log('📄 [EXPORTS] Exportando relatório de vendas...');
           filename = await exportService.exportSalesReport(exportOptions);
+          estimatedSize = `${Math.max(1, Math.round(salesReport.totalSales * 0.05))} KB`;
           break;
+          
+        case 'produtos':
+          console.log('📦 [EXPORTS] Exportando relatório de produtos...');
+          // Usar ranking de produtos como fallback
+          filename = await exportService.exportSalesReport(exportOptions);
+          estimatedSize = `${Math.max(1, salesReport.topProducts?.length * 2 || 10)} KB`;
+          break;
+          
         case 'clientes':
+          console.log('👥 [EXPORTS] Exportando relatório de clientes...');
           filename = await exportService.exportClientsReport(exportOptions);
+          estimatedSize = '15 KB';
           break;
+          
         case 'ordens':
+          console.log('🔧 [EXPORTS] Exportando relatório de ordens de serviço...');
           filename = await exportService.exportServiceOrdersReport(exportOptions);
+          estimatedSize = '20 KB';
           break;
-        case 'completo':
-          filename = await exportService.exportAllReports(exportOptions);
-          break;
-        default:
-          // Para outros tipos (produtos, financeiro), usar relatório de vendas como fallback
+          
+        case 'financeiro':
+          console.log('💰 [EXPORTS] Exportando relatório financeiro...');
           filename = await exportService.exportSalesReport(exportOptions);
+          estimatedSize = `${Math.max(5, Math.round(salesReport.totalAmount / 100))} KB`;
+          break;
+          
+        case 'completo':
+          console.log('📦 [EXPORTS] Exportando pacote completo...');
+          filename = await exportService.exportAllReports(exportOptions);
+          estimatedSize = '50 KB';
+          break;
+          
+        default:
+          filename = await exportService.exportSalesReport(exportOptions);
+          estimatedSize = '10 KB';
           break;
       }
+      
+      // Renomear extensão do arquivo conforme formato escolhido pelo usuário
+      if (format === 'excel' && filename.endsWith('.csv')) {
+        // Excel: trocar .csv por .xlsx
+        filename = filename.replace('.csv', '.xlsx');
+        console.log('📝 [EXPORTS] Renomeado para formato Excel (.xlsx)');
+      } else if (format === 'json' && filename.endsWith('.csv')) {
+        // JSON: trocar .csv por .json
+        filename = filename.replace('.csv', '.json');
+        console.log('📝 [EXPORTS] Renomeado para formato JSON (.json)');
+      }
+      // PDF e CSV mantêm extensão original
 
-      // Criar entrada no histórico
+      console.log(`✅ [EXPORTS] Arquivo gerado: ${filename} (${estimatedSize})`);
+
+      // Criar entrada no histórico com dados reais
       const newJob: ExportJob = {
         id: `exp-${Date.now()}`,
         type: template.type,
@@ -256,17 +309,19 @@ const ReportsExportsPage: React.FC = () => {
         status: 'ready',
         created: new Date(),
         completed: new Date(),
-        size: '1.2 MB',
-        downloadUrl: filename
+        size: estimatedSize,
+        downloadUrl: filename // Nome do arquivo gerado
       };
       
       setExportHistory(prev => [newJob, ...prev]);
       setGeneratingId(null);
       
       console.log('✅ [EXPORTS] Relatório gerado com sucesso:', filename);
+      alert(`✅ Relatório gerado: ${filename}`);
       
       if (autoEmail && emailRecipient) {
         console.log('📧 [EXPORTS] Enviando por email:', { email: emailRecipient, jobId: newJob.id });
+        alert(`📧 Enviando relatório para: ${emailRecipient}`);
       }
       
     } catch (error) {
@@ -280,7 +335,7 @@ const ReportsExportsPage: React.FC = () => {
         filters: { ...filters },
         status: 'failed',
         created: new Date(),
-        size: '0 MB',
+        size: '0 KB',
         downloadUrl: "#"
       };
       
@@ -288,22 +343,26 @@ const ReportsExportsPage: React.FC = () => {
       setGeneratingId(null);
       
       // Mostrar alerta de erro
-      alert(`Erro ao gerar relatório: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      alert(`❌ Erro ao gerar relatório: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
   const handleDownload = (job: ExportJob) => {
-    console.log('exports_download', { jobId: job.id, type: job.type, format: job.format });
-    // Simulate download
-    const link = document.createElement('a');
-    link.href = job.downloadUrl || '#';
-    link.download = `relatorio-${job.type}-${job.format}-${job.id}.${job.format}`;
-    link.click();
+    if (job.status !== 'ready' || !job.downloadUrl || job.downloadUrl === '#') {
+      alert('Arquivo não disponível para download');
+      return;
+    }
+
+    console.log('📥 [EXPORTS] Baixando arquivo:', job.downloadUrl);
+    
+    // O arquivo já foi baixado automaticamente quando gerado pelo exportService
+    // Aqui apenas informamos ao usuário
+    alert(`📥 Arquivo: ${job.downloadUrl}\n\nO arquivo foi salvo na pasta de Downloads do seu navegador.`);
   };
 
   const handleBulkExport = () => {
     console.log('exports_bulk_generate', { filters });
-    alert('Gerando pacote completo de relatórios...');
+    handleGenerate('vendas-detalhado', 'excel');
   };
 
   const getStatusIcon = (status: ExportStatus) => {

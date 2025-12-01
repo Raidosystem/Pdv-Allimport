@@ -230,7 +230,12 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
 
     setLoading(true)
     try {
-      const success = await saveProduct(data, productId)
+      // Converter categoria para categoria_id
+      const productData = {
+        ...data,
+        categoria_id: data.categoria
+      }
+      const success = await saveProduct(productData, productId)
       
       if (success) {
         toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')

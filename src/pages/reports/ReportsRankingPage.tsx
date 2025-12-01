@@ -72,7 +72,11 @@ const RankingCard: React.FC<RankingCardProps> = ({ title, icon, data, renderItem
         </div>
       ) : (
         <div className="space-y-4">
-          {data.slice(0, 5).map((item, index) => renderItem(item, index))}
+          {data.slice(0, 5).map((item, index) => (
+            <div key={item.id || `item-${index}`}>
+              {renderItem(item, index)}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -84,6 +88,9 @@ const ReportsRankingPage: React.FC = () => {
   const { filters, setFilters } = useFilters();
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<'orders' | 'products' | 'categories'>('orders');
+  
+  // 🆕 Estado de período INDEPENDENTE para rankings - SEMPRE INICIA COM 'all'
+  const [rankingPeriod, setRankingPeriod] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('all');
 
   // Estados para dados reais
   const [realClientRepairRanking, setRealClientRepairRanking] = useState<any[]>([]);
@@ -98,32 +105,39 @@ const ReportsRankingPage: React.FC = () => {
     const loadRealData = async () => {
       setLoading(true);
       try {
-        const period = filters.period.replace('d', '').replace('30', 'month').replace('7', 'week').replace('90', 'quarter').replace('1y', 'all') as any;
+        // 🆕 Usar rankingPeriod independente - padrão 'all' (todos os dados)
+        const periodMapping: any = {
+          '7d': 'week',
+          '30d': 'month',
+          '90d': 'quarter',
+          '1y': 'all',
+          'all': 'all'
+        };
+        const period = periodMapping[rankingPeriod] || 'all';
+        console.log('📅 [RANKING] Período selecionado:', rankingPeriod, '-> API:', period);
         
-        if (activeView === 'orders') {
-          const [
-            clientRepairData,
-            clientSpendingData,
-            orderTypeData,
-            equipmentProfitData
-          ] = await Promise.all([
-            realReportsService.getClientRepairRanking(period),
-            realReportsService.getClientSpendingRanking(period),
-            realReportsService.getOrderTypeRanking(period),
-            realReportsService.getEquipmentProfitRanking(period)
-          ]);
+        const [
+          clientRepairData,
+          clientSpendingData,
+          orderTypeData,
+          equipmentProfitData,
+          productData,
+          categoryData
+        ] = await Promise.all([
+          realReportsService.getClientRepairRanking(period),
+          realReportsService.getClientSpendingRanking(period),
+          realReportsService.getOrderTypeRanking(period),
+          realReportsService.getEquipmentProfitRanking(period),
+          realReportsService.getProductRanking(period),
+          realReportsService.getCategoryRanking(period)
+        ]);
 
-          setRealClientRepairRanking(clientRepairData);
-          setRealClientSpendingRanking(clientSpendingData);
-          setRealOrderTypeRanking(orderTypeData);
-          setRealEquipmentProfitRanking(equipmentProfitData);
-        } else if (activeView === 'products') {
-          const productData = await realReportsService.getProductRanking(period);
-          setRealProductRanking(productData);
-        } else if (activeView === 'categories') {
-          const categoryData = await realReportsService.getCategoryRanking(period);
-          setRealCategoryRanking(categoryData);
-        }
+        setRealClientRepairRanking(clientRepairData);
+        setRealClientSpendingRanking(clientSpendingData);
+        setRealOrderTypeRanking(orderTypeData);
+        setRealEquipmentProfitRanking(equipmentProfitData);
+        setRealProductRanking(productData);
+        setRealCategoryRanking(categoryData);
       } catch (error) {
         console.error('❌ Erro ao carregar dados de ranking:', error);
       } finally {
@@ -151,7 +165,7 @@ const ReportsRankingPage: React.FC = () => {
       clearInterval(interval);
       window.removeEventListener('saleCompleted', handleUpdate);
     };
-  }, [filters, activeView]);
+  }, [rankingPeriod]);
 
   const handleViewChange = (view: 'orders' | 'products' | 'categories') => {
     console.log('ranking_view_change', { from: activeView, to: view });
@@ -222,14 +236,14 @@ const ReportsRankingPage: React.FC = () => {
           <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
         </div>
         <div>
-          <div className="font-semibold text-gray-900">{client.name}</div>
-          <div className="text-sm text-gray-600">{client.orders} ordens • Último: {new Date(client.lastOrder).toLocaleDateString('pt-BR')}</div>
+          <div className="font-semibold text-gray-900">{client.name || 'Cliente'}</div>
+          <div className="text-sm text-gray-600">{client.count || 0} ordens • Último: {client.lastOrder ? new Date(client.lastOrder).toLocaleDateString('pt-BR') : 'N/A'}</div>
         </div>
       </div>
       
       <div className="text-right">
-        <div className="font-bold text-lg text-gray-900">{formatCurrency(client.totalValue)}</div>
-        <div className="text-sm text-gray-600">Ticket: {formatCurrency(client.avgValue)}</div>
+        <div className="font-bold text-lg text-gray-900">{formatCurrency(client.totalValue || 0)}</div>
+        <div className="text-sm text-gray-600">Ticket: {formatCurrency(client.avgTicket || 0)}</div>
       </div>
     </div>
   );
@@ -242,14 +256,14 @@ const ReportsRankingPage: React.FC = () => {
           <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
         </div>
         <div>
-          <div className="font-semibold text-gray-900">{client.name}</div>
-          <div className="text-sm text-gray-600">{client.category} • {client.orders} ordens</div>
+          <div className="font-semibold text-gray-900">{client.name || 'Cliente'}</div>
+          <div className="text-sm text-gray-600">{client.segment || 'Varejo'} • {client.orderCount || 0} ordens</div>
         </div>
       </div>
       
       <div className="text-right">
-        <div className="font-bold text-lg text-gray-900">{formatCurrency(client.totalValue)}</div>
-        <div className="text-sm text-gray-600">Ticket: {formatCurrency(client.avgValue)}</div>
+        <div className="font-bold text-lg text-gray-900">{formatCurrency(client.totalSpent || 0)}</div>
+        <div className="text-sm text-gray-600">Ticket: {formatCurrency(client.avgTicket || 0)}</div>
       </div>
     </div>
   );
@@ -268,8 +282,8 @@ const ReportsRankingPage: React.FC = () => {
       </div>
       
       <div className="text-right">
-        <div className="font-bold text-lg text-gray-900">{formatCurrency(orderType.avgValue)}</div>
-        <div className="text-sm text-gray-600">Tempo: {orderType.avgTime}</div>
+        <div className="font-bold text-lg text-gray-900">{formatCurrency(orderType.totalRevenue || orderType.revenue || 0)}</div>
+        <div className="text-sm text-gray-600">Média: {formatCurrency(orderType.avgValue || 0)}</div>
       </div>
     </div>
   );
@@ -323,34 +337,37 @@ const ReportsRankingPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">🏆 Rankings</h1>
           <p className="text-gray-600">Tops de performance e competição interna</p>
         </div>
-        
-        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+      </div>
+
+      {/* View Tabs */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="flex border-b border-gray-200">
           <button
-            onClick={() => handleViewChange('orders')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-              activeView === 'orders' 
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105' 
-                : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-md'
+            onClick={() => setActiveView('orders')}
+            className={`flex-1 px-6 py-4 text-center font-medium transition-colors ${
+              activeView === 'orders'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            🛠️ Ordens de Serviço
+            📋 Ordens de Serviço
           </button>
           <button
-            onClick={() => handleViewChange('products')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-              activeView === 'products' 
-                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg transform scale-105' 
-                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-md'
+            onClick={() => setActiveView('products')}
+            className={`flex-1 px-6 py-4 text-center font-medium transition-colors ${
+              activeView === 'products'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             📦 Produtos
           </button>
           <button
-            onClick={() => handleViewChange('categories')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-              activeView === 'categories' 
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transform scale-105' 
-                : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 hover:shadow-md'
+            onClick={() => setActiveView('categories')}
+            className={`flex-1 px-6 py-4 text-center font-medium transition-colors ${
+              activeView === 'categories'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             🏷️ Categorias
@@ -362,10 +379,11 @@ const ReportsRankingPage: React.FC = () => {
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center gap-4">
           <select
-            value={filters.period}
-            onChange={(e) => setFilters({ ...filters, period: e.target.value })}
+            value={rankingPeriod}
+            onChange={(e) => setRankingPeriod(e.target.value as any)}
             className="px-4 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 font-medium"
           >
+            <option value="all">🌟 Todos os Períodos (Padrão)</option>
             <option value="7d">Últimos 7 dias</option>
             <option value="30d">Últimos 30 dias</option>
             <option value="90d">Últimos 90 dias</option>
@@ -383,6 +401,10 @@ const ReportsRankingPage: React.FC = () => {
             <label htmlFor="compare" className="text-sm text-gray-700">
               Comparar com período anterior
             </label>
+          </div>
+          
+          <div className="text-sm text-gray-600 ml-auto">
+            📄 Mostrando: <span className="font-semibold">{rankingPeriod === 'all' ? 'Histórico Completo' : rankingPeriod === '7d' ? '7 dias' : rankingPeriod === '30d' ? '30 dias' : rankingPeriod === '90d' ? '90 dias' : '1 ano'}</span>
           </div>
         </div>
       </div>
@@ -427,35 +449,19 @@ const ReportsRankingPage: React.FC = () => {
       {activeView === 'products' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RankingCard
-            title="🏆 Top Produtos por Faturamento"
+            title="🏆 Produtos Mais Vendidos"
             icon={<Trophy className="w-5 h-5" />}
             data={realProductRanking}
             renderItem={renderProductItem}
-            emptyMessage="Nenhum produto encontrado no período"
+            emptyMessage="Nenhum produto vendido no período"
           />
           
           <RankingCard
-            title="📊 Produtos Mais Vendidos (Qtd)"
-            icon={<Star className="w-5 h-5" />}
-            data={[...realProductRanking].sort((a, b) => b.units - a.units)}
-            renderItem={renderProductItem}
-            emptyMessage="Dados de quantidade indisponíveis"
-          />
-          
-          <RankingCard
-            title="💰 Maior Margem de Lucro"
-            icon={<Target className="w-5 h-5" />}
-            data={[...realProductRanking].sort((a, b) => b.margin - a.margin)}
-            renderItem={renderProductItem}
-            emptyMessage="Dados de margem indisponíveis"
-          />
-          
-          <RankingCard
-            title="🔥 Produtos em Alta"
+            title="💰 Produtos com Maior Faturamento"
             icon={<TrendingUp className="w-5 h-5" />}
             data={realProductRanking}
             renderItem={renderProductItem}
-            emptyMessage="Nenhuma tendência detectada"
+            emptyMessage="Dados de faturamento indisponíveis"
           />
         </div>
       )}
@@ -463,33 +469,17 @@ const ReportsRankingPage: React.FC = () => {
       {activeView === 'categories' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RankingCard
-            title="🏆 Top Categorias por Faturamento"
-            icon={<Trophy className="w-5 h-5" />}
+            title="📊 Categorias Mais Vendidas"
+            icon={<Star className="w-5 h-5" />}
             data={realCategoryRanking}
             renderItem={renderCategoryItem}
-            emptyMessage="Nenhuma categoria encontrada no período"
+            emptyMessage="Nenhuma categoria com vendas no período"
           />
           
           <RankingCard
-            title="📈 Crescimento por Categoria"
-            icon={<TrendingUp className="w-5 h-5" />}
-            data={[...realCategoryRanking].sort((a, b) => b.growth - a.growth)}
-            renderItem={renderCategoryItem}
-            emptyMessage="Dados de crescimento indisponíveis"
-          />
-          
-          <RankingCard
-            title="💰 Maior Margem por Categoria"
-            icon={<Target className="w-5 h-5" />}
-            data={[...realCategoryRanking].sort((a, b) => b.margin - a.margin)}
-            renderItem={renderCategoryItem}
-            emptyMessage="Dados de margem indisponíveis"
-          />
-          
-          <RankingCard
-            title="📊 Participação no Faturamento"
+            title="💎 Participação de Mercado"
             icon={<Award className="w-5 h-5" />}
-            data={[...realCategoryRanking].sort((a, b) => b.participation - a.participation)}
+            data={realCategoryRanking}
             renderItem={renderCategoryItem}
             emptyMessage="Dados de participação indisponíveis"
           />
@@ -504,20 +494,19 @@ const ReportsRankingPage: React.FC = () => {
             <span className="text-sm font-medium opacity-90">Campeão Geral</span>
           </div>
           <div className="text-2xl font-bold mb-1">
-            {activeView === 'orders' ? realClientSpendingRanking[0]?.name || 'Carregando...' :
+            {activeView === 'orders' ? realClientSpendingRanking[0]?.cliente_nome || 'Carregando...' :
              activeView === 'products' ? realProductRanking[0]?.name || 'Carregando...' :
              realCategoryRanking[0]?.name || 'Carregando...'}
           </div>
           <div className="text-sm opacity-90">
             {formatCurrency(
-              activeView === 'orders' ? realClientSpendingRanking[0]?.totalValue || 0 :
+              activeView === 'orders' ? realClientSpendingRanking[0]?.gasto_total || 0 :
               activeView === 'products' ? realProductRanking[0]?.revenue || 0 :
               realCategoryRanking[0]?.revenue || 0
             )}
           </div>
         </div>
 
-        {/* TODO: Implementar dados reais de competitividade */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-2">
             <Medal className="w-6 h-6 text-gray-500" />

@@ -193,29 +193,41 @@ export function ActivateUsersPage() {
       }
 
       // ✅ USAR RPC QUE CRIA FUNCIONÁRIO COMPLETO COM BCRYPT
+      // Gerar usuário automático baseado no nome
+      const usuarioGerado = novoUsuario.nome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[^a-z0-9]/g, '_') // Substitui caracteres especiais por _
+        .substring(0, 20) // Limita a 20 caracteres
+
       const { data, error } = await supabase
         .rpc('criar_funcionario_completo', {
-          p_empresa_id: empresaId,
           p_nome: novoUsuario.nome,
-          p_senha: novoUsuario.senha,
+          p_email: `${usuarioGerado}@temp.local`, // Email temporário baseado no usuário
+          p_telefone: '', // Telefone opcional
+          p_cargo: 'Funcionário', // Cargo padrão
           p_funcao_id: novoUsuario.funcao_id,
-          p_email: null
+          p_usuario: usuarioGerado,
+          p_senha: novoUsuario.senha
         })
 
       if (error) {
-        console.error('Erro ao criar funcionário:', error)
+        console.error('❌ Erro ao criar funcionário:', error)
         throw error
       }
 
+      console.log('✅ Resposta da RPC:', data)
+
       // Verificar resultado da RPC
-      const resultado = data?.[0]
-      
-      if (!resultado?.sucesso) {
-        toast.error(resultado?.mensagem || 'Erro ao criar funcionário')
+      if (data?.success) {
+        toast.success('Funcionário criado com sucesso!')
+      } else {
+        toast.error(data?.error || 'Erro ao criar funcionário')
         return
       }
 
-      toast.success(resultado.mensagem)
+      toast.success('Funcionário e login criados com sucesso!')
       setNovoUsuario({ nome: '', senha: '', funcao_id: '' })
       carregarFuncionarios()
     } catch (error: any) {

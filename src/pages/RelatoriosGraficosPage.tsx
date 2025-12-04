@@ -60,6 +60,11 @@ const RelatoriosGraficosPage: React.FC = () => {
     color: PAYMENT_COLORS[pm.method] || '#999999'
   })) || []
 
+  console.log('🔍 [RelatoriosGraficos] salesData:', salesData);
+  console.log('💳 [RelatoriosGraficos] paymentMethods:', salesData?.paymentMethods);
+  console.log('📊 [RelatoriosGraficos] formasPagamento calculado:', formasPagamento);
+  console.log('📈 [RelatoriosGraficos] totalAmount:', salesData?.totalAmount);
+
   // Dados para evolução das vendas - carregados do Supabase
   const evolucaoVendas: any[] = []
 

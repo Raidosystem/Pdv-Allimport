@@ -16,6 +16,7 @@ interface LocalUser {
   tipo_admin: string
   senha_definida: boolean
   primeiro_acesso: boolean
+  usuario: string  // Campo para login (vem da tabela login_funcionarios)
 }
 
 export function LocalLoginPage() {
@@ -80,6 +81,13 @@ export function LocalLoginPage() {
       }
 
       console.log('👥 Usuários encontrados:', data?.length || 0, data)
+      
+      // 🐛 DEBUG: Verificar se campo 'usuario' existe
+      if (data && data.length > 0) {
+        console.log('🔍 DEBUG Primeiro usuário completo:', data[0])
+        console.log('🔍 Campo "usuario":', data[0].usuario)
+      }
+      
       setUsuarios(data || [])
       
       // Se houver apenas 1 usuário, selecionar automaticamente
@@ -116,46 +124,55 @@ export function LocalLoginPage() {
     setLoginLoading(true)
 
     try {
+      // 🐛 DEBUG: Verificar objeto do usuário e campo 'usuario'
+      console.log('🔍 DEBUG usuarioSelecionado:', usuarioSelecionado)
+      console.log('🔍 DEBUG campo "usuario":', usuarioSelecionado.usuario)
+      console.log('🔍 DEBUG typeof "usuario":', typeof usuarioSelecionado.usuario)
+      
       // Validar senha usando RPC
       const { data, error } = await supabase
         .rpc('validar_senha_local', {
-          p_funcionario_id: usuarioSelecionado.id,
+          p_usuario: usuarioSelecionado.usuario,  // ⭐ Usar campo 'usuario' ao invés de 'id'
           p_senha: senha
         })
 
       if (error) {
-        console.error('Erro ao validar senha:', error)
+        console.error('❌ Erro ao validar senha:', error)
         toast.error('Erro ao fazer login')
         setLoginLoading(false)
         return
       }
 
-      // Verificar resposta (RPC retorna objeto JSON direto, não array)
-      if (!data || !data.sucesso) {
-        toast.error(data?.mensagem || 'Senha incorreta')
+      // Verificar resposta (RPC retorna { success: boolean, funcionario?: {...}, error?: string })
+      if (!data || !data.success) {
+        toast.error(data?.error || 'Senha incorreta')
         setSenha('')
         setLoginLoading(false)
         return
       }
 
-      // Login bem-sucedido
-      const userData = data
+      // Login bem-sucedido - extrair dados do funcionário
+      const funcionarioData = data.funcionario
       
       // Salvar sessão local
       localStorage.setItem('pdv_local_session', JSON.stringify({
-        token: userData.token,
-        funcionario_id: userData.funcionario_id,
-        nome: userData.nome,
-        tipo_admin: userData.tipo_admin,
-        empresa_id: userData.empresa_id
+        funcionario_id: funcionarioData.id,
+        nome: funcionarioData.nome,
+        email: funcionarioData.email,
+        cargo: funcionarioData.cargo,
+        empresa_id: funcionarioData.empresa_id,
+        funcao_id: funcionarioData.funcao_id,
+        funcao_nome: funcionarioData.funcao_nome,
+        funcao_nivel: funcionarioData.funcao_nivel,
+        permissoes: funcionarioData.permissoes
       }))
 
       // Atualizar contexto de autenticação
       if (signInLocal) {
-        await signInLocal(userData)
+        await signInLocal(funcionarioData)
       }
 
-      toast.success(`Bem-vindo, ${userData.nome}!`)
+      toast.success(`Bem-vindo, ${funcionarioData.nome}!`)
       
       // Redirecionar para dashboard
       navigate('/dashboard', { replace: true })

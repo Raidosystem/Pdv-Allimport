@@ -172,6 +172,41 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       console.log(`🎯 [usePermissions] Total de permissões extraídas: ${permissoes.size}`);
       console.log(`📋 [usePermissions] Permissões:`, Array.from(permissoes));
 
+      // ✅ CONVERTER JSONB PERMISSÕES PARA FORMATO NOVO
+      // Se o funcionário tem permissoes JSONB mas não tem funcao_permissoes
+      if (permissoes.size === 0 && funcionarioData.permissoes) {
+        console.log('🔄 [usePermissions] Convertendo permissões JSONB para formato novo...');
+        console.log('📦 [usePermissions] JSONB original:', funcionarioData.permissoes);
+        
+        const permissoesJSONB = funcionarioData.permissoes;
+        
+        // Mapeamento: módulo → permissões
+        const moduloPermissoes: Record<string, string[]> = {
+          vendas: ['vendas:read', 'vendas:create', 'vendas:update', 'vendas:delete'],
+          produtos: ['produtos:read', 'produtos:create', 'produtos:update', 'produtos:delete'],
+          clientes: ['clientes:read', 'clientes:create', 'clientes:update', 'clientes:delete'],
+          caixa: ['caixa:read', 'caixa:open', 'caixa:close', 'caixa:supply', 'caixa:withdraw'],
+          ordens_servico: ['ordens_servico:read', 'ordens_servico:create', 'ordens_servico:update', 'ordens_servico:delete'],
+          relatorios: ['relatorios:read', 'relatorios:export'],
+          configuracoes: ['configuracoes:read', 'configuracoes:update'],
+          backup: ['backup:create', 'backup:read']
+        };
+        
+        // Converter cada módulo JSONB em permissões do formato novo
+        Object.keys(moduloPermissoes).forEach(modulo => {
+          if (permissoesJSONB[modulo] === true) {
+            moduloPermissoes[modulo].forEach(perm => {
+              permissoes.add(perm);
+              console.log(`  ✅ Convertido: ${modulo} → ${perm}`);
+            });
+          } else {
+            console.log(`  ❌ Módulo ${modulo} não ativo no JSONB`);
+          }
+        });
+        
+        console.log(`🎉 [usePermissions] Total após conversão JSONB: ${permissoes.size}`);
+      }
+
       // Determinar tipo de admin baseado no campo tipo_admin OU se tem função "Administrador"
       let tipo_admin = funcionarioData.tipo_admin || 'funcionario';
       
@@ -608,3 +643,96 @@ export const PERMISSIONS = {
 
   ADMIN_LOGS_READ: 'administracao.logs:read'
 } as const;
+
+// ========================================
+// HOOK PARA MÓDULOS VISÍVEIS (JSONB-BASED)
+// ========================================
+// Este hook lê direto do JSONB funcionarios.permissoes
+// para verificar quais módulos o usuário pode ver
+// ========================================
+
+export const useVisibleModulesJSONB = () => {
+  const [modules, setModules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const context = usePermissionsContext();
+
+  useEffect(() => {
+    const loadModules = async () => {
+      try {
+        // Admin sempre vê tudo
+        if (context?.is_admin_empresa || context?.is_super_admin) {
+          console.log('👑 [useVisibleModules] Admin/Super - todos os módulos visíveis');
+          setModules([
+            { name: 'sales', display_name: 'Vendas', icon: 'ShoppingCart', path: '/vendas', permission: 'vendas', can_view: true },
+            { name: 'clients', display_name: 'Clientes', icon: 'Users', path: '/clientes', permission: 'clientes', can_view: true },
+            { name: 'products', display_name: 'Produtos', icon: 'Package', path: '/produtos', permission: 'produtos', can_view: true },
+            { name: 'cashier', display_name: 'Caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa', can_view: true },
+            { name: 'orders', display_name: 'OS', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico', can_view: true },
+            { name: 'reports', display_name: 'Relatórios', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios', can_view: true }
+          ]);
+          setLoading(false);
+          return;
+        }
+
+        // Funcionário: buscar permissões do banco
+        const funcionarioId = context?.funcionario_id || localStorage.getItem('pdv_funcionario_id');
+        
+        if (!funcionarioId) {
+          console.log('❌ [useVisibleModules] Sem funcionario_id');
+          setModules([]);
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔍 [useVisibleModules] Buscando permissões JSONB para:', funcionarioId);
+
+        const { data: funcionario, error } = await supabase
+          .from('funcionarios')
+          .select('permissoes')
+          .eq('id', funcionarioId)
+          .single();
+
+        if (error || !funcionario) {
+          console.error('❌ [useVisibleModules] Erro ao buscar funcionário:', error);
+          setModules([]);
+          setLoading(false);
+          return;
+        }
+
+        const permissoesJSONB = funcionario.permissoes || {};
+        console.log('📦 [useVisibleModules] Permissões JSONB:', permissoesJSONB);
+
+        // Mapear módulos baseado no JSONB
+        const allModules = [
+          { name: 'sales', display_name: 'Vendas', icon: 'ShoppingCart', path: '/vendas', permission: 'vendas' },
+          { name: 'clients', display_name: 'Clientes', icon: 'Users', path: '/clientes', permission: 'clientes' },
+          { name: 'products', display_name: 'Produtos', icon: 'Package', path: '/produtos', permission: 'produtos' },
+          { name: 'cashier', display_name: 'Caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa' },
+          { name: 'orders', display_name: 'OS', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico' },
+          { name: 'reports', display_name: 'Relatórios', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios' }
+        ];
+
+        const visibleModules = allModules.filter(module => {
+          const hasPermission = permissoesJSONB[module.permission] === true;
+          console.log(`  ${hasPermission ? '✅' : '❌'} ${module.display_name}: ${permissoesJSONB[module.permission]}`);
+          return hasPermission;
+        }).map(module => ({ ...module, can_view: true }));
+
+        console.log(`📊 [useVisibleModules] Total módulos visíveis: ${visibleModules.length}`);
+        setModules(visibleModules);
+        setLoading(false);
+
+      } catch (error) {
+        console.error('❌ [useVisibleModules] Erro:', error);
+        setModules([]);
+        setLoading(false);
+      }
+    };
+
+    if (context !== null) {
+      loadModules();
+    }
+  }, [context]);
+
+  return { modules, loading };
+};

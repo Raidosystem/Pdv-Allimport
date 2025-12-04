@@ -9,6 +9,7 @@ import { Download, FileText, Mail, Clock, CheckCircle, AlertCircle, Loader } fro
 import { exportService } from '../../services/simpleExportService';
 import type { ExportOptions } from '../../services/simpleExportService';
 import { realReportsService } from '../../services/simpleReportsService';
+import { supabase } from '../../lib/supabase';
 
 // ===== Helper: Filters (same as overview) =====
 type FilterState = {
@@ -194,6 +195,50 @@ const ReportsExportsPage: React.FC = () => {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [autoEmail, setAutoEmail] = useState(false);
   const [emailRecipient, setEmailRecipient] = useState("");
+  
+  // ===== DADOS REAIS - Buscar vendedores e categorias do banco =====
+  const [vendedores, setVendedores] = useState<Array<{ id: string; nome: string }>>([]);
+  const [categorias, setCategorias] = useState<Array<{ id: string; nome: string }>>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  // Carregar vendedores e categorias reais
+  useEffect(() => {
+    const loadFiltersOptions = async () => {
+      try {
+        setLoadingOptions(true);
+        
+        // Buscar funcionários ativos como vendedores
+        const { data: funcionariosData, error: funcError } = await supabase
+          .from('funcionarios')
+          .select('id, nome')
+          .eq('status', 'ativo')
+          .order('nome');
+
+        if (!funcError && funcionariosData) {
+          setVendedores(funcionariosData);
+          console.log('✅ [EXPORTS] Vendedores carregados:', funcionariosData.length);
+        }
+
+        // Buscar categorias ativas
+        const { data: categoriasData, error: catError } = await supabase
+          .from('categorias')
+          .select('id, nome')
+          .eq('ativo', true)
+          .order('nome');
+
+        if (!catError && categoriasData) {
+          setCategorias(categoriasData);
+          console.log('✅ [EXPORTS] Categorias carregadas:', categoriasData.length);
+        }
+      } catch (error) {
+        console.error('❌ [EXPORTS] Erro ao carregar opções de filtro:', error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    loadFiltersOptions();
+  }, []);
 
   // Simulate loading
   useEffect(() => {
@@ -439,20 +484,24 @@ const ReportsExportsPage: React.FC = () => {
             value={filters.seller || ''}
             onChange={(e) => setFilters({ ...filters, seller: e.target.value || undefined })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            disabled={loadingOptions}
           >
             <option value="">Todos Vendedores</option>
-            <option value="maria">Maria Santos</option>
-            <option value="pedro">Pedro Lima</option>
+            {vendedores.map(v => (
+              <option key={v.id} value={v.id}>{v.nome}</option>
+            ))}
           </select>
 
           <select
             value={filters.category || ''}
             onChange={(e) => setFilters({ ...filters, category: e.target.value || undefined })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            disabled={loadingOptions}
           >
             <option value="">Todas Categorias</option>
-            <option value="eletronicos">Eletrônicos</option>
-            <option value="informatica">Informática</option>
+            {categorias.map(c => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
           </select>
         </div>
 

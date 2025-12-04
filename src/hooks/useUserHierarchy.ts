@@ -105,81 +105,54 @@ export function useUserHierarchy() {
     }
   };
 
-  // ✅ Obter módulos visíveis baseado nas permissões reais
+  // ✅ Obter módulos visíveis baseado nas permissões JSONB do funcionário
   const getVisibleModules = () => {
     const modules = [];
     
-    // Verificar cada módulo individualmente baseado nas permissões
+    console.log('🔍 [getVisibleModules] Iniciando com contexto:', {
+      is_admin_empresa: permissionsContext?.is_admin_empresa,
+      is_super_admin: permissionsContext?.is_super_admin,
+      tipo_admin: permissionsContext?.tipo_admin,
+      funcionario_id: permissionsContext?.funcionario_id
+    });
+    
+    // ✅ ADMIN SEMPRE VÊ TUDO
+    if (permissionsContext?.is_admin_empresa || permissionsContext?.is_super_admin) {
+      console.log('👑 [getVisibleModules] Admin/Super - retornando todos os módulos');
+      return [
+        { name: 'sales', display_name: 'Vendas', description: 'Realizar vendas', icon: 'ShoppingCart', path: '/vendas', permission: 'vendas', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'clients', display_name: 'Clientes', description: 'Gerenciar clientes', icon: 'Users', path: '/clientes', permission: 'clientes', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'products', display_name: 'Produtos', description: 'Controle de estoque', icon: 'Package', path: '/produtos', permission: 'produtos', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'cashier', display_name: 'Caixa', description: 'Controle de caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'reports', display_name: 'Relatórios', description: 'Relatórios e análises', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios', can_view: true, can_create: true, can_edit: true, can_delete: true }
+      ];
+    }
+    
+    // ⚠️ PROBLEMA: Esta função é SÍNCRONA mas precisamos buscar do banco
+    // SOLUÇÃO: Retornar baseado no array de permissões (que veio do banco via usePermissions)
+    // O array permissoes foi populado com base no JSONB em loadPermissions()
+    
     const allModules = [
-      {
-        name: 'sales',
-        display_name: 'Vendas',
-        description: 'Realizar vendas e emitir cupons fiscais',
-        icon: 'ShoppingCart',
-        path: '/vendas',
-        permission: 'vendas'
-      },
-      {
-        name: 'clients',
-        display_name: 'Clientes',
-        description: 'Gerenciar cadastro de clientes',
-        icon: 'Users',
-        path: '/clientes',
-        permission: 'clientes'
-      },
-      {
-        name: 'products',
-        display_name: 'Produtos',
-        description: 'Controle de estoque e produtos',
-        icon: 'Package',
-        path: '/produtos',
-        permission: 'produtos'
-      },
-      {
-        name: 'cashier',
-        display_name: 'Caixa',
-        description: 'Controle de caixa e movimento',
-        icon: 'DollarSign',
-        path: '/caixa',
-        permission: 'caixa'
-      },
-      {
-        name: 'orders',
-        display_name: 'OS - Ordem de Serviço',
-        description: 'Gestão de ordens de serviço',
-        icon: 'FileText',
-        path: '/ordens-servico',
-        permission: 'ordens_servico'
-      },
-      {
-        name: 'reports',
-        display_name: 'Relatórios',
-        description: 'Análises e relatórios de vendas',
-        icon: 'BarChart3',
-        path: '/relatorios',
-        permission: 'relatorios'
-      }
+      { name: 'sales', display_name: 'Vendas', description: 'Realizar vendas', icon: 'ShoppingCart', path: '/vendas', permission: 'vendas' },
+      { name: 'clients', display_name: 'Clientes', description: 'Gerenciar clientes', icon: 'Users', path: '/clientes', permission: 'clientes' },
+      { name: 'products', display_name: 'Produtos', description: 'Controle de estoque', icon: 'Package', path: '/produtos', permission: 'produtos' },
+      { name: 'cashier', display_name: 'Caixa', description: 'Controle de caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa' },
+      { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico' },
+      { name: 'reports', display_name: 'Relatórios', description: 'Relatórios e análises', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios' }
     ];
     
+    // ✅ Verificar permissões no array (que veio do sistema JSONB → sistema novo)
     for (const module of allModules) {
-      // Verificar se tem pelo menos permissão de leitura
-      const hasReadPermission = permissionsContext?.permissoes.some(
-        p => p.startsWith(`${module.permission}:read`) || p.startsWith(`${module.permission}:`)
+      // Verificar se tem alguma permissão para este módulo
+      const hasAnyPermission = permissionsContext?.permissoes.some(
+        p => p.startsWith(`${module.permission}:`) || p === module.permission
       ) || false;
       
-      if (hasReadPermission || permissionsContext?.is_admin_empresa || permissionsContext?.is_super_admin) {
-        // Verificar permissões específicas
-        const can_create = permissionsContext?.permissoes.includes(`${module.permission}:create`) || 
-                          permissionsContext?.is_admin_empresa || 
-                          permissionsContext?.is_super_admin || false;
-        
-        const can_edit = permissionsContext?.permissoes.includes(`${module.permission}:update`) || 
-                        permissionsContext?.is_admin_empresa || 
-                        permissionsContext?.is_super_admin || false;
-        
-        const can_delete = permissionsContext?.permissoes.includes(`${module.permission}:delete`) || 
-                          permissionsContext?.is_admin_empresa || 
-                          permissionsContext?.is_super_admin || false;
+      if (hasAnyPermission) {
+        const can_create = permissionsContext?.permissoes.includes(`${module.permission}:create`) || false;
+        const can_edit = permissionsContext?.permissoes.includes(`${module.permission}:update`) || false;
+        const can_delete = permissionsContext?.permissoes.includes(`${module.permission}:delete`) || false;
         
         modules.push({
           ...module,
@@ -188,9 +161,14 @@ export function useUserHierarchy() {
           can_edit,
           can_delete
         });
+        
+        console.log(`✅ [${module.name}] Módulo visível (permissões encontradas)`);
+      } else {
+        console.log(`❌ [${module.name}] Sem permissão`);
       }
     }
     
+    console.log(`📊 Total módulos visíveis: ${modules.length}`);
     return modules;
   };
 

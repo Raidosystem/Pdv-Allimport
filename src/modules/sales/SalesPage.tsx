@@ -177,6 +177,30 @@ export function SalesPage() {
     setLoading(true)
 
     try {
+      // Determinar método de pagamento correto
+      let paymentMethod: 'cash' | 'card' | 'pix' | 'mixed' = 'cash'
+      
+      if (payments.length === 0) {
+        // Sem pagamentos no array = pagamento em dinheiro direto
+        paymentMethod = 'cash'
+      } else if (payments.length === 1) {
+        // Um único método de pagamento
+        const method = payments[0].method
+        if (method === 'cash') paymentMethod = 'cash'
+        else if (method === 'pix') paymentMethod = 'pix'
+        else if (method === 'credit' || method === 'debit') paymentMethod = 'card'
+        else paymentMethod = 'cash'
+      } else {
+        // Múltiplos métodos = misto
+        paymentMethod = 'mixed'
+      }
+
+      console.log('💳 [SALES] Método de pagamento detectado:', paymentMethod, {
+        paymentsCount: payments.length,
+        payments: payments.map(p => ({ method: p.method, amount: p.amount })),
+        cashReceived
+      })
+
       // Preparar dados da venda - produtos de venda rápida ficam apenas na memória
       const saleData = {
         customer_id: customer?.id,
@@ -184,7 +208,7 @@ export function SalesPage() {
         user_id: user.id,
         total_amount: totalAmount,
         discount_amount: discountAmount,
-        payment_method: (payments.length > 0 ? 'mixed' : 'cash') as 'cash' | 'card' | 'pix' | 'mixed',
+        payment_method: paymentMethod,
         payment_details: {
           payments_count: payments.length,
           cash_received: cashReceived,

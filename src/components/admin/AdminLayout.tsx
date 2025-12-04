@@ -11,7 +11,8 @@ import {
   X,
   ChevronRight,
   Building,
-  User
+  User,
+  Wrench
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
@@ -52,6 +53,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: '/admin/funcoes-permissoes',
       icon: Shield,
       permission: 'administracao.funcoes'
+    },
+    {
+      name: 'Ferramentas',
+      href: '/admin/ferramentas',
+      icon: Wrench,
+      permission: 'administracao.sistema'
     },
     {
       name: 'Backups',
@@ -122,6 +129,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     ? isActive
                       ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-r-2 border-purple-600 shadow-sm'
                       : 'text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:text-purple-700'
+                  : item.name === 'Ferramentas'
+                    ? isActive
+                      ? 'bg-gradient-to-r from-teal-50 to-teal-100 text-teal-700 border-r-2 border-teal-600 shadow-sm'
+                      : 'text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-teal-100 hover:text-teal-700'
                   : item.name === 'Backups'
                     ? isActive
                       ? 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border-r-2 border-orange-600 shadow-sm'
@@ -141,6 +152,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   : item.name === 'Usuários'
                     ? isActive ? 'text-green-600' : 'text-green-500 group-hover:text-green-600'
                   : item.name === 'Funções & Permissões'
+                    ? isActive ? 'text-purple-600' : 'text-purple-500 group-hover:text-purple-600'
+                  : item.name === 'Ferramentas'
+                    ? isActive ? 'text-teal-600' : 'text-teal-500 group-hover:text-teal-600'
+                  : item.name === 'Backups'
                     ? isActive ? 'text-purple-600' : 'text-purple-500 group-hover:text-purple-600'
                   : item.name === 'Backups'
                     ? isActive ? 'text-orange-600' : 'text-orange-500 group-hover:text-orange-600'

@@ -88,12 +88,32 @@ class RealReportsService {
 
     console.log('🔍 Buscando vendas do período:', { startDate, endDate, period });
 
-    // Buscar vendas do período com campos corretos
-    const { data: sales, error: salesError } = await supabase
-      .from('sales')
+    // Buscar vendas do período - tentando com created_at primeiro
+    let sales: any[] | null = null;
+    let salesError: any = null;
+
+    // Tentar primeiro com created_at
+    const result1 = await supabase
+      .from('vendas')
       .select('*')
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString());
+
+    if (result1.error) {
+      console.warn('⚠️ Erro com created_at, tentando data_venda...', result1.error);
+      
+      // Tentar com data_venda
+      const result2 = await supabase
+        .from('vendas')
+        .select('*')
+        .gte('data_venda', startDate.toISOString())
+        .lte('data_venda', endDate.toISOString());
+      
+      sales = result2.data;
+      salesError = result2.error;
+    } else {
+      sales = result1.data;
+    }
 
     if (salesError) {
       console.error('❌ Erro ao buscar vendas:', salesError);
@@ -101,21 +121,30 @@ class RealReportsService {
     }
 
     console.log('✅ Vendas encontradas:', sales?.length || 0);
+    console.log('📦 Primeira venda (exemplo):', sales?.[0]);
 
-    // Calcular totais
+    // Calcular totais - suportar tanto 'total' quanto 'valor_total'
     const totalSales = sales?.length || 0;
-    const totalAmount = sales?.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) || 0;
+    const totalAmount = sales?.reduce((sum, sale) => {
+      const amount = sale.valor_total || sale.total || 0;
+      return sum + amount;
+    }, 0) || 0;
+
+    console.log('💰 Total de vendas:', totalSales, 'Total R$:', totalAmount);
 
     // Métodos de pagamento
     const paymentMethodsMap = new Map();
     sales?.forEach(sale => {
-      const method = sale.payment_method || 'N/A';
+      const method = sale.metodo_pagamento || sale.payment_method || 'N/A';
+      const amount = sale.valor_total || sale.total || 0;
       const current = paymentMethodsMap.get(method) || { count: 0, amount: 0 };
       paymentMethodsMap.set(method, {
         count: current.count + 1,
-        amount: current.amount + (sale.total_amount || 0)
+        amount: current.amount + amount
       });
     });
+
+    console.log('💳 Métodos de pagamento encontrados:', Array.from(paymentMethodsMap.keys()));
 
     const paymentMethods = Array.from(paymentMethodsMap.entries()).map(([method, data]) => ({
       method,
@@ -125,50 +154,51 @@ class RealReportsService {
 
     // Buscar produtos mais vendidos (dados reais)
     const { data: salesItems, error: itemsError } = await supabase
-      .from('sale_items')
-      .select('product_id, quantity, unit_price, total_price')
-      .in('sale_id', sales?.map(s => s.id) || []);
+      .from('itens_venda')
+      .select('produto_id, quantidade, preco_unitario, preco_total')
+      .in('venda_id', sales?.map(s => s.id) || []);
 
     if (itemsError) {
       console.error('❌ Erro ao buscar itens de vendas:', itemsError);
     }
 
-    // Buscar nomes dos produtos (usando os produtos embutidos como fallback)
-    const productIds = salesItems?.map(item => item.product_id).filter(Boolean) || [];
+    console.log('📦 Itens de venda encontrados:', salesItems?.length || 0);
+
+    // Buscar nomes dos produtos
+    const productIds = salesItems?.map(item => item.produto_id).filter(Boolean) || [];
     let productsData: any[] = [];
     
     if (productIds.length > 0) {
-      // Buscar primeiro do banco de dados
+      // Buscar do banco de dados
       const { data: dbProducts } = await supabase
-        .from('products')
-        .select('id, name')
+        .from('produtos')
+        .select('id, nome')
         .in('id', productIds);
       
       if (dbProducts) {
         productsData = dbProducts;
       }
       
-      // DADOS EMBEDADOS DESABILITADOS - Usando apenas Supabase com RLS
-      console.log('🔍 [REPORTS] Usando apenas dados do Supabase com RLS - produtos encontrados:', productsData.length)
+      console.log('🔍 [REPORTS] Produtos encontrados:', productsData.length)
     }
 
     // Processar produtos mais vendidos
     const productSalesMap = new Map<string, { quantity: number; revenue: number; name: string }>();
     
     salesItems?.forEach(item => {
-      if (item.product_id) {
-        const product = productsData.find(p => p.id === item.product_id);
-        const productName = product?.name || `Produto ${item.product_id}`;
+      if (item.produto_id) {
+        const product = productsData.find(p => p.id === item.produto_id);
+        const productName = product?.nome || `Produto ${item.produto_id}`;
         
-        const current = productSalesMap.get(item.product_id) || { 
+        const current = productSalesMap.get(item.produto_id) || { 
           quantity: 0, 
           revenue: 0, 
           name: productName 
         };
         
-        productSalesMap.set(item.product_id, {
-          quantity: current.quantity + (item.quantity || 0),
-          revenue: current.revenue + (item.total_price || 0),
+        productSalesMap.set(item.produto_id, {
+          quantity: current.quantity + (item.quantidade || 0),
+          revenue: current.revenue + (item.preco_total || 0),
           name: productName
         });
       }
@@ -187,10 +217,12 @@ class RealReportsService {
     // Vendas diárias
     const dailySalesMap = new Map();
     sales?.forEach(sale => {
-      const date = format(new Date(sale.created_at), 'yyyy-MM-dd');
+      const saleDate = sale.data_venda || sale.sale_date || sale.created_at;
+      const date = format(new Date(saleDate), 'yyyy-MM-dd');
+      const amount = sale.valor_total || sale.total || 0;
       const current = dailySalesMap.get(date) || { amount: 0, count: 0 };
       dailySalesMap.set(date, {
-        amount: current.amount + (sale.total_amount || 0),
+        amount: current.amount + amount,
         count: current.count + 1
       });
     });

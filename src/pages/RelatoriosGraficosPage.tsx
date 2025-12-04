@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
   PieChart as PieChartIcon, 
@@ -21,27 +21,76 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
+import { realReportsService } from '../services/realReportsService';
+import type { SalesReport } from '../services/realReportsService';
 
 const RelatoriosGraficosPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('7dias');
   const [loading, setLoading] = useState(false);
+  const [salesData, setSalesData] = useState<SalesReport | null>(null);
 
   // Dados para vendas por dia - carregados do Supabase
-  const vendasPorDia: any[] = []
+  const vendasPorDia: any[] = salesData?.dailySales.map(day => ({
+    dia: new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short' }),
+    vendas: day.amount,
+    pedidos: day.count
+  })) || []
 
   // Dados para formas de pagamento - carregados do Supabase
-  const formasPagamento: any[] = []
+  const PAYMENT_COLORS: Record<string, string> = {
+    pix: '#00B4D8',
+    credit_card: '#00D66F',
+    debit_card: '#FF6B6B',
+    money: '#FFA500',
+    'N/A': '#999999'
+  };
+
+  const PAYMENT_LABELS: Record<string, string> = {
+    pix: 'PIX',
+    credit_card: 'Cartão de Crédito',
+    debit_card: 'Cartão de Débito',
+    money: 'Dinheiro',
+    'N/A': 'Não Especificado'
+  };
+
+  const formasPagamento: any[] = salesData?.paymentMethods.map(pm => ({
+    name: PAYMENT_LABELS[pm.method] || pm.method,
+    value: pm.count,
+    amount: pm.amount,
+    color: PAYMENT_COLORS[pm.method] || '#999999'
+  })) || []
 
   // Dados para evolução das vendas - carregados do Supabase
   const evolucaoVendas: any[] = []
 
   // Dados para produtos mais vendidos - carregados do Supabase
-  const produtosMaisVendidos: any[] = []
+  const produtosMaisVendidos: any[] = salesData?.topProducts.map(prod => ({
+    produto: prod.productName,
+    vendas: prod.revenue,
+    quantidade: prod.quantity
+  })) || []
+
+  // Carregar dados ao montar componente
+  useEffect(() => {
+    loadData();
+  }, [selectedPeriod]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const report = await realReportsService.getSalesReport('month');
+      setSalesData(report);
+      console.log('📊 Dados de relatório carregados:', report);
+    } catch (error) {
+      console.error('❌ Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updatePeriod = (period: string) => {
     setSelectedPeriod(period);
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
+    loadData();
   };
 
   const formatCurrency = (value: number) => {
@@ -70,11 +119,17 @@ const RelatoriosGraficosPage: React.FC = () => {
 
   const PieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const totalAmount = salesData?.totalAmount || 0;
+      const percentage = totalAmount > 0 ? ((data.amount / totalAmount) * 100).toFixed(1) : 0;
+      
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md">
-          <p className="font-medium">{payload[0].name}</p>
-          <p style={{ color: payload[0].color }}>
-            {payload[0].value}% das vendas
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm">Quantidade: {data.value} vendas</p>
+          <p className="text-sm">Total: {formatCurrency(data.amount)}</p>
+          <p className="text-sm" style={{ color: data.color }}>
+            {percentage}% do faturamento
           </p>
         </div>
       );
@@ -167,41 +222,71 @@ const RelatoriosGraficosPage: React.FC = () => {
               <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center gap-2 mb-6">
                   <PieChartIcon className="h-6 w-6 text-green-600" />
-                  <h3 className="text-xl font-semibold text-gray-900">Formas de Pagamento</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">Performance por Método de Pagamento</h3>
                 </div>
                 
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={formasPagamento}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {formasPagamento.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<PieTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Legenda personalizada */}
-                <div className="flex justify-center gap-6 mt-4">
-                  {formasPagamento.map((forma, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: forma.color }}
-                      ></div>
-                      <span className="text-sm text-gray-600">{forma.name}</span>
+                {loading ? (
+                  <div className="h-80 flex items-center justify-center">
+                    <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+                  </div>
+                ) : formasPagamento.length === 0 ? (
+                  <div className="h-80 flex flex-col items-center justify-center text-gray-400">
+                    <PieChartIcon className="w-16 h-16 mb-4" />
+                    <p className="text-lg font-medium">Nenhuma venda registrada</p>
+                    <p className="text-sm">Os dados aparecerão assim que houver vendas</p>
+                    <p className="text-xs mt-2">Total: {formatCurrency(salesData?.totalAmount || 0)}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={formasPagamento}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, value, percent }) => {
+                              // Só mostrar label se tiver dados
+                              if (!name || value === 0) return '';
+                              return `${value}`;
+                            }}
+                            labelLine={false}
+                          >
+                            {formasPagamento.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<PieTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Legenda personalizada com totais */}
+                    <div className="space-y-2 mt-4">
+                      <p className="text-base font-bold text-gray-900 text-center mb-3 bg-gradient-to-r from-blue-50 to-purple-50 py-2 rounded-lg">
+                        Total: {formatCurrency(salesData?.totalAmount || 0)}
+                      </p>
+                      {formasPagamento.map((forma, index) => (
+                        <div key={index} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full shadow-sm" 
+                              style={{ backgroundColor: forma.color }}
+                            ></div>
+                            <span className="text-sm font-medium text-gray-700">{forma.name}</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-gray-900">{formatCurrency(forma.amount)}</p>
+                            <p className="text-xs text-gray-600">{forma.value} vendas</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Evolução das Vendas - Linha */}

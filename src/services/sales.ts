@@ -443,11 +443,76 @@ export const saleService = {
         return;
       }
       
+      // Montar descrição com nomes dos produtos
+      let descricao = 'Venda';
+      
+      console.log('🔍 Debug sale:', {
+        id: sale.id,
+        sale_items_length: sale.sale_items?.length,
+        sale_items: sale.sale_items
+      });
+      
+      if (sale.sale_items && sale.sale_items.length > 0) {
+        // Buscar nomes dos produtos dos items
+        const productIds = sale.sale_items.map(item => item.product_id).filter(Boolean);
+        
+        console.log('🔍 Product IDs extraídos:', productIds);
+        
+        if (productIds.length > 0) {
+          try {
+            const { data: products, error: prodError } = await supabase
+              .from('produtos')
+              .select('id, nome')
+              .in('id', productIds)
+              .limit(3);
+            
+            console.log('🔍 Produtos encontrados:', { products, error: prodError });
+            
+            if (products && products.length > 0) {
+              const productNames = products.map(p => p.nome).join(', ');
+              
+              if (sale.sale_items.length > 3) {
+                descricao = `Venda: ${productNames} e mais ${sale.sale_items.length - 3} item(ns)`;
+              } else {
+                descricao = `Venda: ${productNames}`;
+              }
+              
+              console.log('✅ Descrição gerada:', descricao);
+            } else {
+              descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+              console.log('⚠️ Nenhum produto encontrado - usando fallback');
+            }
+          } catch (error) {
+            console.warn('⚠️ Erro ao buscar nomes dos produtos:', error);
+            descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+          }
+        } else {
+          descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+          console.log('⚠️ Nenhum product_id válido - usando fallback');
+        }
+      } else {
+        // Fallback se não houver items
+        descricao = `Venda #${sale.id.substring(0, 8)}`;
+        console.log('⚠️ Sale sem items - usando ID');
+      }
+      
+      // Adicionar método de pagamento
+      const paymentMethodLabel: Record<string, string> = {
+        'cash': 'Dinheiro',
+        'credit': 'Crédito',
+        'debit': 'Débito',
+        'pix': 'PIX',
+        'card': 'Cartão',
+        'mixed': 'Misto'
+      };
+      
+      descricao += ` - ${paymentMethodLabel[sale.payment_method] || sale.payment_method}`;
+      
       // Criar movimentação de entrada no caixa
       const movimentacao = {
         caixa_id: caixaAberto.id,
         tipo: 'entrada',
-        descricao: `Venda ${sale.id} - ${sale.payment_method}`,
+        descricao,
         valor: sale.total_amount,
         usuario_id: sale.user_id,
         venda_id: sale.id,
@@ -460,8 +525,17 @@ export const saleService = {
       
       if (error) {
         console.error('❌ Erro ao registrar movimentação:', error);
-        throw error;
+        // Não lança erro para não interromper a venda
+        return;
       }
+      
+      console.log('✅ Movimentação registrada com sucesso:', {
+        caixa_id: caixaAberto.id,
+        tipo: 'entrada',
+        descricao,
+        valor: sale.total_amount,
+        venda_id: sale.id
+      });
       
       // Atualizar valor atual do caixa
       const novoValor = Number(caixaAberto.saldo_inicial || 0) + Number(sale.total_amount);

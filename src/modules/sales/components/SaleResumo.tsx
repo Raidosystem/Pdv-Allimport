@@ -58,6 +58,15 @@ export function SaleResumo({
   }
 
   const totalItems = items.reduce((count, item) => count + item.quantity, 0)
+  
+  // Debug: log dos items recebidos
+  console.log('📊 SaleResumo - items recebidos:', items.map(item => ({
+    productId: item.product.id,
+    productName: item.product.name,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    total_price: item.total_price
+  })))
 
   return (
     <Card className="p-6 bg-white border-0 shadow-xl h-fit">

@@ -132,6 +132,18 @@ export function useCaixa() {
   // ===== CARREGAR CAIXA AO MONTAR COMPONENTE =====
   useEffect(() => {
     carregarCaixaAtual();
+    
+    // ✅ Ouvir eventos de venda completada para recarregar caixa
+    const handleSaleCompleted = () => {
+      console.log('🔄 Venda completada - recarregando caixa');
+      carregarCaixaAtual();
+    };
+    
+    window.addEventListener('saleCompleted', handleSaleCompleted);
+    
+    return () => {
+      window.removeEventListener('saleCompleted', handleSaleCompleted);
+    };
   }, [carregarCaixaAtual]);
 
   return {

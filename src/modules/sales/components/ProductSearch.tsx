@@ -21,6 +21,7 @@ export function ProductSearch({ onProductSelect, onBarcodeSearch, onCreateProduc
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [productJustAdded, setProductJustAdded] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   
   const searchInputRef = useRef<HTMLInputElement>(null)
   const debouncedSearchTerm = useDebounce(searchTerm, 300)

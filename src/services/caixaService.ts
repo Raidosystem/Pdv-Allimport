@@ -114,7 +114,15 @@ class CaixaService {
         .from('caixa')
         .select(`
           *,
-          movimentacoes_caixa (*)
+          movimentacoes_caixa (
+            id,
+            tipo,
+            descricao,
+            valor,
+            data,
+            usuario_id,
+            venda_id
+          )
         `)
         .eq('usuario_id', usuario.id)
         .eq('status', 'aberto')
@@ -133,6 +141,8 @@ class CaixaService {
         return null;
       }
 
+      console.log('📦 Caixa carregado com', data.movimentacoes_caixa?.length || 0, 'movimentações');
+      
       return this.calcularResumoCaixa(data);
     } catch (error) {
       if (error instanceof Error && error.message.includes('autenticado')) {

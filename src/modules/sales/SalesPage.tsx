@@ -149,6 +149,13 @@ export function SalesPage() {
 
   // Adicionar produto ao carrinho
   const handleProductSelect = (product: Product, quantity: number = 1) => {
+    console.log('🎯 handleProductSelect chamado:', { 
+      productId: product.id, 
+      productName: product.name, 
+      receivedQuantity: quantity,
+      productPrice: product.price
+    })
+    
     // Permite adicionar ao carrinho independentemente do estoque
     // O sistema agora trabalha com estoque negativo
     addItem(product, quantity)

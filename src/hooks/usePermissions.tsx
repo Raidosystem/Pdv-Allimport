@@ -134,19 +134,30 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
 
-      // ✅ SE NÃO TEM FUNCIONÁRIO: Usuário é dono da empresa (admin automático)
+      // ✅ SE NÃO TEM FUNCIONÁRIO: Verificar se é dono da empresa (primeiro usuário cadastrado)
       if (!funcionarioData) {
-        console.log('🔧 [usePermissions] Usuário sem funcionário: tratando como dono/admin da empresa');
-        console.log('💡 [usePermissions] Não é obrigatório criar funcionário - empresas podem usar apenas o login principal');
+        console.log('ℹ️ [usePermissions] Usuário sem registro de funcionário');
         
-        if (user.email) {
-          console.log('✅ Usuário', user.email, 'definido como admin automático da empresa');
+        // Verificar se é o primeiro usuário (criado na mesma data que a empresa)
+        // Ou se tem metadata role='admin'
+        const isFirstUser = user.created_at && Math.abs(new Date(user.created_at).getTime() - new Date().getTime()) < 1000 * 60 * 60 * 24 * 7; // criado há menos de 7 dias da primeira verificação
+        const hasAdminRole = user.user_metadata?.role === 'admin' || user.app_metadata?.role === 'admin';
+        
+        // Lista de emails admin permitidos (super admins do sistema)
+        const ADMIN_EMAILS = [
+          'novaradiosystem@outlook.com',
+          'assistenciaallimport10@gmail.com'
+        ];
+        const isSuperAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
+        
+        if (isSuperAdmin || hasAdminRole) {
+          console.log('✅ Usuário', user.email, 'definido como admin (super admin ou role admin)');
           
-          // ✅ Permissões COMPLETAS para dono da empresa
+          // ✅ Permissões COMPLETAS para super admin
           const adminContext: PermissaoContext = {
             empresa_id: user.id,
             user_id: user.id,
-            funcionario_id: user.id, // Usar user.id como funcionario_id
+            funcionario_id: user.id,
             funcoes: ['admin_empresa'],
             permissoes: [
               // Vendas
@@ -201,14 +212,34 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
               'admin.dashboard:read'
             ],
             is_admin: true,
-            is_super_admin: false,
+            is_super_admin: isSuperAdmin,
             is_admin_empresa: true,
-            tipo_admin: 'admin_empresa',
-            escopo_lojas: [] // Acesso a todas as lojas
+            tipo_admin: isSuperAdmin ? 'super_admin' : 'admin_empresa',
+            escopo_lojas: []
           };
           
           setContext(adminContext);
-          console.log('🎯 DONO DA EMPRESA - Admin automático:', adminContext);
+          console.log('🎯 ADMIN AUTORIZADO:', adminContext);
+        } else {
+          // Usuário comum sem funcionário = SEM PERMISSÕES
+          console.log('⚠️ [usePermissions] Usuário sem funcionário e sem permissões admin');
+          console.log('💡 [usePermissions] Este usuário precisa ser cadastrado como funcionário ou ter role admin');
+          
+          const basicContext: PermissaoContext = {
+            empresa_id: user.id,
+            user_id: user.id,
+            funcionario_id: '', // String vazia ao invés de null
+            funcoes: [],
+            permissoes: [],
+            is_admin: false,
+            is_super_admin: false,
+            is_admin_empresa: false,
+            tipo_admin: 'funcionario', // Tipo padrão
+            escopo_lojas: []
+          };
+          
+          setContext(basicContext);
+          console.log('🚫 USUÁRIO SEM PERMISSÕES:', basicContext);
         }
         return;
       }

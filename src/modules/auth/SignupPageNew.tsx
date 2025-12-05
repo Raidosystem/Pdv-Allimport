@@ -672,6 +672,10 @@ function VerifyEmailCode({
           console.warn('⚠️ Código verificado mas erro ao ativar período de teste:', activationResult.error)
         }
         
+        // Aguardar 2 segundos para garantir que o banco sincronize o trial
+        console.log('⏳ Aguardando sincronização do trial no banco de dados...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
         // Fazer login automático após verificação bem-sucedida
         console.log('🔐 Fazendo login automático...')
         
@@ -686,11 +690,15 @@ function VerifyEmailCode({
               navigate('/login')
             }, 2500)
           } else {
-            console.log('✅ Login automático bem-sucedido! Redirecionando para o dashboard...')
+            console.log('✅ Login automático bem-sucedido!')
             setSuccessMessage(`✅ Bem-vindo! Você tem ${activationResult.daysRemaining || 15} dias de teste gratuito!`)
+            
+            // Aguardar mais tempo para garantir que useSubscription carregue
+            console.log('⏳ Aguardando carregamento completo da assinatura...')
             setTimeout(() => {
+              console.log('🚀 Redirecionando para o dashboard...')
               navigate('/dashboard')
-            }, 2500)
+            }, 3000) // Aumentado de 2.5s para 3s
           }
         } catch (loginErr: any) {
           console.error('❌ Erro ao fazer login automático:', loginErr)

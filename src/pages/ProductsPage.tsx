@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Plus, Search, Edit, Trash2, Eye, Users } from 'lucide-react'
+import { Package, Plus, Search, Edit, Trash2, Eye, Users, Store, ExternalLink } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import ProductForm from '../components/product/ProductForm'
@@ -10,6 +10,8 @@ import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { Fornecedor, FornecedorFormData } from '../types/fornecedor'
+import { lojaOnlineService } from '../services/lojaOnlineService'
+import type { LojaOnline } from '../services/lojaOnlineService'
 
 interface Product {
   id: string
@@ -73,6 +75,39 @@ export function ProductsPage() {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
   const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | undefined>()
   const [isSubmittingFornecedor, setIsSubmittingFornecedor] = useState(false)
+
+  // Estado para loja online
+  const [lojaOnline, setLojaOnline] = useState<LojaOnline | null>(null)
+
+  // Carregar loja online
+  useEffect(() => {
+    carregarLojaOnline()
+  }, [])
+
+  const carregarLojaOnline = async () => {
+    try {
+      const loja = await lojaOnlineService.buscarMinhaLoja()
+      setLojaOnline(loja)
+    } catch (error) {
+      console.log('Loja online não configurada')
+    }
+  }
+
+  const abrirLojaOnline = () => {
+    if (!lojaOnline) {
+      toast.error('Configure sua loja online primeiro em Administração')
+      return
+    }
+    
+    if (!lojaOnline.ativa) {
+      toast.error('Ative sua loja online primeiro em Administração')
+      return
+    }
+
+    const url = `${window.location.origin}/loja/${lojaOnline.slug}`
+    window.open(url, '_blank')
+    toast.success('Abrindo sua loja online...')
+  }
 
   const handleNovoProduto = () => {
     setEditingProduct(null)
@@ -672,6 +707,17 @@ export function ProductsPage() {
         </div>
         
         <div className="flex gap-2">
+          {lojaOnline && lojaOnline.ativa && (
+            <Button 
+              onClick={abrirLojaOnline}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+              title="Ver catálogo online dos produtos"
+            >
+              <Store className="w-4 h-4" />
+              <span className="hidden sm:inline">Catálogo Online</span>
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          )}
           <Button 
             onClick={handleOpenFornecedorModal}
             className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white"

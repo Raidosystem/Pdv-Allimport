@@ -211,6 +211,30 @@ export function AdminPanel() {
   useEffect(() => {
     if (isAdmin) {
       loadUsers()
+      
+      // Auto-refresh a cada 30 segundos
+      const interval = setInterval(() => {
+        console.log('🔄 Auto-atualizando lista de usuários...')
+        loadUsers()
+      }, 30000)
+      
+      // Supabase Realtime - Atualizar instantaneamente quando houver novos cadastros
+      const channel = supabase
+        .channel('user_approvals_changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'user_approvals' },
+          (payload) => {
+            console.log('🔔 Novo cadastro detectado:', payload)
+            toast.success('Nova solicitação de cadastro recebida!')
+            loadUsers()
+          }
+        )
+        .subscribe()
+      
+      return () => {
+        clearInterval(interval)
+        supabase.removeChannel(channel)
+      }
     }
   }, [isAdmin])
 
@@ -325,7 +349,7 @@ export function AdminPanel() {
       try {
         const trialResult = await SubscriptionService.activateTrial(email)
         if (trialResult.success) {
-          toast.success(`✅ ${email} aprovado com período de teste de 30 dias!`)
+          toast.success(`✅ ${email} aprovado com período de teste de 15 dias!`)
         } else {
           toast.error(`⚠️ ${email} aprovado, mas houve erro ao ativar período de teste`)
         }

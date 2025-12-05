@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, RefreshCw, Check, X, Crown, AlertTriangle, Sun, Moon, FileText, Edit, Eye, EyeOff } from 'lucide-react'
+import { Settings, Building, Palette, Printer, Bell, Shield, Database, Wifi, Cloud, Save, RefreshCw, Check, X, Crown, AlertTriangle, Sun, Moon, FileText, Edit, Eye, EyeOff, Store, Wrench } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
@@ -7,9 +7,11 @@ import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import { usePermissions } from '../hooks/usePermissions'
 import { usePrintSettings } from '../hooks/usePrintSettings'
 import { EmpresaView } from '../components/EmpresaView'
+import { LojaOnlineConfigPage } from '../modules/loja-online/LojaOnlineConfigPage'
+import LaudoTecnicoPage from './admin/LaudoTecnicoPage'
 import toast from 'react-hot-toast'
 
-type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura'
+type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura' | 'loja-online' | 'ferramentas'
 
 interface ConfiguracaoEmpresa {
   nome: string
@@ -1457,6 +1459,32 @@ export function ConfiguracoesPage() {
                 Assinatura
               </button>
             )}
+            
+            {/* Loja Online - Verde Escuro (E-commerce) */}
+            <button
+              onClick={() => setViewMode('loja-online')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'loja-online'
+                  ? 'bg-green-100 text-green-700 border-2 border-green-400'
+                  : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+              }`}
+            >
+              <Store className="h-4 w-4 inline mr-2" />
+              Loja Online
+            </button>
+            
+            {/* Ferramentas - Cinza (Utilitários) */}
+            <button
+              onClick={() => setViewMode('ferramentas')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'ferramentas'
+                  ? 'bg-gray-100 text-gray-700 border-2 border-gray-400'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              <Wrench className="h-4 w-4 inline mr-2" />
+              Ferramentas
+            </button>
           </div>
         </div>
 
@@ -1477,6 +1505,8 @@ export function ConfiguracoesPage() {
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
           {viewMode === 'assinatura' && <AssinaturaView />}
+          {viewMode === 'loja-online' && <LojaOnlineConfigPage />}
+          {viewMode === 'ferramentas' && <LaudoTecnicoPage />}
         </div>
       </div>
     </div>

@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Users, Shield, Database, BarChart3, Crown, UserCheck, Wrench } from 'lucide-react'
+import { Users, Shield, Database, BarChart3, Crown, UserCheck } from 'lucide-react'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
 // import AdminConvitesPage from './admin/AdminConvitesPage' // REMOVIDO - Sistema automático
 import AdminRolesPermissionsPageNew from './admin/AdminRolesPermissionsPageNew' // NOVA VERSÃO MODERNA
 import AdminBackupsPage from './admin/AdminBackupsPage'
-import LaudoTecnicoPage from './admin/LaudoTecnicoPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 import { ActivateUsersPage } from '../modules/admin/pages/ActivateUsersPage'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'ferramentas' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
+type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -54,12 +53,6 @@ function AdministracaoContent() {
       label: 'Funções & Permissões',
       icon: Shield,
       description: 'Configurar roles e permissões'
-    },
-    {
-      id: 'ferramentas' as ViewMode,
-      label: 'Ferramentas',
-      icon: Wrench,
-      description: 'Laudo técnico e outras ferramentas'
     },
     {
       id: 'backup' as ViewMode,
@@ -115,8 +108,6 @@ function AdministracaoContent() {
         return <ActivateUsersPage />
       case 'permissoes':
         return <AdminRolesPermissionsPageNew />
-      case 'ferramentas':
-        return <LaudoTecnicoPage />
       case 'backup':
         return <AdminBackupsPage />
       case 'debug':

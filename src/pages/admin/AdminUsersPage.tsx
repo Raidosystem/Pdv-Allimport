@@ -14,6 +14,7 @@ import {
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
 import AccessFixer from '../../components/AccessFixer';
+import { DeleteUserModal } from '../../components/admin/DeleteUserModal';
 import type { Funcionario, Funcao } from '../../types/admin';
 
 interface FuncionarioWithDetails {
@@ -40,6 +41,8 @@ const AdminUsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'todos' | 'ativo' | 'inativo' | 'pendente'>('todos');
   const [selectedUser, setSelectedUser] = useState<FuncionarioWithDetails | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<FuncionarioWithDetails | null>(null);
   const [currentView, setCurrentView] = useState<'list'>('list');
 
   useEffect(() => {
@@ -287,29 +290,133 @@ const AdminUsersPage: React.FC = () => {
   const handleDeleteUser = async (userId: string) => {
     if (!can('administracao.usuarios', 'delete') && !isAdminEmpresa) return;
 
-    if (confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
-      try {
-        const { error } = await supabase
-          .from('funcionarios')
-          .delete()
-          .eq('id', userId);
+    const user = funcionarios.find(f => f.id === userId);
+    if (!user) return;
 
-        if (error) throw error;
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
 
-        await loadFuncionarios();
+  const executeDeleteUser = async () => {
+    if (!userToDelete) return;
 
-        // Log de auditoria (comentado - tabela não existe no upgrade minimalista)
-        // await supabase.from('audit_logs').insert({
-        //   recurso: 'administracao.usuarios',
-        //   acao: 'delete',
-        //   entidade_tipo: 'funcionario',
-        //   entidade_id: userId
-        // });
+    try {
+      console.log('🗑️ [DELETE] Iniciando exclusão do usuário:', userToDelete.email);
 
-      } catch (error) {
-        console.error('Erro ao excluir usuário:', error);
-        alert('Erro ao excluir usuário. Tente novamente.');
+      // 1. Buscar o user_id do auth associado ao funcionário
+      const { data: authData } = await supabase.auth.admin.listUsers();
+      const authUser = authData?.users?.find(u => u.email === userToDelete.email);
+      
+      console.log('🔍 [DELETE] AuthUser encontrado:', authUser?.id);
+
+      // 2. Deletar dados relacionados ao usuário
+      const userId = userToDelete.id;
+
+      // Deletar produtos do usuário
+      console.log('🗑️ [DELETE] Deletando produtos...');
+      const { error: produtosError } = await supabase.from('produtos').delete().eq('user_id', userId);
+      if (produtosError) console.warn('⚠️ Erro ao deletar produtos:', produtosError.message);
+
+      // Deletar clientes do usuário
+      console.log('🗑️ [DELETE] Deletando clientes...');
+      const { error: clientesError } = await supabase.from('clientes').delete().eq('user_id', userId);
+      if (clientesError) console.warn('⚠️ Erro ao deletar clientes:', clientesError.message);
+
+      // Deletar vendas do usuário
+      console.log('🗑️ [DELETE] Deletando vendas...');
+      const { error: vendasError } = await supabase.from('vendas').delete().eq('user_id', userId);
+      if (vendasError) console.warn('⚠️ Erro ao deletar vendas:', vendasError.message);
+
+      // Deletar ordens de serviço do usuário
+      console.log('🗑️ [DELETE] Deletando ordens de serviço...');
+      const { error: ordensError } = await supabase.from('ordens_servico').delete().eq('user_id', userId);
+      if (ordensError) console.warn('⚠️ Erro ao deletar ordens:', ordensError.message);
+
+      // Tentar deletar caixas (pode não existir a tabela)
+      console.log('🗑️ [DELETE] Deletando caixas (se existir)...');
+      const { error: caixasError } = await supabase.from('caixas').delete().eq('user_id', userId);
+      if (caixasError && !caixasError.message.includes('not found')) {
+        console.warn('⚠️ Erro ao deletar caixas:', caixasError.message);
       }
+
+      // 3. Deletar o funcionário
+      console.log('🗑️ [DELETE] Deletando registro de funcionário...');
+      const { error: funcError } = await supabase
+        .from('funcionarios')
+        .delete()
+        .eq('id', userId);
+
+      if (funcError) throw funcError;
+
+      // 4. Tentar deletar conta de autenticação via RPC
+      if (authUser?.id) {
+        console.log('🗑️ [DELETE] Tentando deletar conta de autenticação via RPC...');
+        
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('admin_delete_user', { 
+          user_email: userToDelete.email 
+        });
+
+        if (rpcError) {
+          console.warn('⚠️ [DELETE] Erro RPC:', rpcError.message);
+          
+          // Se o erro for "function not found", significa que a RPC não foi criada ainda
+          if (rpcError.message.includes('function') && rpcError.message.includes('does not exist')) {
+            console.warn('⚠️ [DELETE] Função RPC admin_delete_user não encontrada no banco.');
+            console.warn('💡 [DELETE] Execute o script DELETAR_USUARIO_AUTH_PERMANENTE.sql no Supabase SQL Editor');
+            
+            alert(
+              `✅ Funcionário excluído com sucesso!\n\n` +
+              `⚠️ ATENÇÃO: A conta de autenticação não foi removida.\n\n` +
+              `Para habilitar exclusão automática:\n` +
+              `1. Abra o Supabase SQL Editor\n` +
+              `2. Execute o arquivo: DELETAR_USUARIO_AUTH_PERMANENTE.sql\n` +
+              `3. Isso criará a função admin_delete_user()\n\n` +
+              `OU execute manualmente:\n` +
+              `DELETE FROM auth.users WHERE email = '${userToDelete.email}';`
+            );
+          } else {
+            // Outro tipo de erro RPC
+            alert(
+              `✅ Funcionário excluído!\n\n` +
+              `⚠️ Erro ao deletar autenticação: ${rpcError.message}\n\n` +
+              `Execute manualmente:\n` +
+              `DELETE FROM auth.users WHERE email = '${userToDelete.email}';`
+            );
+          }
+        } else {
+          // RPC executou com sucesso
+          const result = rpcResult as { success: boolean; message?: string; error?: string };
+          
+          if (result.success) {
+            console.log('✅ [DELETE] Conta de autenticação deletada via RPC:', result);
+            alert(
+              `✅ Usuário excluído completamente!\n\n` +
+              `• Funcionário: Removido\n` +
+              `• Dados: Removidos\n` +
+              `• Autenticação: Removida\n\n` +
+              `${result.message || 'Exclusão bem-sucedida!'}`
+            );
+          } else {
+            console.warn('⚠️ [DELETE] RPC retornou falha:', result.error);
+            alert(
+              `✅ Funcionário excluído!\n\n` +
+              `⚠️ Erro RPC: ${result.error}\n\n` +
+              `Execute manualmente:\n` +
+              `DELETE FROM auth.users WHERE email = '${userToDelete.email}';`
+            );
+          }
+        }
+      }
+
+      await loadFuncionarios();
+      setUserToDelete(null);
+
+      console.log('✅ [DELETE] Processo de exclusão concluído!');
+
+    } catch (error) {
+      console.error('❌ [DELETE] Erro ao excluir usuário:', error);
+      alert('Erro ao excluir usuário. Verifique o console para mais detalhes.');
+      throw error;
     }
   };
 
@@ -585,6 +692,20 @@ const AdminUsersPage: React.FC = () => {
             setShowEditModal(false);
             setSelectedUser(null);
           }}
+        />
+      )}
+
+      {/* Modal de Exclusão com Tripla Confirmação */}
+      {showDeleteModal && userToDelete && (
+        <DeleteUserModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setUserToDelete(null);
+          }}
+          onConfirm={executeDeleteUser}
+          userName={userToDelete.nome || 'Usuário sem nome'}
+          userEmail={userToDelete.email}
         />
       )}
     </div>

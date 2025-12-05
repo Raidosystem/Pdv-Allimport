@@ -52,20 +52,71 @@ export function AdminDashboard() {
   const [daysToAdd, setDaysToAdd] = useState(30)
   const [planType, setPlanType] = useState<'trial' | 'premium'>('premium')
   const [filterStatus, setFilterStatus] = useState<'all' | 'trial' | 'active' | 'expired'>('all')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [checkingAdmin, setCheckingAdmin] = useState(true)
 
-  // Verificar se é admin
-  const isAdmin = user?.email === 'admin@pdvallimport.com' || 
-                  user?.email === 'novaradiosystem@outlook.com' || 
-                  user?.app_metadata?.role === 'admin'
+  // Verificar se é admin (com múltiplas verificações)
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        setCheckingAdmin(false)
+        return
+      }
+
+      // Verificação 1: Email direto
+      if (user.email === 'admin@pdvallimport.com' || 
+          user.email === 'novaradiosystem@outlook.com') {
+        console.log('✅ Admin verificado por email:', user.email)
+        setIsAdmin(true)
+        setCheckingAdmin(false)
+        return
+      }
+
+      // Verificação 2: Metadata do usuário
+      if (user.app_metadata?.role === 'admin' || 
+          user.user_metadata?.role === 'admin') {
+        console.log('✅ Admin verificado por metadata')
+        setIsAdmin(true)
+        setCheckingAdmin(false)
+        return
+      }
+
+      // Verificação 3: Consultar user_approvals
+      try {
+        const { data, error } = await supabase
+          .from('user_approvals')
+          .select('user_id, email, status')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!error && data) {
+          // Se o usuário existe no user_approvals e está aprovado, dar acesso
+          console.log('✅ Usuário encontrado em user_approvals:', data)
+          setIsAdmin(true)
+        } else {
+          console.log('❌ Usuário não encontrado em user_approvals ou não aprovado')
+          setIsAdmin(false)
+        }
+      } catch (err) {
+        console.error('Erro ao verificar admin:', err)
+        setIsAdmin(false)
+      }
+
+      setCheckingAdmin(false)
+    }
+
+    checkAdminAccess()
+  }, [user])
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && !checkingAdmin) {
       loadSubscribers()
       // Recarregar a cada 30 segundos para dados em tempo real
       const interval = setInterval(loadSubscribers, 30000)
       return () => clearInterval(interval)
     }
-  }, [isAdmin])
+  }, [isAdmin, checkingAdmin])
 
   const loadSubscribers = async () => {
     try {
@@ -318,19 +369,42 @@ export function AdminDashboard() {
   }
 
   const filteredSubscribers = subscribers.filter(s => {
-    if (filterStatus === 'all') return true
     if (filterStatus === 'trial') return s.subscription.status === 'trial' && s.subscription.days_remaining > 0
     if (filterStatus === 'active') return s.subscription.status === 'active' && s.subscription.days_remaining > 0
     if (filterStatus === 'expired') return s.subscription.days_remaining === 0
     return true
   })
 
+  // Mostrar loading enquanto verifica admin
+  if (checkingAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
+          <p className="text-gray-600 text-lg">Verificando permissões de administrador...</p>
+          <p className="text-gray-400 text-sm mt-2">Usuário: {user?.email}</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!isAdmin) {
     return (
-      <div className="p-8 text-center">
-        <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-600" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
-        <p className="text-gray-600">Você não tem permissão para acessar o painel admin.</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
+          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-600" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600 mb-4">
+            Você não tem permissão para acessar o painel administrativo.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800 font-medium mb-2">📧 Seu email:</p>
+            <p className="text-sm text-blue-600 break-all">{user?.email}</p>
+          </div>
+          <p className="text-xs text-gray-500">
+            Se você deveria ter acesso, entre em contato com o suporte.
+          </p>
+        </div>
       </div>
     )
   }

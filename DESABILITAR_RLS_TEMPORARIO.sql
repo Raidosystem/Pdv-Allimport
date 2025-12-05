@@ -1,30 +1,43 @@
--- =============================================
--- DESABILITAR RLS TEMPORARIAMENTE
--- =============================================
+-- ====================================================================
+-- DESABILITAR RLS TEMPORARIAMENTE PARA ADMIN ACESSAR
+-- ====================================================================
+-- ATENÇÃO: Isto remove a segurança RLS temporariamente
+-- Use apenas para testar o acesso admin
+-- Depois reabilite com REABILITAR_RLS.sql
+-- ====================================================================
 
--- 1. DESABILITAR RLS
-ALTER TABLE clientes DISABLE ROW LEVEL SECURITY;
+-- 🔓 DESABILITAR RLS NAS TABELAS CRÍTICAS
+ALTER TABLE subscriptions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE user_approvals DISABLE ROW LEVEL SECURITY;
 
-SELECT '⚠️ RLS DESABILITADO - Todos os usuários podem ver todos os clientes!' as status;
+-- 🔄 FORÇAR RELOAD DO POSTGREST
+NOTIFY pgrst, 'reload schema';
+NOTIFY pgrst, 'reload config';
 
--- 2. Verificar
+-- ✅ VERIFICAR SE DESABILITOU
 SELECT 
     tablename,
-    rowsecurity as rls_enabled
-FROM pg_tables
-WHERE tablename = 'clientes';
+    rowsecurity as rls_habilitado
+FROM pg_tables 
+WHERE tablename IN ('subscriptions', 'user_approvals');
 
--- 3. Contar clientes
-SELECT COUNT(*) as total_clientes FROM clientes;
+-- Contar registros
+SELECT COUNT(*) as total_subscriptions FROM subscriptions;
+SELECT COUNT(*) as total_approvals FROM user_approvals;
 
--- 4. Ver alguns clientes
-SELECT 
-    id,
-    nome,
-    telefone,
-    cpf_cnpj,
-    empresa_id,
-    user_id
-FROM clientes
-ORDER BY nome
-LIMIT 5;
+-- ====================================================================
+-- 📋 RESULTADO ESPERADO
+-- ====================================================================
+/*
+✅ rls_habilitado = false (para ambas as tabelas)
+✅ total_subscriptions = 6
+✅ total_approvals = 6
+
+PRÓXIMOS PASSOS:
+1. Recarregue a página do frontend (F5)
+2. Acesse /admin
+3. DEVE FUNCIONAR sem erro 403 agora
+
+⚠️ IMPORTANTE: Após confirmar que funciona, REABILITE O RLS executando:
+   REABILITAR_RLS.sql
+*/

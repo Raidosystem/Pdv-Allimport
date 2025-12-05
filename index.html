@@ -14,22 +14,35 @@
     <!-- Sistema de Limpeza de Cache Inline -->
     <script>
       (function() {
-        const CACHE_VERSION = '2.2.5';
+        const CACHE_VERSION = '2.2.6-fix'; // ✅ VERSÃO INCREMENTADA
         const LAST_VERSION = localStorage.getItem('pdv_inline_cache_version');
         
         if (LAST_VERSION !== CACHE_VERSION) {
           console.log('🧹 [INLINE] Limpando cache antigo:', LAST_VERSION, '→', CACHE_VERSION);
           
+          // Limpar TUDO do localStorage relacionado ao cache
+          const keys = Object.keys(localStorage);
+          keys.forEach(key => {
+            if (key.includes('cache') || key.includes('version') || key.includes('sw')) {
+              localStorage.removeItem(key);
+            }
+          });
+          
           // Limpar caches
           if ('caches' in window) {
             caches.keys().then(names => {
-              names.forEach(name => caches.delete(name));
+              console.log('🗑️ [INLINE] Deletando', names.length, 'caches');
+              names.forEach(name => {
+                caches.delete(name);
+                console.log('✅ Cache deletado:', name);
+              });
             });
           }
           
           // Desregistrar Service Workers (ignorar erros)
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(regs => {
+              console.log('🗑️ [INLINE] Desregistrando', regs.length, 'Service Workers');
               regs.forEach(reg => {
                 reg.unregister().catch(() => {
                   console.log('⚠️ [INLINE] SW ativo, será removido no próximo reload');
@@ -40,7 +53,13 @@
           
           // Salvar nova versão
           localStorage.setItem('pdv_inline_cache_version', CACHE_VERSION);
-          console.log('✅ [INLINE] Cache limpo e atualizado');
+          console.log('✅ [INLINE] Cache limpo e atualizado para', CACHE_VERSION);
+          
+          // ✅ FORÇAR RELOAD COMPLETO (sem cache)
+          setTimeout(() => {
+            console.log('🔄 [INLINE] Forçando reload completo...');
+            window.location.reload(true);
+          }, 500);
         }
       })();
     </script>

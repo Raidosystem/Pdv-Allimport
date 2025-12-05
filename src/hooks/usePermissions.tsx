@@ -56,8 +56,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       let funcionarioData: any = null;
       let error: any = null;
 
-      // Se tem funcionario_id (login local), buscar por ele
+      // ✅ ESTRATÉGIA 1: Buscar por funcionario_id (login local de funcionário)
       if (funcionarioId) {
+        console.log('🔍 [usePermissions] Estratégia 1: Buscando por funcionario_id (login local)');
         const { data, error: fetchError } = await supabase
           .from('funcionarios')
           .select(`
@@ -81,29 +82,109 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
         funcionarioData = data;
         error = fetchError;
+        
+        if (data) {
+          console.log('✅ [usePermissions] Funcionário encontrado por funcionario_id:', data.nome);
+        } else if (fetchError) {
+          console.error('⚠️ [usePermissions] Erro ao buscar por funcionario_id:', fetchError);
+        }
+      } 
+      
+      // ✅ ESTRATÉGIA 2: Buscar por user_id (caso empresa tenha criado funcionário para si)
+      if (!funcionarioData && !funcionarioId) {
+        console.log('🔍 [usePermissions] Estratégia 2: Verificando se existe funcionário para user_id');
+        const { data, error: fetchError } = await supabase
+          .from('funcionarios')
+          .select(`
+            *,
+            funcoes:funcao_id (
+              id,
+              nome,
+              escopo_lojas,
+              funcao_permissoes (
+                permissoes (
+                  id,
+                  recurso,
+                  acao,
+                  descricao
+                )
+              )
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('empresa_id', user.id)
+          .maybeSingle(); // ✅ maybeSingle() não gera erro se não encontrar
+
+        if (data) {
+          console.log('✅ [usePermissions] Funcionário encontrado por user_id:', data.nome);
+          funcionarioData = data;
+          // Salvar o funcionario_id para próximas consultas
+          localStorage.setItem('pdv_funcionario_id', data.id);
+        } else {
+          console.log('ℹ️ [usePermissions] Nenhum funcionário cadastrado (normal para donos de empresa)');
+          // ✅ NÃO é um erro - empresa pode não ter funcionário cadastrado
+        }
+        
+        // Só considerar erro se for um erro real da query, não "não encontrado"
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          error = fetchError;
+          console.error('⚠️ [usePermissions] Erro real na query:', fetchError);
+        }
       }
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
-      
-      if (error) {
-        console.error('⚠️ [usePermissions] Erro na query:', error);
-      }
 
-      if (error || !funcionarioData) {
-        console.error('❌ [usePermissions] Erro ao carregar permissões:', error);
-        console.log('🔧 [usePermissions] Usuário será tratado como admin da sua empresa');
+      // ✅ SE NÃO TEM FUNCIONÁRIO: Usuário é dono da empresa (admin automático)
+      if (!funcionarioData) {
+        console.log('🔧 [usePermissions] Usuário sem funcionário: tratando como dono/admin da empresa');
+        console.log('💡 [usePermissions] Não é obrigatório criar funcionário - empresas podem usar apenas o login principal');
         
-        // ✅ NÃO TENTAR CRIAR FUNCIONÁRIO - Isso causa 409 Conflict por RLS policies
-        // Apenas deixar claro que este usuário é admin automático
-        // A criação do funcionário será feita no contexto específico quando necessário
         if (user.email) {
           console.log('✅ Usuário', user.email, 'definido como admin automático da empresa');
+          
+          // ✅ Permissões COMPLETAS para dono da empresa
           const adminContext: PermissaoContext = {
-            empresa_id: user.id, // Cada usuário é sua própria empresa
+            empresa_id: user.id,
             user_id: user.id,
-            funcionario_id: user.id,
+            funcionario_id: user.id, // Usar user.id como funcionario_id
             funcoes: ['admin_empresa'],
             permissoes: [
+              // Vendas
+              'vendas:read',
+              'vendas:create',
+              'vendas:update',
+              'vendas:delete',
+              // Produtos
+              'produtos:read',
+              'produtos:create',
+              'produtos:update',
+              'produtos:delete',
+              // Clientes
+              'clientes:read',
+              'clientes:create',
+              'clientes:update',
+              'clientes:delete',
+              // Caixa
+              'caixa:read',
+              'caixa:open',
+              'caixa:close',
+              'caixa:supply',
+              'caixa:withdraw',
+              // Ordens de Serviço
+              'ordens_servico:read',
+              'ordens_servico:create',
+              'ordens_servico:update',
+              'ordens_servico:delete',
+              // Relatórios
+              'relatorios:read',
+              'relatorios:export',
+              // Configurações
+              'configuracoes:read',
+              'configuracoes:update',
+              // Backup
+              'backup:create',
+              'backup:read',
+              // Administração
               'administracao.usuarios:create',
               'administracao.usuarios:read', 
               'administracao.usuarios:update',
@@ -123,11 +204,11 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
             is_super_admin: false,
             is_admin_empresa: true,
             tipo_admin: 'admin_empresa',
-            escopo_lojas: [] // Todas as lojas
+            escopo_lojas: [] // Acesso a todas as lojas
           };
           
           setContext(adminContext);
-          console.log('🎯 ADMIN DEFINIDO:', adminContext);
+          console.log('🎯 DONO DA EMPRESA - Admin automático:', adminContext);
         }
         return;
       }

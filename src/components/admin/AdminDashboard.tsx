@@ -3,6 +3,7 @@ import { Users, Calendar, Clock, Crown, AlertTriangle, Plus, RefreshCw, Trending
 import { Button } from '../ui/Button'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../modules/auth'
+import { usePermissions } from '../../hooks/usePermissions'
 import toast from 'react-hot-toast'
 
 interface Subscriber {
@@ -38,6 +39,7 @@ interface DashboardStats {
 
 export function AdminDashboard() {
   const { user } = useAuth()
+  const { isAdmin, isAdminEmpresa, loading: permissionsLoading } = usePermissions()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [stats, setStats] = useState<DashboardStats>({
     total_subscribers: 0,
@@ -52,71 +54,26 @@ export function AdminDashboard() {
   const [daysToAdd, setDaysToAdd] = useState(30)
   const [planType, setPlanType] = useState<'trial' | 'premium'>('premium')
   const [filterStatus, setFilterStatus] = useState<'all' | 'trial' | 'active' | 'expired'>('all')
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [checkingAdmin, setCheckingAdmin] = useState(true)
 
-  // Verificar se é admin (com múltiplas verificações)
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      if (!user) {
-        setIsAdmin(false)
-        setCheckingAdmin(false)
-        return
-      }
+  // Verificar se tem permissão de admin
+  const hasAdminAccess = isAdmin || isAdminEmpresa
 
-      // Verificação 1: Email direto
-      if (user.email === 'admin@pdvallimport.com' || 
-          user.email === 'novaradiosystem@outlook.com') {
-        console.log('✅ Admin verificado por email:', user.email)
-        setIsAdmin(true)
-        setCheckingAdmin(false)
-        return
-      }
-
-      // Verificação 2: Metadata do usuário
-      if (user.app_metadata?.role === 'admin' || 
-          user.user_metadata?.role === 'admin') {
-        console.log('✅ Admin verificado por metadata')
-        setIsAdmin(true)
-        setCheckingAdmin(false)
-        return
-      }
-
-      // Verificação 3: Consultar user_approvals
-      try {
-        const { data, error } = await supabase
-          .from('user_approvals')
-          .select('user_id, email, status')
-          .eq('user_id', user.id)
-          .single()
-
-        if (!error && data) {
-          // Se o usuário existe no user_approvals e está aprovado, dar acesso
-          console.log('✅ Usuário encontrado em user_approvals:', data)
-          setIsAdmin(true)
-        } else {
-          console.log('❌ Usuário não encontrado em user_approvals ou não aprovado')
-          setIsAdmin(false)
-        }
-      } catch (err) {
-        console.error('Erro ao verificar admin:', err)
-        setIsAdmin(false)
-      }
-
-      setCheckingAdmin(false)
-    }
-
-    checkAdminAccess()
-  }, [user])
+  console.log('🔐 [AdminDashboard] Verificação de acesso:', {
+    email: user?.email,
+    isAdmin,
+    isAdminEmpresa,
+    hasAdminAccess,
+    permissionsLoading
+  })
 
   useEffect(() => {
-    if (isAdmin && !checkingAdmin) {
+    if (hasAdminAccess && !permissionsLoading) {
       loadSubscribers()
       // Recarregar a cada 30 segundos para dados em tempo real
       const interval = setInterval(loadSubscribers, 30000)
       return () => clearInterval(interval)
     }
-  }, [isAdmin, checkingAdmin])
+  }, [hasAdminAccess, permissionsLoading])
 
   const loadSubscribers = async () => {
     try {
@@ -376,7 +333,7 @@ export function AdminDashboard() {
   })
 
   // Mostrar loading enquanto verifica admin
-  if (checkingAdmin) {
+  if (permissionsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
@@ -388,7 +345,7 @@ export function AdminDashboard() {
     )
   }
 
-  if (!isAdmin) {
+  if (!hasAdminAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
@@ -400,6 +357,7 @@ export function AdminDashboard() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-blue-800 font-medium mb-2">📧 Seu email:</p>
             <p className="text-sm text-blue-600 break-all">{user?.email}</p>
+            <p className="text-xs text-gray-500 mt-2">isAdmin: {isAdmin ? 'Sim' : 'Não'} | isAdminEmpresa: {isAdminEmpresa ? 'Sim' : 'Não'}</p>
           </div>
           <p className="text-xs text-gray-500">
             Se você deveria ter acesso, entre em contato com o suporte.

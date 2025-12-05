@@ -7,52 +7,9 @@ import App from './App.tsx'
 
 console.log('🚀 RaVal pdv v2.2.3 - PWA Install Direto')
 
-// ===== SISTEMA DE LIMPEZA DE CACHE AUTOMÁTICO =====
-const CACHE_VERSION_KEY = 'pdv_cache_version'
-const CURRENT_CACHE_VERSION = '2.2.5' // Incrementar a cada deploy importante
-
-// Verificar e limpar cache se versão mudou
-const checkAndClearCache = async () => {
-  const lastVersion = localStorage.getItem(CACHE_VERSION_KEY)
-  
-  if (lastVersion !== CURRENT_CACHE_VERSION) {
-    console.log('🧹 Nova versão detectada, limpando cache...')
-    console.log(`   Antiga: ${lastVersion} → Nova: ${CURRENT_CACHE_VERSION}`)
-    
-    try {
-      // Limpar Cache API
-      if ('caches' in window) {
-        const cacheNames = await caches.keys()
-        await Promise.all(cacheNames.map(name => caches.delete(name)))
-        console.log('✅ Cache API limpo')
-      }
-
-      // Limpar Service Workers (de forma segura)
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations()
-        for (const reg of registrations) {
-          try {
-            await reg.unregister()
-          } catch (err) {
-            // Ignorar erros de Service Worker ativo
-            console.log('⚠️ Service Worker será removido no próximo carregamento')
-          }
-        }
-        console.log('✅ Service Workers processados')
-      }
-
-      // Salvar nova versão
-      localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION)
-      console.log('✅ Cache atualizado para versão', CURRENT_CACHE_VERSION)
-      
-    } catch (error) {
-      console.error('❌ Erro ao limpar cache:', error)
-    }
-  }
-}
-
-// Executar limpeza antes de renderizar
-checkAndClearCache()
+// ===== SISTEMA DE CACHE MOVIDO PARA index.html =====
+// O controle de cache agora é feito inline no index.html
+// para evitar conflitos e loops de reload
 // ===== FIM DO SISTEMA DE LIMPEZA =====
 
 // Aguardar DOM estar completamente pronto

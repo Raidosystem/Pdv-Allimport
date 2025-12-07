@@ -381,6 +381,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInLocal = async (userData: any) => {
     console.log('🔐 Login local iniciado:', userData)
     
+    // 🚨 CRITICAL: Fazer logout da sessão admin ANTES de criar sessão do funcionário
+    console.log('🚪 Fazendo logout da sessão admin antes de criar sessão do funcionário...')
+    await supabase.auth.signOut()
+    
     // Buscar email da empresa (que já está logada)
     let empresaEmail = user?.email || 'local@user.com'
     
@@ -458,7 +462,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         // ✅ NÃO usamos mais localStorage - cada funcionário tem conta própria no Supabase Auth
         console.log('✅ Login local completo:', localUser)
-        console.log('🔑 Empresa ID (usado como auth.uid()):', userData.empresa_id)
+        console.log('🔑 User ID (user_id do funcionário):', userData.user_id || userData.id)
+        console.log('🏢 Empresa ID:', userData.empresa_id)
         
         return
       }
@@ -468,8 +473,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Fallback: criar user/session básico
     const localUser = {
-      id: userData.empresa_id || userData.funcionario_id,
-      email: empresaEmail, // ✅ USAR EMAIL DA EMPRESA, NÃO DO FUNCIONÁRIO
+      id: userData.user_id || userData.id, // ✅ USAR user_id DO FUNCIONÁRIO, NÃO empresa_id
+      email: userData.email || empresaEmail, // ✅ EMAIL DO FUNCIONÁRIO se disponível
       user_metadata: {
         nome: userData.nome,
         tipo_admin: userData.tipo_admin,
@@ -494,6 +499,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // ✅ NÃO usamos mais localStorage - cada funcionário tem conta própria no Supabase Auth
     console.log('✅ Login local completo (modo fallback):', localUser)
+    console.log('🔑 User ID (user_id do funcionário):', userData.user_id || userData.id)
+    console.log('🏢 Empresa ID:', userData.empresa_id)
   }
 
   const value: AuthContextType = {

@@ -127,6 +127,19 @@ export default function ConfiguracoesEmpresa() {
   };
 
   const handleCreateFuncionario = async () => {
+    // Validar campos obrigatórios
+    if (!funcionarioForm.nome || !funcionarioForm.email || !funcionarioForm.senha) {
+      toast.error('Preencha nome, email e senha');
+      return;
+    }
+    
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(funcionarioForm.email)) {
+      toast.error('Email inválido');
+      return;
+    }
+    
     const result = await createFuncionario(
       {
         nome: funcionarioForm.nome,
@@ -137,7 +150,7 @@ export default function ConfiguracoesEmpresa() {
         permissoes: funcionarioForm.permissoes
       },
       {
-        usuario: funcionarioForm.usuario,
+        usuario: funcionarioForm.usuario || funcionarioForm.email.split('@')[0],
         senha: funcionarioForm.senha
       }
     );
@@ -789,15 +802,19 @@ function AddFuncionarioModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email * <span className="text-xs text-gray-500">(usado para login)</span>
               </label>
               <input
                 type="email"
+                required
                 value={funcionarioForm.email}
                 onChange={(e) => setFuncionarioForm({ ...funcionarioForm, email: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="email@exemplo.com"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                O funcionário usará este email para fazer login no sistema
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -37,99 +37,40 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
       console.log('🔍 [usePermissions] user.user_metadata:', user.user_metadata);
-
-      // ✅ BUSCAR funcionario_id de várias fontes possíveis
-      let funcionarioId = user.user_metadata?.funcionario_id;
+      console.log('🔑 [usePermissions] Buscando funcionário por user.id:', user.id);
       
-      // Se não achou no metadata, tentar localStorage (para login local)
-      if (!funcionarioId) {
-        const storedFuncionarioId = localStorage.getItem('pdv_funcionario_id');
-        if (storedFuncionarioId && storedFuncionarioId !== 'null') {
-          funcionarioId = storedFuncionarioId;
-          console.log('🔑 [usePermissions] funcionario_id recuperado do localStorage:', funcionarioId);
-        }
+      // ✅ BUSCAR FUNCIONÁRIO APENAS POR user_id (auth.uid())
+      // Cada funcionário tem sua própria conta no Supabase Auth
+      console.log('🔍 [usePermissions] Buscando funcionário por user_id');
+      const { data: funcionarioData, error } = await supabase
+        .from('funcionarios')
+        .select(`
+          *,
+          funcoes:funcao_id (
+            id,
+            nome,
+            escopo_lojas,
+            funcao_permissoes (
+              permissoes (
+                id,
+                recurso,
+                acao,
+                descricao
+              )
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (funcionarioData) {
+        console.log('✅ [usePermissions] Funcionário encontrado:', funcionarioData.nome);
+      } else {
+        console.log('ℹ️ [usePermissions] Nenhum funcionário cadastrado (normal para donos de empresa)');
       }
       
-      console.log('🔑 [usePermissions] Buscando funcionário por ID:', funcionarioId);
-      console.log('🔑 [usePermissions] user.id (empresa):', user.id);
-      
-      let funcionarioData: any = null;
-      let error: any = null;
-
-      // ✅ ESTRATÉGIA 1: Buscar por funcionario_id (login local de funcionário)
-      if (funcionarioId) {
-        console.log('🔍 [usePermissions] Estratégia 1: Buscando por funcionario_id (login local)');
-        const { data, error: fetchError } = await supabase
-          .from('funcionarios')
-          .select(`
-            *,
-            funcoes:funcao_id (
-              id,
-              nome,
-              escopo_lojas,
-              funcao_permissoes (
-                permissoes (
-                  id,
-                  recurso,
-                  acao,
-                  descricao
-                )
-              )
-            )
-          `)
-          .eq('id', funcionarioId)
-          .single();
-
-        funcionarioData = data;
-        error = fetchError;
-        
-        if (data) {
-          console.log('✅ [usePermissions] Funcionário encontrado por funcionario_id:', data.nome);
-        } else if (fetchError) {
-          console.error('⚠️ [usePermissions] Erro ao buscar por funcionario_id:', fetchError);
-        }
-      } 
-      
-      // ✅ ESTRATÉGIA 2: Buscar por user_id (caso empresa tenha criado funcionário para si)
-      if (!funcionarioData && !funcionarioId) {
-        console.log('🔍 [usePermissions] Estratégia 2: Verificando se existe funcionário para user_id');
-        const { data, error: fetchError } = await supabase
-          .from('funcionarios')
-          .select(`
-            *,
-            funcoes:funcao_id (
-              id,
-              nome,
-              escopo_lojas,
-              funcao_permissoes (
-                permissoes (
-                  id,
-                  recurso,
-                  acao,
-                  descricao
-                )
-              )
-            )
-          `)
-          .eq('user_id', user.id)
-          .eq('empresa_id', user.id)
-          .maybeSingle(); // ✅ maybeSingle() não gera erro se não encontrar
-
-        if (data) {
-          console.log('✅ [usePermissions] Funcionário encontrado por user_id:', data.nome);
-          funcionarioData = data;
-          // Salvar o funcionario_id para próximas consultas
-          localStorage.setItem('pdv_funcionario_id', data.id);
-        } else {
-          console.log('ℹ️ [usePermissions] Nenhum funcionário cadastrado (normal para donos de empresa)');
-          // ✅ NÃO é um erro - empresa pode não ter funcionário cadastrado
-        }
-        
-        // Só considerar erro se for um erro real da query, não "não encontrado"
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          error = fetchError;
-          console.error('⚠️ [usePermissions] Erro real na query:', fetchError);
-        }
+      if (error && error.code !== 'PGRST116') {
+        console.error('⚠️ [usePermissions] Erro ao buscar funcionário:', error);
       }
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);

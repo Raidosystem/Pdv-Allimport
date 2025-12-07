@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../modules/auth/AuthContext'
 import { SubscriptionService } from '../services/subscriptionService'
 import type { SubscriptionStatus, Subscription } from '../types/subscription'
+import { supabase } from '../lib/supabase'
 
 export function useSubscription() {
   const { user } = useAuth()
@@ -22,9 +23,37 @@ export function useSubscription() {
       setLoading(true)
       setError(null)
 
-      // Buscar status da assinatura
-      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus...')
-      const status = await SubscriptionService.checkSubscriptionStatus(user.email)
+      // 🔑 CRITICAL: Se for funcionário, buscar email da EMPRESA, não do funcionário
+      let emailParaVerificar = user.email
+      
+      // Verificar se é funcionário buscando pelo user_id na tabela funcionarios
+      const { data: funcionarioData } = await supabase
+        .from('funcionarios')
+        .select('empresa_id, tipo_admin')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (funcionarioData && funcionarioData.tipo_admin === 'funcionario') {
+        // É funcionário - buscar email da empresa
+        console.log('👤 [useSubscription] Usuário é funcionário, buscando email da empresa...')
+        
+        const { data: empresaData } = await supabase
+          .from('empresas')
+          .select('email')
+          .eq('id', funcionarioData.empresa_id)
+          .single()
+
+        if (empresaData?.email) {
+          emailParaVerificar = empresaData.email
+          console.log('✅ [useSubscription] Email da empresa encontrado:', emailParaVerificar)
+        }
+      } else {
+        console.log('🏢 [useSubscription] Usuário é admin/empresa, usando email próprio')
+      }
+
+      // Buscar status da assinatura usando o email correto
+      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus com:', emailParaVerificar)
+      const status = await SubscriptionService.checkSubscriptionStatus(emailParaVerificar)
       console.log('🔍 [useSubscription] Status retornado:', status)
       setSubscriptionStatus(status)
 

@@ -20,27 +20,29 @@ export function useSubscription() {
 
     try {
       console.log('🔍 [useSubscription] Iniciando loadSubscriptionData para:', user.email)
+      console.log('🔍 [useSubscription] user.id:', user.id)
+      console.log('🔍 [useSubscription] user.user_metadata:', user.user_metadata)
       setLoading(true)
       setError(null)
 
       // 🔑 CRITICAL: Se for funcionário, buscar email da EMPRESA, não do funcionário
       let emailParaVerificar = user.email
       
-      // Verificar se é funcionário buscando pelo user_id na tabela funcionarios
-      const { data: funcionarioData } = await supabase
-        .from('funcionarios')
-        .select('empresa_id, tipo_admin')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (funcionarioData && funcionarioData.tipo_admin === 'funcionario') {
-        // É funcionário - buscar email da empresa
-        console.log('👤 [useSubscription] Usuário é funcionário, buscando email da empresa...')
+      // PRIMEIRO: Verificar se tem empresa_id no user_metadata (funcionário após signInLocal)
+      const empresaIdFromMetadata = (user.user_metadata as any)?.empresa_id
+      const tipoAdminFromMetadata = (user.user_metadata as any)?.tipo_admin
+      
+      console.log('🔍 [useSubscription] empresa_id do metadata:', empresaIdFromMetadata)
+      console.log('🔍 [useSubscription] tipo_admin do metadata:', tipoAdminFromMetadata)
+      
+      if (empresaIdFromMetadata && tipoAdminFromMetadata === 'funcionario') {
+        // É funcionário - buscar email da empresa diretamente
+        console.log('👤 [useSubscription] Usuário é funcionário (metadata), buscando email da empresa...')
         
         const { data: empresaData } = await supabase
           .from('empresas')
           .select('email')
-          .eq('id', funcionarioData.empresa_id)
+          .eq('id', empresaIdFromMetadata)
           .single()
 
         if (empresaData?.email) {
@@ -48,7 +50,30 @@ export function useSubscription() {
           console.log('✅ [useSubscription] Email da empresa encontrado:', emailParaVerificar)
         }
       } else {
-        console.log('🏢 [useSubscription] Usuário é admin/empresa, usando email próprio')
+        // Fallback: buscar na tabela funcionarios por user_id
+        const { data: funcionarioData } = await supabase
+          .from('funcionarios')
+          .select('empresa_id, tipo_admin')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (funcionarioData && funcionarioData.tipo_admin === 'funcionario') {
+          // É funcionário - buscar email da empresa
+          console.log('👤 [useSubscription] Usuário é funcionário (DB), buscando email da empresa...')
+          
+          const { data: empresaData } = await supabase
+            .from('empresas')
+            .select('email')
+            .eq('id', funcionarioData.empresa_id)
+            .single()
+
+          if (empresaData?.email) {
+            emailParaVerificar = empresaData.email
+            console.log('✅ [useSubscription] Email da empresa encontrado:', emailParaVerificar)
+          }
+        } else {
+          console.log('🏢 [useSubscription] Usuário é admin/empresa, usando email próprio')
+        }
       }
 
       // Buscar status da assinatura usando o email correto

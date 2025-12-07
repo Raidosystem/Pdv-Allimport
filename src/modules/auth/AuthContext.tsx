@@ -501,6 +501,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('✅ Login local completo (modo fallback):', localUser)
     console.log('🔑 User ID (user_id do funcionário):', userData.user_id || userData.id)
     console.log('🏢 Empresa ID:', userData.empresa_id)
+    
+    // 🔔 NOTIFICAR o PermissionsProvider para recarregar permissões
+    window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
+      detail: { userId: userData.user_id || userData.id }
+    }))
+    console.log('🔔 Evento pdv_permissions_reload disparado')
   }
 
   const value: AuthContextType = {

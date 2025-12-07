@@ -340,6 +340,14 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       }
     });
 
+    // ✅ Escutar evento customizado de login local
+    const handlePermissionsReload = (e: CustomEvent) => {
+      console.log('🔔 [usePermissions] Evento pdv_permissions_reload recebido:', e.detail);
+      setTimeout(() => loadPermissions(), 100); // Pequeno delay para garantir que auth foi atualizado
+    };
+
+    window.addEventListener('pdv_permissions_reload' as any, handlePermissionsReload as EventListener);
+
     // ✅ NOVO: Escutar mudanças no localStorage (login local)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'pdv_funcionario_id' && e.newValue) {
@@ -363,6 +371,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('pdv_permissions_reload' as any, handlePermissionsReload as EventListener);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('pdv_storage_change' as any, handleCustomStorageChange as EventListener);
     };

@@ -16,13 +16,46 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Redirecionar se já estiver logado - DIRETO PARA DASHBOARD
+  // Verificar se há funcionários e redirecionar adequadamente
   useEffect(() => {
     if (user) {
-      console.log('✅ Usuário já logado, redirecionando para dashboard...')
-      navigate('/dashboard', { replace: true })
+      checkFuncionariosERedirect()
     }
   }, [user, navigate])
+
+  // Verifica se há funcionários cadastrados e redireciona
+  const checkFuncionariosERedirect = async () => {
+    try {
+      console.log('🔍 Verificando se há funcionários cadastrados...')
+      
+      // Buscar funcionários ativos da empresa
+      const { data: funcionarios, error } = await supabase
+        .from('funcionarios')
+        .select('id')
+        .eq('empresa_id', user?.id)
+        .eq('status', 'ativo')
+        .limit(1)
+
+      if (error) {
+        console.error('❌ Erro ao verificar funcionários:', error)
+        navigate('/dashboard', { replace: true })
+        return
+      }
+
+      if (funcionarios && funcionarios.length > 0) {
+        // Tem funcionários - redirecionar para seleção
+        console.log('👥 Funcionários encontrados - redirecionando para /login-local')
+        navigate('/login-local', { replace: true })
+      } else {
+        // Não tem funcionários - ir direto pro dashboard
+        console.log('📊 Nenhum funcionário - redirecionando para /dashboard')
+        navigate('/dashboard', { replace: true })
+      }
+    } catch (error) {
+      console.error('❌ Erro ao verificar funcionários:', error)
+      navigate('/dashboard', { replace: true })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

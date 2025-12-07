@@ -17,6 +17,7 @@ interface Funcionario {
 
 interface NovoFuncionario {
   nome: string
+  email: string
   senha: string
   funcao_id: string
 }
@@ -38,6 +39,7 @@ export function GerenciarFuncionariosSimples() {
   
   const [novoFuncionario, setNovoFuncionario] = useState<NovoFuncionario>({
     nome: '',
+    email: '',
     senha: '',
     funcao_id: ''
   })
@@ -118,6 +120,18 @@ export function GerenciarFuncionariosSimples() {
       return
     }
 
+    if (!novoFuncionario.email.trim()) {
+      toast.error('Digite o email do funcionário')
+      return
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(novoFuncionario.email)) {
+      toast.error('Email inválido')
+      return
+    }
+
     if (!novoFuncionario.senha) {
       toast.error('Digite a senha')
       return
@@ -141,6 +155,7 @@ export function GerenciarFuncionariosSimples() {
       const { data, error } = await supabase.rpc('cadastrar_funcionario_simples', {
         p_empresa_id: empresaId,
         p_nome: novoFuncionario.nome,
+        p_email: novoFuncionario.email,
         p_senha: novoFuncionario.senha,
         p_funcao_id: novoFuncionario.funcao_id || null
       })
@@ -157,6 +172,7 @@ export function GerenciarFuncionariosSimples() {
         // Resetar formulário
         setNovoFuncionario({
           nome: '',
+          email: '',
           senha: '',
           funcao_id: ''
         })
@@ -260,6 +276,22 @@ export function GerenciarFuncionariosSimples() {
               />
             </div>
 
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email * <span className="text-xs text-gray-500">(usado para login)</span>
+              </label>
+              <Input
+                type="email"
+                value={novoFuncionario.email}
+                onChange={(e) => setNovoFuncionario({ ...novoFuncionario, email: e.target.value })}
+                placeholder="email@exemplo.com"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                O funcionário usará este email para fazer login no sistema
+              </p>
+            </div>
+
             {/* Senha */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -316,7 +348,7 @@ export function GerenciarFuncionariosSimples() {
                 variant="secondary"
                 onClick={() => {
                   setShowNovo(false)
-                  setNovoFuncionario({ nome: '', senha: '', funcao_id: '' })
+                  setNovoFuncionario({ nome: '', email: '', senha: '', funcao_id: '' })
                 }}
               >
                 Cancelar

@@ -36,18 +36,21 @@ export function useSubscription() {
       console.log('🔍 [useSubscription] tipo_admin do metadata:', tipoAdminFromMetadata)
       
       if (empresaIdFromMetadata && tipoAdminFromMetadata === 'funcionario') {
-        // É funcionário - buscar email da empresa diretamente
-        console.log('👤 [useSubscription] Usuário é funcionário (metadata), buscando email da empresa...')
+        // É funcionário - buscar assinatura pela empresa_id diretamente
+        console.log('👤 [useSubscription] Usuário é funcionário, buscando assinatura por empresa_id...')
         
-        const { data: empresaData } = await supabase
-          .from('empresas')
+        // Buscar email da empresa diretamente na tabela subscriptions usando user_id
+        const { data: subscription } = await supabase
+          .from('subscriptions')
           .select('email')
-          .eq('id', empresaIdFromMetadata)
-          .single()
+          .eq('user_id', empresaIdFromMetadata)
+          .maybeSingle()
 
-        if (empresaData?.email) {
-          emailParaVerificar = empresaData.email
-          console.log('✅ [useSubscription] Email da empresa encontrado:', emailParaVerificar)
+        if (subscription?.email) {
+          emailParaVerificar = subscription.email
+          console.log('✅ [useSubscription] Email da empresa encontrado na subscription:', emailParaVerificar)
+        } else {
+          console.warn('⚠️ [useSubscription] Empresa não tem assinatura cadastrada')
         }
       } else {
         // Fallback: buscar na tabela funcionarios por user_id
@@ -58,18 +61,18 @@ export function useSubscription() {
           .maybeSingle()
 
         if (funcionarioData && funcionarioData.tipo_admin === 'funcionario') {
-          // É funcionário - buscar email da empresa
-          console.log('👤 [useSubscription] Usuário é funcionário (DB), buscando email da empresa...')
+          // É funcionário - buscar email da subscription pela empresa_id
+          console.log('👤 [useSubscription] Usuário é funcionário (DB), buscando assinatura por empresa_id...')
           
-          const { data: empresaData } = await supabase
-            .from('empresas')
+          const { data: subscription } = await supabase
+            .from('subscriptions')
             .select('email')
-            .eq('id', funcionarioData.empresa_id)
-            .single()
+            .eq('user_id', funcionarioData.empresa_id)
+            .maybeSingle()
 
-          if (empresaData?.email) {
-            emailParaVerificar = empresaData.email
-            console.log('✅ [useSubscription] Email da empresa encontrado:', emailParaVerificar)
+          if (subscription?.email) {
+            emailParaVerificar = subscription.email
+            console.log('✅ [useSubscription] Email da empresa encontrado na subscription:', emailParaVerificar)
           }
         } else {
           console.log('🏢 [useSubscription] Usuário é admin/empresa, usando email próprio')

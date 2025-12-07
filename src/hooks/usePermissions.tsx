@@ -138,20 +138,17 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       if (!funcionarioData) {
         console.log('ℹ️ [usePermissions] Usuário sem registro de funcionário');
         
-        // Verificar se é o primeiro usuário (criado na mesma data que a empresa)
-        // Ou se tem metadata role='admin'
-        const isFirstUser = user.created_at && Math.abs(new Date(user.created_at).getTime() - new Date().getTime()) < 1000 * 60 * 60 * 24 * 7; // criado há menos de 7 dias da primeira verificação
-        const hasAdminRole = user.user_metadata?.role === 'admin' || user.app_metadata?.role === 'admin';
+        // APENAS UM EMAIL AUTORIZADO - Super Admin do Sistema
+        const SUPER_ADMIN_EMAIL = 'novaradiosystem@outlook.com';
+        const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
         
-        // Lista de emails admin permitidos (super admins do sistema)
-        const ADMIN_EMAILS = [
-          'novaradiosystem@outlook.com',
-          'assistenciaallimport10@gmail.com'
-        ];
-        const isSuperAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
+        console.log('🔐 [usePermissions] Verificando super admin:', {
+          email: user.email,
+          autorizado: isSuperAdmin
+        });
         
-        if (isSuperAdmin || hasAdminRole) {
-          console.log('✅ Usuário', user.email, 'definido como admin (super admin ou role admin)');
+        if (isSuperAdmin) {
+          console.log('✅ SUPER ADMIN AUTORIZADO:', user.email);
           
           // ✅ Permissões COMPLETAS para super admin
           const adminContext: PermissaoContext = {
@@ -222,8 +219,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
           console.log('🎯 ADMIN AUTORIZADO:', adminContext);
         } else {
           // Usuário comum sem funcionário = SEM PERMISSÕES
-          console.log('⚠️ [usePermissions] Usuário sem funcionário e sem permissões admin');
-          console.log('💡 [usePermissions] Este usuário precisa ser cadastrado como funcionário ou ter role admin');
+          console.log('❌ [usePermissions] ACESSO NEGADO - Email não autorizado:', user.email);
+          console.log('💡 [usePermissions] Apenas novaradiosystem@outlook.com tem acesso direto');
+          console.log('💡 [usePermissions] Outros usuários precisam ser cadastrados como funcionários');
           
           const basicContext: PermissaoContext = {
             empresa_id: user.id,

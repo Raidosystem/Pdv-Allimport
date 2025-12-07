@@ -107,20 +107,8 @@ BEGIN
   FROM auth.users
   WHERE id = auth.uid();
 
-  -- Verificar se é admin pelo email (lista de admins conhecidos)
-  IF current_user_email IN (
-    'novaradiosystem@outlook.com',
-    'assistenciaallimport10@gmail.com'
-  ) THEN
-    is_admin := TRUE;
-  END IF;
-
-  -- Verificar se tem role admin nos metadados
-  IF EXISTS (
-    SELECT 1 FROM auth.users 
-    WHERE id = auth.uid() 
-    AND raw_user_meta_data->>'role' = 'admin'
-  ) THEN
+  -- Verificar se é admin pelo email (APENAS um email autorizado)
+  IF current_user_email = 'novaradiosystem@outlook.com' THEN
     is_admin := TRUE;
   END IF;
 

@@ -189,18 +189,9 @@ export function LocalLoginPage() {
         return
       }
       
-      // Salvar sessão local
-      localStorage.setItem('pdv_local_session', JSON.stringify({
-        funcionario_id: funcionarioData.id,
-        nome: funcionarioData.nome,
-        email: funcionarioData.email,
-        cargo: funcionarioData.cargo,
-        empresa_id: funcionarioData.empresa_id,
-        funcao_id: funcionarioData.funcao_id,
-        funcao_nome: funcionarioData.funcao_nome,
-        funcao_nivel: funcionarioData.funcao_nivel,
-        permissoes: funcionarioData.permissoes
-      }))
+      // ✅ NÃO salvamos mais em localStorage - cada funcionário tem conta própria no Supabase Auth
+      // A sessão é gerenciada automaticamente pelo Supabase
+      console.log('✅ Sessão gerenciada pelo Supabase Auth - sem localStorage')
 
       // Atualizar contexto de autenticação
       if (signInLocal) {

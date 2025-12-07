@@ -16,52 +16,13 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Redirecionar se já estiver logado - COM LÓGICA INTELIGENTE
+  // Redirecionar se já estiver logado - DIRETO PARA DASHBOARD
   useEffect(() => {
     if (user) {
-      checkFuncionariosERedirect()
-    }
-  }, [user, navigate])
-
-  const checkFuncionariosERedirect = async () => {
-    try {
-      if (!user?.email) {
-        navigate('/dashboard', { replace: true })
-        return
-      }
-
-      // Verificar se a empresa tem funcionários cadastrados
-      const { data: empresaData } = await supabase
-        .from('empresas')
-        .select('id')
-        .eq('email', user.email)
-        .single()
-
-      if (empresaData) {
-        // Verificar se existem funcionários ativos para esta empresa
-        const { data: funcionarios, error } = await supabase
-          .rpc('listar_usuarios_ativos', { p_empresa_id: empresaData.id })
-
-        if (!error && funcionarios && funcionarios.length > 0) {
-          // TEM FUNCIONÁRIOS → Redirecionar para seleção
-          console.log('✅ Empresa tem funcionários cadastrados, redirecionando para seleção...')
-          navigate('/login-local', { replace: true })
-        } else {
-          // NÃO TEM FUNCIONÁRIOS → Ir direto pro dashboard
-          console.log('✅ Empresa sem funcionários, indo direto para dashboard...')
-          navigate('/dashboard', { replace: true })
-        }
-      } else {
-        // Não encontrou empresa, ir pro dashboard mesmo assim
-        console.log('✅ Login bem-sucedido, redirecionando para dashboard...')
-        navigate('/dashboard', { replace: true })
-      }
-    } catch (error) {
-      console.error('❌ Erro ao verificar funcionários:', error)
-      // Em caso de erro, ir pro dashboard
+      console.log('✅ Usuário já logado, redirecionando para dashboard...')
       navigate('/dashboard', { replace: true })
     }
-  }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

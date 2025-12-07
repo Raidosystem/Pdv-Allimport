@@ -94,8 +94,7 @@ export default function TrocarSenhaPage() {
       console.log('🚪 Fazendo logout da sessão Supabase...');
       
       // Limpar localStorage antes do logout
-      localStorage.removeItem('pdv_local_session');
-      localStorage.removeItem('funcionario_id');
+      // ✅ Não usamos mais localStorage para sessão
       
       // Aguardar um pouco para mostrar a mensagem, depois fazer logout
       setTimeout(async () => {

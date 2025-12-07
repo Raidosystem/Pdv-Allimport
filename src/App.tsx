@@ -8,6 +8,7 @@ import { SignupPageNew } from './modules/auth/SignupPageNew'
 import { ConfirmEmailPage } from './modules/auth/ConfirmEmailPage'
 import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './modules/auth/ResetPasswordPage'
+import TrocarSenhaPage from './pages/TrocarSenhaPage'
 import { AdminPanel } from './components/admin/AdminPanel'
 import { AdminDashboard } from './components/admin/AdminDashboard'
 import { LandingPage } from './modules/landing/LandingPage'
@@ -191,6 +192,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login-local" element={<LocalLoginPage />} />
+          <Route path="/trocar-senha" element={<TrocarSenhaPage />} />
           <Route path="/signup" element={<SignupPageNew />} />
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

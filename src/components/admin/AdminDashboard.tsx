@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Calendar, Clock, Crown, AlertTriangle, Plus, RefreshCw, TrendingUp, Trash2 } from 'lucide-react'
+import { Users, Calendar, Clock, Crown, AlertTriangle, Plus, RefreshCw, TrendingUp, Trash2, ShieldCheck } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../modules/auth'
@@ -55,14 +55,17 @@ export function AdminDashboard() {
   const [planType, setPlanType] = useState<'trial' | 'premium'>('premium')
   const [filterStatus, setFilterStatus] = useState<'all' | 'trial' | 'active' | 'expired'>('all')
 
-  // Verificar se tem permissão de admin
-  const hasAdminAccess = isAdmin || isAdminEmpresa
+  // 🔒 SEGURANÇA CRÍTICA: Apenas novaradiosystem@outlook.com pode acessar
+  const SUPER_ADMIN_EMAIL = 'novaradiosystem@outlook.com';
+  const userEmail = user?.email?.toLowerCase().trim();
+  
+  // Verificar se tem permissão de admin (APENAS para super admin)
+  const hasAdminAccess = userEmail === SUPER_ADMIN_EMAIL;
 
   console.log('🔐 [AdminDashboard] Verificação de acesso:', {
-    email: user?.email,
-    isAdmin,
-    isAdminEmpresa,
-    hasAdminAccess,
+    userEmail,
+    required: SUPER_ADMIN_EMAIL,
+    hasAccess: hasAdminAccess,
     permissionsLoading
   })
 
@@ -345,22 +348,22 @@ export function AdminDashboard() {
     )
   }
 
-  if (!hasAdminAccess) {
+  // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas super admin pode acessar
+  if (!user || !hasAdminAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
-          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-600" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
-          <p className="text-gray-600 mb-4">
-            Você não tem permissão para acessar o painel administrativo.
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8 max-w-md text-center shadow-xl">
+          <ShieldCheck className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h2 className="text-2xl font-bold text-red-900 mb-2">🚫 Acesso Negado</h2>
+          <p className="text-red-700 mb-4">
+            Esta área é restrita exclusivamente ao administrador do sistema.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-sm text-blue-800 font-medium mb-2">📧 Seu email:</p>
-            <p className="text-sm text-blue-600 break-all">{user?.email}</p>
-            <p className="text-xs text-gray-500 mt-2">isAdmin: {isAdmin ? 'Sim' : 'Não'} | isAdminEmpresa: {isAdminEmpresa ? 'Sim' : 'Não'}</p>
+          <div className="bg-red-100 border border-red-300 rounded-lg p-4 mb-4">
+            <p className="text-sm text-red-800 font-medium mb-2">📧 Seu email:</p>
+            <p className="text-sm font-mono text-red-600 break-all">{userEmail || 'não identificado'}</p>
           </div>
-          <p className="text-xs text-gray-500">
-            Se você deveria ter acesso, entre em contato com o suporte.
+          <p className="text-xs text-red-600 font-medium">
+            Apenas o super admin do sistema tem autorização para acessar esta área.
           </p>
         </div>
       </div>

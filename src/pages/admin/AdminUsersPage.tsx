@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Users, 
   Search, 
@@ -9,7 +9,9 @@ import {
   AlertTriangle,
   Edit3,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
@@ -67,7 +69,7 @@ const AdminUsersPage: React.FC = () => {
 
   const loadFuncionarios = async () => {
     try {
-      console.log('🔄 Carregando funcionários...');
+      console.log('🔄 [AdminUsersPage] Carregando funcionários...');
       
       // Buscar empresa_id do usuário logado
       const { data: userData } = await supabase.auth.getUser();
@@ -76,11 +78,37 @@ const AdminUsersPage: React.FC = () => {
         return;
       }
 
-      const { data: empresaData } = await supabase
+      console.log('👤 [AdminUsersPage] Usuário logado:', userData.user.email);
+
+      // ✅ USAR A MESMA ESTRATÉGIA DA ActivateUsersPage - Buscar por EMAIL
+      const { data: empresaData, error: empresaError } = await supabase
         .from('empresas')
         .select('id')
-        .eq('user_id', userData.user.id)
+        .eq('email', userData.user.email)
         .single();
+
+      if (empresaError) {
+        console.error('❌ Erro ao buscar empresa por email:', empresaError);
+        
+        // Fallback: tentar por user_id
+        console.log('⚠️ Tentando fallback com user_id');
+        const { data: empresaDataFallback } = await supabase
+          .from('empresas')
+          .select('id')
+          .eq('user_id', userData.user.id)
+          .single();
+        
+        if (empresaDataFallback) {
+          console.log('✅ Empresa encontrada via user_id:', empresaDataFallback.id);
+          await loadFuncionariosByEmpresa(empresaDataFallback.id);
+          return;
+        }
+        
+        // Último fallback: usar o user_id diretamente como empresa_id
+        console.log('⚠️ Usando user_id como empresa_id');
+        await loadFuncionariosByEmpresa(userData.user.id);
+        return;
+      }
 
       if (!empresaData) {
         console.error('❌ Empresa não encontrada para o usuário');
@@ -88,10 +116,22 @@ const AdminUsersPage: React.FC = () => {
       }
 
       const empresaId = empresaData.id;
-      console.log('🏢 Empresa ID:', empresaId);
+      console.log('🏢 [AdminUsersPage] Empresa ID:', empresaId);
       
-      // Buscar APENAS funcionários da empresa do usuário logado
-      let query = supabase
+      await loadFuncionariosByEmpresa(empresaId);
+    } catch (error) {
+      console.error('❌ Erro ao carregar funcionários:', error);
+      setFuncionarios([]);
+    }
+  };
+
+  const loadFuncionariosByEmpresa = async (empresaId: string) => {
+    try {
+      console.log('🔍 [AdminUsersPage] Buscando funcionários para empresa_id:', empresaId);
+      
+      // ✅ CORRIGIDO: Especificar o relacionamento correto com hint do Supabase
+      // Usar 'funcoes!funcionarios_funcao_id_fkey' para a relação direta via funcao_id
+      const { data, error } = await supabase
         .from('funcionarios')
         .select(`
           id,
@@ -107,42 +147,55 @@ const AdminUsersPage: React.FC = () => {
           convite_expires_at,
           created_at,
           updated_at,
-          funcoes (
+          funcoes:funcoes!funcionarios_funcao_id_fkey (
             id,
             nome,
             descricao,
             nivel
           )
         `)
-        .eq('empresa_id', empresaId);
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .eq('empresa_id', empresaId)
+        .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('❌ Erro ao carregar funcionários:', error);
+        console.error('❌ [AdminUsersPage] Erro ao carregar funcionários:', error);
+        console.error('❌ [AdminUsersPage] Detalhes do erro:', JSON.stringify(error, null, 2));
         throw error;
       }
       
-      console.log('✅ Funcionários carregados:', data);
+      console.log('✅ [AdminUsersPage] Funcionários carregados:', data?.length || 0);
+      console.log('📋 [AdminUsersPage] Dados completos dos funcionários:', JSON.stringify(data, null, 2));
 
-      const funcionariosWithDetails: FuncionarioWithDetails[] = data?.map(func => ({
-        id: func.id,
-        empresa_id: func.empresa_id,
-        email: func.email,
-        nome: func.nome,
-        telefone: func.telefone,
-        status: func.status || 'pendente',
-        convite_token: func.convite_token,
-        convite_expires_at: func.convite_expires_at,
-        created_at: func.created_at,
-        updated_at: func.updated_at,
-        funcoes: (func.funcoes ? [func.funcoes] : []) as unknown as Funcao[],
-        convitePendente: func.status === 'pendente' && !!func.convite_token
-      })) || [];
+      if (!data || data.length === 0) {
+        console.warn('⚠️ [AdminUsersPage] Nenhum funcionário encontrado para empresa_id:', empresaId);
+        console.log('💡 [AdminUsersPage] Verifique se os funcionários têm o mesmo empresa_id no banco');
+      }
 
+      const funcionariosWithDetails: FuncionarioWithDetails[] = data?.map(func => {
+        console.log('🔄 [AdminUsersPage] Processando funcionário:', func.nome, '- Status:', func.status);
+        
+        return {
+          id: func.id,
+          empresa_id: func.empresa_id,
+          email: func.email,
+          nome: func.nome,
+          telefone: func.telefone,
+          status: func.status || 'ativo',
+          convite_token: func.convite_token,
+          convite_expires_at: func.convite_expires_at,
+          created_at: func.created_at,
+          updated_at: func.updated_at,
+          funcoes: (func.funcoes ? [func.funcoes] : []) as unknown as Funcao[],
+          convitePendente: func.status === 'pendente' && !!func.convite_token
+        };
+      }) || [];
+
+      console.log('📊 [AdminUsersPage] Total de funcionários formatados:', funcionariosWithDetails.length);
+      console.log('👥 [AdminUsersPage] Lista final:', funcionariosWithDetails.map(f => ({ nome: f.nome, status: f.status, email: f.email })));
+      
       setFuncionarios(funcionariosWithDetails);
     } catch (error) {
-      console.error('❌ Erro ao carregar funcionários:', error);
+      console.error('❌ [AdminUsersPage] Erro ao buscar funcionários por empresa:', error);
       setFuncionarios([]);
     }
   };
@@ -491,10 +544,15 @@ const AdminUsersPage: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
+          <div className="text-right">
             <p className="text-sm text-gray-500">
-              {funcionarios.length} usuário(s) cadastrado(s)
+              {filteredFuncionarios.length} de {funcionarios.length} usuário(s)
             </p>
+            {funcionarios.length > 0 && filteredFuncionarios.length === 0 && (
+              <p className="text-xs text-orange-600">
+                Filtros ocultando todos os usuários
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -673,9 +731,25 @@ const AdminUsersPage: React.FC = () => {
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   {searchTerm || statusFilter !== 'todos'
                     ? 'Tente ajustar os filtros de busca ou remover termos específicos para ver mais resultados.'
-                    : 'Nenhum funcionário encontrado. Entre em contato com o administrador do sistema para adicionar usuários.'
+                    : funcionarios.length > 0
+                      ? `Há ${funcionarios.length} funcionário(s) cadastrado(s), mas os filtros estão ocultando todos.`
+                      : 'Nenhum funcionário cadastrado. Acesse "Ativar Usuários" no menu para criar novos funcionários com senha local.'
                   }
                 </p>
+                {!searchTerm && statusFilter === 'todos' && funcionarios.length === 0 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => {
+                        // Disparar evento para navegar para ativar usuários
+                        window.dispatchEvent(new CustomEvent('admin-navigate', { detail: { view: 'ativar-usuarios' } }));
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Users className="w-4 h-4" />
+                      Ir para Ativar Usuários
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -729,19 +803,55 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, funcoes, onSave, on
     user.funcoes.map(f => f.id)
   );
   const [loading, setLoading] = useState(false);
+  const [novaSenha, setNovaSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [alterarSenha, setAlterarSenha] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validar senha se estiver alterando
+    if (alterarSenha) {
+      if (!novaSenha || novaSenha.length < 6) {
+        alert('A nova senha deve ter pelo menos 6 caracteres');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
+      // Se está alterando senha, atualizar na tabela login_funcionarios
+      if (alterarSenha && novaSenha) {
+        console.log('🔑 Atualizando senha do funcionário:', user.id);
+        
+        // Chamar RPC para atualizar senha com bcrypt
+        // ⚠️ Esta função também define precisa_trocar_senha = TRUE automaticamente
+        const { error: senhaError } = await supabase.rpc('atualizar_senha_funcionario', {
+          p_funcionario_id: user.id,
+          p_nova_senha: novaSenha
+        });
+
+        if (senhaError) {
+          console.error('❌ Erro ao atualizar senha:', senhaError);
+          alert('Erro ao atualizar senha: ' + senhaError.message);
+          setLoading(false);
+          return;
+        }
+
+        console.log('✅ Senha atualizada com sucesso! (precisa_trocar_senha = TRUE)');
+      }
+
       await onSave(user.id, {
         nome: nome || undefined,
         telefone: telefone || undefined,
         status: status as 'ativo' | 'pendente' | 'bloqueado'
       }, selectedFuncoes);
+
+      if (alterarSenha) {
+        alert('✅ Senha temporária definida! O funcionário deverá trocar a senha no próximo login.');
+      }
     } catch (error) {
-      // Erro já tratado no componente pai
+      console.error('Erro ao atualizar usuário:', error);
     } finally {
       setLoading(false);
     }
@@ -791,6 +901,70 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, funcoes, onSave, on
               placeholder="(11) 99999-9999"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+          </div>
+
+          {/* Nova seção para alterar senha */}
+          <div className="border-t border-gray-200 pt-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={alterarSenha}
+                onChange={(e) => {
+                  setAlterarSenha(e.target.checked);
+                  if (!e.target.checked) {
+                    setNovaSenha('');
+                  }
+                }}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Definir nova senha temporária
+              </span>
+            </label>
+
+            {alterarSenha && (
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nova Senha Temporária
+                </label>
+                <div className="relative">
+                  <input
+                    type={mostrarSenha ? 'text' : 'password'}
+                    value={novaSenha}
+                    onChange={(e) => setNovaSenha(e.target.value)}
+                    placeholder="Digite a nova senha (mín. 6 caracteres)"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarSenha(!mostrarSenha)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {mostrarSenha ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs text-amber-800 flex items-start gap-2">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>
+                      <strong>Senha Temporária:</strong> O funcionário será <strong>obrigado a trocar a senha</strong> no próximo login por uma senha pessoal e segura.
+                    </span>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

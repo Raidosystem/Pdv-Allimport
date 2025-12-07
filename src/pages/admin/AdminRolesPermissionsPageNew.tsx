@@ -33,6 +33,7 @@ interface Permissao {
   recurso: string;
   acao: string;
   descricao: string;
+  categoria?: string; // Campo adicionado para categorização
 }
 
 interface PermissaoCategoria {
@@ -183,6 +184,12 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
         cor: 'yellow',
         permissoes: []
       },
+      ordens: {
+        categoria: 'Ordens de Serviço',
+        icone: '🔧',
+        cor: 'orange',
+        permissoes: []
+      },
       relatorios: {
         categoria: 'Relatórios',
         icone: '📊',
@@ -204,9 +211,11 @@ const AdminRolesPermissionsPageNew: React.FC = () => {
     };
 
     permissoes.forEach(perm => {
-      const recurso = perm.recurso.split('.')[0];
-      if (categorias[recurso]) {
-        categorias[recurso].permissoes.push(perm);
+      // Usar a coluna 'categoria' do banco em vez de inferir do 'recurso'
+      const categoria = perm.categoria || perm.recurso.split('.')[0];
+      
+      if (categorias[categoria]) {
+        categorias[categoria].permissoes.push(perm);
       } else {
         if (!categorias['outros']) {
           categorias['outros'] = {

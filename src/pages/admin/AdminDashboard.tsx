@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   ShieldCheck, 
-  Database, 
   Settings, 
   Activity,
   Crown,
@@ -370,18 +369,25 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // REGRA: Todo usuário logado é admin da sua própria empresa (comprador do PDV)
-  // Não precisa verificar isAdmin - se está autenticado, tem acesso
-  if (!isAdmin && !user) {
+  // 🔒 VERIFICAÇÃO DE ACESSO: Apenas Admin da Empresa tem acesso
+  if (!user || !isAdmin) {
     return (
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Área Administrativa</h1>
-          <p className="text-gray-600">
-            Esta área é restrita para administradores da empresa.
-          </p>
+        <div className="max-w-md mx-auto mt-12 text-center">
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8">
+            <ShieldCheck className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-red-900 mb-2">🚫 Acesso Negado</h1>
+            <p className="text-red-700 mb-4">
+              Esta área é restrita aos administradores da empresa.
+            </p>
+            <p className="text-sm text-red-600">
+              Apenas usuários com permissões de administrador podem acessar esta área.
+            </p>
+            <div className="mt-6 text-xs text-red-500">
+              Seu email: {user?.email || 'não identificado'}
+            </div>
+          </div>
         </div>
-        <AccessFixer onFixed={() => window.location.reload()} />
       </div>
     );
   }
@@ -588,16 +594,6 @@ const AdminDashboard: React.FC = () => {
             >
               <ShieldCheck className="w-5 h-5 text-purple-300" />
               <span className="text-sm font-medium text-purple-100">Permissões</span>
-            </button>
-          )}
-          
-          {can('administracao.backups', 'read') && (
-            <button 
-              onClick={() => navigateTo('backup')}
-              className="flex items-center gap-2 p-3 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 transition-all duration-200 border border-orange-300/30"
-            >
-              <Database className="w-5 h-5 text-orange-300" />
-              <span className="text-sm font-medium text-orange-100">Backups</span>
             </button>
           )}
           

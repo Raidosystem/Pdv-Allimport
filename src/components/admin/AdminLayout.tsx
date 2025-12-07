@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Users,
   Shield,
-  Database,
   Settings,
   LogOut,
   Menu,
@@ -59,12 +58,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: '/admin/ferramentas',
       icon: Wrench,
       permission: 'administracao.sistema'
-    },
-    {
-      name: 'Backups',
-      href: '/admin/backups',
-      icon: Database,
-      permission: 'administracao.backups'
     },
     {
       name: 'Configurações',

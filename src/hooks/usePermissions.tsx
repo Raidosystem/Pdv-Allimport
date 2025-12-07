@@ -317,16 +317,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         console.log(`🎉 [usePermissions] Total após conversão JSONB: ${permissoes.size}`);
       }
 
-      // Determinar tipo de admin baseado no campo tipo_admin OU se tem função "Administrador"
+      // ✅ Determinar tipo de admin APENAS pelo campo tipo_admin do banco
+      // NÃO promover automaticamente baseado em nome de função
       let tipo_admin = funcionarioData.tipo_admin || 'funcionario';
-      
-      // Se tem função "Administrador", automaticamente é admin_empresa
-      const temFuncaoAdmin = funcionarioData.funcoes?.nome === 'Administrador';
-      
-      if (temFuncaoAdmin && tipo_admin === 'funcionario') {
-        console.log('🔧 [usePermissions] Detectado função Administrador - promovendo para admin_empresa');
-        tipo_admin = 'admin_empresa';
-      }
       
       const is_super_admin = tipo_admin === 'super_admin';
       const is_admin_empresa = tipo_admin === 'admin_empresa';

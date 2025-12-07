@@ -6,12 +6,12 @@ import { useAppearanceSettings } from '../hooks/useAppearanceSettings'
 import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import { usePermissions } from '../hooks/usePermissions'
 import { usePrintSettings } from '../hooks/usePrintSettings'
-import { EmpresaView } from '../components/EmpresaView'
 import { LojaOnlineConfigPage } from '../modules/loja-online/LojaOnlineConfigPage'
 import LaudoTecnicoPage from './admin/LaudoTecnicoPage'
+import AdminBackupsPage from './admin/AdminBackupsPage'
 import toast from 'react-hot-toast'
 
-type ViewMode = 'dashboard' | 'empresa' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'assinatura' | 'loja-online' | 'ferramentas'
+type ViewMode = 'dashboard' | 'aparencia' | 'impressao' | 'notificacoes' | 'seguranca' | 'integracao' | 'loja-online' | 'ferramentas' | 'backup'
 
 interface ConfiguracaoEmpresa {
   nome: string
@@ -1278,97 +1278,6 @@ export function ConfiguracoesPage() {
     </div>
   )
 
-  // Configurações de assinatura
-  const AssinaturaView = () => (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Gerenciar Assinatura</h3>
-          <p className="text-gray-600 mt-1">Controle sua assinatura e pagamentos</p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {/* Status da assinatura */}
-        <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
-                <Crown className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Status da Assinatura</h4>
-                <p className="text-sm text-gray-600">
-                  {isActive 
-                    ? `Assinatura ativa${isInTrial ? ` (Trial: ${daysRemaining} dias restantes)` : ''}`
-                    : 'Assinatura inativa - Assine agora'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Link to="/assinatura">
-                <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg flex items-center gap-2 transition-colors">
-                  <Crown className="w-4 h-4" />
-                  {isActive ? 'Renovar Antecipado' : 'Assinar Agora'}
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Informações da assinatura */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">Plano Atual</h4>
-            <p className="text-sm text-gray-600">
-              {isActive ? 'Plano Premium' : 'Sem plano ativo'}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              R$ 59,90/mês
-            </p>
-          </div>
-
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">Próximo Vencimento</h4>
-            <p className="text-sm text-gray-600">
-              {isActive 
-                ? `${daysRemaining} dias restantes`
-                : 'Nenhum plano ativo'
-              }
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Renovação automática disponível
-            </p>
-          </div>
-        </div>
-
-        {/* Benefícios */}
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-3">Benefícios da Assinatura</h4>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              Acesso completo ao sistema
-            </li>
-            <li className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              Backup automático dos dados
-            </li>
-            <li className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              Suporte técnico prioritário
-            </li>
-            <li className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              Atualizações automáticas
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -1397,21 +1306,6 @@ export function ConfiguracoesPage() {
               >
                 <Settings className="h-4 w-4 inline mr-2" />
                 Dashboard
-              </button>
-            )}
-            
-            {/* Empresa - Verde (Negócio/Crescimento) */}
-            {can('configuracoes.empresa', 'read') && (
-              <button
-                onClick={() => setViewMode('empresa')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  viewMode === 'empresa'
-                    ? 'bg-green-100 text-green-700 border-2 border-green-400'
-                    : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
-                }`}
-              >
-                <Building className="h-4 w-4 inline mr-2" />
-                Empresa
               </button>
             )}
             
@@ -1445,21 +1339,6 @@ export function ConfiguracoesPage() {
               </button>
             )}
             
-            {/* Assinatura - Amarelo/Dourado (Premium/Valor) */}
-            {can('configuracoes.assinatura', 'read') && (
-              <button
-                onClick={() => setViewMode('assinatura')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  viewMode === 'assinatura'
-                    ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-400'
-                    : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200'
-                }`}
-              >
-                <Crown className="h-4 w-4 inline mr-2" />
-                Assinatura
-              </button>
-            )}
-            
             {/* Loja Online - Verde Escuro (E-commerce) */}
             <button
               onClick={() => setViewMode('loja-online')}
@@ -1485,28 +1364,30 @@ export function ConfiguracoesPage() {
               <Wrench className="h-4 w-4 inline mr-2" />
               Ferramentas
             </button>
+            
+            {/* Backups - Indigo (Segurança/Proteção) */}
+            <button
+              onClick={() => setViewMode('backup')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'backup'
+                  ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-400'
+                  : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
+              }`}
+            >
+              <Database className="h-4 w-4 inline mr-2" />
+              Backups
+            </button>
           </div>
         </div>
 
         {/* Conteúdo baseado na view selecionada */}
         <div className="animate-in fade-in duration-300">
           {viewMode === 'dashboard' && <DashboardView />}
-          {viewMode === 'empresa' && (
-            <EmpresaView
-              configEmpresa={configEmpresa}
-              loading={loading}
-              uploadingLogo={uploadingLogo}
-              unsavedChanges={unsavedChanges}
-              onEmpresaChange={handleEmpresaChange}
-              onLogoUpload={handleLogoUpload}
-              onSave={() => handleSave('Empresa')}
-            />
-          )}
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
-          {viewMode === 'assinatura' && <AssinaturaView />}
           {viewMode === 'loja-online' && <LojaOnlineConfigPage />}
           {viewMode === 'ferramentas' && <LaudoTecnicoPage />}
+          {viewMode === 'backup' && <AdminBackupsPage />}
         </div>
       </div>
     </div>

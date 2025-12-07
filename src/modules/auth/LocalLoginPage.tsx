@@ -154,6 +154,41 @@ export function LocalLoginPage() {
       // Login bem-sucedido - extrair dados do funcionário
       const funcionarioData = data.funcionario
       
+      // 🔑 VERIFICAR SE PRECISA TROCAR SENHA
+      // Buscar flag precisa_trocar_senha na tabela login_funcionarios
+      const { data: loginData, error: loginError } = await supabase
+        .from('login_funcionarios')
+        .select('precisa_trocar_senha')
+        .eq('funcionario_id', funcionarioData.id)
+        .single()
+
+      if (loginError) {
+        console.error('❌ Erro ao verificar flag de troca de senha:', loginError)
+      }
+
+      const precisaTrocarSenha = loginData?.precisa_trocar_senha === true
+
+      console.log('🔑 Precisa trocar senha?', precisaTrocarSenha)
+
+      // Se precisa trocar senha, redirecionar para tela de troca
+      if (precisaTrocarSenha) {
+        console.log('⚠️ Redirecionando para tela de troca de senha...')
+        toast.success('Login bem-sucedido! Por favor, defina sua senha pessoal.', {
+          duration: 4000,
+          icon: '🔑'
+        })
+        
+        navigate('/trocar-senha', {
+          state: {
+            funcionarioId: funcionarioData.id,
+            email: funcionarioData.email,
+            isFirstLogin: usuarioSelecionado.primeiro_acesso || false
+          },
+          replace: true
+        })
+        return
+      }
+      
       // Salvar sessão local
       localStorage.setItem('pdv_local_session', JSON.stringify({
         funcionario_id: funcionarioData.id,

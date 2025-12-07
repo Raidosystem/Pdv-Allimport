@@ -1,21 +1,36 @@
 import { useState, useEffect } from 'react'
-import { Users, Shield, Database, BarChart3, Crown, UserCheck } from 'lucide-react'
+import { Users, Shield, BarChart3, Crown, UserCheck, Building, Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
+import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
+import { useSubscription } from '../hooks/useSubscription'
+import { EmpresaView } from '../components/EmpresaView'
+import toast from 'react-hot-toast'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminUsersPage from './admin/AdminUsersPage'
 // import AdminConvitesPage from './admin/AdminConvitesPage' // REMOVIDO - Sistema automático
 import AdminRolesPermissionsPageNew from './admin/AdminRolesPermissionsPageNew' // NOVA VERSÃO MODERNA
-import AdminBackupsPage from './admin/AdminBackupsPage'
 import SuperAdminPage from './admin/SuperAdminPage'
 import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 import { ActivateUsersPage } from '../modules/admin/pages/ActivateUsersPage'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'backup' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios'
+type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios' | 'empresa' | 'assinatura'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
   const { isSuperAdmin } = usePermissions()
+  const { settings: empresaSettings, loading, uploading: uploadingLogo, saveSettings, uploadLogo } = useEmpresaSettings()
+  const { isActive, isInTrial, daysRemaining } = useSubscription()
+  
+  // Estado local para edição
+  const [configEmpresa, setConfigEmpresa] = useState(empresaSettings)
+  const [unsavedChanges, setUnsavedChanges] = useState(false)
+
+  // Atualizar configEmpresa quando empresaSettings mudar
+  useEffect(() => {
+    setConfigEmpresa(empresaSettings)
+  }, [empresaSettings])
 
   // Escutar eventos de navegação do AdminDashboard
   useEffect(() => {
@@ -28,6 +43,144 @@ function AdministracaoContent() {
       window.removeEventListener('admin-navigate', handleNavigate as EventListener);
     };
   }, []);
+
+  // Handler para mudanças na empresa
+  const handleEmpresaChange = (field: keyof typeof configEmpresa, value: string) => {
+    setConfigEmpresa(prev => ({ ...prev, [field]: value }))
+    setUnsavedChanges(true)
+  }
+
+  // Handler para upload de logo
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const result = await uploadLogo(file)
+      if (result.success && result.url) {
+        setConfigEmpresa(prev => ({ ...prev, logo: result.url }))
+        toast.success('Logo enviado com sucesso!')
+        setUnsavedChanges(true)
+      } else {
+        toast.error(result.error || 'Erro ao enviar logo')
+      }
+    }
+  }
+
+  // Handler para salvar
+  const handleSave = async () => {
+    const result = await saveSettings(configEmpresa)
+    if (result.success) {
+      toast.success('Configurações salvas!')
+      setUnsavedChanges(false)
+    } else {
+      toast.error('Erro ao salvar configurações')
+    }
+  }
+
+  // Componente de visualização de Empresa
+  const EmpresaViewAdmin = () => (
+    <EmpresaView
+      configEmpresa={configEmpresa}
+      loading={loading}
+      uploadingLogo={uploadingLogo}
+      unsavedChanges={unsavedChanges}
+      onEmpresaChange={handleEmpresaChange}
+      onLogoUpload={handleLogoUpload}
+      onSave={handleSave}
+    />
+  );
+
+  // Componente de visualização de Assinatura
+  const AssinaturaViewAdmin = () => {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Gerenciar Assinatura</h3>
+            <p className="text-gray-600 mt-1">Controle sua assinatura e pagamentos</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Status da assinatura */}
+          <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Status da Assinatura</h4>
+                  <p className="text-sm text-gray-600">
+                    {isActive 
+                      ? `Assinatura ativa${isInTrial ? ` (Trial: ${daysRemaining} dias restantes)` : ''}`
+                      : 'Assinatura inativa - Assine agora'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Link to="/assinatura">
+                  <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg flex items-center gap-2 transition-colors">
+                    <Crown className="w-4 h-4" />
+                    {isActive ? 'Renovar Antecipado' : 'Assinar Agora'}
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Informações da assinatura */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">Plano Atual</h4>
+              <p className="text-sm text-gray-600">
+                {isActive ? 'Plano Premium' : 'Sem plano ativo'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                R$ 59,90/mês
+              </p>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">Próximo Vencimento</h4>
+              <p className="text-sm text-gray-600">
+                {isActive 
+                  ? `${daysRemaining} dias restantes`
+                  : 'Nenhum plano ativo'
+                }
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Renovação automática disponível
+              </p>
+            </div>
+          </div>
+
+          {/* Benefícios */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-medium text-gray-900 mb-3">Benefícios da Assinatura</h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                Acesso ilimitado a todas as funcionalidades
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                Backup automático diário
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                Suporte técnico prioritário
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                Atualizações automáticas
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const baseMenuItems = [
     {
@@ -55,10 +208,16 @@ function AdministracaoContent() {
       description: 'Configurar roles e permissões'
     },
     {
-      id: 'backup' as ViewMode,
-      label: 'Backups',
-      icon: Database,
-      description: 'Sistema de backup e restore'
+      id: 'empresa' as ViewMode,
+      label: 'Empresa',
+      icon: Building,
+      description: 'Configurar dados da empresa'
+    },
+    {
+      id: 'assinatura' as ViewMode,
+      label: 'Assinatura',
+      icon: Crown,
+      description: 'Gerenciar plano e assinatura'
     }
     // Debug buttons hidden - removed from baseMenuItems
     // {
@@ -108,8 +267,10 @@ function AdministracaoContent() {
         return <ActivateUsersPage />
       case 'permissoes':
         return <AdminRolesPermissionsPageNew />
-      case 'backup':
-        return <AdminBackupsPage />
+      case 'empresa':
+        return <EmpresaViewAdmin />
+      case 'assinatura':
+        return <AssinaturaViewAdmin />
       case 'debug':
         return <DebugPermissions />
       case 'permissions-debug':
@@ -158,10 +319,14 @@ function AdministracaoContent() {
                       ? viewMode === item.id
                         ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg'
                         : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 hover:from-purple-200 hover:to-purple-300'
-                    : item.id === 'backup'
+                    : item.id === 'empresa'
                       ? viewMode === item.id
-                        ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg'
-                        : 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 hover:from-orange-200 hover:to-orange-300'
+                        ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300'
+                    : item.id === 'assinatura'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 hover:from-yellow-200 hover:to-yellow-300'
                     : item.id === 'super-admin'
                       ? viewMode === item.id
                         ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'

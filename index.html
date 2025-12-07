@@ -14,59 +14,26 @@
     <!-- Sistema de Limpeza de Cache Inline -->
     <script>
       (function() {
-        const CACHE_VERSION = '2.2.7-stable'; // ✅ Nova versão estável
+        const CACHE_VERSION = '2.2.8-stable'; // ✅ Nova versão - sem reload automático
         const VERSION_KEY = 'pdv_cache_version_v2';
-        const RELOAD_FLAG_KEY = 'pdv_reloading';
         const LAST_VERSION = localStorage.getItem(VERSION_KEY);
         
-        // Se está em loop de reload, abortar
-        if (sessionStorage.getItem(RELOAD_FLAG_KEY) === 'true') {
-          console.log('⚠️ [INLINE] Loop de reload detectado, abortando limpeza');
-          sessionStorage.removeItem(RELOAD_FLAG_KEY);
-          localStorage.setItem(VERSION_KEY, CACHE_VERSION);
-          return;
-        }
-        
         if (LAST_VERSION !== CACHE_VERSION) {
-          console.log('🧹 [INLINE] Limpando cache antigo:', LAST_VERSION, '→', CACHE_VERSION);
+          console.log('🧹 [INLINE] Nova versão detectada:', LAST_VERSION, '→', CACHE_VERSION);
           
-          // Marcar que estamos fazendo reload
-          sessionStorage.setItem(RELOAD_FLAG_KEY, 'true');
-          
-          // Limpar TUDO do localStorage relacionado ao cache
-          const keys = Object.keys(localStorage);
-          keys.forEach(key => {
-            if (key.includes('cache') || key.includes('sw')) {
-              localStorage.removeItem(key);
-            }
-          });
-          
-          // Salvar nova versão ANTES do reload
+          // Salvar nova versão IMEDIATAMENTE (sem reload)
           localStorage.setItem(VERSION_KEY, CACHE_VERSION);
           
-          // Limpar caches
+          // Limpar caches em background (SEM RELOAD)
           if ('caches' in window) {
             caches.keys().then(names => {
-              console.log('🗑️ [INLINE] Deletando', names.length, 'caches');
+              console.log('🗑️ [INLINE] Limpando', names.length, 'caches em background');
               names.forEach(name => caches.delete(name));
             });
           }
           
-          // Desregistrar Service Workers
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(regs => {
-              console.log('🗑️ [INLINE] Desregistrando', regs.length, 'Service Workers');
-              regs.forEach(reg => reg.unregister().catch(() => {}));
-            });
-          }
-          
-          console.log('✅ [INLINE] Cache limpo e versão atualizada para', CACHE_VERSION);
-          
-          // ✅ RELOAD apenas UMA VEZ
-          setTimeout(() => {
-            console.log('🔄 [INLINE] Recarregando página...');
-            window.location.reload(true);
-          }, 300);
+          console.log('✅ [INLINE] Versão atualizada para', CACHE_VERSION);
+          console.log('ℹ️ [INLINE] Cache será atualizado automaticamente no próximo acesso');
         } else {
           console.log('✅ [INLINE] Versão atual:', CACHE_VERSION);
         }

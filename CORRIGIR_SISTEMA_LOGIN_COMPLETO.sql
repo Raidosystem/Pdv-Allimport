@@ -143,17 +143,20 @@ BEGIN
 
   -- 3. Criar registro na tabela login_funcionarios
   -- ✅ CORRIGIDO: Usar 'senha' ao invés de 'senha_hash'
+  -- ✅ precisa_trocar_senha = true para primeiro acesso
   BEGIN
     INSERT INTO login_funcionarios (
       funcionario_id,
       usuario,
       senha,  -- ✅ COLUNA CORRETA
-      ativo
+      ativo,
+      precisa_trocar_senha  -- ✅ ADICIONAR FLAG
     ) VALUES (
       v_funcionario_id,
       v_usuario,
       crypt(p_senha, gen_salt('bf')),
-      true
+      true,
+      true  -- ✅ Primeiro acesso = true
     );
   EXCEPTION
     WHEN OTHERS THEN

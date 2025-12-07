@@ -414,8 +414,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Se não há sessão válida, criar uma sessão "fake" mas funcional
         // usando setSession com os dados do funcionário
         const localUser = {
-          id: userData.empresa_id, // Usar empresa_id como auth.uid()
-          email: empresaEmail, // ✅ USAR EMAIL DA EMPRESA
+          id: userData.user_id || userData.id, // ✅ USAR user_id DO FUNCIONÁRIO
+          email: userData.email || empresaEmail, // ✅ EMAIL DO FUNCIONÁRIO
           user_metadata: {
             nome: userData.nome,
             tipo_admin: userData.tipo_admin,

@@ -20,6 +20,7 @@ interface Funcionario {
 
 interface NovoUsuario {
   nome: string
+  email: string
   senha: string
   funcao_id: string
 }
@@ -45,6 +46,7 @@ export function ActivateUsersPage() {
   const [showAdminModal, setShowAdminModal] = useState(false)
   const [novoUsuario, setNovoUsuario] = useState<NovoUsuario>({
     nome: '',
+    email: '',
     senha: '',
     funcao_id: ''
   })
@@ -174,6 +176,18 @@ export function ActivateUsersPage() {
         return
       }
 
+      if (!novoUsuario.email.trim()) {
+        toast.error('Preencha o email do funcionário')
+        return
+      }
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(novoUsuario.email)) {
+        toast.error('Email inválido')
+        return
+      }
+
       if (!novoUsuario.senha || novoUsuario.senha.length < 6) {
         toast.error('A senha deve ter pelo menos 6 caracteres')
         return
@@ -192,24 +206,14 @@ export function ActivateUsersPage() {
         return
       }
 
-      // ✅ USAR RPC QUE CRIA FUNCIONÁRIO COMPLETO COM BCRYPT
-      // Gerar usuário automático baseado no nome
-      const usuarioGerado = novoUsuario.nome
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-        .replace(/[^a-z0-9]/g, '_') // Substitui caracteres especiais por _
-        .substring(0, 20) // Limita a 20 caracteres
-
+      // ✅ USAR NOVA RPC cadastrar_funcionario_simples COM EMAIL
       const { data, error } = await supabase
-        .rpc('criar_funcionario_completo', {
+        .rpc('cadastrar_funcionario_simples', {
+          p_empresa_id: empresaId,
           p_nome: novoUsuario.nome,
-          p_email: `${usuarioGerado}@temp.local`, // Email temporário baseado no usuário
-          p_telefone: '', // Telefone opcional
-          p_cargo: 'Funcionário', // Cargo padrão
-          p_funcao_id: novoUsuario.funcao_id,
-          p_usuario: usuarioGerado,
-          p_senha: novoUsuario.senha
+          p_email: novoUsuario.email,
+          p_senha: novoUsuario.senha,
+          p_funcao_id: novoUsuario.funcao_id
         })
 
       if (error) {
@@ -221,14 +225,13 @@ export function ActivateUsersPage() {
 
       // Verificar resultado da RPC
       if (data?.success) {
-        toast.success('Funcionário criado com sucesso!')
+        toast.success(`✅ ${data.message || 'Funcionário criado com sucesso!'}`)
       } else {
         toast.error(data?.error || 'Erro ao criar funcionário')
         return
       }
 
-      toast.success('Funcionário e login criados com sucesso!')
-      setNovoUsuario({ nome: '', senha: '', funcao_id: '' })
+      setNovoUsuario({ nome: '', email: '', senha: '', funcao_id: '' })
       carregarFuncionarios()
     } catch (error: any) {
       console.error('Erro ao criar funcionário:', error)
@@ -425,6 +428,19 @@ export function ActivateUsersPage() {
               />
             </div>
 
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                Email * <span className="text-xs text-secondary-500">(login)</span>
+              </label>
+              <Input
+                type="email"
+                placeholder="email@exemplo.com"
+                value={novoUsuario.email}
+                onChange={(e) => setNovoUsuario({ ...novoUsuario, email: e.target.value })}
+              />
+            </div>
+
             {/* Função */}
             <div>
               <label className="block text-sm font-medium text-secondary-700 mb-1">
@@ -472,10 +488,7 @@ export function ActivateUsersPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-secondary-500">
-              O nome de usuário será gerado automaticamente
-            </p>
+          <div className="mt-4 flex items-center justify-end">
             <Button onClick={handleCriarFuncionario}>
               <UserPlus className="w-4 h-4 mr-2" />
               Criar Funcionário

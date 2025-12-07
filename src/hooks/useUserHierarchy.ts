@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../modules/auth/AuthContext';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import { usePermissionsContext } from './usePermissions';
+import { usePermissionsContextSafe } from './usePermissions';
 
 export interface UserPermissions {
   [moduleName: string]: {
@@ -44,7 +44,7 @@ export interface UserProfile {
 
 export function useUserHierarchy() {
   const { user } = useAuth();
-  const permissionsContext = usePermissionsContext();
+  const permissionsContext = usePermissionsContextSafe();
   const [permissions] = useState<UserPermissions>({});
   const [userProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);

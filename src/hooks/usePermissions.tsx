@@ -11,9 +11,15 @@ const PermissionsContext = createContext<PermissaoContext | null>(null);
 export const usePermissionsContext = () => {
   const context = useContext(PermissionsContext);
   if (!context) {
+    console.error('🚨 Erro: usePermissionsContext deve ser usado dentro do PermissionsProvider');
     throw new Error('usePermissionsContext deve ser usado dentro do PermissionsProvider');
   }
   return context;
+};
+
+// Hook seguro que não lança erro se contexto não existir
+export const usePermissionsContextSafe = () => {
+  return useContext(PermissionsContext);
 };
 
 // ========================================

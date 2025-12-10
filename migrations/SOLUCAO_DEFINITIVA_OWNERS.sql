@@ -116,7 +116,11 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
 
-RAISE NOTICE '✅ Trigger on_auth_user_created recriado com logs';
+-- Verificar trigger criado
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Trigger on_auth_user_created recriado com logs';
+END $$;
 
 -- PARTE 2: CORRIGIR TODOS OS USUÁRIOS EXISTENTES
 -- ============================================

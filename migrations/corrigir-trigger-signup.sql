@@ -78,7 +78,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'state', ''),
     'teste_ativo',
     NOW(),
-    NOW() + INTERVAL '7 days'
+    NOW() + INTERVAL '15 days'  -- ✅ CORRIGIDO: 15 dias de teste (era 7)
   )
   ON CONFLICT (user_id) DO NOTHING;
   

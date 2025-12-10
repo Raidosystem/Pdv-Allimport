@@ -101,12 +101,20 @@ export function AdminDashboard() {
 
       console.log('📊 Total de OWNERS encontrados:', allUsers?.length || 0)
 
-      // Buscar dados das empresas
-      const userIds = allUsers?.map(u => u.user_id) || []
-      const { data: empresas } = await supabase
-        .from('empresas')
-        .select('user_id, tipo_conta, data_cadastro, data_fim_teste')
-        .in('user_id', userIds)
+      // 🔑 SUPER ADMIN: Usar RPC que bypassa RLS para ver TODAS as empresas
+      const { data: empresas, error: empresasError } = await supabase
+        .rpc('get_all_empresas_admin')
+      
+      if (empresasError) {
+        console.error('❌ Erro ao buscar empresas:', empresasError)
+        // Fallback: tentar query normal (vai retornar apenas a própria empresa)
+        const { data: empresasFallback } = await supabase
+          .from('empresas')
+          .select('user_id, tipo_conta, data_cadastro, data_fim_teste')
+          .in('user_id', allUsers?.map(u => u.user_id) || [])
+        
+        console.log('⚠️ Usando fallback - empresas limitadas:', empresasFallback)
+      }
 
       console.log('🔍 EMPRESAS DO BANCO:', empresas)
 
@@ -114,16 +122,16 @@ export function AdminDashboard() {
       const { data: subscriptions } = await supabase
         .from('subscriptions')
         .select('*')
-        .in('user_id', userIds)
+        .in('user_id', allUsers?.map(u => u.user_id) || [])
       
       console.log('🔍 SUBSCRIPTIONS DO BANCO:', subscriptions)
 
       // Criar mapas
-      const empresaMap = new Map()
-      empresas?.forEach(e => empresaMap.set(e.user_id, e))
+      const empresaMap = new Map<string, any>()
+      empresas?.forEach((e: any) => empresaMap.set(e.user_id, e))
 
-      const subscriptionMap = new Map()
-      subscriptions?.forEach(s => subscriptionMap.set(s.user_id, s))
+      const subscriptionMap = new Map<string, any>()
+      subscriptions?.forEach((s: any) => subscriptionMap.set(s.user_id, s))
 
       console.log('📊 MAPA DE EMPRESAS:', empresaMap)
       console.log('📊 Total no mapa:', empresaMap.size)

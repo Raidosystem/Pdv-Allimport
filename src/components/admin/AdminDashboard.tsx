@@ -82,76 +82,107 @@ export function AdminDashboard() {
     try {
       setLoading(true)
 
-      // Buscar todos os usuários com suas assinaturas (agora com email!)
-      const { data: subscriptions, error } = await supabase
-        .from('subscriptions')
-        .select('*')
+      // 🔥 BUSCAR TODOS OS USUÁRIOS (de user_approvals + empresas)
+      const { data: allUsers, error: usersError } = await supabase
+        .from('user_approvals')
+        .select(`
+          user_id,
+          email,
+          full_name,
+          company_name,
+          created_at,
+          status,
+          user_role
+        `)
+        .eq('user_role', 'owner')  // Apenas owners (donos de empresa)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (usersError) throw usersError
 
-      // Buscar dados complementares dos usuários do user_approvals
-      const userIds = subscriptions?.map(s => s.user_id) || []
-      const { data: userApprovals } = await supabase
-        .from('user_approvals')
-        .select('user_id, email, full_name, company_name, created_at')
+      console.log('📊 Total de OWNERS encontrados:', allUsers?.length || 0)
+
+      // Buscar dados das empresas
+      const userIds = allUsers?.map(u => u.user_id) || []
+      const { data: empresas } = await supabase
+        .from('empresas')
+        .select('user_id, tipo_conta, data_cadastro, data_fim_teste')
         .in('user_id', userIds)
 
-      // Criar mapa de usuários
-      const userMap = new Map()
-      
-      // Adiciona dados do user_approvals
-      userApprovals?.forEach(u => {
-        userMap.set(u.user_id, u)
-      })
+      // Buscar subscriptions (se existir)
+      const { data: subscriptions } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .in('user_id', userIds)
+
+      // Criar mapas
+      const empresaMap = new Map()
+      empresas?.forEach(e => empresaMap.set(e.user_id, e))
+
+      const subscriptionMap = new Map()
+      subscriptions?.forEach(s => subscriptionMap.set(s.user_id, s))
 
       // Combinar dados e calcular dias restantes em TEMPO REAL
       const now = new Date()
-      const subscribersList: Subscriber[] = subscriptions?.map(sub => {
-        // Pega dados do user_approvals OU usa email da subscription
-        const userApprovalData = userMap.get(sub.user_id)
-        const userData = {
-          email: userApprovalData?.email || sub.email || `user_${sub.user_id.substring(0, 8)}`,
-          full_name: userApprovalData?.full_name || null,
-          company_name: userApprovalData?.company_name || null
-        }
+      const subscribersList: Subscriber[] = allUsers?.map(user => {
+        const empresa = empresaMap.get(user.user_id)
+        const sub = subscriptionMap.get(user.user_id)
         
-        // Calcular dias restantes em TEMPO REAL
+        // Calcular status e dias restantes
+        let status: 'trial' | 'active' | 'expired' | 'cancelled' | 'pending' = 'pending'
         let daysRemaining = 0
         let endDate: Date | null = null
+        let planType = 'trial'
 
-        if (sub.status === 'trial' && sub.trial_end_date) {
-          endDate = new Date(sub.trial_end_date)
-        } else if (sub.status === 'active' && sub.subscription_end_date) {
-          endDate = new Date(sub.subscription_end_date)
+        // Priorizar dados da empresa (teste de 15 dias)
+        if (empresa && empresa.tipo_conta === 'teste_ativo' && empresa.data_fim_teste) {
+          status = 'trial'
+          endDate = new Date(empresa.data_fim_teste)
+          planType = 'trial'
+        }
+        // Se tem subscription, usar ela
+        else if (sub) {
+          status = sub.status
+          planType = sub.plan_type || 'trial'
+          
+          if (sub.status === 'trial' && sub.trial_end_date) {
+            endDate = new Date(sub.trial_end_date)
+          } else if (sub.status === 'active' && sub.subscription_end_date) {
+            endDate = new Date(sub.subscription_end_date)
+          }
         }
 
+        // Calcular dias restantes
         if (endDate) {
           const diffTime = endDate.getTime() - now.getTime()
           daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+          
+          // Atualizar status se expirou
+          if (daysRemaining === 0 && (status === 'trial' || status === 'active')) {
+            status = 'expired'
+          }
         }
 
         return {
-          user_id: sub.user_id,
-          email: userData.email,
-          full_name: userData.full_name,
-          company_name: userData.company_name,
+          user_id: user.user_id,
+          email: user.email,
+          full_name: user.full_name,
+          company_name: user.company_name,
           subscription: {
-            id: sub.id,
-            status: sub.status,
-            trial_start_date: sub.trial_start_date,
-            trial_end_date: sub.trial_end_date,
-            subscription_start_date: sub.subscription_start_date,
-            subscription_end_date: sub.subscription_end_date,
+            id: sub?.id || user.user_id,
+            status,
+            trial_start_date: empresa?.data_cadastro || sub?.trial_start_date,
+            trial_end_date: empresa?.data_fim_teste || sub?.trial_end_date,
+            subscription_start_date: sub?.subscription_start_date,
+            subscription_end_date: sub?.subscription_end_date,
             days_remaining: daysRemaining,
-            is_paused: false, // Funcionalidade pausar não implementada
-            plan_type: sub.plan_type || sub.status,
-            payment_method: sub.payment_method,
-            last_payment_date: sub.last_payment_date,
-            next_payment_date: sub.next_payment_date,
-            amount: sub.amount
+            is_paused: false,
+            plan_type: planType,
+            payment_method: sub?.payment_method,
+            last_payment_date: sub?.last_payment_date,
+            next_payment_date: sub?.next_payment_date,
+            amount: sub?.amount
           },
-          created_at: userApprovalData?.created_at || sub.created_at
+          created_at: user.created_at
         }
       }) || []
 

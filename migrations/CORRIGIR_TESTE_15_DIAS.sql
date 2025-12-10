@@ -55,21 +55,21 @@ BEGIN
   -- Criar registro de assinatura trial na tabela subscriptions
   INSERT INTO public.subscriptions (
     user_id,
-    company_id,
+    empresa_id,
     status,
     plan_type,
-    trial_start,
-    trial_end,
+    trial_end_date,
     created_at
-  ) VALUES (
+  ) 
+  SELECT 
     NEW.id,
-    NEW.email,
+    e.id,
     'trialing',
     'mensal',
-    NOW(),
     NOW() + INTERVAL '15 days',  -- ✅ 15 dias de teste
     NOW()
-  )
+  FROM public.empresas e
+  WHERE e.user_id = NEW.id
   ON CONFLICT (user_id) DO NOTHING;
   
   RETURN NEW;
@@ -98,11 +98,13 @@ WHERE tipo_conta = 'teste_ativo'
   AND data_fim_teste >= NOW();  -- Apenas testes ativos
 
 -- 4️⃣ Atualizar subscriptions para 15 dias
-UPDATE public.subscriptions
-SET trial_end = trial_start + INTERVAL '15 days'
-WHERE status = 'trialing'
-  AND trial_end < trial_start + INTERVAL '15 days'
-  AND trial_end >= NOW();  -- Apenas trials ativos
+UPDATE public.subscriptions s
+SET trial_end_date = e.data_cadastro + INTERVAL '15 days'
+FROM public.empresas e
+WHERE s.user_id = e.user_id
+  AND s.status = 'trialing'
+  AND s.trial_end_date < e.data_cadastro + INTERVAL '15 days'
+  AND s.trial_end_date >= NOW();  -- Apenas trials ativos
 
 -- 5️⃣ Verificar resultado
 SELECT 

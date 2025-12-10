@@ -104,8 +104,7 @@ SET
   status = 'approved',
   approved_at = COALESCE(approved_at, NOW())
 WHERE user_role IS NULL 
-   OR user_role = 'user'
-   OR (user_role = 'employee' AND parent_user_id IS NULL);  -- Funcionários sem parent são na verdade owners
+   OR user_role = 'user';
 
 -- 4️⃣ Garantir que todos tenham empresa
 INSERT INTO public.empresas (

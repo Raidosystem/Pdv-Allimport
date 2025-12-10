@@ -1,0 +1,219 @@
+# ?? CORREÇÃO RÁPIDA - LOGIN DE FUNCIONÁRIOS COM ERROS
+
+## ? OPÇÃO 1: SCRIPT ÚNICO (RECOMENDADO) ?
+
+### **?? Executar TUDO de uma vez (30 segundos)**
+
+```bash
+1. Abra o Supabase SQL Editor
+2. Copie TODO o conteúdo do arquivo: CORRECAO_COMPLETA_EXECUTAR_AGORA.sql
+3. Cole no editor
+4. Clique em RUN (ou Ctrl+Enter)
+5. ? Aguarde a mensagem: "?? CORREÇÃO COMPLETA!"
+6. Teste em: http://localhost:5173/login-local
+```
+
+**? Este script único faz:**
+- Garante extensão pgcrypto
+- Corrige RPC listar_usuarios_ativos (adiciona campo 'usuario')
+- Corrige RPC validar_senha_local (compatível senha + senha_hash)
+- Corrige RPC atualizar_senha_funcionario
+- Cria RPC trocar_senha_propria
+- Verifica se tudo foi criado corretamente
+- Mostra estatísticas do sistema
+
+---
+
+## ? OPÇÃO 2: EXECUTAR PASSO A PASSO (se preferir)
+
+### **1?? Corrigir RPC listar_usuarios_ativos**
+```bash
+Execute no Supabase SQL Editor:
+```
+```sql
+-- Arquivo: FIX_LISTAR_USUARIOS_ATIVOS.sql
+```
+**? Isso adiciona o campo `usuario` que estava faltando**
+
+---
+
+### **2?? Corrigir RPC validar_senha_local**
+```bash
+Execute no Supabase SQL Editor:
+```
+```sql
+-- Arquivo: CORRECAO_SENHA_RAPIDA.sql
+```
+**? Isso corrige a validação de senha (compatível com senha e senha_hash)**
+
+---
+
+### **3?? Verificar se tudo está OK**
+```bash
+Execute no Supabase SQL Editor:
+```
+```sql
+-- Arquivo: DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql
+```
+**? Se o RESUMO FINAL mostrar tudo com ?, está OK!**
+
+---
+
+## ?? TESTAR APÓS CORREÇÕES
+
+### **Teste 1: Ver funcionários disponíveis**
+```sql
+-- No Supabase SQL Editor:
+SELECT * FROM listar_usuarios_ativos(
+  (SELECT id FROM empresas LIMIT 1)
+);
+
+-- Deve retornar: id, nome, email, foto_perfil, tipo_admin, senha_definida, primeiro_acesso, usuario
+-- ? O campo 'usuario' DEVE estar presente!
+```
+
+### **Teste 2: Validar senha**
+```sql
+-- Substitua pelos dados reais:
+SELECT * FROM validar_senha_local(
+  'nome_do_usuario',  -- Ex: 'jennifer_sousa'
+  'senha_aqui'        -- Ex: '123456'
+);
+
+-- Deve retornar: { success: true, funcionario: {...}, precisa_trocar_senha: false }
+```
+
+### **Teste 3: Login na interface**
+```bash
+1. Acesse: http://localhost:5173/login-local
+2. Deve aparecer cards com os funcionários
+3. Clique em um card
+4. Digite a senha
+5. Deve logar com sucesso
+```
+
+---
+
+## ?? SE AINDA HOUVER ERRO
+
+### **Erro: "Campo usuario não encontrado"**
+```sql
+-- Reexecutar CORRECAO_COMPLETA_EXECUTAR_AGORA.sql
+-- OU
+-- Reexecutar FIX_LISTAR_USUARIOS_ATIVOS.sql
+DROP FUNCTION IF EXISTS listar_usuarios_ativos(UUID);
+-- (copiar e colar todo o SQL novamente)
+```
+
+### **Erro: "Senha incorreta" (mesmo com senha correta)**
+```sql
+-- Resetar senha manualmente:
+SELECT atualizar_senha_funcionario(
+  (SELECT funcionario_id FROM login_funcionarios WHERE usuario = 'seu_usuario'),
+  'nova_senha_123'
+);
+```
+
+### **Erro: "Extension pgcrypto not found"**
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
+
+### **Erro: Cards não aparecem na tela**
+```sql
+-- Ativar funcionários manualmente:
+UPDATE funcionarios
+SET usuario_ativo = true,
+    senha_definida = true
+WHERE empresa_id = (SELECT id FROM empresas LIMIT 1);
+```
+
+---
+
+## ?? VERIFICAÇÃO COMPLETA
+
+Execute esta query para ver o status geral:
+
+```sql
+-- Ver tudo de uma vez:
+SELECT 
+  '?? TESTE GERAL' as teste,
+  (SELECT COUNT(*) FROM funcionarios WHERE usuario_ativo = true) as funcionarios_ativos,
+  (SELECT COUNT(*) FROM login_funcionarios WHERE ativo = true) as logins_ativos,
+  (SELECT COUNT(*) FROM information_schema.routines WHERE routine_name IN ('listar_usuarios_ativos', 'validar_senha_local')) as rpcs_criadas,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto') THEN '?'
+    ELSE '?'
+  END as pgcrypto_ok;
+```
+
+**Resultado esperado:**
+```
+funcionarios_ativos: > 0
+logins_ativos: > 0
+rpcs_criadas: 2
+pgcrypto_ok: ?
+```
+
+---
+
+## ? CHECKLIST FINAL
+
+Antes de testar na interface:
+
+```
+??? Banco de Dados
+  [ ] pgcrypto instalado
+  [ ] Tabela login_funcionarios existe
+  [ ] RPC listar_usuarios_ativos RETORNA campo 'usuario'
+  [ ] RPC validar_senha_local existe e funciona
+  [ ] Pelo menos 1 funcionário ativo
+
+?? Frontend
+  [ ] LocalLoginPage.tsx não tem erros
+  [ ] AuthContext.tsx tem signInLocal
+  [ ] Rotas configuradas (/login-local, /trocar-senha)
+
+?? Testes
+  [ ] Cards aparecem em /login-local
+  [ ] Clicar em card mostra tela de senha
+  [ ] Login funciona com senha correta
+  [ ] Dashboard carrega após login
+  [ ] Permissões aplicadas corretamente
+```
+
+---
+
+## ?? RESUMO EXECUTIVO
+
+**? OPÇÃO RECOMENDADA:**
+- Execute: `CORRECAO_COMPLETA_EXECUTAR_AGORA.sql` ? **TUDO EM 1 ARQUIVO**
+
+**OU execute 3 arquivos separados:**
+1. `FIX_LISTAR_USUARIOS_ATIVOS.sql` ? Adiciona campo usuario
+2. `CORRECAO_SENHA_RAPIDA.sql` ? Corrige validação de senha
+3. `DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql` ? Verifica se está tudo OK
+
+**Tempo total:** ~5 minutos (ou 30 segundos com script único)
+
+**Resultado esperado:** Login de funcionários funcionando perfeitamente!
+
+---
+
+## ?? SUPORTE
+
+Se ainda houver problemas após executar os SQLs:
+
+1. Abra o console do navegador (F12)
+2. Copie os erros que aparecem
+3. Execute o DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql
+4. Verifique quais campos estão com ?
+
+**Os 3 erros mais comuns:**
+1. ? Campo `usuario` não retornado ? Reexecutar FIX_LISTAR_USUARIOS_ATIVOS.sql
+2. ? Senha sempre incorreta ? Resetar senha com atualizar_senha_funcionario
+3. ? Cards vazios ? Ativar funcionários com UPDATE funcionarios SET usuario_ativo = true
+
+---
+
+**?? Boa sorte! Com o script único, tudo funciona em 30 segundos!**

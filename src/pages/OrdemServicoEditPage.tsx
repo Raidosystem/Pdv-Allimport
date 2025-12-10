@@ -244,7 +244,8 @@ export function OrdemServicoEditPage() {
             <ClienteSelector
               clienteSelecionado={clienteSelecionado}
               onClienteSelect={setClienteSelecionado}
-              titulo="Cliente (não pode ser alterado)"
+              titulo="Dados do Cliente"
+              allowRemove={false}
             />
             
             {clienteSelecionado && (

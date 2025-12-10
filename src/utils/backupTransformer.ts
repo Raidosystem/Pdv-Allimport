@@ -149,7 +149,7 @@ export class BackupTransformer {
   static mapField(sourceObj: any, targetField: string, possibleFields: string[]): any {
     // Tentar encontrar o campo exato
     for (const field of possibleFields) {
-      if (sourceObj.hasOwnProperty(field)) {
+      if (Object.hasOwn(sourceObj, field)) {
         return sourceObj[field];
       }
       

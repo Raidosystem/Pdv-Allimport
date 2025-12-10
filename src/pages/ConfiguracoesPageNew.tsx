@@ -7,7 +7,7 @@ import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
 import { usePermissions } from '../hooks/usePermissions'
 import { usePrintSettings } from '../hooks/usePrintSettings'
 import { LojaOnlineConfigPage } from '../modules/loja-online/LojaOnlineConfigPage'
-import LaudoTecnicoPage from './admin/LaudoTecnicoPage'
+import FerramentasPage from './admin/FerramentasPage'
 import AdminBackupsPage from './admin/AdminBackupsPage'
 import toast from 'react-hot-toast'
 
@@ -1386,7 +1386,7 @@ export function ConfiguracoesPage() {
           {viewMode === 'aparencia' && <AparenciaView />}
           {viewMode === 'impressao' && <ImpressaoView />}
           {viewMode === 'loja-online' && <LojaOnlineConfigPage />}
-          {viewMode === 'ferramentas' && <LaudoTecnicoPage />}
+          {viewMode === 'ferramentas' && <FerramentasPage />}
           {viewMode === 'backup' && <AdminBackupsPage />}
         </div>
       </div>

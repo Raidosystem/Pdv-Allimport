@@ -1,0 +1,543 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { ChevronDown, ChevronRight, Save, X, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+interface Permissao {
+  id: string;
+  recurso: string;
+  acao: string;
+  descricao: string;
+  categoria: string;
+  modulo_pai: string | null;
+  ordem: number;
+}
+
+interface Funcao {
+  id: string;
+  nome: string;
+  descricao?: string;
+}
+
+interface PermissaoAgrupada {
+  categoria: string;
+  principais: Permissao[];
+  subsecoes: Record<string, Permissao[]>;
+}
+
+export const EditarPermissoesFuncao: React.FC<{ funcao_id: string; onClose: () => void }> = ({ funcao_id, onClose }) => {
+const [funcao, setFuncao] = useState<Funcao | null>(null);
+const [todasPermissoes, setTodasPermissoes] = useState<Permissao[]>([]);
+const [permissoesAtivas, setPermissoesAtivas] = useState<Set<string>>(new Set());
+const [secoesAbertas, setSecoesAbertas] = useState<Set<string>>(new Set(['vendas', 'clientes', 'produtos']));
+const [salvando, setSalvando] = useState(false);
+const [modoVisualizacao, setModoVisualizacao] = useState<'compacto' | 'detalhado' | 'completo'>('detalhado');
+const [empresaId, setEmpresaId] = useState<string | null>(null);
+
+// Carregar empresa_id da função
+useEffect(() => {
+  loadEmpresaId();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [funcao_id]);
+
+// Carregar dados
+useEffect(() => {
+  if (empresaId) {
+    loadData();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [funcao_id, empresaId]);
+
+const loadEmpresaId = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('funcoes')
+      .select('empresa_id')
+      .eq('id', funcao_id)
+      .single();
+
+    if (error) throw error;
+      
+    if (data?.empresa_id) {
+      setEmpresaId(data.empresa_id);
+      console.log('? [EditarPermissoesFuncao] empresa_id carregado:', data.empresa_id);
+    } else {
+      console.warn('?? [EditarPermissoesFuncao] Função sem empresa_id:', funcao_id);
+    }
+  } catch (error) {
+    console.error('? [EditarPermissoesFuncao] Erro ao carregar empresa_id:', error);
+  }
+};
+
+  const loadData = async () => {
+    try {
+      // 1. Carregar função
+      const { data: funcaoData, error: funcaoError } = await supabase
+        .from('funcoes')
+        .select('*')
+        .eq('id', funcao_id)
+        .single();
+
+      if (funcaoError) throw funcaoError;
+      setFuncao(funcaoData);
+
+      // 2. Carregar todas as permissões
+      const { data: permissoesData, error: permissoesError } = await supabase
+        .from('permissoes')
+        .select('*')
+        .order('categoria', { ascending: true })
+        .order('ordem', { ascending: true });
+
+      if (permissoesError) throw permissoesError;
+      setTodasPermissoes(permissoesData || []);
+
+      // 3. Carregar permissões ativas desta função
+      const { data: ativasData, error: ativasError } = await supabase
+        .from('funcao_permissoes')
+        .select('permissao_id')
+        .eq('funcao_id', funcao_id);
+
+      if (ativasError) throw ativasError;
+      
+      const ativasSet = new Set<string>(
+        (ativasData || []).map((fp: any) => fp.permissao_id as string)
+      );
+      setPermissoesAtivas(ativasSet);
+
+      console.log('?? Dados carregados:', {
+        funcao: funcaoData?.nome,
+        total_permissoes: permissoesData?.length,
+        permissoes_ativas: ativasSet.size
+      });
+
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar permissões');
+    }
+  };
+
+  // Agrupar permissões por categoria e hierarquia
+  const agruparPermissoes = (): PermissaoAgrupada[] => {
+    const grupos: Record<string, PermissaoAgrupada> = {};
+
+    todasPermissoes.forEach(perm => {
+      if (!grupos[perm.categoria]) {
+        grupos[perm.categoria] = {
+          categoria: perm.categoria,
+          principais: [],
+          subsecoes: {}
+        };
+      }
+
+      // Se é módulo principal (sem pai)
+      if (!perm.modulo_pai) {
+        grupos[perm.categoria].principais.push(perm);
+      } else {
+        // Se é subseção
+        if (!grupos[perm.categoria].subsecoes[perm.modulo_pai]) {
+          grupos[perm.categoria].subsecoes[perm.modulo_pai] = [];
+        }
+        grupos[perm.categoria].subsecoes[perm.modulo_pai].push(perm);
+      }
+    });
+
+    return Object.values(grupos);
+  };
+
+  const permissoesAgrupadas = agruparPermissoes();
+
+  // Toggle seção
+  const toggleSecao = (categoria: string) => {
+    const novasAbertas = new Set(secoesAbertas);
+    if (novasAbertas.has(categoria)) {
+      novasAbertas.delete(categoria);
+    } else {
+      novasAbertas.add(categoria);
+    }
+    setSecoesAbertas(novasAbertas);
+  };
+
+  // Toggle permissão
+  const togglePermissao = (permissaoId: string) => {
+    const novasAtivas = new Set(permissoesAtivas);
+    if (novasAtivas.has(permissaoId)) {
+      novasAtivas.delete(permissaoId);
+    } else {
+      novasAtivas.add(permissaoId);
+    }
+    setPermissoesAtivas(novasAtivas);
+  };
+
+  // Marcar/desmarcar toda seção
+  const toggleSecaoCompleta = (categoria: string, marcar: boolean) => {
+    const novasAtivas = new Set(permissoesAtivas);
+    const permissoesCategoria = todasPermissoes.filter(p => p.categoria === categoria);
+    
+    permissoesCategoria.forEach(perm => {
+      if (marcar) {
+        novasAtivas.add(perm.id);
+      } else {
+        novasAtivas.delete(perm.id);
+      }
+    });
+    
+    setPermissoesAtivas(novasAtivas);
+  };
+
+  // Salvar mudanças
+  const salvar = async () => {
+    if (!funcao || !empresaId) {
+      console.error('? [salvar] Faltando dados necessários:', { funcao: !!funcao, empresaId });
+      toast.error('Dados incompletos para salvar');
+      return;
+    }
+    
+    setSalvando(true);
+    try {
+      console.log('?? [salvar] Iniciando salvamento:', {
+        funcao_id: funcao_id,
+        empresa_id: empresaId,
+        total_permissoes: permissoesAtivas.size
+      });
+
+      // 1. Deletar todas as permissões antigas
+      const { error: deleteError } = await supabase
+        .from('funcao_permissoes')
+        .delete()
+        .eq('funcao_id', funcao_id)
+        .eq('empresa_id', empresaId);
+
+      if (deleteError) {
+        console.error('? [salvar] Erro ao deletar permissões antigas:', deleteError);
+        throw deleteError;
+      }
+
+      console.log('? [salvar] Permissões antigas deletadas');
+
+      // 2. Inserir novas permissões
+      const inserts = Array.from(permissoesAtivas).map(permissao_id => ({
+        funcao_id: funcao_id,
+        permissao_id: permissao_id,
+        empresa_id: empresaId
+      }));
+
+      if (inserts.length > 0) {
+        console.log('?? [salvar] Inserindo', inserts.length, 'novas permissões');
+
+        const { error: insertError } = await supabase
+          .from('funcao_permissoes')
+          .insert(inserts);
+
+        if (insertError) {
+          console.error('? [salvar] Erro ao inserir novas permissões:', insertError);
+          throw insertError;
+        }
+
+        console.log('? [salvar] Permissões inseridas com sucesso');
+      }
+
+      console.log('?? [salvar] Permissões salvas:', {
+        funcao: funcao.nome,
+        total: permissoesAtivas.size
+      });
+
+      toast.success(`Permissões da função "${funcao.nome}" atualizadas!`);
+      
+      // Disparar evento para recarregar permissões no sistema
+      window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
+        detail: { funcao_id, total: permissoesAtivas.size }
+      }));
+      
+      onClose();
+
+    } catch (error: any) {
+      console.error('? [salvar] Erro ao salvar permissões:', error);
+      toast.error(`Erro ao salvar permissões: ${error.message || 'Erro desconhecido'}`);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  // Ícones por categoria
+  const getIconeCategoria = (categoria: string) => {
+    const icones: Record<string, string> = {
+      dashboard: '??',
+      vendas: '??',
+      produtos: '??',
+      clientes: '??',
+      caixa: '??',
+      ordens: '??',
+      relatorios: '??',
+      configuracoes: '??',
+      administracao: '??'
+    };
+    return icones[categoria] || '??';
+  };
+
+  // Contar selecionadas por categoria
+  const contarSelecionadas = (categoria: string): { total: number; selecionadas: number } => {
+    const permissoesCategoria = todasPermissoes.filter(p => p.categoria === categoria);
+    const selecionadas = permissoesCategoria.filter(p => permissoesAtivas.has(p.id)).length;
+    return { total: permissoesCategoria.length, selecionadas };
+  };
+
+  if (!funcao) {
+    return <div className="flex items-center justify-center p-8">Carregando...</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="border-b p-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Editar Permissões: {funcao.nome}
+            </h2>
+            <p className="text-gray-600 mt-1">
+              {permissoesAtivas.size} de {todasPermissoes.length} permissões selecionadas
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Toolbar */}
+        <div className="border-b p-4 flex items-center justify-between bg-gray-50">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setModoVisualizacao('compacto')}
+              className={`px-3 py-1 rounded text-sm ${
+                modoVisualizacao === 'compacto'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Compacto
+            </button>
+            <button
+              onClick={() => setModoVisualizacao('detalhado')}
+              className={`px-3 py-1 rounded text-sm ${
+                modoVisualizacao === 'detalhado'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Detalhado
+            </button>
+            <button
+              onClick={() => setModoVisualizacao('completo')}
+              className={`px-3 py-1 rounded text-sm ${
+                modoVisualizacao === 'completo'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Completo
+            </button>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                // Marcar todas
+                setPermissoesAtivas(new Set(todasPermissoes.map(p => p.id)));
+              }}
+              className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+            >
+              Marcar Todas
+            </button>
+            <button
+              onClick={() => setPermissoesAtivas(new Set())}
+              className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+            >
+              Desmarcar Todas
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-4">
+            {permissoesAgrupadas.map(grupo => {
+              const { total, selecionadas } = contarSelecionadas(grupo.categoria);
+              const secaoAberta = modoVisualizacao === 'completo' || secoesAbertas.has(grupo.categoria);
+
+              return (
+                <div key={grupo.categoria} className="border rounded-lg overflow-hidden">
+                  {/* Header da Seção */}
+                  <div className="bg-gray-50 border-b">
+                    <div className="flex items-center justify-between p-4">
+                      <button
+                        onClick={() => toggleSecao(grupo.categoria)}
+                        className="flex items-center gap-3 flex-1 text-left"
+                      >
+                        <span className="text-2xl">{getIconeCategoria(grupo.categoria)}</span>
+                        <div>
+                          <div className="font-semibold text-gray-900 capitalize">
+                            {grupo.categoria}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {selecionadas} de {total} permissões
+                          </div>
+                        </div>
+                        {modoVisualizacao !== 'completo' && (
+                          secaoAberta ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />
+                        )}
+                      </button>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSecaoCompleta(grupo.categoria, true);
+                          }}
+                          className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded"
+                          title="Marcar todas desta seção"
+                        >
+                          Todas
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSecaoCompleta(grupo.categoria, false);
+                          }}
+                          className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                          title="Desmarcar todas desta seção"
+                        >
+                          Nenhuma
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Corpo da Seção */}
+                  {secaoAberta && (
+                    <div className="p-4 space-y-4">
+                      {/* Permissões Principais */}
+                      {grupo.principais.length > 0 && (
+                        <div>
+                          {modoVisualizacao !== 'compacto' && (
+                            <div className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                              Ações Principais
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            {grupo.principais.map(perm => (
+                              <label
+                                key={perm.id}
+                                className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={permissoesAtivas.has(perm.id)}
+                                  onChange={() => togglePermissao(perm.id)}
+                                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                />
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    {perm.descricao}
+                                  </div>
+                                  {modoVisualizacao !== 'compacto' && (
+                                    <div className="text-xs text-gray-500">
+                                      {perm.recurso}:{perm.acao}
+                                    </div>
+                                  )}
+                                </div>
+                                {permissoesAtivas.has(perm.id) && (
+                                  <Check className="w-4 h-4 text-green-600" />
+                                )}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Subseções */}
+                      {Object.keys(grupo.subsecoes).length > 0 && modoVisualizacao !== 'compacto' && (
+                        Object.entries(grupo.subsecoes).map(([modulo_pai, permissoes]) => (
+                          <div key={modulo_pai} className="ml-6 border-l-2 border-gray-200 pl-4">
+                            <div className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                              {modulo_pai === grupo.categoria ? 'Ações Específicas' : modulo_pai}
+                            </div>
+                            <div className="space-y-2">
+                              {permissoes.map(perm => (
+                                <label
+                                  key={perm.id}
+                                  className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={permissoesAtivas.has(perm.id)}
+                                    onChange={() => togglePermissao(perm.id)}
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="font-medium text-gray-900 text-sm">
+                                      {perm.descricao}
+                                    </div>
+                                    {modoVisualizacao === 'completo' && (
+                                      <div className="text-xs text-gray-500">
+                                        {perm.recurso}:{perm.acao}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {permissoesAtivas.has(perm.id) && (
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  )}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-t p-6 flex items-center justify-between bg-gray-50">
+          <div className="text-sm text-gray-600">
+            <strong>{permissoesAtivas.size}</strong> permissões selecionadas
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              disabled={salvando}
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={salvar}
+              disabled={salvando}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {salvando ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Salvar Permissões
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EditarPermissoesFuncao;

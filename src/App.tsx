@@ -52,6 +52,13 @@ import './App.css'
 import { useState, useEffect } from 'react'
 import { initVersionCheck } from './utils/version-check'
 import { startVersionChecking } from './utils/versionControl'
+import { useAppearanceSettings } from './hooks/useAppearanceSettings'
+
+// 🎨 Componente que aplica tema globalmente (dentro do AuthProvider)
+function ThemeApplier() {
+  useAppearanceSettings()
+  return null
+}
 
 function App() {
   // PWA Install Hook
@@ -129,6 +136,9 @@ function App() {
     <CacheErrorBoundary>
       <AuthProvider>
         <PermissionsProvider>
+          {/* 🎨 Aplicar tema globalmente após AuthProvider estar montado */}
+          <ThemeApplier />
+          
           <Router>
           {/* PWA Install Banner - Removido */}
           {false && showInstallBanner && deferredPrompt && (

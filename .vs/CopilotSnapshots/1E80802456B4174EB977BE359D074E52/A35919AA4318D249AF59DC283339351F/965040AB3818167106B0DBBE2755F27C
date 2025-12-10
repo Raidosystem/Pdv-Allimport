@@ -1,0 +1,563 @@
+﻿import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react'
+import type { User, Session, AuthError } from '@supabase/supabase-js'
+import { supabase } from '../../lib/supabase'
+import { SubscriptionService } from '../../services/subscriptionService'
+
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map((e: string) => e.trim().toLowerCase())
+  .filter(Boolean)
+
+interface AuthContextType {
+  user: User | null
+  session: Session | null
+  loading: boolean
+  signIn: (email: string, password: string) => Promise<{ data: unknown; error: AuthError | null }>
+  signUp: (email: string, password: string, metadata?: Record<string, unknown>) => Promise<{ data: unknown; error: AuthError | null }>
+  signUpEmployee: (email: string, password: string, metadata: Record<string, unknown>) => Promise<{ data: unknown, error: AuthError | null }>
+  signOut: () => Promise<{ error: AuthError | null }>
+  resendConfirmation: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
+  resetPassword: (email: string) => Promise<{ data: unknown; error: AuthError | null }>
+  checkAccess: () => Promise<boolean>
+  isAdmin: () => boolean
+  sendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
+  verifyWhatsAppCode: (userId: string, code: string) => Promise<boolean>
+  resendWhatsAppCode: (userId: string, phone: string) => Promise<boolean>
+  signInLocal?: (userData: any) => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+interface AuthProviderProps {
+  children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+  
+  // ✅ REF para manter valor atual do user acessível no listener
+  const userRef = useRef<User | null>(null)
+  
+  // Atualizar ref sempre que user mudar
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
+  useEffect(() => {
+    // ✅ BUSCAR TODAS AS CHAVES DE LOGIN LOCAL (Multi-tenant)
+    let loginLocalData: string | null = null
+    let empresaId: string | null = null
+    
+    // Buscar em todas as chaves do localStorage que começam com 'pdv_login_local_'
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('pdv_login_local_')) {
+        loginLocalData = localStorage.getItem(key)
+        empresaId = key.replace('pdv_login_local_', '')
+        console.log('🔑 Login local encontrado para empresa:', empresaId)
+        break // Usar o primeiro encontrado
+      }
+    }
+    
+    if (loginLocalData && empresaId) {
+      try {
+        const localUser = JSON.parse(loginLocalData)
+        console.log('🔑 Restaurando login local do localStorage:', localUser.user_metadata?.nome)
+        
+        // Restaurar usuário local
+        setUser(localUser)
+        setSession(null) // Não há sessão real do Supabase
+        setLoading(false)
+        
+        // 🔔 NOTIFICAR o PermissionsProvider para carregar permissões
+        window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
+          detail: { 
+            userId: localUser.id,
+            empresaId: localUser.user_metadata.empresa_id,
+            funcionarioId: localUser.user_metadata.funcionario_id
+          }
+        }))
+        
+        return // Não carregar sessão do Supabase
+      } catch (error) {
+        console.error('❌ Erro ao restaurar login local:', error)
+        // Limpar apenas esta chave com problema
+        if (empresaId) {
+          localStorage.removeItem(`pdv_login_local_${empresaId}`)
+        }
+      }
+    }
+    
+    // Se não tem login local, obter sessão do Supabase normalmente
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      // ✅ VERIFICAR SE É LOGIN LOCAL (tem funcionario_id no metadata)
+      const isFuncionarioLocal = session?.user?.user_metadata?.funcionario_id;
+      
+      if (isFuncionarioLocal) {
+        console.log('🔑 Login local detectado no metadata, preservando sessão');
+      }
+      
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Escutar mudanças de autenticação do Supabase
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      // ✅ VERIFICAR SE TEM LOGIN LOCAL ATIVO (qualquer empresa)
+      let hasLocalLogin = false
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith('pdv_login_local_')) {
+          hasLocalLogin = true
+          break
+        }
+      }
+      
+      if (hasLocalLogin) {
+        console.log('⚠️ Login local ativo, ignorando onAuthStateChange do Supabase Auth')
+        return // Não atualizar estado - preservar login local
+      }
+      
+      // ✅ USAR userRef.current PARA PEGAR O VALOR MAIS RECENTE
+      const currentUser = userRef.current
+      const hasLocalLoginAtivo = currentUser?.user_metadata?.is_login_local === true
+      const sessionIsLocalLogin = session?.user?.user_metadata?.is_login_local === true
+      
+      if (hasLocalLoginAtivo && !sessionIsLocalLogin) {
+        console.log('⚠️ Login local ativo no estado, ignorando onAuthStateChange do Supabase Auth')
+        console.log('👤 Mantendo user local:', currentUser?.user_metadata?.nome)
+        return // Não atualizar estado - preservar login local
+      }
+      
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signIn = async (email: string, password: string) => {
+    // Usar autenticação normal do Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    // Retornar resultado direto do Supabase (sem verificação de aprovação)
+    // Todos os usuários com contas válidas podem fazer login
+    return { data, error }
+  }
+
+  const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
+    console.log('=== SIGNUP DEBUG ===')
+    console.log('Email:', email)
+    console.log('Is Admin:', ADMIN_EMAILS.includes(email.toLowerCase()))
+    
+    try {
+      // Criar conta sem obrigar confirmação de email
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          // Removido emailRedirectTo para evitar fluxo de confirmação obrigatório
+        }
+      })
+
+      console.log('Supabase signUp result:', { data, error })
+      
+      // Tratamento específico para erro de webhook 404
+      if (error) {
+        const errorMessage = error.message || ''
+        console.error('❌ Signup error details:', {
+          message: errorMessage,
+          status: (error as any).status,
+          code: (error as any).code
+        })
+        
+        // Se for erro de webhook/hook 404
+        if (errorMessage.includes('404') || errorMessage.includes('hook') || errorMessage.includes('webhook')) {
+          throw new Error('ERRO DE CONFIGURAÇÃO: O sistema de autenticação está com um webhook configurado incorretamente no Supabase. Por favor, acesse o Dashboard do Supabase → Authentication → Hooks e desative/delete todos os webhooks configurados.')
+        }
+        
+        // Outros erros
+        throw error
+      }
+
+      // Se a conta foi criada com sucesso
+      if (data.user) {
+        // Verificar se é admin (admins são auto-aprovados)
+        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
+        
+        console.log('User created, isAdmin:', isAdmin)
+        
+        if (isAdmin) {
+          // Para admins, fazer login automático
+          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          })
+          
+          if (loginData.user && !loginError) {
+            console.log('Admin auto-login success')
+            return { data: loginData, error: null }
+          }
+        } else {
+          console.log('Non-admin user - auto-approving and logging in')
+          
+          // Para usuários normais, auto-aprovar e inserir na tabela user_approvals
+          try {
+            // Inserir o usuário na tabela de aprovações como aprovado
+            const { error: insertError } = await supabase
+              .from('user_approvals')
+              .insert({
+                user_id: data.user.id,
+                email: email,
+                full_name: metadata?.full_name || 'Usuário',
+                company_name: metadata?.company_name || 'Não informado',
+                cpf_cnpj: metadata?.cpf_cnpj,
+                whatsapp: metadata?.whatsapp,
+                document_type: metadata?.document_type,
+                phone_verified: false, // Será verificado depois
+                status: 'pending', // Pendente até verificar WhatsApp
+                user_role: 'owner',
+                created_at: new Date().toISOString()
+              })
+            
+            if (insertError) {
+              console.error('Warning: Could not insert into user_approvals:', insertError)
+            }
+            
+            // Enviar código de verificação via WhatsApp
+            if (metadata?.whatsapp) {
+              await sendWhatsAppCode(data.user.id, metadata.whatsapp as string)
+            }
+            
+            // Retornar sucesso para ir para tela de verificação
+            return { data: { user: data.user, session: null }, error: null }
+          } catch (err) {
+            console.log('Error in auto-approval process:', err)
+            throw err
+          }
+        }
+      }
+
+      return { data, error: null }
+    } catch (err: any) {
+      console.error('SignUp error:', err)
+      return {
+        data: null,
+        error: err
+      }
+    }
+  }
+
+  const signUpEmployee = async (email: string, password: string, metadata: Record<string, unknown>) => {
+    console.log('=== EMPLOYEE SIGNUP DEBUG ===')
+    console.log('Email:', email)
+    console.log('Parent user:', user?.id)
+    
+    // Verificar se o usuário atual é um owner
+    if (!user) {
+      return { 
+        data: null, 
+        error: { 
+          message: 'Você precisa estar logado para criar funcionários',
+          name: 'NOT_LOGGED_IN'
+        } as any
+      }
+    }
+
+    // Criar conta do funcionário com metadata especial
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          ...metadata,
+          role: 'employee',
+          parent_user_id: user.id // ID do usuário principal (owner)
+        }
+      }
+    })
+
+    console.log('Employee signup result:', { data, error })
+
+    if (data.user && !error) {
+      console.log('Employee created successfully, inserting into user_approvals...')
+      
+      // Inserir manualmente na user_approvals (workaround para trigger problem)
+      try {
+        const { error: insertError } = await supabase
+          .from('user_approvals')
+          .insert({
+            user_id: data.user.id,
+            email: email,
+            full_name: metadata.full_name as string || 'Funcionário',
+            company_name: 'Assistencia All-import',
+            status: 'approved',
+            user_role: 'employee',
+            parent_user_id: user.id,
+            created_by: user.id,
+            approved_at: new Date().toISOString(),
+            approved_by: user.id
+          })
+        
+        if (insertError) {
+          console.error('❌ Erro ao inserir na user_approvals:', insertError)
+          // Mesmo com erro na inserção, o usuário foi criado no auth
+          return { 
+            data: {
+              user: data.user,
+              session: null
+            }, 
+            error: { 
+              message: 'Usuário criado mas houve erro ao configurar permissões',
+              name: 'PARTIAL_SUCCESS'
+            } as any
+          }
+        } else {
+          console.log('✅ Funcionário inserido na user_approvals com sucesso')
+        }
+      } catch (insertErr) {
+        console.error('❌ Erro na inserção manual:', insertErr)
+      }
+      
+      return { 
+        data: {
+          user: data.user,
+          session: null // Funcionários não fazem login automático
+        }, 
+        error: null 
+      }
+    }
+
+    return { data, error }
+  }
+
+  const signOut = async () => {
+    // Limpar dados de teste do localStorage
+    localStorage.removeItem('test-user')
+    localStorage.removeItem('test-session')
+    
+    // ✅ Limpar TODOS os logins locais (multi-tenant)
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('pdv_login_local_')) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key)
+      console.log('🗑️ Removido login local:', key)
+    })
+    
+    // Limpar estado local
+    setUser(null)
+    setSession(null)
+    
+    // Fazer logout do Supabase também (caso tenha uma sessão real)
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  }
+
+  const resendConfirmation = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv.gruporaval.com.br'
+    
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${baseUrl}/confirm-email`
+      }
+    })
+    return { data, error }
+  }
+
+  const resetPassword = async (email: string) => {
+    // URL base para produção e desenvolvimento
+    const baseUrl = import.meta.env.VITE_APP_URL || 'https://pdv.gruporaval.com.br'
+    
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${baseUrl}/reset-password`
+    })
+    return { data, error }
+  }
+
+  const checkAccess = async (): Promise<boolean> => {
+    if (!user?.email) return false
+    
+    // Admins sempre têm acesso
+    if (isAdmin()) return true
+    
+    try {
+      return await SubscriptionService.hasAccess(user.email)
+    } catch (error) {
+      console.error('Erro ao verificar acesso:', error)
+      return false
+    }
+  }
+
+  const isAdmin = (): boolean => {
+    return ADMIN_EMAILS.includes(user?.email?.toLowerCase() || '') ||
+           user?.app_metadata?.role === 'admin'
+  }
+
+  /**
+   * Enviar código de verificação via WhatsApp
+   */
+  const sendWhatsAppCode = async (userId: string, phone: string): Promise<boolean> => {
+    try {
+      // Chamar função do Supabase que gera e envia o código
+      const { data, error } = await supabase.rpc('generate_verification_code', {
+        p_user_id: userId,
+        p_phone: phone
+      })
+
+      if (error) {
+        console.error('Erro ao gerar código:', error)
+        throw error
+      }
+
+      // Enviar código via WhatsApp (em produção)
+      // Por enquanto, apenas loga no console
+      console.log('📱 Código gerado:', data)
+      console.log('📱 Telefone:', phone)
+      
+      // TODO: Integrar com serviço de WhatsApp real
+      // const { whatsappService } = await import('../../services/whatsappService')
+      // await whatsappService.sendVerificationCode(phone, data[0].code)
+
+      return true
+    } catch (error) {
+      console.error('Erro ao enviar código:', error)
+      return false
+    }
+  }
+
+  /**
+   * Verificar código de WhatsApp
+   */
+  const verifyWhatsAppCode = async (userId: string, code: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('verify_whatsapp_code', {
+        p_user_id: userId,
+        p_code: code
+      })
+
+      if (error) {
+        console.error('Erro ao verificar código:', error)
+        throw error
+      }
+
+      return data === true
+    } catch (error) {
+      console.error('Erro ao verificar código:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Reenviar código de verificação
+   */
+  const resendWhatsAppCode = async (userId: string, phone: string): Promise<boolean> => {
+    return sendWhatsAppCode(userId, phone)
+  }
+
+  /**
+   * 🔐 Login LOCAL de funcionário (SEM Supabase Auth)
+   * 
+   * Este login é usado para funcionários que não têm conta no auth.users
+   * A validação é feita pela tabela login_funcionarios usando RPC
+   */
+  const signInLocal = async (userData: any) => {
+    console.log('🔐 Login local de funcionário:', userData.nome)
+    
+    try {
+      // Criar sessão "local" no estado do React
+      // Não é uma sessão real do Supabase Auth, mas simula uma
+      const localUser = {
+        id: userData.id, // ID do funcionário
+        email: userData.email || `${userData.nome}@local`,
+        user_metadata: {
+          nome: userData.nome,
+          tipo_admin: userData.tipo_admin || 'funcionario',
+          empresa_id: userData.empresa_id,
+          funcionario_id: userData.id,
+          funcao_id: userData.funcao_id,
+          is_login_local: true // Flag para identificar login local
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      } as User
+      
+      console.log('✅ Login local completo')
+      console.log('👤 Funcionário ID:', userData.id)
+      console.log('👤 Nome:', userData.nome)
+      console.log('🏢 Empresa ID:', userData.empresa_id)
+      console.log('🎯 Função ID:', userData.funcao_id)
+      
+      // ✅ CHAVE ISOLADA POR EMPRESA (Multi-tenant)
+      const storageKey = `pdv_login_local_${userData.empresa_id}`
+      localStorage.setItem(storageKey, JSON.stringify(localUser))
+      console.log('💾 Login local salvo no localStorage (key:', storageKey, ')')
+      
+      // Atualizar estado
+      setUser(localUser)
+      
+      // 🔔 NOTIFICAR o PermissionsProvider para recarregar permissões
+      window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
+        detail: { 
+          userId: userData.id,
+          empresaId: userData.empresa_id,
+          funcionarioId: userData.id
+        }
+      }))
+      
+      console.log('✅ Login local completo - sessão criada e persistida')
+      
+    } catch (error: any) {
+      console.error('❌ Erro no login de funcionário:', error)
+      throw new Error(error.message || 'Erro ao fazer login')
+    }
+  }
+
+  const value: AuthContextType = {
+    user,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signUpEmployee,
+    signOut,
+    resendConfirmation,
+    resetPassword,
+    checkAccess,
+    isAdmin,
+    sendWhatsAppCode,
+    verifyWhatsAppCode,
+    resendWhatsAppCode,
+    signInLocal,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+
+export default AuthContext

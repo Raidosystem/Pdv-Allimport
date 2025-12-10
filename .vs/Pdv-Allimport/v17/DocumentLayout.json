@@ -1,0 +1,995 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PERMISSOES_APLICADA.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_PERMISSOES_APLICADA.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_ESTE_ARQUIVO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:EXECUTAR_ESTE_ARQUIVO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:REFATORAR_PERMISSOES_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_CORRIGIDO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:REFATORAR_PERMISSOES_CORRIGIDO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_COMPLETO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:REFATORAR_PERMISSOES_COMPLETO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUCAO_RAPIDA_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:EXECUCAO_RAPIDA_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_PERMISSOES_VENDEDOR.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:DIAGNOSTICO_PERMISSOES_VENDEDOR.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_FINAL_COMPLETA_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_FINAL_COMPLETA_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_V2_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRIGIR_PERMISSOES_V2_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_DEFINITIVO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRIGIR_PERMISSOES_DEFINITIVO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:EXPLICACAO_PROBLEMA_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\JENNIFER_INSTRUCOES_FINAIS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:JENNIFER_INSTRUCOES_FINAIS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_JENNIFER_FUNCOES.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_JENNIFER_FUNCOES.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_PRODUCAO_MULTI_TENANT.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:INSTALACAO_PRODUCAO_MULTI_TENANT.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_COMPLETA_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:INSTALACAO_COMPLETA_FINAL.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FIX_JENNIFER_NAO_APARECE.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FIX_JENNIFER_NAO_APARECE.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_COMPLETA_EXECUTAR_AGORA.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_COMPLETA_EXECUTAR_AGORA.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_RAPIDA_LOGIN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_RAPIDA_LOGIN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\LocalLoginPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\modules\\auth\\LocalLoginPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\AuthContext.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\modules\\auth\\AuthContext.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EXECUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_VISUAL_EXECUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_PRIMEIRO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:LEIA_ISTO_PRIMEIRO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_ARQUIVOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:INDICE_ARQUIVOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DEBUG_LOGIN_LOCAL_USUARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:DEBUG_LOGIN_LOCAL_USUARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ATIVAR_TODOS_USUARIOS_LOGIN.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ATIVAR_TODOS_USUARIOS_LOGIN.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_RAPIDA_USUARIOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SOLUCAO_RAPIDA_USUARIOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_JENNIFER_NAO_APARECE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SOLUCAO_JENNIFER_NAO_APARECE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_COMPLETO_TRIGGER_LOGIN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_COMPLETO_TRIGGER_LOGIN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_INSTALACAO_CONSOLIDADO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_INSTALACAO_CONSOLIDADO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_DEPLOY_PRODUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_DEPLOY_PRODUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ALTERACOES_APLICADAS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ALTERACOES_APLICADAS.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\README_PRODUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:README_PRODUCAO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\admin\\pages\\ActivateUsersPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\modules\\admin\\pages\\ActivateUsersPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminUsersPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\pages\\admin\\AdminUsersPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_EXECUCAO_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\types\\admin.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\types\\admin.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\hooks\\usePermissions.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\hooks\\usePermissions.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:RESUMO_CORRECAO_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_APLICADA_SISTEMA_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_APLICADA_SISTEMA_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_RAPIDO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_RAPIDO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\QUAL_SCRIPT_EXECUTAR.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:QUAL_SCRIPT_EXECUTAR.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_AGORA.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:LEIA_ISTO_AGORA.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LIMPAR_CACHE_E_TESTAR.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:LIMPAR_CACHE_E_TESTAR.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICAR_PERMISSOES_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:DIAGNOSTICAR_PERMISSOES_JENNIFER.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:EXPLICACAO_PROBLEMA_JENNIFER.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ERRO_REAL_38_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ERRO_REAL_38_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PRECISA_8_PERMISSOES.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CORRECAO_PRECISA_8_PERMISSOES.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_SISTEMA_PERMISSOES_REFATORADO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:GUIA_SISTEMA_PERMISSOES_REFATORADO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\components\\admin\\EditarPermissoesFuncao.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\components\\admin\\EditarPermissoesFuncao.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_EXECUTIVO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:RESUMO_EXECUTIVO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_AGORA_CORRIGIDO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:EXECUTAR_AGORA_CORRIGIDO.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_FINAL_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:INDICE_FINAL_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:RESUMO_CORRECAO_PERMISSOES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "RESUMO_CORRECAO_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_PERMISSOES.md",
+              "RelativeDocumentMoniker": "RESUMO_CORRECAO_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_PERMISSOES.md",
+              "RelativeToolTip": "RESUMO_CORRECAO_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:32:07.77Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CORRECAO_PERMISSOES_APLICADA.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PERMISSOES_APLICADA.md",
+              "RelativeDocumentMoniker": "CORRECAO_PERMISSOES_APLICADA.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PERMISSOES_APLICADA.md",
+              "RelativeToolTip": "CORRECAO_PERMISSOES_APLICADA.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:31:20.792Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "INDICE_FINAL_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_FINAL_PERMISSOES.md",
+              "RelativeDocumentMoniker": "INDICE_FINAL_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_FINAL_PERMISSOES.md",
+              "RelativeToolTip": "INDICE_FINAL_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAK4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:25:02.529Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "EXECUTAR_ESTE_ARQUIVO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_ESTE_ARQUIVO.md",
+              "RelativeDocumentMoniker": "EXECUTAR_ESTE_ARQUIVO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_ESTE_ARQUIVO.md",
+              "RelativeToolTip": "EXECUTAR_ESTE_ARQUIVO.md",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAAAIAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:24:30.486Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "REFATORAR_PERMISSOES_FINAL.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_FINAL.sql",
+              "RelativeDocumentMoniker": "REFATORAR_PERMISSOES_FINAL.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_FINAL.sql",
+              "RelativeToolTip": "REFATORAR_PERMISSOES_FINAL.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T02:24:03.738Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "EXECUTAR_AGORA_CORRIGIDO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_AGORA_CORRIGIDO.md",
+              "RelativeDocumentMoniker": "EXECUTAR_AGORA_CORRIGIDO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUTAR_AGORA_CORRIGIDO.md",
+              "RelativeToolTip": "EXECUTAR_AGORA_CORRIGIDO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:22:33.262Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "REFATORAR_PERMISSOES_CORRIGIDO.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_CORRIGIDO.sql",
+              "RelativeDocumentMoniker": "REFATORAR_PERMISSOES_CORRIGIDO.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_CORRIGIDO.sql",
+              "RelativeToolTip": "REFATORAR_PERMISSOES_CORRIGIDO.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T02:21:50.548Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "EXECUCAO_RAPIDA_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUCAO_RAPIDA_PERMISSOES.md",
+              "RelativeDocumentMoniker": "EXECUCAO_RAPIDA_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXECUCAO_RAPIDA_PERMISSOES.md",
+              "RelativeToolTip": "EXECUCAO_RAPIDA_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEABAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:18:52.779Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "EditarPermissoesFuncao.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\components\\admin\\EditarPermissoesFuncao.tsx",
+              "RelativeDocumentMoniker": "src\\components\\admin\\EditarPermissoesFuncao.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\components\\admin\\EditarPermissoesFuncao.tsx",
+              "RelativeToolTip": "src\\components\\admin\\EditarPermissoesFuncao.tsx",
+              "ViewState": "AgIAAP4AAAAAAAAAAIBJwB0CAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T02:17:52.116Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "GUIA_SISTEMA_PERMISSOES_REFATORADO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_SISTEMA_PERMISSOES_REFATORADO.md",
+              "RelativeDocumentMoniker": "GUIA_SISTEMA_PERMISSOES_REFATORADO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_SISTEMA_PERMISSOES_REFATORADO.md",
+              "RelativeToolTip": "GUIA_SISTEMA_PERMISSOES_REFATORADO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKcBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:16:48.556Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "REFATORAR_PERMISSOES_COMPLETO.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_COMPLETO.sql",
+              "RelativeDocumentMoniker": "REFATORAR_PERMISSOES_COMPLETO.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\REFATORAR_PERMISSOES_COMPLETO.sql",
+              "RelativeToolTip": "REFATORAR_PERMISSOES_COMPLETO.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T02:15:40.195Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "DIAGNOSTICO_PERMISSOES_VENDEDOR.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_PERMISSOES_VENDEDOR.sql",
+              "RelativeDocumentMoniker": "DIAGNOSTICO_PERMISSOES_VENDEDOR.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_PERMISSOES_VENDEDOR.sql",
+              "RelativeToolTip": "DIAGNOSTICO_PERMISSOES_VENDEDOR.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T02:02:04.776Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "RESUMO_EXECUTIVO_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_EXECUTIVO_PERMISSOES.md",
+              "RelativeDocumentMoniker": "RESUMO_EXECUTIVO_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_EXECUTIVO_PERMISSOES.md",
+              "RelativeToolTip": "RESUMO_EXECUTIVO_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADwBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:19:40.761Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "CORRECAO_PRECISA_8_PERMISSOES.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PRECISA_8_PERMISSOES.sql",
+              "RelativeDocumentMoniker": "CORRECAO_PRECISA_8_PERMISSOES.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_PRECISA_8_PERMISSOES.sql",
+              "RelativeToolTip": "CORRECAO_PRECISA_8_PERMISSOES.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T02:02:30.247Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "ERRO_REAL_38_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ERRO_REAL_38_PERMISSOES.md",
+              "RelativeDocumentMoniker": "ERRO_REAL_38_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ERRO_REAL_38_PERMISSOES.md",
+              "RelativeToolTip": "ERRO_REAL_38_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T02:00:22.406Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql",
+              "RelativeDocumentMoniker": "CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql",
+              "RelativeToolTip": "CORRECAO_DEFINITIVA_JENNIFER_TABELAS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:59:44.346Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "EXPLICACAO_PROBLEMA_JENNIFER.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_JENNIFER.md",
+              "RelativeDocumentMoniker": "EXPLICACAO_PROBLEMA_JENNIFER.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_JENNIFER.md",
+              "RelativeToolTip": "EXPLICACAO_PROBLEMA_JENNIFER.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:53:44.568Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CORRECAO_FINAL_COMPLETA_JENNIFER.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_FINAL_COMPLETA_JENNIFER.sql",
+              "RelativeDocumentMoniker": "CORRECAO_FINAL_COMPLETA_JENNIFER.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_FINAL_COMPLETA_JENNIFER.sql",
+              "RelativeToolTip": "CORRECAO_FINAL_COMPLETA_JENNIFER.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:52:56.189Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "CORRIGIR_PERMISSOES_V2_FINAL.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_V2_FINAL.sql",
+              "RelativeDocumentMoniker": "CORRIGIR_PERMISSOES_V2_FINAL.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_V2_FINAL.sql",
+              "RelativeToolTip": "CORRIGIR_PERMISSOES_V2_FINAL.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:38:37.278Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql",
+              "RelativeDocumentMoniker": "CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql",
+              "RelativeToolTip": "CORRIGIR_PERMISSOES_VENDEDOR_JENNIFER.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:46:28.47Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "LIMPAR_CACHE_E_TESTAR.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LIMPAR_CACHE_E_TESTAR.md",
+              "RelativeDocumentMoniker": "LIMPAR_CACHE_E_TESTAR.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LIMPAR_CACHE_E_TESTAR.md",
+              "RelativeToolTip": "LIMPAR_CACHE_E_TESTAR.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAL8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:43:29.711Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "LEIA_ISTO_AGORA.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_AGORA.md",
+              "RelativeDocumentMoniker": "LEIA_ISTO_AGORA.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_AGORA.md",
+              "RelativeToolTip": "LEIA_ISTO_AGORA.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:40:06.481Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "QUAL_SCRIPT_EXECUTAR.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\QUAL_SCRIPT_EXECUTAR.md",
+              "RelativeDocumentMoniker": "QUAL_SCRIPT_EXECUTAR.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\QUAL_SCRIPT_EXECUTAR.md",
+              "RelativeToolTip": "QUAL_SCRIPT_EXECUTAR.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:39:42.198Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "DIAGNOSTICAR_PERMISSOES_JENNIFER.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICAR_PERMISSOES_JENNIFER.sql",
+              "RelativeDocumentMoniker": "DIAGNOSTICAR_PERMISSOES_JENNIFER.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICAR_PERMISSOES_JENNIFER.sql",
+              "RelativeToolTip": "DIAGNOSTICAR_PERMISSOES_JENNIFER.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:46:00.575Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "EXPLICACAO_PROBLEMA_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_PERMISSOES.md",
+              "RelativeDocumentMoniker": "EXPLICACAO_PROBLEMA_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\EXPLICACAO_PROBLEMA_PERMISSOES.md",
+              "RelativeToolTip": "EXPLICACAO_PROBLEMA_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAPkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:36:39.528Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CORRIGIR_PERMISSOES_DEFINITIVO.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_DEFINITIVO.sql",
+              "RelativeDocumentMoniker": "CORRIGIR_PERMISSOES_DEFINITIVO.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_DEFINITIVO.sql",
+              "RelativeToolTip": "CORRIGIR_PERMISSOES_DEFINITIVO.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:34:52.921Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "JENNIFER_INSTRUCOES_FINAIS.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\JENNIFER_INSTRUCOES_FINAIS.md",
+              "RelativeDocumentMoniker": "JENNIFER_INSTRUCOES_FINAIS.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\JENNIFER_INSTRUCOES_FINAIS.md",
+              "RelativeToolTip": "JENNIFER_INSTRUCOES_FINAIS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:29:25.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md",
+              "RelativeDocumentMoniker": "GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md",
+              "RelativeToolTip": "GUIA_EXECUCAO_CORRIGIR_PERMISSOES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFQBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:28:32.16Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql",
+              "RelativeDocumentMoniker": "CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql",
+              "RelativeToolTip": "CORRIGIR_PERMISSOES_JENNIFER_COMPLETO.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:27:34.126Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "GUIA_RAPIDO_PERMISSOES.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_RAPIDO_PERMISSOES.md",
+              "RelativeDocumentMoniker": "GUIA_RAPIDO_PERMISSOES.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_RAPIDO_PERMISSOES.md",
+              "RelativeToolTip": "GUIA_RAPIDO_PERMISSOES.md",
+              "ViewState": "AgIAAB0BAAAAAAAAAIBJwAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:22:54.882Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "CORRECAO_JENNIFER_FUNCOES.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_JENNIFER_FUNCOES.sql",
+              "RelativeDocumentMoniker": "CORRECAO_JENNIFER_FUNCOES.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_JENNIFER_FUNCOES.sql",
+              "RelativeToolTip": "CORRECAO_JENNIFER_FUNCOES.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T01:08:25.457Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md",
+              "RelativeDocumentMoniker": "GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md",
+              "RelativeToolTip": "GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:22:01.472Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "GUIA_EXECUCAO_JENNIFER.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_JENNIFER.md",
+              "RelativeDocumentMoniker": "GUIA_EXECUCAO_JENNIFER.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_EXECUCAO_JENNIFER.md",
+              "RelativeToolTip": "GUIA_EXECUCAO_JENNIFER.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAP4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:11:16.335Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "INSTALACAO_PRODUCAO_MULTI_TENANT.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_PRODUCAO_MULTI_TENANT.sql",
+              "RelativeDocumentMoniker": "INSTALACAO_PRODUCAO_MULTI_TENANT.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_PRODUCAO_MULTI_TENANT.sql",
+              "RelativeToolTip": "INSTALACAO_PRODUCAO_MULTI_TENANT.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:57:20.1Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "admin.ts",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\types\\admin.ts",
+              "RelativeDocumentMoniker": "src\\types\\admin.ts",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\types\\admin.ts",
+              "RelativeToolTip": "src\\types\\admin.ts",
+              "ViewState": "AgIAAPQBAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T01:11:38.283Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "usePermissions.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\hooks\\usePermissions.tsx",
+              "RelativeDocumentMoniker": "src\\hooks\\usePermissions.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\hooks\\usePermissions.tsx",
+              "RelativeToolTip": "src\\hooks\\usePermissions.tsx",
+              "ViewState": "AgIAACcAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T01:11:56.526Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "RESUMO_CORRECAO_JENNIFER.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_JENNIFER.md",
+              "RelativeDocumentMoniker": "RESUMO_CORRECAO_JENNIFER.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\RESUMO_CORRECAO_JENNIFER.md",
+              "RelativeToolTip": "RESUMO_CORRECAO_JENNIFER.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAO0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:14:58.284Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "CORRECAO_APLICADA_SISTEMA_JENNIFER.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_APLICADA_SISTEMA_JENNIFER.md",
+              "RelativeDocumentMoniker": "CORRECAO_APLICADA_SISTEMA_JENNIFER.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_APLICADA_SISTEMA_JENNIFER.md",
+              "RelativeToolTip": "CORRECAO_APLICADA_SISTEMA_JENNIFER.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGMBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T01:16:43.853Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "GUIA_DEPLOY_PRODUCAO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_DEPLOY_PRODUCAO.md",
+              "RelativeDocumentMoniker": "GUIA_DEPLOY_PRODUCAO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_DEPLOY_PRODUCAO.md",
+              "RelativeToolTip": "GUIA_DEPLOY_PRODUCAO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFYBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:58:20.578Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "ALTERACOES_APLICADAS.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ALTERACOES_APLICADAS.md",
+              "RelativeDocumentMoniker": "ALTERACOES_APLICADAS.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ALTERACOES_APLICADAS.md",
+              "RelativeToolTip": "ALTERACOES_APLICADAS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:59:04.121Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "README_PRODUCAO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\README_PRODUCAO.md",
+              "RelativeDocumentMoniker": "README_PRODUCAO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\README_PRODUCAO.md",
+              "RelativeToolTip": "README_PRODUCAO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:59:48.948Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "ActivateUsersPage.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\admin\\pages\\ActivateUsersPage.tsx",
+              "RelativeDocumentMoniker": "src\\modules\\admin\\pages\\ActivateUsersPage.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\admin\\pages\\ActivateUsersPage.tsx",
+              "RelativeToolTip": "src\\modules\\admin\\pages\\ActivateUsersPage.tsx",
+              "ViewState": "AgIAAHICAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T01:05:24.873Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "AdminUsersPage.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminUsersPage.tsx",
+              "RelativeDocumentMoniker": "src\\pages\\admin\\AdminUsersPage.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminUsersPage.tsx",
+              "RelativeToolTip": "src\\pages\\admin\\AdminUsersPage.tsx",
+              "ViewState": "AgIAABsEAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T01:07:07.175Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "AdminRolesPermissionsPageNew.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx",
+              "RelativeDocumentMoniker": "src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx",
+              "RelativeToolTip": "src\\pages\\admin\\AdminRolesPermissionsPageNew.tsx",
+              "ViewState": "AgIAAHcAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T01:06:15.009Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "GUIA_INSTALACAO_CONSOLIDADO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_INSTALACAO_CONSOLIDADO.md",
+              "RelativeDocumentMoniker": "GUIA_INSTALACAO_CONSOLIDADO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_INSTALACAO_CONSOLIDADO.md",
+              "RelativeToolTip": "GUIA_INSTALACAO_CONSOLIDADO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:48:01.584Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "INSTALACAO_COMPLETA_FINAL.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_COMPLETA_FINAL.sql",
+              "RelativeDocumentMoniker": "INSTALACAO_COMPLETA_FINAL.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INSTALACAO_COMPLETA_FINAL.sql",
+              "RelativeToolTip": "INSTALACAO_COMPLETA_FINAL.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:47:08.612Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "GUIA_COMPLETO_TRIGGER_LOGIN.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_COMPLETO_TRIGGER_LOGIN.md",
+              "RelativeDocumentMoniker": "GUIA_COMPLETO_TRIGGER_LOGIN.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_COMPLETO_TRIGGER_LOGIN.md",
+              "RelativeToolTip": "GUIA_COMPLETO_TRIGGER_LOGIN.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:45:40.339Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql",
+              "RelativeDocumentMoniker": "TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql",
+              "RelativeToolTip": "TRIGGER_AUTO_LOGIN_FUNCIONARIOS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:44:52.018Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "FIX_JENNIFER_NAO_APARECE.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FIX_JENNIFER_NAO_APARECE.sql",
+              "RelativeDocumentMoniker": "FIX_JENNIFER_NAO_APARECE.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FIX_JENNIFER_NAO_APARECE.sql",
+              "RelativeToolTip": "FIX_JENNIFER_NAO_APARECE.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:43:36.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "SOLUCAO_JENNIFER_NAO_APARECE.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_JENNIFER_NAO_APARECE.md",
+              "RelativeDocumentMoniker": "SOLUCAO_JENNIFER_NAO_APARECE.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_JENNIFER_NAO_APARECE.md",
+              "RelativeToolTip": "SOLUCAO_JENNIFER_NAO_APARECE.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:41:56.065Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "LEIA_ISTO_PRIMEIRO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_PRIMEIRO.md",
+              "RelativeDocumentMoniker": "LEIA_ISTO_PRIMEIRO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\LEIA_ISTO_PRIMEIRO.md",
+              "RelativeToolTip": "LEIA_ISTO_PRIMEIRO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:32:38.597Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "GUIA_VISUAL_EXECUCAO.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EXECUCAO.md",
+              "RelativeDocumentMoniker": "GUIA_VISUAL_EXECUCAO.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\GUIA_VISUAL_EXECUCAO.md",
+              "RelativeToolTip": "GUIA_VISUAL_EXECUCAO.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:32:25.136Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "CORRECAO_COMPLETA_EXECUTAR_AGORA.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_COMPLETA_EXECUTAR_AGORA.sql",
+              "RelativeDocumentMoniker": "CORRECAO_COMPLETA_EXECUTAR_AGORA.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_COMPLETA_EXECUTAR_AGORA.sql",
+              "RelativeToolTip": "CORRECAO_COMPLETA_EXECUTAR_AGORA.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:30:42.683Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "INDICE_ARQUIVOS.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_ARQUIVOS.md",
+              "RelativeDocumentMoniker": "INDICE_ARQUIVOS.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\INDICE_ARQUIVOS.md",
+              "RelativeToolTip": "INDICE_ARQUIVOS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:33:31.73Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "DEBUG_LOGIN_LOCAL_USUARIOS.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DEBUG_LOGIN_LOCAL_USUARIOS.sql",
+              "RelativeDocumentMoniker": "DEBUG_LOGIN_LOCAL_USUARIOS.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DEBUG_LOGIN_LOCAL_USUARIOS.sql",
+              "RelativeToolTip": "DEBUG_LOGIN_LOCAL_USUARIOS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:35:38.662Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md",
+              "RelativeDocumentMoniker": "FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md",
+              "RelativeToolTip": "FLUXO_LOGIN_ADMIN_FUNCIONARIOS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:39:12.627Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "SOLUCAO_RAPIDA_USUARIOS.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_RAPIDA_USUARIOS.md",
+              "RelativeDocumentMoniker": "SOLUCAO_RAPIDA_USUARIOS.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\SOLUCAO_RAPIDA_USUARIOS.md",
+              "RelativeToolTip": "SOLUCAO_RAPIDA_USUARIOS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:36:32.937Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "ATIVAR_TODOS_USUARIOS_LOGIN.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ATIVAR_TODOS_USUARIOS_LOGIN.sql",
+              "RelativeDocumentMoniker": "ATIVAR_TODOS_USUARIOS_LOGIN.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\ATIVAR_TODOS_USUARIOS_LOGIN.sql",
+              "RelativeToolTip": "ATIVAR_TODOS_USUARIOS_LOGIN.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:36:01.796Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "CORRECAO_RAPIDA_LOGIN.md",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_RAPIDA_LOGIN.md",
+              "RelativeDocumentMoniker": "CORRECAO_RAPIDA_LOGIN.md",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\CORRECAO_RAPIDA_LOGIN.md",
+              "RelativeToolTip": "CORRECAO_RAPIDA_LOGIN.md",
+              "ViewState": "AgIAAMEAAAAAAAAAAAAYwNsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-12-09T00:18:48.739Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "AuthContext.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\AuthContext.tsx",
+              "RelativeDocumentMoniker": "src\\modules\\auth\\AuthContext.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\AuthContext.tsx",
+              "RelativeToolTip": "src\\modules\\auth\\AuthContext.tsx",
+              "ViewState": "AgIAAAkCAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T00:17:32.357Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "LocalLoginPage.tsx",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\LocalLoginPage.tsx",
+              "RelativeDocumentMoniker": "src\\modules\\auth\\LocalLoginPage.tsx",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\src\\modules\\auth\\LocalLoginPage.tsx",
+              "RelativeToolTip": "src\\modules\\auth\\LocalLoginPage.tsx",
+              "ViewState": "AgIAANABAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-09T00:17:04.922Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql",
+              "DocumentMoniker": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql",
+              "RelativeDocumentMoniker": "DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql",
+              "ToolTip": "C:\\Users\\crism\\Desktop\\Pdv-Allimport\\DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql",
+              "RelativeToolTip": "DIAGNOSTICO_LOGIN_FUNCIONARIOS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-12-09T00:18:11.501Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

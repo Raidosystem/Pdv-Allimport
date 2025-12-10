@@ -376,137 +376,66 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   /**
-   * Login local (sem Supabase Auth)
+   * Login local (MANTÉM sessão Supabase Auth original)
    */
   const signInLocal = async (userData: any) => {
     console.log('🔐 Login local iniciado:', userData)
     
-    // 🚨 CRITICAL: Fazer logout da sessão admin ANTES de criar sessão do funcionário
-    console.log('🚪 Fazendo logout da sessão admin antes de criar sessão do funcionário...')
-    await supabase.auth.signOut()
-    
-    // Buscar email da empresa (que já está logada)
-    let empresaEmail = user?.email || 'local@user.com'
+    // ✅ MANTER SESSÃO ORIGINAL DO SUPABASE AUTH
+    // Apenas adicionar metadados do funcionário ao contexto
+    console.log('✅ Mantendo sessão Supabase Auth original')
     
     try {
-      // Se temos empresa_id, buscar o email dela
-      if (userData.empresa_id && empresaEmail === 'local@user.com') {
-        const { data: empresaData } = await supabase
-          .from('empresas')
-          .select('email')
-          .eq('id', userData.empresa_id)
-          .single()
-        
-        if (empresaData?.email) {
-          empresaEmail = empresaData.email
-          console.log('📧 Email da empresa encontrado:', empresaEmail)
-        }
+      // Obter sessão atual (do admin/dono da empresa)
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      
+      if (!currentSession?.user) {
+        console.error('❌ Nenhuma sessão ativa encontrada')
+        throw new Error('Sessão expirada. Faça login novamente.')
       }
       
-      // Tentar fazer login real no Supabase usando o email do funcionário
-      // Isso criará uma sessão válida que o RLS reconhece
-      if (userData.email && userData.token) {
-        console.log('🔑 Tentando autenticação real com email:', userData.email)
-        
-        // Verificar se existe uma sessão válida do Supabase
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.warn('⚠️ Erro ao verificar sessão:', sessionError)
-        }
-        
-        // Se não há sessão válida, criar uma sessão "fake" mas funcional
-        // usando setSession com os dados do funcionário
-        const localUser = {
-          id: userData.user_id || userData.id, // ✅ USAR user_id DO FUNCIONÁRIO
-          email: userData.email || empresaEmail, // ✅ EMAIL DO FUNCIONÁRIO
-          user_metadata: {
-            nome: userData.nome,
-            tipo_admin: userData.tipo_admin,
-            empresa_id: userData.empresa_id,
-            funcionario_id: userData.funcionario_id
-          },
-          app_metadata: {
-            provider: 'local',
-            empresa_id: userData.empresa_id
-          },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          role: 'authenticated'
-        } as User
-
-        const localSession = {
-          access_token: userData.token || 'local-session-token',
-          refresh_token: userData.token || 'local-refresh-token',
-          token_type: 'bearer',
-          user: localUser,
-          expires_at: Math.floor(Date.now() / 1000) + 28800,
-          expires_in: 28800
-        } as Session
-
-        // Tentar definir a sessão no Supabase
-        const { error: setSessionError } = await supabase.auth.setSession({
-          access_token: localSession.access_token,
-          refresh_token: localSession.refresh_token
-        })
-
-        if (setSessionError) {
-          console.warn('⚠️ Não foi possível definir sessão no Supabase:', setSessionError)
-          console.log('💡 Usando sessão local sem integração Supabase auth')
-        } else {
-          console.log('✅ Sessão definida no Supabase com sucesso')
-        }
-
-        setUser(localUser)
-        setSession(localSession)
-        
-        // ✅ NÃO usamos mais localStorage - cada funcionário tem conta própria no Supabase Auth
-        console.log('✅ Login local completo:', localUser)
-        console.log('🔑 User ID (user_id do funcionário):', userData.user_id || userData.id)
-        console.log('🏢 Empresa ID:', userData.empresa_id)
-        
-        return
-      }
-    } catch (error) {
-      console.error('❌ Erro no login local:', error)
-    }
-    
-    // Fallback: criar user/session básico
-    const localUser = {
-      id: userData.user_id || userData.id, // ✅ USAR user_id DO FUNCIONÁRIO, NÃO empresa_id
-      email: userData.email || empresaEmail, // ✅ EMAIL DO FUNCIONÁRIO se disponível
-      user_metadata: {
+      // Salvar dados do funcionário no localStorage para manter contexto
+      const funcionarioContext = {
+        funcionario_id: userData.id,
+        user_id: userData.user_id,
         nome: userData.nome,
+        email: userData.email,
         tipo_admin: userData.tipo_admin,
         empresa_id: userData.empresa_id,
-        funcionario_id: userData.funcionario_id
-      },
-      app_metadata: {},
-      aud: 'authenticated',
-      created_at: new Date().toISOString()
-    } as User
-
-    const localSession = {
-      access_token: userData.token,
-      token_type: 'bearer',
-      user: localUser,
-      expires_at: Math.floor(Date.now() / 1000) + 28800,
-      expires_in: 28800
-    } as Session
-
-    setUser(localUser)
-    setSession(localSession)
-    
-    // ✅ NÃO usamos mais localStorage - cada funcionário tem conta própria no Supabase Auth
-    console.log('✅ Login local completo (modo fallback):', localUser)
-    console.log('🔑 User ID (user_id do funcionário):', userData.user_id || userData.id)
-    console.log('🏢 Empresa ID:', userData.empresa_id)
-    
-    // 🔔 NOTIFICAR o PermissionsProvider para recarregar permissões
-    window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
-      detail: { userId: userData.user_id || userData.id }
-    }))
-    console.log('🔔 Evento pdv_permissions_reload disparado')
+        funcao_id: userData.funcao_id,
+        funcao_nome: userData.funcao_nome,
+        permissions: userData.permissions || []
+      }
+      
+      localStorage.setItem('pdv_funcionario_context', JSON.stringify(funcionarioContext))
+      console.log('✅ Contexto do funcionário salvo:', funcionarioContext)
+      
+      // Atualizar user metadata para incluir dados do funcionário
+      const updatedUser = {
+        ...currentSession.user,
+        user_metadata: {
+          ...currentSession.user.user_metadata,
+          funcionario_context: funcionarioContext
+        }
+      } as User
+      
+      setUser(updatedUser)
+      
+      // Disparar evento para recarregar permissões
+      window.dispatchEvent(new CustomEvent('pdv_permissions_reload', {
+        detail: funcionarioContext
+      }))
+      
+      console.log('✅ Login local completo (sessão Supabase mantida)')
+      console.log('🔑 Funcionário ID:', userData.id)
+      console.log('👤 User ID (auth):', currentSession.user.id)
+      console.log('🏢 Empresa ID:', userData.empresa_id)
+      console.log('🔔 Evento pdv_permissions_reload disparado')
+      
+    } catch (error) {
+      console.error('❌ Erro no login local:', error)
+      throw error
+    }
   }
 
   const value: AuthContextType = {

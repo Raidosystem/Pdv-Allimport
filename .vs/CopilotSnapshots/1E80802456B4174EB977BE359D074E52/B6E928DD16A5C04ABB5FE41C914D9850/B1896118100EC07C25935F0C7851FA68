@@ -1,0 +1,287 @@
+﻿# ⚡ GUIA RÁPIDO: Editar Permissões de Funcionário
+
+## 🎯 3 Passos Simples
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PASSO 1: ACESSAR FUNÇÕES & PERMISSÕES                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Dashboard → Menu Lateral → Administração                   │
+│                           → Funções & Permissões            │
+│                                                             │
+│  📁 src/pages/admin/AdminRolesPermissionsPageNew.tsx       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  PASSO 2: CLICAR EM "PERMISSÕES" NA FUNÇÃO DO USUÁRIO      │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │ 🛡️ Vendedor  │  │ 🛡️ Gerente   │  │ 🛡️ Caixa     │    │
+│  │              │  │              │  │              │    │
+│  │ Acesso a     │  │ Acesso       │  │ Acesso ao    │    │
+│  │ vendas       │  │ completo     │  │ caixa        │    │
+│  │              │  │              │  │              │    │
+│  │ [👁️ Permissões]│  │ [👁️ Permissões]│  │ [👁️ Permissões]│
+│  │    ↑↑↑       │  │              │  │              │    │
+│  │  CLIQUE AQUI │  │              │  │              │    │
+│  └──────────────┘  └──────────────┘  └──────────────┘    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  PASSO 3: MARCAR/DESMARCAR E SALVAR                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ▼ 🛒 Vendas                                               │
+│     ☑️ vendas [ Criar ]       ← Marcar/desmarcar           │
+│     ☑️ vendas [ Visualizar ]                               │
+│     ☑️ vendas [ Editar ]                                   │
+│     ☐ vendas [ Excluir ]                                   │
+│                                                             │
+│  ▼ 📦 Produtos                                             │
+│     ☑️ produtos [ Visualizar ]                             │
+│     ☐ produtos [ Criar ]                                   │
+│                                                             │
+│  [Cancelar]      [✓ Salvar Permissões (X)]  ← SALVAR      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Estrutura do Sistema
+
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  👤 FUNCIONÁRIO (Jennifer)                         │
+│  ├─ nome: "Jennifer Sousa"                         │
+│  ├─ email: "sousajenifer895@gmail.com"            │
+│  └─ funcao_id: "abc123..." ────────┐              │
+│                                      │              │
+│  🔑 FUNÇÃO (Vendedor)               │              │
+│  ├─ id: "abc123..."   ◄─────────────┘              │
+│  ├─ nome: "Vendedor"                               │
+│  └─ permissoes: ────────┐                          │
+│                          │                          │
+│  ✅ PERMISSÕES          │                          │
+│  ├─ vendas:create      ◄┘                          │
+│  ├─ vendas:read                                    │
+│  ├─ vendas:update                                  │
+│  ├─ produtos:read                                  │
+│  ├─ clientes:create                                │
+│  ├─ clientes:read                                  │
+│  └─ clientes:update                                │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎨 Categorias de Permissões
+
+```
+🛒 VENDAS
+├─ create      → Criar nova venda
+├─ read        → Visualizar vendas
+├─ update      → Editar vendas
+└─ delete      → Excluir vendas
+
+📦 PRODUTOS
+├─ create      → Cadastrar produtos
+├─ read        → Visualizar produtos
+├─ update      → Editar produtos
+└─ delete      → Excluir produtos
+
+👥 CLIENTES
+├─ create      → Cadastrar clientes
+├─ read        → Visualizar clientes
+├─ update      → Editar clientes
+└─ delete      → Excluir clientes
+
+💰 FINANCEIRO
+├─ read        → Visualizar relatórios
+├─ caixa       → Abrir/fechar caixa
+└─ manage      → Gerenciar finanças
+
+🔧 ORDENS DE SERVIÇO
+├─ create      → Criar O.S.
+├─ read        → Visualizar O.S.
+├─ update      → Editar O.S.
+└─ delete      → Excluir O.S.
+
+📊 RELATÓRIOS
+├─ vendas      → Relatório de vendas
+├─ estoque     → Relatório de estoque
+└─ financeiro  → Relatório financeiro
+
+⚙️ CONFIGURAÇÕES
+├─ empresa     → Editar dados empresa
+└─ sistema     → Configurações gerais
+
+👑 ADMINISTRAÇÃO
+├─ usuarios    → Gerenciar usuários
+├─ funcoes     → Gerenciar funções
+└─ permissoes  → Gerenciar permissões
+```
+
+---
+
+## 🚀 Exemplos de Perfis Comuns
+
+### 👨‍💼 GERENTE (Acesso Total)
+```
+☑️ TODAS as permissões de:
+   ├─ Vendas
+   ├─ Produtos
+   ├─ Clientes
+   ├─ Financeiro
+   ├─ Ordens de Serviço
+   ├─ Relatórios
+   └─ Configurações
+☐ Administração (apenas admin empresa)
+```
+
+### 🛒 VENDEDOR
+```
+☑️ Vendas (criar, ler, editar)
+☑️ Produtos (apenas ler)
+☑️ Clientes (criar, ler, editar)
+☑️ Ordens de Serviço (criar, ler, editar)
+☐ Financeiro
+☐ Relatórios
+☐ Configurações
+☐ Administração
+```
+
+### 💵 CAIXA
+```
+☑️ Vendas (apenas ler)
+☑️ Produtos (apenas ler)
+☑️ Clientes (apenas ler)
+☑️ Financeiro (abrir/fechar caixa)
+☐ Ordens de Serviço
+☐ Relatórios
+☐ Configurações
+☐ Administração
+```
+
+### 🔧 TÉCNICO
+```
+☐ Vendas
+☑️ Produtos (apenas ler)
+☑️ Clientes (apenas ler)
+☐ Financeiro
+☑️ Ordens de Serviço (criar, ler, editar)
+☐ Relatórios
+☐ Configurações
+☐ Administração
+```
+
+---
+
+## 🛠️ SQL Rápido (Avançado)
+
+### Ver Permissões de um Funcionário
+```sql
+SELECT 
+  f.nome as funcionario,
+  func.nome as funcao,
+  p.recurso,
+  p.acao
+FROM funcionarios f
+JOIN funcoes func ON f.funcao_id = func.id
+JOIN funcao_permissoes fp ON fp.funcao_id = func.id
+JOIN permissoes p ON p.id = fp.permissao_id
+WHERE f.email = 'email@exemplo.com'
+ORDER BY p.recurso, p.acao;
+```
+
+### Adicionar Permissão Única
+```sql
+INSERT INTO funcao_permissoes (funcao_id, permissao_id, empresa_id)
+SELECT 
+  f.funcao_id,
+  p.id,
+  f.empresa_id
+FROM funcionarios f, permissoes p
+WHERE f.email = 'email@exemplo.com'
+AND p.recurso = 'vendas'
+AND p.acao = 'create';
+```
+
+### Remover Permissão Única
+```sql
+DELETE FROM funcao_permissoes
+WHERE funcao_id IN (
+  SELECT funcao_id FROM funcionarios WHERE email = 'email@exemplo.com'
+)
+AND permissao_id IN (
+  SELECT id FROM permissoes WHERE recurso = 'vendas' AND acao = 'delete'
+);
+```
+
+---
+
+## ⚠️ IMPORTANTE
+
+### ✅ Após Editar Permissões:
+1. Funcionário deve fazer **LOGOUT**
+2. Funcionário deve fazer **LOGIN** novamente
+3. Permissões serão recarregadas automaticamente
+
+### ❌ Erros Comuns:
+- **"Não mudou"** → Não fez logout/login
+- **"Modal não abre"** → Sem permissão de admin
+- **"Não salva"** → Problema de RLS no banco
+- **"Módulo sumiu"** → Permissão foi removida
+
+---
+
+## 📞 Suporte
+
+### Arquivos Relacionados:
+- `src/pages/admin/AdminRolesPermissionsPageNew.tsx` - Interface de edição
+- `src/hooks/usePermissions.tsx` - Hook de permissões
+- `src/modules/auth/AuthContext.tsx` - Context de autenticação
+- `GUIA_VISUAL_EDITAR_PERMISSOES_USUARIO.md` - Guia completo
+
+### Comandos de Debug:
+```bash
+# Ver logs do navegador
+F12 → Console → Filtrar "permission"
+
+# Testar permissão específica
+can('vendas', 'create')  // true ou false
+```
+
+---
+
+## 🎯 Checklist Final
+
+- [ ] Acessou "Funções & Permissões"
+- [ ] Encontrou a função do usuário
+- [ ] Clicou em "👁️ Permissões"
+- [ ] Modal de permissões abriu
+- [ ] Marcou/desmarcou permissões
+- [ ] Clicou em "Salvar Permissões"
+- [ ] Mensagem de sucesso apareceu
+- [ ] Usuário fez logout
+- [ ] Usuário fez login novamente
+- [ ] Permissões aplicadas ✅
+
+---
+
+**⏱️ Tempo Estimado:** 2-5 minutos  
+**🎓 Dificuldade:** Fácil  
+**🔧 Ferramentas:** Apenas navegador web  
+**📱 Acesso:** Administrador da empresa
+
+---
+
+**Criado por:** Sistema PDV Allimport  
+**Versão:** 1.0  
+**Última Atualização:** 2024

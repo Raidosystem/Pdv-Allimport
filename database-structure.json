@@ -1,0 +1,132 @@
+{
+  "timestamp": "2025-12-07T23:34:13.290Z",
+  "tables": {
+    "user_approvals": {
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "user_id",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "email",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "full_name",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "company_name",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "status",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "approved_by",
+          "data_type": "object",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "approved_at",
+          "data_type": "object",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "user_role",
+          "data_type": "string",
+          "is_nullable": "YES",
+          "column_default": null
+        }
+      ],
+      "policies": [],
+      "hasRLS": false
+    },
+    "email_subscriptions": {
+      "columns": [],
+      "policies": [],
+      "hasRLS": false
+    }
+  },
+  "functions": [
+    {
+      "routine_name": "check_subscription_status",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    },
+    {
+      "routine_name": "get_user_permissions",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    },
+    {
+      "routine_name": "update_user_approval_status",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    },
+    {
+      "routine_name": "create_empresa_for_user",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    },
+    {
+      "routine_name": "send_whatsapp_code",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    },
+    {
+      "routine_name": "verify_whatsapp_code",
+      "routine_type": "FUNCTION",
+      "return_type": "json"
+    }
+  ],
+  "triggers": [
+    {
+      "trigger_name": "on_auth_user_created",
+      "table_name": "auth.users"
+    },
+    {
+      "trigger_name": "handle_new_user",
+      "table_name": "auth.users"
+    },
+    {
+      "trigger_name": "update_updated_at",
+      "table_name": "produtos"
+    },
+    {
+      "trigger_name": "update_updated_at",
+      "table_name": "clientes"
+    }
+  ]
+}

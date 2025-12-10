@@ -234,6 +234,7 @@ export interface PermissaoContext {
   is_admin_empresa: boolean; // Novo: Admin da empresa (cliente)
   tipo_admin: 'super_admin' | 'admin_empresa' | 'funcionario';
   escopo_lojas: string[];
+  funcionario?: any; // Dados completos do funcionário
 }
 
 export interface UsePermissionsReturn {

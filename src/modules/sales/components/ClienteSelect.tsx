@@ -12,9 +12,14 @@ import InputMask from 'react-input-mask'
 interface ClienteSelectProps {
   selectedCustomer?: Customer | null
   onCustomerSelect: (customer: Customer | null) => void
+  allowRemove?: boolean // Controla se pode remover cliente selecionado (padrão: true)
 }
 
-export function ClienteSelect({ selectedCustomer, onCustomerSelect }: ClienteSelectProps) {
+export function ClienteSelect({ 
+  selectedCustomer, 
+  onCustomerSelect,
+  allowRemove = true 
+}: ClienteSelectProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(false)
@@ -148,15 +153,17 @@ export function ClienteSelect({ selectedCustomer, onCustomerSelect }: ClienteSel
             </div>
           </div>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRemoveCustomer}
-            className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 transition-colors"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Remover
-          </Button>
+          {allowRemove && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRemoveCustomer}
+              className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 transition-colors"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Remover
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">

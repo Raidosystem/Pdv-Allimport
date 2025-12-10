@@ -67,7 +67,7 @@ export async function checkVersion(onNewVersion?: () => void): Promise<void> {
 /**
  * Limpa todos os caches do navegador
  */
-async function clearAllCaches(): Promise<void> {
+export async function clearAllCaches(): Promise<void> {
   try {
     // 1. Limpar Cache API
     if ('caches' in window) {
@@ -84,7 +84,7 @@ async function clearAllCaches(): Promise<void> {
       for (const reg of registrations) {
         try {
           await reg.unregister()
-        } catch (err) {
+        } catch {
           // Service Worker ativo pode dar erro - será removido no próximo reload
           console.log('⚠️ Service Worker ativo, será removido no próximo carregamento')
         }

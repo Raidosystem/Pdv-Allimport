@@ -1,12 +1,5 @@
 import { useEffect } from 'react'
 
-// Declarar tipo global para window
-declare global {
-  interface Window {
-    showCacheClearButton: () => void
-  }
-}
-
 /**
  * Hook para detectar e resolver problemas de cache
  */
@@ -115,6 +108,7 @@ export function CacheErrorBoundary({ children }: { children: React.ReactNode }) 
 }
 
 // Função global para mostrar botão de cache em caso de erro
+// @ts-ignore - Função global para debug
 window.showCacheClearButton = () => {
   const button = document.getElementById('cache-clear-button')
   if (button) {

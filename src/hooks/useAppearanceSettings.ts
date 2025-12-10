@@ -20,8 +20,6 @@ const DEFAULT_SETTINGS: AppearanceSettings = {
   sidebar_compacta: false
 }
 
-const STORAGE_KEY = 'pdv-appearance-settings'
-
 export function useAppearanceSettings() {
   const { user } = useAuth()
   const [settings, setSettings] = useState<AppearanceSettings>(DEFAULT_SETTINGS)
@@ -30,15 +28,7 @@ export function useAppearanceSettings() {
   // Carregar configurações
   const loadSettings = useCallback(async () => {
     try {
-      // 1. Tentar carregar do localStorage primeiro (mais rápido)
-      const localSettings = localStorage.getItem(STORAGE_KEY)
-      if (localSettings) {
-        const parsed = JSON.parse(localSettings)
-        setSettings(parsed)
-        applySettings(parsed)
-      }
-
-      // 2. Se usuário logado, carregar do Supabase
+      // Carregar APENAS do Supabase (100% online)
       if (user?.id) {
         const { data, error } = await supabase
           .from('user_settings')
@@ -50,13 +40,20 @@ export function useAppearanceSettings() {
           const serverSettings = data.appearance_settings as AppearanceSettings
           setSettings(serverSettings)
           applySettings(serverSettings)
-          
-          // Sincronizar com localStorage
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(serverSettings))
+        } else {
+          // Usar configurações padrão se não encontrar
+          setSettings(DEFAULT_SETTINGS)
+          applySettings(DEFAULT_SETTINGS)
         }
+      } else {
+        // Sem usuário logado, usar padrão
+        setSettings(DEFAULT_SETTINGS)
+        applySettings(DEFAULT_SETTINGS)
       }
     } catch (error) {
       console.error('Erro ao carregar configurações de aparência:', error)
+      setSettings(DEFAULT_SETTINGS)
+      applySettings(DEFAULT_SETTINGS)
     } finally {
       setLoading(false)
     }
@@ -68,10 +65,7 @@ export function useAppearanceSettings() {
       setSettings(newSettings)
       applySettings(newSettings)
 
-      // Salvar no localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings))
-
-      // Salvar no Supabase se usuário logado
+      // Salvar APENAS no Supabase (100% online)
       if (user?.id) {
         const { error } = await supabase
           .from('user_settings')
@@ -85,10 +79,14 @@ export function useAppearanceSettings() {
 
         if (error) {
           console.error('Erro ao salvar no Supabase:', error)
+          return { success: false, error }
         }
+        
+        return { success: true }
+      } else {
+        console.warn('Não é possível salvar sem usuário logado')
+        return { success: false, error: 'Usuário não logado' }
       }
-
-      return { success: true }
     } catch (error) {
       console.error('Erro ao salvar configurações:', error)
       return { success: false, error }

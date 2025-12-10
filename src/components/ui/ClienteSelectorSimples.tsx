@@ -24,13 +24,15 @@ interface ClienteSelectorProps {
   clienteSelecionado?: Cliente | null
   titulo?: string
   showCard?: boolean
+  allowRemove?: boolean
 }
 
 export function ClienteSelector({ 
   onClienteSelect, 
   clienteSelecionado, 
   titulo = "Dados do Cliente",
-  showCard = true
+  showCard = true,
+  allowRemove = true
 }: ClienteSelectorProps) {
   const [busca, setBusca] = useState('')
   const [searchType, setSearchType] = useState<SearchType>('geral')
@@ -212,17 +214,19 @@ export function ClienteSelector({
                   </div>
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-3">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  onClick={handleClienteRemove}
-                  className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                >
-                  <X className="w-4 h-4" />
-                  Remover
-                </Button>
-              </div>
+              {allowRemove && (
+                <div className="flex-shrink-0 ml-3">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={handleClienteRemove}
+                    className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                  >
+                    <X className="w-4 h-4" />
+                    Remover
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         ) : (

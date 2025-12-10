@@ -871,6 +871,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
         <ClienteSelector 
           onClienteSelect={setClienteSelecionado}
           clienteSelecionado={clienteSelecionado}
+          allowRemove={!ordem}
         />
 
         {/* Seção: Equipamentos Anteriores - APENAS no modo de CRIAÇÃO */}

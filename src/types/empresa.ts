@@ -21,7 +21,8 @@ export interface Funcionario {
   email: string;
   telefone?: string;
   cargo: string;
-  ativo: boolean;
+  ativo: boolean; // Mantido para compatibilidade com código legado
+  status?: 'ativo' | 'pausado' | 'inativo'; // Nova coluna preferencial
   permissoes: FuncionarioPermissoes;
   created_at: string;
   updated_at: string;

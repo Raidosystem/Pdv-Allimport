@@ -43,11 +43,98 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
       console.log('🔍 [usePermissions] user.user_metadata:', user.user_metadata);
-      console.log('🔑 [usePermissions] Buscando funcionário por user.id:', user.id);
       
-      // ✅ BUSCAR FUNCIONÁRIO APENAS POR user_id (auth.uid())
-      // Cada funcionário tem sua própria conta no Supabase Auth
-      console.log('🔍 [usePermissions] Buscando funcionário por user_id');
+      // ✅ VERIFICAR SE HÁ CONTEXTO DE FUNCIONÁRIO NO LOCALSTORAGE
+      const funcionarioContextStr = localStorage.getItem('pdv_funcionario_context');
+      let funcionarioContext = null;
+      
+      if (funcionarioContextStr) {
+        try {
+          funcionarioContext = JSON.parse(funcionarioContextStr);
+          console.log('📋 [usePermissions] Contexto de funcionário encontrado:', funcionarioContext);
+        } catch (e) {
+          console.error('❌ Erro ao parsear contexto:', e);
+        }
+      }
+      
+      // ✅ SE TEM CONTEXTO DE FUNCIONÁRIO, BUSCAR SUAS PERMISSÕES
+      if (funcionarioContext && funcionarioContext.funcionario_id) {
+        console.log('🔍 [usePermissions] Buscando funcionário por ID:', funcionarioContext.funcionario_id);
+        
+        const { data: funcionarioData, error } = await supabase
+          .from('funcionarios')
+          .select(`
+            *,
+            funcoes:funcao_id (
+              id,
+              nome,
+              escopo_lojas,
+              funcao_permissoes (
+                permissoes (
+                  id,
+                  recurso,
+                  acao,
+                  descricao
+                )
+              )
+            )
+          `)
+          .eq('id', funcionarioContext.funcionario_id)
+          .maybeSingle();
+
+        if (funcionarioData) {
+          console.log('✅ [usePermissions] Funcionário encontrado:', funcionarioData.nome);
+          console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
+          
+          // Processar permissões do funcionário
+          const permissoes: string[] = [];
+          const funcoes = funcionarioData.funcoes;
+          
+          if (funcoes) {
+            console.log('📋 [usePermissions] funcoes:', funcoes);
+            console.log('🔑 [usePermissions] Processando função:', funcoes.nome);
+            console.log('📦 [usePermissions] funcao_permissoes:', funcoes.funcao_permissoes);
+            
+            if (funcoes.funcao_permissoes && Array.isArray(funcoes.funcao_permissoes)) {
+              funcoes.funcao_permissoes.forEach((fp: any) => {
+                if (fp.permissoes) {
+                  const permissaoKey = `${fp.permissoes.recurso}:${fp.permissoes.acao}`;
+                  permissoes.push(permissaoKey);
+                  console.log(`  ✅ Permissão adicionada: ${permissaoKey}`);
+                }
+              });
+            }
+          }
+          
+          console.log('🎯 [usePermissions] Total de permissões extraídas:', permissoes.length);
+          console.log('📋 [usePermissions] Permissões:', permissoes);
+          
+          const newContext: PermissaoContext = {
+            empresa_id: funcionarioData.empresa_id,
+            user_id: user.id,
+            funcionario_id: funcionarioData.id,
+            funcoes: [funcoes?.nome || 'funcionario'],
+            permissoes: permissoes,
+            tipo_admin: funcionarioData.tipo_admin || 'funcionario',
+            is_admin: funcionarioData.tipo_admin === 'admin_empresa',
+            is_admin_empresa: funcionarioData.tipo_admin === 'admin_empresa',
+            is_super_admin: false,
+            funcionario: funcionarioData,
+            escopo_lojas: []
+          };
+          
+          console.log('🎉 [usePermissions] Contexto final criado:', newContext);
+          console.log('   📊 Total permissões no contexto:', newContext.permissoes.length);
+          console.log('   🔑 is_admin:', newContext.is_admin);
+          console.log('   🏢 is_admin_empresa:', newContext.is_admin_empresa);
+          
+          setContext(newContext);
+          return;
+        }
+      }
+      
+      // ✅ CASO CONTRÁRIO, BUSCAR FUNCIONÁRIO POR user_id (auth.uid())
+      console.log('🔑 [usePermissions] Buscando funcionário por user.id:', user.id);
       const { data: funcionarioData, error } = await supabase
         .from('funcionarios')
         .select(`

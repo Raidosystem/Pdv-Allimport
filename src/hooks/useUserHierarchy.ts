@@ -124,7 +124,7 @@ export function useUserHierarchy() {
         { name: 'clients', display_name: 'Clientes', description: 'Gerenciar clientes', icon: 'Users', path: '/clientes', permission: 'clientes', can_view: true, can_create: true, can_edit: true, can_delete: true },
         { name: 'products', display_name: 'Produtos', description: 'Controle de estoque', icon: 'Package', path: '/produtos', permission: 'produtos', can_view: true, can_create: true, can_edit: true, can_delete: true },
         { name: 'cashier', display_name: 'Caixa', description: 'Controle de caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa', can_view: true, can_create: true, can_edit: true, can_delete: true },
-        { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico', can_view: true, can_create: true, can_edit: true, can_delete: true },
+        { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens', can_view: true, can_create: true, can_edit: true, can_delete: true },
         { name: 'reports', display_name: 'Relatórios', description: 'Relatórios e análises', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios', can_view: true, can_create: true, can_edit: true, can_delete: true }
       ];
     }
@@ -138,7 +138,7 @@ export function useUserHierarchy() {
       { name: 'clients', display_name: 'Clientes', description: 'Gerenciar clientes', icon: 'Users', path: '/clientes', permission: 'clientes' },
       { name: 'products', display_name: 'Produtos', description: 'Controle de estoque', icon: 'Package', path: '/produtos', permission: 'produtos' },
       { name: 'cashier', display_name: 'Caixa', description: 'Controle de caixa', icon: 'DollarSign', path: '/caixa', permission: 'caixa' },
-      { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens_servico' },
+      { name: 'orders', display_name: 'OS', description: 'Ordens de serviço', icon: 'FileText', path: '/ordens-servico', permission: 'ordens' },
       { name: 'reports', display_name: 'Relatórios', description: 'Relatórios e análises', icon: 'BarChart3', path: '/relatorios', permission: 'relatorios' }
     ];
     

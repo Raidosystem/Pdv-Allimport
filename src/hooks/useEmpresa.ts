@@ -261,12 +261,35 @@ export function useEmpresa() {
   // Ativar/desativar funcionário
   const toggleFuncionario = async (funcionarioId: string, ativo: boolean) => {
     try {
+      // Buscar funcionário atual para verificar status
+      const { data: funcionarioAtual, error: fetchError } = await supabase
+        .from('funcionarios')
+        .select('status')
+        .eq('id', funcionarioId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Determinar novo status baseado no parâmetro ativo
+      const novoStatus = ativo ? 'ativo' : 'pausado';
+
+      // Atualizar funcionário
       const { error } = await supabase
         .from('funcionarios')
-        .update({ ativo })
+        .update({ status: novoStatus })
         .eq('id', funcionarioId);
 
       if (error) throw error;
+
+      // Atualizar também o login_funcionarios
+      const { error: loginError } = await supabase
+        .from('login_funcionarios')
+        .update({ ativo })
+        .eq('funcionario_id', funcionarioId);
+
+      if (loginError) {
+        console.error('Aviso: Erro ao atualizar login_funcionarios:', loginError);
+      }
 
       await fetchFuncionarios();
       return { success: true };

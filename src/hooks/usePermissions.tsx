@@ -133,6 +133,50 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         }
       }
       
+      // ✅ PRIMEIRO: VERIFICAR SE É OWNER NA TABELA user_approvals
+      console.log('🔍 [usePermissions] Verificando se é OWNER em user_approvals...');
+      const { data: userApproval, error: approvalError } = await supabase
+        .from('user_approvals')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      console.log('📦 [usePermissions] user_approvals resultado:', userApproval);
+
+      // ✅ SE É OWNER → DAR TODAS AS PERMISSÕES
+      if (userApproval && userApproval.user_role === 'owner') {
+        console.log('✅ [usePermissions] USUÁRIO É OWNER DA EMPRESA!');
+        
+        const ownerContext: PermissaoContext = {
+          empresa_id: user.id,
+          user_id: user.id,
+          funcionario_id: user.id,
+          funcoes: ['owner', 'admin_empresa'],
+          permissoes: [
+            // Todas as permissões para OWNER
+            'vendas:read', 'vendas:create', 'vendas:update', 'vendas:delete',
+            'produtos:read', 'produtos:create', 'produtos:update', 'produtos:delete',
+            'clientes:read', 'clientes:create', 'clientes:update', 'clientes:delete',
+            'caixa:read', 'caixa:open', 'caixa:close', 'caixa:supply', 'caixa:withdraw',
+            'ordens_servico:read', 'ordens_servico:create', 'ordens_servico:update', 'ordens_servico:delete',
+            'relatorios:read', 'relatorios:export',
+            'configuracoes:read', 'configuracoes:update',
+            'backup:create', 'backup:read',
+            'administracao.usuarios:create', 'administracao.usuarios:read', 'administracao.usuarios:update', 'administracao.usuarios:delete',
+            'administracao.funcoes:create', 'administracao.funcoes:read', 'administracao.funcoes:update', 'administracao.funcoes:delete'
+          ],
+          is_admin: true,
+          is_super_admin: false,
+          is_admin_empresa: true,
+          tipo_admin: 'admin_empresa',
+          escopo_lojas: []
+        };
+        
+        setContext(ownerContext);
+        console.log('🎯 [usePermissions] OWNER CONTEXT CRIADO:', ownerContext);
+        return;
+      }
+
       // ✅ CASO CONTRÁRIO, BUSCAR FUNCIONÁRIO POR user_id (auth.uid())
       console.log('🔑 [usePermissions] Buscando funcionário por user.id:', user.id);
       const { data: funcionarioData, error } = await supabase
@@ -159,7 +203,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       if (funcionarioData) {
         console.log('✅ [usePermissions] Funcionário encontrado:', funcionarioData.nome);
       } else {
-        console.log('ℹ️ [usePermissions] Nenhum funcionário cadastrado (normal para donos de empresa)');
+        console.log('ℹ️ [usePermissions] Nenhum funcionário cadastrado');
       }
       
       if (error && error.code !== 'PGRST116') {
@@ -168,7 +212,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
       console.log('📦 [usePermissions] Resposta funcionarioData:', funcionarioData);
 
-      // ✅ SE NÃO TEM FUNCIONÁRIO: Verificar se é dono da empresa (primeiro usuário cadastrado)
+      // ✅ SE NÃO TEM FUNCIONÁRIO: Verificar se é super admin
       if (!funcionarioData) {
         console.log('ℹ️ [usePermissions] Usuário sem registro de funcionário');
         

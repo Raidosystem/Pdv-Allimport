@@ -37,8 +37,18 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     return <>{children}</>
   }
 
+  // 🚨 CRÍTICO: Super admin NUNCA pode ser bloqueado!
+  const SUPER_ADMIN_EMAIL = 'novaradiosystem@outlook.com'
+  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+  
+  if (isSuperAdmin) {
+    console.log('✅ [SubscriptionGuard] SUPER ADMIN detectado - acesso TOTAL garantido')
+    return <>{children}</>
+  }
+
   // Admins sempre têm acesso
   if (isAdmin()) {
+    console.log('✅ [SubscriptionGuard] Admin detectado - acesso garantido')
     return <>{children}</>
   }
 

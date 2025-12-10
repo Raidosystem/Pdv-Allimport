@@ -10,10 +10,28 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // 🚨 SUPER ADMIN sempre tem acesso TOTAL
+  const SUPER_ADMIN_EMAIL = 'novaradiosystem@outlook.com'
+  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
 
   const loadSubscriptionData = async () => {
     if (!user?.email) {
       console.log('🔍 [useSubscription] Sem email de usuário, abortando...')
+      setLoading(false)
+      return
+    }
+    
+    // 🚨 Super admin bypassa verificação de assinatura
+    if (isSuperAdmin) {
+      console.log('✅ [useSubscription] SUPER ADMIN detectado - acesso TOTAL sem verificação')
+      setSubscriptionStatus({
+        has_subscription: true,
+        status: 'active',
+        access_allowed: true,
+        days_remaining: 999999,
+        trial_end_date: undefined
+      })
       setLoading(false)
       return
     }

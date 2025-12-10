@@ -127,6 +127,11 @@ export function AdminDashboard() {
         const empresa = empresaMap.get(user.user_id)
         const sub = subscriptionMap.get(user.user_id)
         
+        // 🔍 DEBUG: Ver dados de cada usuário
+        console.log('🔍 Usuário:', user.email)
+        console.log('  📊 Empresa:', empresa)
+        console.log('  📊 Subscription:', sub)
+        
         // Calcular status e dias restantes
         let status: 'trial' | 'active' | 'expired' | 'cancelled' | 'pending' = 'pending'
         let daysRemaining = 0
@@ -134,20 +139,27 @@ export function AdminDashboard() {
         let planType = 'trial'
 
         // Priorizar dados da empresa (teste de 15 dias)
-        if (empresa && empresa.tipo_conta === 'teste_ativo' && empresa.data_fim_teste) {
-          status = 'trial'
-          endDate = new Date(empresa.data_fim_teste)
-          planType = 'trial'
+        // Aceitar qualquer tipo_conta que contenha 'teste' ou 'trial'
+        if (empresa && empresa.data_fim_teste) {
+          const tipoContaLower = (empresa.tipo_conta || '').toLowerCase()
+          if (tipoContaLower.includes('teste') || tipoContaLower.includes('trial')) {
+            status = 'trial'
+            endDate = new Date(empresa.data_fim_teste)
+            planType = 'trial'
+            console.log('  ✅ Usando dados da EMPRESA (teste)')
+          }
         }
         // Se tem subscription, usar ela
-        else if (sub) {
+        if (!endDate && sub) {
           status = sub.status
           planType = sub.plan_type || 'trial'
           
           if (sub.status === 'trial' && sub.trial_end_date) {
             endDate = new Date(sub.trial_end_date)
+            console.log('  ✅ Usando SUBSCRIPTION (trial)')
           } else if (sub.status === 'active' && sub.subscription_end_date) {
             endDate = new Date(sub.subscription_end_date)
+            console.log('  ✅ Usando SUBSCRIPTION (active)')
           }
         }
 
@@ -156,10 +168,15 @@ export function AdminDashboard() {
           const diffTime = endDate.getTime() - now.getTime()
           daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
           
+          console.log('  📅 Data fim:', endDate)
+          console.log('  📊 Dias restantes:', daysRemaining)
+          
           // Atualizar status se expirou
           if (daysRemaining === 0 && (status === 'trial' || status === 'active')) {
             status = 'expired'
           }
+        } else {
+          console.log('  ⚠️ SEM DATA DE FIM!')
         }
 
         return {

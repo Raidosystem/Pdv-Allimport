@@ -153,28 +153,28 @@ export function AdminDashboard() {
         let endDate: Date | null = null
         let planType = 'trial'
 
-        // Priorizar dados da empresa (teste de 15 dias)
-        // Aceitar qualquer tipo_conta que contenha 'teste' ou 'trial'
-        if (empresa && empresa.data_fim_teste) {
+        // PRIORIDADE 1: Se tem subscription ACTIVE, usar ela (dias pagos têm prioridade)
+        if (sub && sub.status === 'active' && sub.subscription_end_date) {
+          status = 'active'
+          planType = sub.plan_type || 'premium'
+          endDate = new Date(sub.subscription_end_date)
+          console.log('  ✅ Usando SUBSCRIPTION ACTIVE (prioridade máxima)')
+        }
+        // PRIORIDADE 2: Se tem subscription trial
+        else if (sub && sub.status === 'trial' && sub.trial_end_date) {
+          status = 'trial'
+          planType = sub.plan_type || 'trial'
+          endDate = new Date(sub.trial_end_date)
+          console.log('  ✅ Usando SUBSCRIPTION (trial)')
+        }
+        // PRIORIDADE 3: Dados da empresa (teste de 15 dias)
+        else if (empresa && empresa.data_fim_teste) {
           const tipoContaLower = (empresa.tipo_conta || '').toLowerCase()
           if (tipoContaLower.includes('teste') || tipoContaLower.includes('trial')) {
             status = 'trial'
             endDate = new Date(empresa.data_fim_teste)
             planType = 'trial'
-            console.log('  ✅ Usando dados da EMPRESA (teste)')
-          }
-        }
-        // Se tem subscription, usar ela
-        if (!endDate && sub) {
-          status = sub.status
-          planType = sub.plan_type || 'trial'
-          
-          if (sub.status === 'trial' && sub.trial_end_date) {
-            endDate = new Date(sub.trial_end_date)
-            console.log('  ✅ Usando SUBSCRIPTION (trial)')
-          } else if (sub.status === 'active' && sub.subscription_end_date) {
-            endDate = new Date(sub.subscription_end_date)
-            console.log('  ✅ Usando SUBSCRIPTION (active)')
+            console.log('  ✅ Usando dados da EMPRESA (teste - fallback)')
           }
         }
 

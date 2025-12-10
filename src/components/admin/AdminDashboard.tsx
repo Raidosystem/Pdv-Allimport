@@ -108,11 +108,15 @@ export function AdminDashboard() {
         .select('user_id, tipo_conta, data_cadastro, data_fim_teste')
         .in('user_id', userIds)
 
+      console.log('🔍 EMPRESAS DO BANCO:', empresas)
+
       // Buscar subscriptions (se existir)
       const { data: subscriptions } = await supabase
         .from('subscriptions')
         .select('*')
         .in('user_id', userIds)
+      
+      console.log('🔍 SUBSCRIPTIONS DO BANCO:', subscriptions)
 
       // Criar mapas
       const empresaMap = new Map()
@@ -120,6 +124,9 @@ export function AdminDashboard() {
 
       const subscriptionMap = new Map()
       subscriptions?.forEach(s => subscriptionMap.set(s.user_id, s))
+
+      console.log('📊 MAPA DE EMPRESAS:', empresaMap)
+      console.log('📊 Total no mapa:', empresaMap.size)
 
       // Combinar dados e calcular dias restantes em TEMPO REAL
       const now = new Date()

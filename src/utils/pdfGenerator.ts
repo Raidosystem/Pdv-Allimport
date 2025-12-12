@@ -41,6 +41,7 @@ interface ExportOptions {
   }
   generatedBy?: string
   generatedAt?: Date
+  isOwner?: boolean // Novo: para ocultar valor total de funcionários
 }
 
 export async function generateProductsPDF(products: Product[], options: ExportOptions = {}) {
@@ -118,14 +119,19 @@ export async function generateProductsPDF(products: Product[], options: ExportOp
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   
+  // Criar array de estatísticas baseado nas permissões
   const statsData = [
     ['Total de produtos:', stats.total.toString()],
     ['Produtos ativos:', stats.ativos.toString()],
     ['Produtos inativos:', stats.inativos.toString()],
     ['Produtos sem estoque:', stats.semEstoque.toString()],
-    ['Estoque total (unidades):', stats.estoqueTotal.toString()],
-    ['Valor total do estoque:', formatCurrency(stats.valorTotal)]
+    ['Estoque total (unidades):', stats.estoqueTotal.toString()]
   ]
+  
+  // Adicionar valor total APENAS para owners
+  if (options.isOwner) {
+    statsData.push(['Valor total do estoque:', formatCurrency(stats.valorTotal)])
+  }
   
   statsData.forEach(([label, value]) => {
     doc.text(label, margin, yPosition)

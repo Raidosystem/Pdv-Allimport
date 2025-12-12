@@ -48,7 +48,10 @@ export function ProductsPage() {
     carregarProdutos
   } = useProdutos()
 
-  const { can } = usePermissions()
+  const { can, isAdminEmpresa, isSuperAdmin } = usePermissions()
+  
+  // Owner = Admin da empresa OU Super Admin
+  const isOwner = isAdminEmpresa || isSuperAdmin
   
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -746,10 +749,13 @@ export function ProductsPage() {
           <div className="text-2xl font-bold text-red-600">{lowStockProducts.length}</div>
           <div className="text-sm text-gray-600">Estoque Baixo</div>
         </div>
-        <div className="bg-white p-4 rounded-lg border">
-          <div className="text-2xl font-bold text-purple-600">{formatPrice(totalValue)}</div>
-          <div className="text-sm text-gray-600">Valor Total Estoque</div>
-        </div>
+        {/* Valor Total do Estoque - APENAS PARA OWNERS */}
+        {isOwner && (
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="text-2xl font-bold text-purple-600">{formatPrice(totalValue)}</div>
+            <div className="text-sm text-gray-600">Valor Total Estoque</div>
+          </div>
+        )}
       </div>
 
       {/* Search */}

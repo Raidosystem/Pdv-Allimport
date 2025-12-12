@@ -314,8 +314,8 @@ export function useProducts() {
         ativo: productData.ativo !== false,  // garantir boolean
         preco_custo: productData.preco_custo || null,
         fornecedor: productData.fornecedor || null,
-        user_id: user.id,
-        atualizado_em: new Date().toISOString()
+        user_id: user.id
+        // updated_at é gerenciado automaticamente pelo banco via trigger
       }
 
       console.log('🔍 [saveProduct] Dados do produto a salvar:', {

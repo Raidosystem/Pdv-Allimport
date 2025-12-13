@@ -43,6 +43,10 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const [precoVendaDisplay, setPrecoVendaDisplay] = useState('0,00')
   const [precoCustoDisplay, setPrecoCustoDisplay] = useState('0,00')
 
+  // Estados para upload de imagem
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+
   const {
     control,
     handleSubmit,
@@ -114,8 +118,14 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
           sku: data.sku,
           codigo_barras: data.codigo_barras,
           codigo_interno: data.codigo_interno,
-          fornecedor: data.fornecedor
+          fornecedor: data.fornecedor,
+          image_url: data.image_url
         })
+
+        // Carregar imagem se existir
+        if (data.image_url) {
+          setImageUrl(data.image_url)
+        }
 
         const formData = {
           nome: data.nome || '',
@@ -187,6 +197,61 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   }, [productId])
 
+  // Função para fazer upload da imagem
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione apenas imagens')
+      return
+    }
+
+    // Validar tamanho (máx 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 2MB')
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+      const filePath = `produtos/${fileName}`
+
+      // Fazer upload para o Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('produtos-imagens')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (error) throw error
+
+      // Obter URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('produtos-imagens')
+        .getPublicUrl(filePath)
+
+      setImageUrl(publicUrl)
+      toast.success('Imagem enviada com sucesso!')
+    } catch (error: any) {
+      console.error('Erro ao fazer upload:', error)
+      toast.error(error.message || 'Erro ao enviar imagem')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const removeImage = () => {
+    setImageUrl(null)
+    toast.success('Imagem removida')
+  }
+
   async function loadFornecedores() {
     try {
       const { data, error } = await supabase
@@ -230,10 +295,11 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
 
     setLoading(true)
     try {
-      // Converter categoria para categoria_id
+      // Converter categoria para categoria_id e adicionar image_url
       const productData = {
         ...data,
-        categoria_id: data.categoria
+        categoria_id: data.categoria,
+        image_url: imageUrl
       }
       const success = await saveProduct(productData, productId)
       
@@ -315,6 +381,63 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                 />
               )}
             />
+          </div>
+
+          {/* Campo de Upload de Imagem */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Foto do Produto
+            </label>
+            <div className="space-y-3">
+              {imageUrl ? (
+                <div className="relative inline-block">
+                  <img 
+                    src={imageUrl} 
+                    alt="Preview do produto" 
+                    className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    title="Remover imagem"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <p className="mb-1 text-sm text-gray-500">
+                        <span className="font-semibold">Clique para enviar</span> ou arraste
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG ou WEBP (máx. 2MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                    />
+                  </label>
+                </div>
+              )}
+              {uploadingImage && (
+                <div className="text-sm text-blue-600 text-center">
+                  Enviando imagem...
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                💡 A imagem aparecerá no catálogo online da sua loja
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

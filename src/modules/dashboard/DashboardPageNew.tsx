@@ -622,14 +622,6 @@ export function DashboardPage() {
 
       {/* Conteúdo Principal - Responsivo */}
       <main className="max-w-7xl mx-auto dashboard-content py-4 sm:py-6 lg:py-8">
-        {/* Subscription Status */}
-        {!isAdmin() && (
-          <div className="mb-4 sm:mb-6">
-            <SubscriptionStatus />
-            <SubscriptionCountdown />
-          </div>
-        )}
-
         {/* Conteúdo Principal - Página embarcada ou Submenu */}
         {activeMenu && (
           <div className="mb-8 animate-in fade-in duration-300">

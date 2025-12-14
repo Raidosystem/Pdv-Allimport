@@ -11,8 +11,10 @@ export interface Product {
   unidade: string
   descricao?: string
   imagem_url?: string
+  image_url?: string  // URL da imagem (nome da coluna no banco)
   fornecedor?: string
   ativo: boolean
+  exibir_loja_online?: boolean  // Controle de exibição na loja online
   criado_em?: string
   atualizado_em?: string
 }
@@ -29,6 +31,7 @@ export interface ProductFormData {
   descricao?: string
   fornecedor?: string
   ativo: boolean
+  exibir_loja_online: boolean  // Controle de exibição na loja online
   imagem?: File
   image_url?: string | null  // URL da imagem já salva
 }

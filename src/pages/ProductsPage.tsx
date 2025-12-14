@@ -26,6 +26,7 @@ interface Product {
   minimum_stock: number
   unit_measure: string
   active: boolean
+  image_url?: string | null  // URL da imagem do produto
   expiry_date?: string | null
   created_at: string
   updated_at: string

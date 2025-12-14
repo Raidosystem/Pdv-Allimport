@@ -22,13 +22,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     params: {
       eventsPerSecond: 10
     }
-  },
-  global: {
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
   }
+  // ❌ NÃO definir Content-Type globalmente pois quebra uploads de arquivo
+  // O Supabase SDK define automaticamente o Content-Type correto para cada tipo de requisição
 })
 
 // Log de inicialização

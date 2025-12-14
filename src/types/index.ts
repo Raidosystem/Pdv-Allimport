@@ -43,6 +43,7 @@ export interface Product {
   minStock?: number
   unit: 'un' | 'kg' | 'mt' | 'lt'
   active: boolean
+  image_url?: string | null
   createdAt: string
   updatedAt: string
 }

@@ -40,6 +40,8 @@ import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
 import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
 import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
+import LojaOnlinePage from './pages/admin/LojaOnlinePage'
+import LojaPublicaPage from './pages/LojaPublicaPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
@@ -210,7 +212,10 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/old" element={<AdminPanel />} />
           
-          {/* Página de Debug Supabase */}
+          {/* Loja Pública - SEM proteção de login */}
+          <Route path="/loja/:slug" element={<LojaPublicaPage />} />
+          
+          <Route path="/debug-supabase" element={<DebugSupabase />} />
           <Route path="/debug-supabase" element={<DebugSupabase />} />
           
           {/* Página de Teste de Pagamento */}
@@ -389,6 +394,17 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <ActivateUsersPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/loja-online" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <LojaOnlinePage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

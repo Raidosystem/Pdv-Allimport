@@ -155,6 +155,7 @@ export function ProductsPage() {
             unit_measure: data.unidade || 'UN',
             active: data.ativo !== false,
             expiry_date: data.data_validade || null,
+            image_url: data.image_url || null,
             created_at: data.criado_em || new Date().toISOString(),
             updated_at: data.atualizado_em || new Date().toISOString()
           }
@@ -413,6 +414,25 @@ export function ProductsPage() {
 
           {/* Card de visualização do produto */}
           <div className="bg-white rounded-lg border p-6">
+            {/* Imagem do produto (se existir) */}
+            {viewingProduct.image_url && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">
+                  Imagem do Produto
+                </h2>
+                <div className="flex justify-center">
+                  <img 
+                    src={viewingProduct.image_url} 
+                    alt={viewingProduct.name}
+                    className="max-w-md w-full h-auto rounded-lg shadow-md object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Informações básicas */}
               <div className="space-y-4">

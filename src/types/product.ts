@@ -30,6 +30,7 @@ export interface ProductFormData {
   fornecedor?: string
   ativo: boolean
   imagem?: File
+  image_url?: string | null  // URL da imagem já salva
 }
 
 export interface Category {

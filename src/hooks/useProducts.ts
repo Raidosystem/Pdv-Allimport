@@ -314,6 +314,8 @@ export function useProducts() {
         ativo: productData.ativo !== false,  // garantir boolean
         preco_custo: productData.preco_custo || null,
         fornecedor: productData.fornecedor || null,
+        image_url: productData.image_url || imageUrl || null,  // URL da imagem
+        exibir_loja_online: productData.exibir_loja_online !== false,  // campo para loja online
         user_id: user.id
         // updated_at é gerenciado automaticamente pelo banco via trigger
       }

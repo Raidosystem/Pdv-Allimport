@@ -21,7 +21,8 @@ const ProductFormSchema = z.object({
   preco_custo: z.number().min(0, 'Preço de custo deve ser maior ou igual a zero'),
   estoque: z.number().min(0, 'Estoque deve ser maior ou igual a zero'),
   fornecedor: z.string().optional(),
-  ativo: z.boolean()
+  ativo: z.boolean(),
+  exibir_loja_online: z.boolean()
 })
 
 type ProductFormData = z.infer<typeof ProductFormSchema>
@@ -65,7 +66,8 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
       preco_custo: 0,
       estoque: 0,
       fornecedor: '',
-      ativo: true
+      ativo: true,
+      exibir_loja_online: true
     }
   })
 
@@ -136,7 +138,8 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
           preco_custo: Number(data.preco_custo) || 0,
           estoque: Number(data.estoque) || 0,
           fornecedor: data.fornecedor || '',
-          ativo: data.ativo !== false
+          ativo: data.ativo !== false,
+          exibir_loja_online: data.exibir_loja_online !== false
         }
 
         console.log('📝 [ProductForm] Populando formulário com:', formData)
@@ -202,6 +205,13 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
+    console.log('📤 [Upload] Iniciando upload da imagem:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      isFile: file instanceof File
+    })
+
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
       toast.error('Por favor, selecione apenas imagens')
@@ -222,25 +232,39 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
       const filePath = `produtos/${fileName}`
 
-      // Fazer upload para o Supabase Storage
+      console.log('📤 [Upload] Enviando para o Supabase:', {
+        bucket: 'produtos-imagens',
+        filePath,
+        contentType: file.type
+      })
+
+      // Fazer upload para o Supabase Storage com contentType explícito
       const { data, error } = await supabase.storage
         .from('produtos-imagens')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type // Especificar explicitamente o contentType
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ [Upload] Erro do Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ [Upload] Upload concluído:', data)
 
       // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
         .from('produtos-imagens')
         .getPublicUrl(filePath)
 
+      console.log('🔗 [Upload] URL pública gerada:', publicUrl)
+
       setImageUrl(publicUrl)
       toast.success('Imagem enviada com sucesso!')
     } catch (error: any) {
-      console.error('Erro ao fazer upload:', error)
+      console.error('❌ [Upload] Erro ao fazer upload:', error)
       toast.error(error.message || 'Erro ao enviar imagem')
     } finally {
       setUploadingImage(false)
@@ -706,7 +730,7 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
             )}
           </div>
 
-          <div>
+          <div className="space-y-3">
             <Controller
               name="ativo"
               control={control}
@@ -719,6 +743,22 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <span className="ml-2 text-sm text-gray-700">Produto ativo</span>
+                </label>
+              )}
+            />
+            
+            <Controller
+              name="exibir_loja_online"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={onChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">🛍️ Exibir na loja online</span>
                 </label>
               )}
             />

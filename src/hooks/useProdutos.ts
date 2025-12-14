@@ -7,6 +7,7 @@ interface Product {
   user_id?: string
   name: string
   barcode: string
+  codigo_interno?: string
   category_id?: string
   sale_price: number
   cost_price: number
@@ -15,6 +16,7 @@ interface Product {
   unit_measure: string
   active: boolean
   expiry_date?: string | null
+  image_url?: string | null
   created_at: string
   updated_at: string
 }
@@ -55,6 +57,7 @@ const loadAllProducts = async (): Promise<Product[]> => {
       unit_measure: produto.unidade || 'un',
       active: produto.ativo !== false,
       expiry_date: produto.data_validade || null,
+      image_url: produto.imagem_url || produto.image_url || null,
       created_at: produto.criado_em || produto.created_at || new Date().toISOString(),
       updated_at: produto.atualizado_em || produto.updated_at || new Date().toISOString()
     }))

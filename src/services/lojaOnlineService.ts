@@ -242,30 +242,84 @@ class LojaOnlineService {
    * Buscar loja por slug (acesso público)
    */
   async buscarLojaPorSlug(slug: string): Promise<LojaOnline> {
-    const { data, error } = await supabase.rpc('buscar_loja_por_slug', {
-      p_slug: slug
-    })
+    const { data, error } = await supabase
+      .from('lojas_online')
+      .select('*')
+      .eq('slug', slug)
+      .eq('ativa', true)
+      .single()
 
-    if (error || !data.success) {
-      throw new Error(data?.error || 'Loja não encontrada')
+    if (error || !data) {
+      console.error('Erro ao buscar loja:', error)
+      throw new Error('Loja não encontrada')
     }
 
-    return data.loja
+    return data
   }
 
   /**
    * Listar produtos da loja (acesso público)
    */
   async listarProdutosLoja(slug: string): Promise<ProdutoPublico[]> {
-    const { data, error } = await supabase.rpc('listar_produtos_loja', {
-      p_slug: slug
-    })
+    try {
+      // Primeiro buscar a loja para pegar empresa_id
+      const { data: loja, error: lojaError } = await supabase
+        .from('lojas_online')
+        .select('empresa_id')
+        .eq('slug', slug)
+        .eq('ativa', true)
+        .single()
 
-    if (error || !data.success) {
-      throw new Error(data?.error || 'Erro ao buscar produtos')
+      if (lojaError || !loja) {
+        console.error('Erro ao buscar loja:', lojaError)
+        throw new Error('Loja não encontrada')
+      }
+
+      const empresaId = loja.empresa_id
+
+      // Buscar produtos da empresa
+      const { data: produtos, error: produtosError } = await supabase
+        .from('produtos')
+        .select(`
+          id,
+          nome,
+          preco,
+          preco_custo,
+          codigo_barras,
+          categoria_id,
+          estoque,
+          ativo,
+          exibir_loja_online,
+          image_url,
+          categorias:categoria_id (nome)
+        `)
+        .or(`empresa_id.eq.${empresaId},user_id.eq.${empresaId}`)
+        .eq('ativo', true)
+        .eq('exibir_loja_online', true)
+        .order('nome')
+
+      if (produtosError) {
+        console.error('Erro ao buscar produtos:', produtosError)
+        throw new Error('Erro ao buscar produtos')
+      }
+
+      // Mapear para o formato ProdutoPublico
+      return (produtos || []).map(p => ({
+        id: p.id,
+        nome: p.nome,
+        descricao: null,
+        preco: p.preco || 0,
+        preco_custo: p.preco_custo || null,
+        quantidade: p.estoque || 0,
+        codigo_barras: p.codigo_barras || null,
+        imagem_url: p.image_url || null,
+        categoria_id: p.categoria_id || null,
+        categoria_nome: (p.categorias as any)?.nome || null
+      }))
+    } catch (error) {
+      console.error('Erro em listarProdutosLoja:', error)
+      throw error
     }
-
-    return data.produtos || []
   }
 
   /**

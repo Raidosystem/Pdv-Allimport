@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Shield, BarChart3, Crown, UserCheck, Building, Check } from 'lucide-react'
+import { Users, Shield, BarChart3, Crown, UserCheck, Building, Check, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PermissionsProvider, usePermissions } from '../hooks/usePermissions'
 import { useEmpresaSettings } from '../hooks/useEmpresaSettings'
@@ -7,6 +7,7 @@ import { useSubscription } from '../hooks/useSubscription'
 import { EmpresaView } from '../components/EmpresaView'
 import toast from 'react-hot-toast'
 import AdminDashboard from './admin/AdminDashboard'
+import { ConfiguracaoModulosPage } from './admin/ConfiguracaoModulosPage'
 import AdminUsersPage from './admin/AdminUsersPage'
 // import AdminConvitesPage from './admin/AdminConvitesPage' // REMOVIDO - Sistema automático
 import AdminRolesPermissionsPageNew from './admin/AdminRolesPermissionsPageNew' // NOVA VERSÃO MODERNA
@@ -15,7 +16,7 @@ import DebugPermissions from '../components/DebugPermissions'
 import PermissionsDebugger from '../components/PermissionsDebugger'
 import { ActivateUsersPage } from '../modules/admin/pages/ActivateUsersPage'
 
-type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios' | 'empresa' | 'assinatura'
+type ViewMode = 'dashboard' | 'usuarios' | 'permissoes' | 'super-admin' | 'debug' | 'permissions-debug' | 'ativar-usuarios' | 'empresa' | 'modulos' | 'assinatura'
 
 function AdministracaoContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -214,6 +215,12 @@ function AdministracaoContent() {
       description: 'Configurar dados da empresa'
     },
     {
+      id: 'modulos' as ViewMode,
+      label: 'Módulos do Sistema',
+      icon: Settings,
+      description: 'Ativar/desativar módulos (OS, Vendas, etc)'
+    },
+    {
       id: 'assinatura' as ViewMode,
       label: 'Assinatura',
       icon: Crown,
@@ -269,6 +276,8 @@ function AdministracaoContent() {
         return <AdminRolesPermissionsPageNew />
       case 'empresa':
         return <EmpresaViewAdmin />
+      case 'modulos':
+        return <ConfiguracaoModulosPage />
       case 'assinatura':
         return <AssinaturaViewAdmin />
       case 'debug':
@@ -323,6 +332,10 @@ function AdministracaoContent() {
                       ? viewMode === item.id
                         ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg'
                         : 'bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 hover:from-teal-200 hover:to-teal-300'
+                    : item.id === 'modulos'
+                      ? viewMode === item.id
+                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 hover:from-indigo-200 hover:to-indigo-300'
                     : item.id === 'assinatura'
                       ? viewMode === item.id
                         ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-lg'

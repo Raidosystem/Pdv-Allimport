@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useModulosHabilitados } from '../../hooks/useModulosHabilitados'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -49,11 +49,48 @@ export function ConfiguracaoModulosPage() {
   const [salvando, setSalvando] = useState(false)
   const [modulosEditados, setModulosEditados] = useState(modulos)
 
-  const handleToggle = (modulo: keyof typeof modulos) => {
+  // Sincronizar modulosEditados com modulos quando mudar (ex: após recarregar)
+  useEffect(() => {
+    setModulosEditados(modulos)
+  }, [modulos])
+
+  const handleToggle = async (modulo: keyof typeof modulos) => {
+    const novoValor = !modulosEditados[modulo]
+    
+    // Atualizar estado local imediatamente para feedback visual
     setModulosEditados(prev => ({
       ...prev,
-      [modulo]: !prev[modulo]
+      [modulo]: novoValor
     }))
+
+    // Salvar no banco de dados
+    setSalvando(true)
+    try {
+      const resultado = await atualizarModulo(modulo, novoValor)
+      
+      if (resultado) {
+        toast.success(`✅ ${novoValor ? 'Módulo ativado' : 'Módulo desativado'} com sucesso!`)
+        // Recarregar para garantir sincronização
+        await recarregar()
+      } else {
+        // Reverter em caso de erro
+        setModulosEditados(prev => ({
+          ...prev,
+          [modulo]: !novoValor
+        }))
+        toast.error('❌ Erro ao atualizar módulo')
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar módulo:', error)
+      // Reverter em caso de erro
+      setModulosEditados(prev => ({
+        ...prev,
+        [modulo]: !novoValor
+      }))
+      toast.error('❌ Erro ao atualizar módulo')
+    } finally {
+      setSalvando(false)
+    }
   }
 
   const handleSalvar = async () => {
@@ -106,27 +143,17 @@ export function ConfiguracaoModulosPage() {
           <h1 className="text-2xl font-bold text-gray-900">Módulos do Sistema</h1>
           <p className="text-sm text-gray-600 mt-1">
             Configure quais módulos estarão visíveis no menu e dashboard
+            <span className="ml-2 text-green-600 font-medium">✓ Salvamento automático</span>
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handleRecarregar}
-            disabled={salvando}
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Recarregar
-          </Button>
-          {temAlteracoes && (
-            <Button
-              onClick={handleSalvar}
-              disabled={salvando}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {salvando ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          )}
-        </div>
+        <Button
+          variant="outline"
+          onClick={handleRecarregar}
+          disabled={salvando}
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Recarregar
+        </Button>
       </div>
 
       {/* Avisos */}
@@ -134,6 +161,7 @@ export function ConfiguracaoModulosPage() {
         <div className="p-4">
           <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Informações Importantes</h3>
           <ul className="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Mudanças são salvas instantaneamente</strong> ao clicar no toggle</li>
             <li>• Desabilitar um módulo apenas <strong>oculta</strong> do menu - os dados permanecem salvos</li>
             <li>• Você pode reabilitar a qualquer momento sem perder informações</li>
             <li>• As rotas ficarão inacessíveis enquanto o módulo estiver desabilitado</li>

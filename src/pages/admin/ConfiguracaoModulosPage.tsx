@@ -72,6 +72,11 @@ export function ConfiguracaoModulosPage() {
         toast.success(`✅ ${novoValor ? 'Módulo ativado' : 'Módulo desativado'} com sucesso!`)
         // Recarregar para garantir sincronização
         await recarregar()
+        
+        // Aguardar 500ms e recarregar a página para aplicar mudanças
+        setTimeout(() => {
+          window.location.reload()
+        }, 500)
       } else {
         // Reverter em caso de erro
         setModulosEditados(prev => ({
@@ -192,14 +197,17 @@ export function ConfiguracaoModulosPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className={`text-sm font-medium ${habilitado ? 'text-green-700' : 'text-red-700'}`}>
                     {habilitado ? '✅ Habilitado' : '❌ Desabilitado'}
                   </span>
                   <button
                     onClick={() => handleToggle(config.key)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      habilitado ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
+                    disabled={salvando}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      habilitado 
+                        ? 'bg-green-600 focus:ring-green-500' 
+                        : 'bg-red-500 focus:ring-red-500'
+                    } ${salvando ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

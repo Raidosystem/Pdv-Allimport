@@ -41,6 +41,7 @@ import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
 import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
 import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
 import LojaOnlinePage from './pages/admin/LojaOnlinePage'
+import { ConfiguracaoModulosPage } from './pages/admin/ConfiguracaoModulosPage'
 import LojaPublicaPage from './pages/LojaPublicaPage'
 import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
@@ -405,6 +406,17 @@ function App() {
               <ProtectedRoute>
                 <SubscriptionGuard>
                   <LojaOnlinePage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/configuracao-modulos" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ConfiguracaoModulosPage />
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 

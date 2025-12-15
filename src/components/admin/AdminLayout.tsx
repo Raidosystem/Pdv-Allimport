@@ -54,6 +54,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       permission: 'administracao.funcoes'
     },
     {
+      name: 'Módulos do Sistema',
+      href: '/admin/configuracao-modulos',
+      icon: Settings,
+      permission: 'administracao.sistema'
+    },
+    {
       name: 'Ferramentas',
       href: '/admin/ferramentas',
       icon: Wrench,

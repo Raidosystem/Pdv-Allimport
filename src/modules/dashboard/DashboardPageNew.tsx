@@ -35,6 +35,7 @@ import {
 import { useAuth } from '../auth'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useUserHierarchy } from '../../hooks/useUserHierarchy'
+import { useModulosHabilitados } from '../../hooks/useModulosHabilitados'
 import { Button } from '../../components/ui/Button'
 import AccessFixer from '../../components/AccessFixer'
 import { SubscriptionStatus } from '../../components/subscription/SubscriptionStatus'
@@ -67,6 +68,7 @@ export function DashboardPage() {
   const { user, signOut } = useAuth()
   const { isActive } = useSubscription()
   const { getVisibleModules, isAdmin, isOwner, loading } = useUserHierarchy()
+  const { ordensServicoHabilitado, loading: loadingModulos } = useModulosHabilitados()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null)
   const [showMobileHint, setShowMobileHint] = useState(true)
@@ -211,9 +213,17 @@ export function DashboardPage() {
 
   // Obter módulos visíveis baseado nas permissões
   const visibleModules = getVisibleModules()
-  const availableMenus = allMenuModules.filter(menu => 
-    visibleModules.some(visible => visible.name === menu.name)
-  )
+  
+  // Filtrar módulos baseado nas permissões E configuração de módulos habilitados
+  const availableMenus = allMenuModules.filter(menu => {
+    // Se for Ordens de Serviço, verificar se está habilitado
+    if (menu.name === 'orders' && !ordensServicoHabilitado) {
+      return false
+    }
+    
+    // Verificar permissões normais
+    return visibleModules.some(visible => visible.name === menu.name)
+  })
 
   // Adicionar módulos especiais
   const specialModules: MenuModule[] = []
@@ -255,7 +265,7 @@ export function DashboardPage() {
     }
   }, [allMenus, activeMenu])
 
-  if (loading) {
+  if (loading || loadingModulos) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

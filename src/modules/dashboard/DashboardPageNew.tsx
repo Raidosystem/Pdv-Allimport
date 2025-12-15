@@ -250,6 +250,8 @@ export function DashboardPage() {
       priority: true,
       options: [
         { title: 'Empresa', path: '/configuracoes-empresa', icon: Settings, description: 'Configurar empresa' },
+        { title: 'Módulos do Sistema', path: '/admin/configuracao-modulos', icon: Settings, description: 'Ativar/desativar módulos (OS, Vendas, etc)' },
+        { title: 'Assinatura', path: '/assinatura', icon: Crown, description: 'Gerenciar plano e pagamento' },
         { title: 'Funcionários', path: '/admin/usuarios', icon: Users, description: 'Gerenciar equipe' }
       ]
     })

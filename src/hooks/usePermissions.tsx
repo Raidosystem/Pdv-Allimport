@@ -583,9 +583,9 @@ export const usePermissions = (): UsePermissionsReturn => {
   }, [context]);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    // Forçar reload do contexto
-    window.location.reload();
+    console.log('⚠️ [usePermissions] Função refresh() depreciada - recarregamento automático via context')
+    // Não faz nada - o context recarrega automaticamente quando necessário
+    // Evita reload da página que causava perda de dados
   }, []);
 
   return {

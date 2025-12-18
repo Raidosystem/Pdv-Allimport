@@ -21,32 +21,14 @@ export function UpdateCard() {
     }
     window.addEventListener('keydown', handleKeyPress)
 
-    // Verificar nova versão ao montar o componente
-    checkVersion(() => {
-      console.log('🆕 Exibindo card de nova versão')
-      setShow(true)
-    })
-
-    // Verificar a cada 2 minutos
-    const interval = setInterval(() => {
-      checkVersion(() => {
-        setShow(true)
-      })
-    }, 2 * 60 * 1000) // 2 minutos
-
-    // Verificar quando a janela ganha foco
-    const handleFocus = () => {
-      checkVersion(() => {
-        setShow(true)
-      })
-    }
-
-    window.addEventListener('focus', handleFocus)
+    // 🚫 VERIFICAÇÃO AUTOMÁTICA DESABILITADA
+    // Causa recarregamentos indesejados durante edição de produtos/OS
+    // Apenas exibir se usuário pressionar Ctrl+U (teste manual)
+    
+    console.log('ℹ️ UpdateCard: Verificação automática DESABILITADA para evitar perda de dados')
 
     // Cleanup
     return () => {
-      clearInterval(interval)
-      window.removeEventListener('focus', handleFocus)
       window.removeEventListener('keydown', handleKeyPress)
     }
   }, [])
@@ -196,18 +178,12 @@ export function useUpdateNotification() {
   const [hasUpdate, setHasUpdate] = useState(false)
 
   useEffect(() => {
-    checkVersion(() => {
-      setHasUpdate(true)
-    })
-
-    // Verificar periodicamente
-    const interval = setInterval(() => {
-      checkVersion(() => {
-        setHasUpdate(true)
-      })
-    }, 2 * 60 * 1000)
-
-    return () => clearInterval(interval)
+    // 🚫 VERIFICAÇÃO AUTOMÁTICA DESABILITADA
+    // Causa recarregamentos indesejados durante edição de produtos/OS
+    console.log('ℹ️ useUpdateNotification: Verificação automática DESABILITADA para evitar perda de dados')
+    
+    // Não verificar automaticamente
+    // O usuário pode forçar com Ctrl+U no UpdateCard principal
   }, [])
 
   const updateNow = () => {

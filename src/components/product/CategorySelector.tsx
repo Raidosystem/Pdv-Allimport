@@ -62,7 +62,7 @@ export function CategorySelector({
 
   // Filtrar categorias com base na busca
   const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    cat?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   // Obter nome da categoria selecionada

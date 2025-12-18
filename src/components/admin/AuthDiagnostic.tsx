@@ -100,7 +100,7 @@ export function AuthDiagnostic() {
       if (currentUser) {
         try {
           const { error: categoriesError } = await supabase
-            .from('categories')
+            .from('categorias')
             .select('id')
             .limit(1);
           

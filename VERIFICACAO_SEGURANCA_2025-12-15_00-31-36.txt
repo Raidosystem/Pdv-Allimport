@@ -1,0 +1,15 @@
+﻿RELATÃ“RIO DE VERIFICAÃ‡ÃƒO DE SEGURANÃ‡A
+Data: 15/12/2025 00:31:36
+Sistema: PDV Allimport
+
+SUCESSOS (0):
+- 
+
+
+AVISOS (0):
+- 
+
+
+PROBLEMAS (0):
+- 
+

@@ -180,13 +180,21 @@ export function useProducts() {
       const empresa_id = user.id
 
       const { data, error } = await supabase
-        .from('categories')
+        .from('categorias')
         .select('*')
-        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categories usa user_id
-        .order('name')
+        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categorias usa user_id
+        .order('nome')
 
       if (error) throw error
-      setCategories(data || [])
+      
+      // Adaptar dados do banco (nome → name) para o tipo Category
+      const adaptedCategories = (data || []).map((cat: any) => ({
+        id: cat.id,
+        name: cat.nome || cat.name, // Suporta ambos os nomes
+        created_at: cat.created_at
+      }))
+      
+      setCategories(adaptedCategories)
     } catch (error) {
       console.error('Erro ao carregar categorias:', error)
       toast.error('Erro ao carregar categorias')
@@ -215,10 +223,10 @@ export function useProducts() {
       
       // Verificar se já existe uma categoria com este nome PARA ESTE USUÁRIO
       const { data: existing, error: checkError } = await supabase
-        .from('categories')
-        .select('id, name')
-        .eq('name', name.trim())
-        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categories usa user_id
+        .from('categorias')
+        .select('id, nome')
+        .eq('nome', name.trim())
+        .eq('user_id', empresa_id)  // CORRIGIDO: tabela categorias usa user_id
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -234,8 +242,8 @@ export function useProducts() {
 
       // Criar nova categoria com user_id
       const { data, error } = await supabase
-        .from('categories')
-        .insert([{ name: name.trim(), user_id: empresa_id }])  // CORRIGIDO: usar user_id
+        .from('categorias')
+        .insert([{ nome: name.trim(), user_id: empresa_id }])  // CORRIGIDO: usar user_id
         .select()
         .single()
 
@@ -260,7 +268,14 @@ export function useProducts() {
       // Recarregar categorias
       await fetchCategories()
       
-      return data
+      // Adaptar dados do banco para o tipo Category
+      const adaptedCategory: Category = {
+        id: data.id,
+        name: data.nome || data.name,
+        created_at: data.created_at
+      }
+      
+      return adaptedCategory
     } catch (error) {
       console.error('💥 Erro geral ao criar categoria:', error)
       
@@ -335,10 +350,9 @@ export function useProducts() {
         console.log('🔍 [saveProduct] Validando categoria:', productToSave.categoria_id)
         
         const { data: categoryExists, error: catError } = await supabase
-          .from('categories')
+          .from('categorias')
           .select('id')
           .eq('id', productToSave.categoria_id)
-          .eq('user_id', user.id)  // CORRIGIDO: validar por user_id
           .limit(1)
 
         if (catError || !categoryExists || categoryExists.length === 0) {

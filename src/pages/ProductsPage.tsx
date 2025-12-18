@@ -5,6 +5,7 @@ import { Modal } from '../components/ui/Modal'
 import ProductForm from '../components/product/ProductForm'
 import { FornecedorForm } from '../components/fornecedor/FornecedorForm'
 import { useProdutos } from '../hooks/useProdutos'
+import { useProducts } from '../hooks/useProducts'
 import { usePermissions } from '../hooks/usePermissions'
 import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
@@ -48,6 +49,8 @@ export function ProductsPage() {
     toggleMostrarTodos,
     carregarProdutos
   } = useProdutos()
+
+  const { deleteProduct } = useProducts()
 
   const { can, isAdminEmpresa, isSuperAdmin } = usePermissions()
   
@@ -886,10 +889,15 @@ export function ProductsPage() {
                         <button 
                           className="p-1 text-red-600 hover:text-red-800"
                           title="Excluir produto"
-                          onClick={() => {
+                          onClick={async () => {
                             console.log('🗑️ Excluir produto:', product.id);
                             if (confirm(`Deseja excluir o produto "${product.name}"?`)) {
-                              alert('Produto excluído com sucesso!');
+                              try {
+                                await deleteProduct(product.id);
+                                await carregarProdutos(); // Recarregar lista após exclusão
+                              } catch (error) {
+                                console.error('Erro ao excluir:', error);
+                              }
                             }
                           }}
                         >

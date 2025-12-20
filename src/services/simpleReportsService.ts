@@ -109,12 +109,31 @@ class SimpleReportsService {
       console.log(`🔍 [${callId}] Data de início:`, startDate.toISOString());
       console.log(`🔍 [${callId}] Data de fim:`, endDate.toISOString());
 
-      // Buscar vendas do período (usando created_at que é o campo correto)
-      const { data: sales, error: salesError } = await supabase
+      // Tentar primeiro com created_at (campo padrão)
+      let sales = null;
+      let salesError = null;
+
+      const result1 = await supabase
         .from('vendas')
         .select('*')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
+
+      if (result1.error) {
+        console.warn(`⚠️ [${callId}] Erro com created_at, tentando data_venda...`, result1.error);
+        
+        // Fallback: tentar com data_venda (dados antigos)
+        const result2 = await supabase
+          .from('vendas')
+          .select('*')
+          .gte('data_venda', startDate.toISOString())
+          .lte('data_venda', endDate.toISOString());
+        
+        sales = result2.data;
+        salesError = result2.error;
+      } else {
+        sales = result1.data;
+      }
 
       if (salesError) {
         console.error('❌ Erro ao buscar vendas:', salesError);
@@ -862,10 +881,17 @@ class SimpleReportsService {
       console.log('🔍 [SIMPLE] Buscando ranking de clientes que mais arrumaram...');
       console.log('📅 Período:', period, '| Início:', startDate.toISOString(), '| Fim:', endDate.toISOString());
       
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return [];
+      }
+      
       const { data, error } = await supabase.rpc('fn_ranking_clientes_reparos', {
         p_data_inicio: startDate.toISOString(),
         p_data_fim: endDate.toISOString(),
-        p_user_id: null,
+        p_user_id: user.id, // ✅ FILTRAR POR USER_ID
         p_limite: 10
       });
 
@@ -902,10 +928,17 @@ class SimpleReportsService {
       console.log('🔍 [SIMPLE] Buscando ranking de clientes que mais gastaram...');
       console.log('📅 Período:', period, '| Início:', startDate.toISOString(), '| Fim:', endDate.toISOString());
       
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return [];
+      }
+      
       const { data, error } = await supabase.rpc('fn_ranking_clientes_gastos', {
         p_data_inicio: startDate.toISOString(),
         p_data_fim: endDate.toISOString(),
-        p_user_id: null,
+        p_user_id: user.id, // ✅ FILTRAR POR USER_ID
         p_limite: 10
       });
 
@@ -942,10 +975,17 @@ class SimpleReportsService {
       console.log('🔍 [SIMPLE] Buscando ranking de tipos de equipamento...');
       console.log('📅 Período:', period, '| Início:', startDate.toISOString(), '| Fim:', endDate.toISOString());
       
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return [];
+      }
+      
       const { data, error } = await supabase.rpc('fn_ranking_equipamentos', {
         p_data_inicio: startDate.toISOString(),
         p_data_fim: endDate.toISOString(),
-        p_user_id: null,
+        p_user_id: user.id, // ✅ FILTRAR POR USER_ID
         p_limite: 10
       });
 
@@ -984,10 +1024,17 @@ class SimpleReportsService {
       console.log('🔍 [SIMPLE] Buscando ranking de lucro por equipamento...');
       console.log('📅 Período:', period, '| Início:', startDate.toISOString(), '| Fim:', endDate.toISOString());
       
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return [];
+      }
+      
       const { data, error } = await supabase.rpc('fn_ranking_equipamentos', {
         p_data_inicio: startDate.toISOString(),
         p_data_fim: endDate.toISOString(),
-        p_user_id: null,
+        p_user_id: user.id, // ✅ FILTRAR POR USER_ID
         p_limite: 10
       });
 

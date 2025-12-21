@@ -82,22 +82,14 @@ export function AdminDashboard() {
     try {
       setLoading(true)
 
-      // 🔥 BUSCAR TODOS OS USUÁRIOS (de user_approvals + empresas)
+      // 🔥 BUSCAR TODOS OS USUÁRIOS VIA RPC (bypassa RLS)
       const { data: allUsers, error: usersError } = await supabase
-        .from('user_approvals')
-        .select(`
-          user_id,
-          email,
-          full_name,
-          company_name,
-          created_at,
-          status,
-          user_role
-        `)
-        .eq('user_role', 'owner')  // Apenas owners (donos de empresa)
-        .order('created_at', { ascending: false })
+        .rpc('get_admin_subscribers')
 
-      if (usersError) throw usersError
+      if (usersError) {
+        console.error('❌ Erro ao buscar usuários:', usersError)
+        throw usersError
+      }
 
       console.log('📊 Total de OWNERS encontrados:', allUsers?.length || 0)
 
@@ -107,22 +99,19 @@ export function AdminDashboard() {
       
       if (empresasError) {
         console.error('❌ Erro ao buscar empresas:', empresasError)
-        // Fallback: tentar query normal (vai retornar apenas a própria empresa)
-        const { data: empresasFallback } = await supabase
-          .from('empresas')
-          .select('user_id, tipo_conta, data_cadastro, data_fim_teste')
-          .in('user_id', allUsers?.map(u => u.user_id) || [])
-        
-        console.log('⚠️ Usando fallback - empresas limitadas:', empresasFallback)
+        throw empresasError
       }
 
       console.log('🔍 EMPRESAS DO BANCO:', empresas)
 
-      // Buscar subscriptions (se existir)
-      const { data: subscriptions } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .in('user_id', allUsers?.map(u => u.user_id) || [])
+      // Buscar subscriptions VIA RPC (bypassa RLS)
+      const { data: subscriptions, error: subError } = await supabase
+        .rpc('get_all_subscriptions_admin')
+      
+      if (subError) {
+        console.error('❌ Erro ao buscar subscriptions:', subError)
+        throw subError
+      }
       
       console.log('🔍 SUBSCRIPTIONS DO BANCO:', subscriptions)
 
@@ -138,7 +127,7 @@ export function AdminDashboard() {
 
       // Combinar dados e calcular dias restantes em TEMPO REAL
       const now = new Date()
-      const subscribersList: Subscriber[] = allUsers?.map(user => {
+      const subscribersList: Subscriber[] = allUsers?.map((user: any) => {
         const empresa = empresaMap.get(user.user_id)
         const sub = subscriptionMap.get(user.user_id)
         

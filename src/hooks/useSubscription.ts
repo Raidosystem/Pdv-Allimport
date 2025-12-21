@@ -103,6 +103,10 @@ export function useSubscription() {
       console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus com email do usuário:', currentUser.email)
       const status = await SubscriptionService.checkSubscriptionStatus(currentUser.email)
       console.log('🔍 [useSubscription] Status retornado:', status)
+      console.log('🔍 [useSubscription] Status.access_allowed:', status.access_allowed)
+      console.log('🔍 [useSubscription] Status.has_subscription:', status.has_subscription)
+      console.log('🔍 [useSubscription] Status.status:', status.status)
+      console.log('🔍 [useSubscription] Status.days_remaining:', status.days_remaining)
       sharedState.subscriptionStatus = status
 
       // Buscar dados completos da assinatura se existir

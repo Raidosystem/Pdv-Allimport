@@ -136,11 +136,19 @@ export function ProductsPage() {
     try {
       // Se estava visualizando um produto, recarregar os dados dele
       if (viewMode === 'view' && editingProduct) {
+        // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) {
+          console.error('❌ Erro ao obter usuário:', userError)
+          return
+        }
+        
         // Buscar dados atualizados do produto
         const { data } = await supabase
           .from('produtos')
           .select('*')
           .eq('id', editingProduct.id)
+          .eq('user_id', user.id)  // ✅ FILTRAR POR USER_ID
           .single()
         
         if (data) {

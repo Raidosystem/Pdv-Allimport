@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle, Receipt } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, DollarSign, TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle, Receipt, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCaixa } from '../hooks/useCaixa'
 import type { AberturaCaixaForm } from '../types/caixa'
+import ContasPagarList from '../modules/financeiro/contas-pagar/ContasPagarList'
 
 type ViewMode = 'dashboard' | 'movimentacoes' | 'historico'
 
@@ -14,6 +15,7 @@ export function CaixaPage() {
   const [showAbrirCaixaModal, setShowAbrirCaixaModal] = useState(false)
   const [showFecharCaixaModal, setShowFecharCaixaModal] = useState(false)
   const [showMovimentacaoModal, setShowMovimentacaoModal] = useState(false)
+  const [showFinanceiroModal, setShowFinanceiroModal] = useState(false)
 
   const {
     caixaAtual: caixaAtivo,
@@ -23,6 +25,15 @@ export function CaixaPage() {
     fecharCaixa,
     adicionarMovimentacao
   } = useCaixa()
+
+  // Renderizar view de Financeiro (fullscreen)
+  const renderFinanceiroView = () => {
+    return (
+      <div className="pb-8">
+        <ContasPagarList isModal={false} onClose={() => setShowFinanceiroModal(false)} />
+      </div>
+    )
+  }
 
   // Mock data para demonstração - interface rápida
   const movimentacoes = caixaAtivo?.movimentacoes_caixa || []
@@ -58,6 +69,11 @@ export function CaixaPage() {
 
   const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // Se modal de Financeiro está aberto, mostrar fullscreen
+  if (showFinanceiroModal) {
+    return renderFinanceiroView()
   }
 
   // Modal Abrir Caixa
@@ -420,7 +436,7 @@ export function CaixaPage() {
           <div className="flex flex-col sm:flex-row gap-2">
             {/* Botão Financeiro - sempre visível */}
             <button
-              onClick={() => navigate('/financeiro/contas-pagar')}
+              onClick={() => setShowFinanceiroModal(true)}
               className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
             >
               <Receipt className="h-5 w-5" />

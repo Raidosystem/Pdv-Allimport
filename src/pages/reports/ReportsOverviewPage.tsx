@@ -105,6 +105,7 @@ const ReportsOverviewPage: React.FC<ReportsOverviewPageProps> = ({ period: propP
   const { filters, setFilters } = useFilters();
   const [loading, setLoading] = useState(false);
   const [salesData, setSalesData] = useState<any>(null);
+  const [clientsData, setClientsData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Convert period to realReportsService format
@@ -125,19 +126,25 @@ const ReportsOverviewPage: React.FC<ReportsOverviewPageProps> = ({ period: propP
       const period = propPeriod || periodMapping[filters.period as keyof typeof periodMapping] || 'month';
       console.log('📅 [OVERVIEW] Período selecionado:', period);
       
-      const data = await realReportsService.getSalesReport(period as 'week' | 'month' | 'quarter');
+      // Buscar vendas E clientes
+      const [salesReportData, clientsReportData] = await Promise.all([
+        realReportsService.getSalesReport(period as 'week' | 'month' | 'quarter'),
+        realReportsService.getClientsReport(period as 'week' | 'month' | 'quarter')
+      ]);
       
-      console.log('✅ [OVERVIEW] Dados recebidos do serviço:', data);
-      console.log('💰 [OVERVIEW] totalAmount:', data?.totalAmount);
-      console.log('📦 [OVERVIEW] totalSales:', data?.totalSales);
-      console.log('📊 [OVERVIEW] dailySales length:', data?.dailySales?.length);
-      console.log('🏆 [OVERVIEW] topProducts length:', data?.topProducts?.length);
+      console.log('✅ [OVERVIEW] Dados recebidos do serviço:', salesReportData);
+      console.log('👥 [OVERVIEW] Clientes:', clientsReportData);
+      console.log('💰 [OVERVIEW] totalAmount:', salesReportData?.totalAmount);
+      console.log('📦 [OVERVIEW] totalSales:', salesReportData?.totalSales);
+      console.log('📊 [OVERVIEW] dailySales length:', salesReportData?.dailySales?.length);
+      console.log('🏆 [OVERVIEW] topProducts length:', salesReportData?.topProducts?.length);
       
-      if (!data || data.totalSales === 0) {
+      if (!salesReportData || salesReportData.totalSales === 0) {
         console.warn('⚠️ [OVERVIEW] ATENÇÃO: Dados vazios retornados!');
       }
       
-      setSalesData(data);
+      setSalesData(salesReportData);
+      setClientsData(clientsReportData);
       console.log('✅ [OVERVIEW] State atualizado com sucesso');
     } catch (err) {
       console.error('❌ [OVERVIEW] ERRO ao carregar dados:', err);
@@ -295,7 +302,7 @@ const ReportsOverviewPage: React.FC<ReportsOverviewPageProps> = ({ period: propP
         <KPICard
           icon={<Users className="w-6 h-6 text-orange-600" />}
           label="Clientes Únicos"
-          value="1,247"
+          value={clientsData?.totalClients || 0}
           change="+15.3% vs período anterior"
           trend="up"
           onClick={() => console.log('Clientes clicked')}

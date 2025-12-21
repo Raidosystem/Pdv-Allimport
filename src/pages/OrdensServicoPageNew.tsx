@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Wrench, Plus, Search, Edit, Trash2, Eye, Printer, X, Lock } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../components/ui/Button'
@@ -375,10 +375,16 @@ export function OrdensServicoPage() {
   const [garantiaPersonalizada, setGarantiaPersonalizada] = useState<string>('')
   const [servicoRealizado, setServicoRealizado] = useState<string>('')
   const [resultadoReparo, setResultadoReparo] = useState<'reparado' | 'sem_reparo' | 'condenado'>('reparado')
+  const isInitialMount = useRef(true) // ✅ Flag para carregar UMA VEZ
 
   useEffect(() => {
-    // Carregar todas as ordens de serviço do backup
-    const loadOrdens = async () => {
+    // ✅ Carregar apenas na primeira montagem
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      console.log('🎯 [OrdensServiço] Primeira montagem - carregando ordens UMA VEZ')
+      
+      // Carregar todas as ordens de serviço do backup
+      const loadOrdens = async () => {
       try {
         console.log('🔄 Iniciando carregamento das ordens...')
         const allOrdens = await loadAllServiceOrders()
@@ -403,7 +409,8 @@ export function OrdensServicoPage() {
     }
     
     loadOrdens()
-  }, [])
+    }
+  }, []) // ✅ Array vazio + ref = UMA execução
 
   const handleSearchTypeChange = (newSearchType: SearchType) => {
     console.log('🎯 [ORDEM SERVIÇO] Mudando tipo de busca para:', newSearchType)

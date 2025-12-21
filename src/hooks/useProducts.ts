@@ -227,7 +227,7 @@ export function useProducts() {
         .select('id, nome')
         .eq('nome', name.trim())
         .eq('user_id', empresa_id)  // CORRIGIDO: tabela categorias usa user_id
-        .single()
+        .maybeSingle()  // ✅ CORRIGIDO: maybeSingle() não gera erro 406 quando não encontra
 
       if (checkError && checkError.code !== 'PGRST116') {
         // PGRST116 = No rows found (que é o que queremos)
@@ -342,6 +342,8 @@ export function useProducts() {
         sku: productToSave.sku,
         estoque: productToSave.estoque,
         estoque_tipo: typeof productToSave.estoque,
+        ativo: productToSave.ativo,
+        ativo_original: productData.ativo,
         user_id: productToSave.user_id
       })
 

@@ -1,6 +1,17 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { PermissaoContext, UsePermissionsReturn } from '../types/admin';
+
+// 🔒 CONTROLES GLOBAIS para SINGLETON de listeners (apenas 1 por aba)
+let globalListenersRegistered = false;
+let globalVisibilityHandler: (() => void) | null = null;
+let globalAuthUnsubscribe: (() => void) | null = null;
+let globalProviderInstances = 0;
+
+// 🎯 REFS GLOBAIS compartilhados entre instâncias
+const globalVisibilityChangeRef = { current: false };
+const globalVisibilityLockRef = { current: false };
+const globalLastEmailRef = { current: null as string | null };
 
 // ========================================
 // CONTEXT DE PERMISSÕES
@@ -32,14 +43,52 @@ interface PermissionsProviderProps {
 
 export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ children }) => {
   const [context, setContext] = useState<PermissaoContext | null>(null);
+  const [contextLoaded, setContextLoaded] = useState(false);
+  const contextRef = useRef<PermissaoContext | null>(null);
+  const contextLoadedRef = useRef(false);
+  const isInitialMount = useRef(true);
+  const loadingRef = useRef(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // ✅ USAR REFS GLOBAIS ao invés de locais (compartilhados entre todas as instâncias)
+  const lastEmailRef = globalLastEmailRef;
+  const visibilityChangeRef = globalVisibilityChangeRef;
+  const visibilityLockRef = globalVisibilityLockRef;
+
+  // Sincroniza refs com o estado atual para uso em listeners estáveis
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+
+  useEffect(() => {
+    contextLoadedRef.current = contextLoaded;
+  }, [contextLoaded]);
 
   const loadPermissions = useCallback(async () => {
+    // ✅ PREVENIR MÚLTIPLAS CHAMADAS SIMULTÂNEAS
+    if (loadingRef.current) {
+      console.log('⏳ [usePermissions] Já existe carregamento em andamento, aguardando...');
+      return;
+    }
+
+    // ✅ PREVENIR RELOAD SE JÁ TEM CONTEXTO VÁLIDO (exceto se for mudança de usuário)
+    if (contextRef.current !== null && contextLoadedRef.current) {
+      console.log('✅ [usePermissions] Contexto já carregado - ABORTANDO reload desnecessário');
+      return;
+    }
+
     try {
+      loadingRef.current = true;
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('❌ Nenhum usuário logado');
+        loadingRef.current = false;
         return;
       }
+
+      // ✅ Atualizar último email carregado
+      lastEmailRef.current = user.email || null;
 
       console.log('🔍 [usePermissions] Carregando permissões para user:', user.email, 'ID:', user.id);
       console.log('🔍 [usePermissions] user.user_metadata:', user.user_metadata);
@@ -129,6 +178,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
           console.log('   🏢 is_admin_empresa:', newContext.is_admin_empresa);
           
           setContext(newContext);
+          setContextLoaded(true);
+          contextRef.current = newContext;
+          contextLoadedRef.current = true;
           return;
         }
       }
@@ -173,6 +225,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
         };
         
         setContext(ownerContext);
+        setContextLoaded(true);
+        contextRef.current = ownerContext;
+        contextLoadedRef.current = true;
         console.log('🎯 [usePermissions] OWNER CONTEXT CRIADO:', ownerContext);
         return;
       }
@@ -294,6 +349,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
           };
           
           setContext(adminContext);
+          setContextLoaded(true);
+          contextRef.current = adminContext;
+          contextLoadedRef.current = true;
           console.log('🎯 ADMIN AUTORIZADO:', adminContext);
         } else {
           // Usuário comum sem funcionário = SEM PERMISSÕES
@@ -315,6 +373,9 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
           };
           
           setContext(basicContext);
+          setContextLoaded(true);
+          contextRef.current = basicContext;
+          contextLoadedRef.current = true;
           console.log('🚫 USUÁRIO SEM PERMISSÕES:', basicContext);
         }
         return;
@@ -453,60 +514,143 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
       console.log(`   🏢 is_admin_empresa: ${newContext.is_admin_empresa}`);
 
       setContext(newContext);
+      setContextLoaded(true);
+      contextRef.current = newContext;
+      contextLoadedRef.current = true;
 
     } catch (error) {
       console.error('Erro ao carregar contexto de permissões:', error);
+    } finally {
+      loadingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    loadPermissions();
+    // 📏 Incrementar contador de instâncias
+    globalProviderInstances++;
+    console.log(`📏 [usePermissions] Instâncias do Provider: ${globalProviderInstances}`);
 
-    // Escutar mudanças na autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // ✅ CARREGAR APENAS NA MONTAGEM INICIAL - UMA VEZ E PRONTO!
+    if (isInitialMount.current) {
+      console.log('🎯 [usePermissions] Primeira montagem - carregando permissões UMA VEZ');
+      isInitialMount.current = false;
+      loadPermissions();
+    }
+
+    // 🔒 REGISTRAR APENAS LISTENER DE SIGNED_OUT (mínimo necessário)
+    if (!globalListenersRegistered) {
+      globalListenersRegistered = true;
+      console.log('🔧 [usePermissions] Registrando listener MINIMAL (apenas SIGNED_OUT)');
+
+      // Escutar mudanças na autenticação - SINGLETON
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
-        loadPermissions();
+        // ⚠️ SAFETY CHECK: Verificar se refs ainda existem
+        if (!visibilityChangeRef || !lastEmailRef) {
+          console.warn('⚠️ [usePermissions] Refs undefined no SIGNED_IN - listener órfão, abortando');
+          return;
+        }
+        
+        const currentEmail = session?.user?.email || null;
+        const isContextLoaded = contextLoadedRef.current;
+        console.log('🔐 [usePermissions] SIGNED_IN detectado');
+        console.log('  � visibilityLockRef:', visibilityLockRef.current);
+        console.log('  👁️ visibilityChangeRef:', visibilityChangeRef.current);
+        console.log('  📦 contextLoaded:', isContextLoaded);
+        console.log('  📧 currentEmail:', currentEmail);
+        console.log('  📧 lastEmail:', lastEmailRef.current);
+        console.log('  ✅ emails iguais?', lastEmailRef.current === currentEmail);
+        
+        // 🚨 VERIFICAR LOCK PRIMEIRO: Se lock ativo E contexto carregado E mesmo email, IGNORAR
+        if (visibilityLockRef.current && isContextLoaded && lastEmailRef.current === currentEmail) {
+          console.log('⛔ [usePermissions] BLOQUEADO POR LOCK: troca de aba + contexto carregado + mesmo email');
+          visibilityChangeRef.current = false; // Resetar flag
+          visibilityLockRef.current = false; // Desativar lock AQUI
+          return;
+        }
+        
+        // 🚨 CRÍTICO: Se veio de mudança de visibilidade E contexto já carregado E mesmo email, IGNORAR
+        if (visibilityChangeRef.current && isContextLoaded && lastEmailRef.current === currentEmail) {
+          console.log('⛔ [usePermissions] IGNORANDO: mudança visibilidade + contexto carregado + mesmo email (trocar de aba)');
+          visibilityChangeRef.current = false; // Resetar flag
+          visibilityLockRef.current = false; // Desativar lock AQUI também
+          return;
+        }
+        
+        // Limpar flag de visibilidade
+        if (visibilityChangeRef.current) {
+          console.log('🧹 [usePermissions] Limpando flag de visibilidade');
+          visibilityChangeRef.current = false;
+        }
+        
+        // 🔓 Desativar lock se não foi bloqueado acima (ou seja, passou na verificação)
+        if (visibilityLockRef.current) {
+          visibilityLockRef.current = false;
+          console.log('🔓 [usePermissions] LOCK DESATIVADO (após verificação)');
+        }
+        
+        // ✅ SOLUÇÃO: Ignorar SIGNED_IN se já temos contexto carregado E mesmo email
+        // Isso previne reload durante navegação normal entre páginas
+        if (isContextLoaded && lastEmailRef.current === currentEmail) {
+          console.log('⛔ [usePermissions] IGNORANDO: contexto carregado + mesmo email (navegação)');
+          visibilityChangeRef.current = false;
+          return;
+        }
+        
+        // ✅ Se contexto existe mas email diferente = novo login
+        if (lastEmailRef.current && lastEmailRef.current !== currentEmail) {
+          console.log('🔄 [usePermissions] Email diferente - novo login detectado');
+          setContextLoaded(false);
+          setContext(null);
+          contextLoadedRef.current = false;
+          contextRef.current = null;
+        }
+        
+        // Atualizar último email
+        lastEmailRef.current = currentEmail;
+        
+        // Carregar apenas se realmente necessário
+        if (!contextLoadedRef.current) {
+          console.log('🔄 [usePermissions] PROCESSANDO: Carregando permissões (primeiro login ou novo usuário)');
+          loadPermissions();
+        } else {
+          console.log('⛔ [usePermissions] IGNORANDO: Contexto já carregado');
+        }
       } else if (event === 'SIGNED_OUT') {
-        setContext(null);
-      }
-    });
+          console.log('🚪 [usePermissions] SIGNED_OUT detectado - limpando contexto');
+          setContext(null);
+          setContextLoaded(false);
+          contextRef.current = null;
+          contextLoadedRef.current = false;
+        }
+      });
 
-    // ✅ Escutar evento customizado de login local
-    const handlePermissionsReload = (e: CustomEvent) => {
-      console.log('🔔 [usePermissions] Evento pdv_permissions_reload recebido:', e.detail);
-      setTimeout(() => loadPermissions(), 100); // Pequeno delay para garantir que auth foi atualizado
-    };
+      // Armazenar unsubscribe globalmente
+      globalAuthUnsubscribe = subscription.unsubscribe.bind(subscription);
+      console.log('✅ [usePermissions] Listener MINIMAL registrado (apenas SIGNED_OUT)');
+    } else {
+      console.log('⏭️ [usePermissions] Listeners já registrados (SINGLETON) - pulando registro');
+    }
 
-    window.addEventListener('pdv_permissions_reload' as any, handlePermissionsReload as EventListener);
-
-    // ✅ NOVO: Escutar mudanças no localStorage (login local)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'pdv_funcionario_id' && e.newValue) {
-        console.log('🔄 [usePermissions] funcionario_id mudou no localStorage, recarregando...', e.newValue);
-        loadPermissions();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    // ✅ NOVO: Também criar um custom event para mudanças no mesmo tab
-    const handleCustomStorageChange = (e: CustomEvent) => {
-      if (e.detail?.key === 'pdv_funcionario_id') {
-        console.log('🔄 [usePermissions] funcionario_id mudou (custom event), recarregando...', e.detail.value);
-        // Dar um delay pequeno para garantir que o localStorage foi atualizado
-        setTimeout(() => loadPermissions(), 100);
-      }
-    };
-
-    window.addEventListener('pdv_storage_change' as any, handleCustomStorageChange as EventListener);
-
+    // 🧹 Cleanup ao desmontar
     return () => {
-      subscription.unsubscribe();
-      window.removeEventListener('pdv_permissions_reload' as any, handlePermissionsReload as EventListener);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('pdv_storage_change' as any, handleCustomStorageChange as EventListener);
+      globalProviderInstances--;
+      console.log(`🧹 [usePermissions] Desmontando... Instâncias restantes: ${globalProviderInstances}`);
+      
+      // Só remover listeners globais quando Última instância desmontar
+      if (globalProviderInstances === 0) {
+        console.log('🧹 [usePermissions] Última instância - removendo listener MINIMAL');
+        
+        if (globalAuthUnsubscribe) {
+          globalAuthUnsubscribe();
+          globalAuthUnsubscribe = null;
+        }
+        
+        globalListenersRegistered = false;
+        console.log('✅ [usePermissions] Cleanup concluído');
+      }
     };
-  }, [loadPermissions]);
+  }, []); // ✅ Array vazio - listeners são estáveis
 
   return (
     <PermissionsContext.Provider value={context}>

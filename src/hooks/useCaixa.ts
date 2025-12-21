@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { caixaService } from '../services/caixaService';
 import type { 
   CaixaCompleto, 
@@ -13,6 +13,7 @@ export function useCaixa() {
   const [caixaAtual, setCaixaAtual] = useState<CaixaCompleto | null>(null);
   const [loading, setLoading] = useState(true); // Iniciar como true
   const [error, setError] = useState<string | null>(null);
+  const isInitialMount = useRef(true); // ✅ Flag para carregar UMA VEZ
 
   // ===== CARREGAR CAIXA ATUAL =====
   const carregarCaixaAtual = useCallback(async () => {

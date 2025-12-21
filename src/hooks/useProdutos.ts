@@ -27,9 +27,17 @@ const loadAllProducts = async (): Promise<Product[]> => {
     console.log('🔍 [useProdutos] Buscando produtos no Supabase com RLS...')
     console.log('📦 [useProdutos] BUSCANDO PRODUTOS NO SUPABASE (respeitando RLS)')
     
+    // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      console.error('❌ [useProdutos] Erro ao obter usuário:', userError)
+      return []
+    }
+    
     const { data, error } = await supabase
       .from('produtos')
       .select('*')
+      .eq('user_id', user.id)  // ✅ FILTRAR POR USER_ID
       .eq('ativo', true)
       .order('nome')
     

@@ -9,11 +9,39 @@ export const productService = {
     try {
       console.log('📦 BUSCANDO PRODUTOS NO SUPABASE (respeitando RLS)');
       
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('❌ Erro ao obter usuário:', userError);
+        return [];
+      }
+      
       let query = supabase
         .from('produtos')
         .select('*')
+        .eq('user_id', user.id)  // ✅ FILTRAR POR USER_ID
         .eq('ativo', true)
         .order('nome');
+
+      console.log('🔍 [productService.search] Filtros aplicados:', {
+        user_id: user.id,
+        ativo: true,
+        barcode: params.barcode || 'não fornecido',
+        search: params.search || 'não fornecido'
+      });
+
+      // 🔍 DEBUG: Verificar TODOS os produtos do usuário (sem filtro de ativo)
+      const { data: allUserProducts } = await supabase
+        .from('produtos')
+        .select('id, nome, ativo, codigo_barras, sku')
+        .eq('user_id', user.id);
+      
+      console.log(`📊 [DEBUG] Total de produtos do usuário: ${allUserProducts?.length || 0}`);
+      console.log(`📊 [DEBUG] Produtos ativos: ${allUserProducts?.filter(p => p.ativo).length || 0}`);
+      console.log(`📊 [DEBUG] Produtos inativos: ${allUserProducts?.filter(p => !p.ativo).length || 0}`);
+      if (allUserProducts && allUserProducts.length > 0) {
+        console.log('📋 [DEBUG] Primeiros 3 produtos:', allUserProducts.slice(0, 3));
+      }
 
       // Filtrar por código de barras se fornecido
       if (params.barcode && params.barcode.trim()) {
@@ -79,10 +107,18 @@ export const productService = {
     console.log('🔍 Buscando produto por ID no Supabase:', id);
     
     try {
+      // ✅ OBTER USER_ID DO USUÁRIO AUTENTICADO
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('❌ Erro ao obter usuário:', userError);
+        return null;
+      }
+      
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
         .eq('id', id)
+        .eq('user_id', user.id)  // ✅ FILTRAR POR USER_ID
         .eq('ativo', true)
         .single();
 
@@ -514,10 +550,12 @@ export const saleService = {
         tipo: 'entrada',
         descricao,
         valor: sale.total_amount,
-        usuario_id: sale.user_id,
+        user_id: sale.user_id,  // ✅ CORRIGIDO: user_id é o campo NOT NULL correto da tabela
         venda_id: sale.id,
         data: new Date().toISOString()
       };
+      
+      console.log('💰 [DEBUG] Movimentação a ser inserida:', movimentacao);
       
       const { error } = await supabase
         .from('movimentacoes_caixa')

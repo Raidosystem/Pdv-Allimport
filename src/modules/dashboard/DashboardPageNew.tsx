@@ -634,26 +634,42 @@ export function DashboardPage() {
 
       {/* Conteúdo Principal - Responsivo */}
       <main className="max-w-7xl mx-auto dashboard-content py-4 sm:py-6 lg:py-8">
+        {/* IMPORTANTE: Manter todos os componentes montados para evitar reload */}
+        {/* Renderizar todas as páginas uma vez, alternando visibilidade */}
+        <div style={{ display: activeMenu === 'sales' ? 'block' : 'none' }}>
+          <SalesPage />
+        </div>
+        <div style={{ display: activeMenu === 'clients' ? 'block' : 'none' }}>
+          <ClientesPage />
+        </div>
+        <div style={{ display: activeMenu === 'products' ? 'block' : 'none' }}>
+          <ProductsPage />
+        </div>
+        <div style={{ display: activeMenu === 'orders' ? 'block' : 'none' }}>
+          <OrdensServicoPage />
+        </div>
+        <div style={{ display: activeMenu === 'cashier' ? 'block' : 'none' }}>
+          <CaixaPage />
+        </div>
+        <div style={{ display: activeMenu === 'reports' ? 'block' : 'none' }}>
+          <RelatoriosPage />
+        </div>
+        <div style={{ display: activeMenu === 'admin' ? 'block' : 'none' }}>
+          <AdministracaoPage />
+        </div>
+        <div style={{ display: activeMenu === 'settings' ? 'block' : 'none' }}>
+          <ConfiguracoesPage />
+        </div>
+
         {/* Conteúdo Principal - Página embarcada ou Submenu */}
         {activeMenu && (
           <div className="mb-8 animate-in fade-in duration-300">
             {allMenus
               .filter(menu => menu.name === activeMenu)
               .map(menu => {
-                // Para menus prioritários, mostrar a página diretamente
+                // Para menus prioritários, página já está renderizada acima
                 if (menu.priority) {
-                  const pageContent = {
-                    sales: <SalesPage key="sales-page" />,
-                    clients: <ClientesPage key="clients-page" />,
-                    products: <ProductsPage key="products-page" />,
-                    orders: <OrdensServicoPage key="orders-page" />,
-                    cashier: <CaixaPage key="cashier-page" />,
-                    reports: <RelatoriosPage key="reports-page" />,
-                    admin: <AdministracaoPage key="admin-page" />,
-                    settings: <ConfiguracoesPage key="settings-page" />
-                  }[menu.name]
-                  
-                  return <div key={`page-${menu.name}`}>{pageContent}</div>
+                  return null
                 }
                 
                 // Para menus secundários, mostrar as opções

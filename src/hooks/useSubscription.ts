@@ -1,84 +1,231 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../modules/auth/AuthContext'
 import { SubscriptionService } from '../services/subscriptionService'
 import type { SubscriptionStatus, Subscription } from '../types/subscription'
 import { supabase } from '../lib/supabase'
 
+// Estado compartilhado entre todas as instâncias do hook para evitar listeners e loads duplicados
+type SharedSubscriptionState = {
+  subscriptionStatus: SubscriptionStatus | null
+  subscription: Subscription | null
+  loading: boolean
+  error: string | null
+}
+
+const sharedState: SharedSubscriptionState = {
+  subscriptionStatus: null,
+  subscription: null,
+  loading: true,
+  error: null
+}
+
+const subscribers = new Set<(state: SharedSubscriptionState) => void>()
+
+let sharedLastEmail: string | null = null
+let sharedVisibilityChange = false
+let sharedVisibilityLock = false // Lock para prevenir reloads após visibilitychange
+let sharedLoadingInProgress = false
+let listenersRegistered = false
+let authUnsubscribe: (() => void) | null = null
+let visibilityHandler: (() => void) | null = null
+let hookInstances = 0
+
+const notifySubscribers = () => {
+  const snapshot = { ...sharedState }
+  subscribers.forEach((fn) => fn(snapshot))
+}
+
 export function useSubscription() {
   const { user } = useAuth()
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [state, setState] = useState<SharedSubscriptionState>({ ...sharedState })
+  
+  // 🎯 Controles para evitar recarregamento desnecessário (compartilhados entre instâncias)
+  const isInitialMount = useRef(true)
   
   // 🚨 SUPER ADMIN sempre tem acesso TOTAL
   const SUPER_ADMIN_EMAIL = 'novaradiosystem@outlook.com'
   const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
 
-  const loadSubscriptionData = async () => {
-    if (!user?.email) {
+  const updateSharedState = (partial: Partial<SharedSubscriptionState>) => {
+    Object.assign(sharedState, partial)
+    notifySubscribers()
+    setState({ ...sharedState })
+  }
+
+  const loadSubscriptionData = async (forcedUser?: { id?: string; email?: string; user_metadata?: any } | null) => {
+    const currentUser = forcedUser ?? user
+
+    // 🎯 Prevenir chamadas concorrentes globais
+    if (sharedLoadingInProgress) {
+      console.log('⏳ [useSubscription] Já existe carregamento global em andamento, aguardando...')
+      return
+    }
+
+    if (!currentUser?.email) {
       console.log('🔍 [useSubscription] Sem email de usuário, abortando...')
-      setLoading(false)
+      updateSharedState({ loading: false })
+      sharedLoadingInProgress = false
       return
     }
     
     // 🚨 Super admin bypassa verificação de assinatura
-    if (isSuperAdmin) {
+    if (currentUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
       console.log('✅ [useSubscription] SUPER ADMIN detectado - acesso TOTAL sem verificação')
-      setSubscriptionStatus({
-        has_subscription: true,
-        status: 'active',
-        access_allowed: true,
-        days_remaining: 999999,
-        trial_end_date: undefined
+      sharedLastEmail = currentUser.email
+      updateSharedState({
+        subscriptionStatus: {
+          has_subscription: true,
+          status: 'active',
+          access_allowed: true,
+          days_remaining: 999999,
+          trial_end_date: undefined
+        },
+        subscription: null,
+        loading: false,
+        error: null
       })
-      setLoading(false)
+      sharedLoadingInProgress = false
       return
     }
 
     try {
-      console.log('🔍 [useSubscription] Iniciando loadSubscriptionData para:', user.email)
-      console.log('🔍 [useSubscription] user.id:', user.id)
-      console.log('🔍 [useSubscription] user.user_metadata:', user.user_metadata)
-      setLoading(true)
-      setError(null)
+      sharedLoadingInProgress = true
+      sharedLastEmail = currentUser.email
+      console.log('🔍 [useSubscription] Iniciando loadSubscriptionData para:', currentUser.email)
+      console.log('🔍 [useSubscription] user.id:', currentUser.id)
+      console.log('🔍 [useSubscription] user.user_metadata:', currentUser.user_metadata)
+      updateSharedState({ loading: true, error: null })
 
       // 🔑 CRITICAL FIX: A função RPC check_subscription_status já faz toda a lógica
       // de verificação, incluindo buscar assinatura da empresa se for funcionário.
       // Basta passar o email do usuário logado, a função RPC cuida do resto!
       
-      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus com email do usuário:', user.email)
-      const status = await SubscriptionService.checkSubscriptionStatus(user.email)
+      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus com email do usuário:', currentUser.email)
+      const status = await SubscriptionService.checkSubscriptionStatus(currentUser.email)
       console.log('🔍 [useSubscription] Status retornado:', status)
-      setSubscriptionStatus(status)
+      sharedState.subscriptionStatus = status
 
       // Buscar dados completos da assinatura se existir
-      if (status.has_subscription && user.id) {
-        const subscriptionData = await SubscriptionService.getUserSubscription(user.id)
-        setSubscription(subscriptionData)
+      let subscriptionData: Subscription | null = null
+      if (status.has_subscription && currentUser.id) {
+        subscriptionData = await SubscriptionService.getUserSubscription(currentUser.id)
       }
+
+      sharedState.subscription = subscriptionData
+      updateSharedState({ subscriptionStatus: status, subscription: subscriptionData, error: null })
     } catch (err) {
       console.error('Erro ao carregar dados da assinatura:', err)
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      updateSharedState({ error: err instanceof Error ? err.message : 'Erro desconhecido' })
     } finally {
-      setLoading(false)
+      sharedLoadingInProgress = false
+      updateSharedState({ loading: false })
     }
   }
 
   // Carregar dados quando o usuário mudar
   useEffect(() => {
+    // 🎯 Carregar apenas no primeiro mount OU quando o email mudar de verdade
     if (user?.email) {
-      loadSubscriptionData()
+      // Se já temos dados em cache para este email, apenas sincronizar estado local
+      if (sharedLastEmail === user.email && sharedState.subscriptionStatus) {
+        console.log('⏭️  [useSubscription] Mesmo usuário com cache - pulando recarga')
+        setState({ ...sharedState })
+        return
+      }
+
+      // Primeiro mount ou email diferente dispara carregamento único compartilhado
+      if (isInitialMount.current || sharedLastEmail !== user.email) {
+        console.log('🎯 [useSubscription] Carregando dados compartilhados para email:', user.email)
+        isInitialMount.current = false
+        loadSubscriptionData(user)
+      }
     } else {
       // Reset state quando não há usuário
-      setSubscriptionStatus(null)
-      setSubscription(null)
-      setLoading(false)
-      setError(null)
+      sharedLastEmail = null
+      updateSharedState({ subscriptionStatus: null, subscription: null, loading: false, error: null })
     }
   }, [user?.email]) // Remover user?.id para evitar loops
 
+  // 🎯 LISTENER para SIGNED_IN events (igual ao usePermissions)
+  useEffect(() => {
+    hookInstances += 1
+
+    // Registrar listeners apenas uma vez por aba
+    if (!listenersRegistered) {
+      listenersRegistered = true
+      console.log('🔧 [useSubscription] Registrando listener onAuthStateChange (singleton)')
+      
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN') {
+          const currentEmail = session?.user?.email || null
+          console.log('🔐 [useSubscription] SIGNED_IN detectado')
+          console.log('  � visibilityLock:', sharedVisibilityLock)
+          console.log('  👁️ visibilityChange (global):', sharedVisibilityChange)
+          console.log('  📧 currentEmail:', currentEmail)
+          console.log('  📧 lastEmail (global):', sharedLastEmail)
+          console.log('  ✅ emails iguais?', sharedLastEmail === currentEmail)
+          
+          // 🚨 VERIFICAR LOCK PRIMEIRO: Se lock ativo E mesmo email, IGNORAR
+          if (sharedVisibilityLock && sharedLastEmail === currentEmail) {
+            console.log('⛔ [useSubscription] BLOQUEADO POR LOCK: troca de aba + mesmo email')
+            sharedVisibilityChange = false // Resetar flag
+            sharedVisibilityLock = false // Desativar lock AQUI
+            return
+          }
+          
+          // 🔓 Desativar lock se não foi bloqueado acima
+          if (sharedVisibilityLock) {
+            sharedVisibilityLock = false
+            console.log('🔓 [useSubscription] LOCK DESATIVADO (após verificação)')
+          }
+          
+          // Limpar flag de visibilidade
+          if (sharedVisibilityChange) {
+            console.log('🧹 [useSubscription] Limpando flag de visibilidade')
+            sharedVisibilityChange = false
+          }
+          
+          // Verificar se o email mudou (novo login vs navegação)
+          if (sharedLastEmail === currentEmail) {
+            console.log('⛔ [useSubscription] IGNORANDO: mesmo email (apenas navegação)')
+            return // Ignorar se for o mesmo usuário
+          }
+          
+          // Email diferente = novo login real
+          console.log('🔄 [useSubscription] PROCESSANDO: Email mudou - novo login detectado')
+          sharedLastEmail = currentEmail
+          await loadSubscriptionData(session?.user ?? null)
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 [useSubscription] SIGNED_OUT detectado - limpando dados')
+          updateSharedState({ subscriptionStatus: null, subscription: null, loading: false, error: null })
+        }
+      })
+
+      authUnsubscribe = authListener?.subscription?.unsubscribe ?? null
+    }
+
+    // Cada instância assina o estado compartilhado
+    subscribers.add(setState)
+
+    return () => {
+      subscribers.delete(setState)
+      hookInstances -= 1
+
+      // Somente o último desmonta listeners globais para evitar vazamento
+      if (hookInstances === 0) {
+        console.log('🧹 [useSubscription] Cleanup global - removendo listener MINIMAL')
+        if (authUnsubscribe) {
+          authUnsubscribe()
+          authUnsubscribe = null
+        }
+        listenersRegistered = false
+      }
+    }
+  }, [])
+
   // Verificar se o usuário tem acesso
+  const { subscriptionStatus, subscription, loading, error } = state
+
   const hasAccess = subscriptionStatus?.access_allowed || false
 
   // Verificar se está em período de teste
@@ -95,20 +242,6 @@ export function useSubscription() {
 
   // Verificar se precisa de pagamento
   const needsPayment = !hasAccess && subscriptionStatus?.has_subscription
-
-  // 🔍 DEBUG: Logar todos os valores calculados
-  const estadoCalculado = {
-    subscriptionStatus,
-    hasAccess,
-    isInTrial,
-    isExpired,
-    isActive,
-    daysRemaining,
-    needsPayment,
-    userEmail: user?.email
-  }
-  console.log('🔍 [useSubscription] Estado calculado:', estadoCalculado)
-  console.log('📊 [useSubscription] Estado JSON:', JSON.stringify(estadoCalculado, null, 2))
 
   // Ativar período de teste (para admin)
   const activateTrial = async (userEmail: string) => {

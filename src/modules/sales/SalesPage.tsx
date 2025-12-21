@@ -96,16 +96,17 @@ export function SalesPage() {
   // Verificar se pode finalizar a venda
   const canFinalizeSale = items.length > 0 && totalPaid >= totalAmount && caixaAtual?.status === 'aberto'
 
-  // Verificar caixa aberto ao carregar (simplificado)
+  // Verificar caixa aberto ao carregar - APENAS UMA VEZ
   useEffect(() => {
-    // Verificar apenas uma vez quando os dados do caixa estão prontos
+    // ✅ Verificar apenas uma vez após carregamento inicial
     if (!loadingCaixa && !initialCheckDone) {
+      console.log('🎯 [SalesPage] Verificação inicial de caixa (UMA VEZ)');
       if (!caixaAtual || caixaAtual.status !== 'aberto') {
-        setShowCashModal(true)
+        setShowCashModal(true);
       }
-      setInitialCheckDone(true)
+      setInitialCheckDone(true);
     }
-  }, [caixaAtual, loadingCaixa, initialCheckDone])
+  }, [caixaAtual, loadingCaixa, initialCheckDone]) // Deps necessárias para verificação inicial
 
     const handleOpenCashRegister = async (amount: number) => {
     if (!user) return

@@ -90,9 +90,9 @@ class LojaOnlineService {
       .from('lojas_online')
       .select('*')
       .eq('empresa_id', user.id)
-      .single()
+      .maybeSingle()  // maybeSingle() não lança erro se não encontrar registro
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Erro ao buscar loja:', error)
       throw error
     }

@@ -16,7 +16,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     flowType: 'pkce',
     storage: window.localStorage,
     storageKey: 'supabase.auth.token',
-    debug: import.meta.env.DEV
+    debug: false // 🔇 Desabilitar logs de debug do Supabase
   },
   realtime: {
     params: {
@@ -26,6 +26,25 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   // ❌ NÃO definir Content-Type globalmente pois quebra uploads de arquivo
   // O Supabase SDK define automaticamente o Content-Type correto para cada tipo de requisição
 })
+
+// 🚨 HACK: Desabilitar o _onVisibilityChanged do GoTrueClient
+// O Supabase adiciona listener de visibilitychange internamente que não pode ser desabilitado
+// Vamos sobrescrever a função para que não faça nada
+setTimeout(() => {
+  try {
+    const client = (supabase.auth as any).client || (supabase.auth as any)
+    if (client && client._onVisibilityChanged) {
+      const originalFn = client._onVisibilityChanged.bind(client)
+      client._onVisibilityChanged = function(visible: boolean) {
+        // NÃO fazer nada - bloquear completamente o refresh por visibilidade
+        console.log('🔇 [BLOQUEADO] Supabase tentou processar visibilitychange -', visible ? 'visible' : 'hidden')
+      }
+      console.log('✅ Listener de visibilitychange do Supabase BLOQUEADO')
+    }
+  } catch (err) {
+    console.warn('⚠️ Não foi possível bloquear visibilitychange:', err)
+  }
+}, 50)
 
 // Log de inicialização
 console.log('🔧 Supabase inicializado:', {

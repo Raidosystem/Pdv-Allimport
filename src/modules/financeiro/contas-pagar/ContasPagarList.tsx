@@ -11,8 +11,10 @@ import {
   Edit,
   Trash2,
   FileText,
-  DollarSign
+  DollarSign,
+  ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { ContaPagar, ContaPagarFilters } from './api';
 import {
   getContasPagar,
@@ -22,7 +24,22 @@ import {
 } from './api';
 import ContaPagarForm from './ContaPagarForm';
 
-const ContasPagarList: React.FC = () => {
+interface ContasPagarListProps {
+  isModal?: boolean;
+  onClose?: () => void;
+}
+
+const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onClose }) => {
+  const navigate = useNavigate();
+
+  // Função para voltar
+  const handleVoltar = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/caixa');
+    }
+  };
   const [contas, setContas] = useState<ContaPagar[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -163,21 +180,46 @@ const ContasPagarList: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Contas a Pagar</h1>
-          <p className="text-gray-600">Gerencie boletos e pagamentos aos fornecedores</p>
+      {/* Header - Oculto quando em modal */}
+      {!isModal && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleVoltar}
+              className="flex items-center gap-2 px-3 py-2 text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors border border-orange-600"
+              title="Voltar para Controle de Caixa"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Voltar</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Contas a Pagar</h1>
+              <p className="text-gray-600">Gerencie boletos e pagamentos aos fornecedores</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Conta
+          </button>
         </div>
-        
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Conta
-        </button>
-      </div>
+      )}
+
+      {/* Header alternativo para modal */}
+      {isModal && (
+        <div className="flex items-center justify-end">
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Conta
+          </button>
+        </div>
+      )}
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

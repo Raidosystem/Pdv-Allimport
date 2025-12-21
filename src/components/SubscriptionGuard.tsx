@@ -53,11 +53,11 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   }
 
   // Só mostrar tela de pagamento se:
-  // 1. Está em período de teste E expirou
-  // 2. OU não tem acesso E não tem assinatura ativa
-  const shouldShowPayment = (isInTrial && isExpired) || (!hasAccess && !isActive)
+  // 1. NÃO tem acesso E
+  // 2. NÃO está em trial válido
+  const shouldShowPayment = !hasAccess && (!isInTrial || isExpired)
   
-  // 🔍 DEBUG: Logar decisão de mostrar pagamento
+  // 🔍 DEBUG COMPLETO: Logar decisão de mostrar pagamento
   const decisao = {
     user: user?.email,
     isAdmin: isAdmin(),
@@ -67,14 +67,27 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     isActive,
     needsPayment,
     shouldShowPayment,
-    decisao: shouldShowPayment || needsPayment ? '❌ MOSTRAR PAGAMENTO' : '✅ PERMITIR ACESSO'
+    // 🔥 NOVOS LOGS DETALHADOS
+    subscriptionLoading,
+    checking,
+    authLoading,
+    decisao: shouldShowPayment ? '❌ BLOQUEADO - MOSTRAR PAGAMENTO' : '✅ LIBERADO - PERMITIR ACESSO'
   }
   console.log('🔍 [SubscriptionGuard] Decisão de acesso:', decisao)
   console.log('📊 [SubscriptionGuard] Decisão JSON:', JSON.stringify(decisao, null, 2))
   
-  if (shouldShowPayment || needsPayment) {
+  // 🚨 SE BLOQUEAR, LOGAR MOTIVO EXATO
+  if (shouldShowPayment) {
+    console.error('❌ [SubscriptionGuard] BLOQUEANDO ACESSO!')
+    console.error('   Motivo: hasAccess =', hasAccess)
+    console.error('   isInTrial =', isInTrial)
+    console.error('   isExpired =', isExpired)
+    console.error('   Fórmula: !hasAccess && (!isInTrial || isExpired) =', shouldShowPayment)
     return <PaymentPage onPaymentSuccess={() => window.location.reload()} />
   }
+  
+  // ✅ LIBERADO
+  console.log('✅ [SubscriptionGuard] ACESSO LIBERADO para:', user?.email)
 
   // Usuário tem acesso, mostrar conteúdo
   return <>{children}</>

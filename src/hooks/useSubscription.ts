@@ -240,8 +240,9 @@ export function useSubscription() {
   // Obter dias restantes
   const daysRemaining = subscriptionStatus?.days_remaining || 0
 
-  // Verificar se precisa de pagamento
-  const needsPayment = !hasAccess && subscriptionStatus?.has_subscription
+  // 🎯 CORRIGIDO: Verificar se precisa de pagamento
+  // Só precisa pagar se: NÃO tem acesso E (não tem trial OU trial expirou)
+  const needsPayment = !hasAccess && (!isInTrial || isExpired)
 
   // Ativar período de teste (para admin)
   const activateTrial = async (userEmail: string) => {

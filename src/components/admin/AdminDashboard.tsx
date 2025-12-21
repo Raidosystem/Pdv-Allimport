@@ -357,10 +357,19 @@ export function AdminDashboard() {
       // 9. Excluir de user_approvals
       await supabase.from('user_approvals').delete().eq('user_id', subscriber.user_id)
       
-      // 10. Excluir da tabela auth.users (usando Admin API)
-      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(subscriber.user_id)
+      // 10. Excluir da tabela auth.users (usando função RPC que usa service_role)
+      const { error: deleteAuthError } = await supabase.rpc('delete_user_account', {
+        target_user_id: subscriber.user_id
+      })
       
-      if (deleteAuthError) throw deleteAuthError
+      if (deleteAuthError) {
+        console.error('❌ Erro ao excluir conta de autenticação:', deleteAuthError)
+        // Mesmo que falhe, continuamos - os dados já foram limpos
+        toast.dismiss(loadingToast)
+        toast.success(`⚠️ Dados do usuário ${subscriber.email} excluídos, mas conta de login pode ainda existir.\nContate suporte se necessário.`)
+        await loadSubscribers()
+        return
+      }
 
       toast.dismiss(loadingToast)
       toast.success(`✅ Usuário ${subscriber.email} excluído completamente!\nTodos os dados foram removidos permanentemente.`)

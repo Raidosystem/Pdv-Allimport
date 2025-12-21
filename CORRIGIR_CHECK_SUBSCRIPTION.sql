@@ -9,7 +9,10 @@ SELECT
 FROM pg_proc
 WHERE proname = 'check_subscription_status';
 
--- PASSO 2: Recriar a função CORRETA
+-- PASSO 2: DELETAR função antiga
+DROP FUNCTION IF EXISTS check_subscription_status(TEXT);
+
+-- PASSO 3: Recriar a função CORRETA
 CREATE OR REPLACE FUNCTION check_subscription_status(user_email TEXT)
 RETURNS TABLE (
   has_subscription BOOLEAN,
@@ -104,13 +107,13 @@ BEGIN
 END;
 $$;
 
--- PASSO 3: Dar permissão
+-- PASSO 4: Dar permissão
 GRANT EXECUTE ON FUNCTION check_subscription_status(TEXT) TO authenticated;
 
--- PASSO 4: Testar com usuário específico
+-- PASSO 5: Testar com usuário específico
 SELECT * FROM check_subscription_status('cris-ramos30@hotmail.com');
 
--- PASSO 5: Resultado esperado
+-- PASSO 6: Resultado esperado
 SELECT 
   '✅ Deve retornar:' as mensagem
 UNION ALL

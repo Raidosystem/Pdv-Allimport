@@ -16,7 +16,12 @@ export class SubscriptionService {
       if (!rpcError && rpcData) {
         console.log('✅ Status retornado pelo banco (RPC):', rpcData)
         console.log('📊 RPC JSON:', JSON.stringify(rpcData, null, 2))
-        return rpcData as SubscriptionStatus
+        
+        // 🔥 FIX: RPC retorna array, pegar primeiro elemento
+        const status = Array.isArray(rpcData) ? rpcData[0] : rpcData
+        console.log('🔍 Status após array fix:', status)
+        
+        return status as SubscriptionStatus
       }
 
       // SE A FUNÇÃO NÃO EXISTE, fazer a verificação manualmente

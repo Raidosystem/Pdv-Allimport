@@ -4,9 +4,6 @@ import { useSubscription } from '../../hooks/useSubscription'
 export function SubscriptionDaysIndicator() {
   const { daysRemaining, isInTrial, hasAccess } = useSubscription()
 
-  // Debug: ver valores no console
-  console.log('📊 SubscriptionDaysIndicator:', { hasAccess, daysRemaining, isInTrial })
-
   // Mostrar se tiver acesso (ativo ou em trial)
   if (!hasAccess || daysRemaining <= 0) {
     return null

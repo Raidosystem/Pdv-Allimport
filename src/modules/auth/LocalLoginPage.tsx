@@ -154,24 +154,15 @@ export function LocalLoginPage() {
       // Login bem-sucedido - extrair dados do funcionário
       const funcionarioData = data.funcionario
       
-      // 🔑 VERIFICAR SE PRECISA TROCAR SENHA
-      // Buscar flag precisa_trocar_senha na tabela login_funcionarios
-      const { data: loginData, error: loginError } = await supabase
-        .from('login_funcionarios')
-        .select('precisa_trocar_senha')
-        .eq('funcionario_id', funcionarioData.id)
-        .single()
+      // 🔑 VERIFICAR SE É PRIMEIRO ACESSO
+      // Usar flag primeiro_acesso da tabela funcionarios (já vem no funcionarioData)
+      const isPrimeiroAcesso = funcionarioData.primeiro_acesso === true
 
-      if (loginError) {
-        console.error('❌ Erro ao verificar flag de troca de senha:', loginError)
-      }
+      console.log('🔑 Primeiro acesso?', isPrimeiroAcesso)
+      console.log('🔍 Dados do funcionário:', funcionarioData)
 
-      const precisaTrocarSenha = loginData?.precisa_trocar_senha === true
-
-      console.log('🔑 Precisa trocar senha?', precisaTrocarSenha)
-
-      // Se precisa trocar senha, redirecionar para tela de troca
-      if (precisaTrocarSenha) {
+      // Se é primeiro acesso, redirecionar para tela de troca de senha
+      if (isPrimeiroAcesso) {
         console.log('⚠️ Redirecionando para tela de troca de senha...')
         toast.success('Login bem-sucedido! Por favor, defina sua senha pessoal.', {
           duration: 4000,
@@ -200,8 +191,16 @@ export function LocalLoginPage() {
 
       toast.success(`Bem-vindo, ${funcionarioData.nome}!`)
       
-      // Redirecionar para dashboard
-      navigate('/dashboard', { replace: true })
+      // 🎯 REDIRECIONAR BASEADO NO TIPO DE USUÁRIO
+      // Admin da Empresa -> /admin
+      // Funcionário comum -> /dashboard
+      const isAdminEmpresa = funcionarioData.tipo_admin === 'admin_empresa'
+      const redirectPath = isAdminEmpresa ? '/admin' : '/dashboard'
+      
+      console.log('🎯 Tipo de usuário:', funcionarioData.tipo_admin)
+      console.log('🎯 Redirecionando para:', redirectPath)
+      
+      navigate(redirectPath, { replace: true })
     } catch (error) {
       console.error('Erro no login:', error)
       toast.error('Erro ao fazer login')

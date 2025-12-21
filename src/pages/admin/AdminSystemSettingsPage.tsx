@@ -330,9 +330,19 @@ const AdminSystemSettingsPage: React.FC = () => {
     { id: 'seguranca', label: 'Segurança', icon: Shield }
   ];
 
-  // REGRA: Todo usuário logado é admin da sua empresa
+  // Apenas admin (super_admin OU admin_empresa) pode acessar configurações
   if (!isAdmin) {
-    console.log('⚠️ Usuário não reconhecido como admin nas configurações, mas permitindo acesso...');
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <Shield className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-900 mb-2">Acesso Restrito</h3>
+          <p className="text-red-700">
+            Apenas administradores da empresa podem acessar as configurações do sistema.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (loading || !settings) {

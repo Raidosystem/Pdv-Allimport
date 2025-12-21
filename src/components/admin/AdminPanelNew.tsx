@@ -556,6 +556,8 @@ export function AdminPanel() {
     }
   }
 
+  // Verificar se é admin (super_admin OU admin_empresa)
+  // Funcionários normais NÃO têm isAdmin = true
   const shouldShowAccessDenied = user && !isAdmin
 
   if (shouldShowAccessDenied) {

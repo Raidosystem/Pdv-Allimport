@@ -91,22 +91,13 @@ export function useSubscription() {
     try {
       sharedLoadingInProgress = true
       sharedLastEmail = currentUser.email
-      console.log('🔍 [useSubscription] Iniciando loadSubscriptionData para:', currentUser.email)
-      console.log('🔍 [useSubscription] user.id:', currentUser.id)
-      console.log('🔍 [useSubscription] user.user_metadata:', currentUser.user_metadata)
       updateSharedState({ loading: true, error: null })
 
       // 🔑 CRITICAL FIX: A função RPC check_subscription_status já faz toda a lógica
       // de verificação, incluindo buscar assinatura da empresa se for funcionário.
       // Basta passar o email do usuário logado, a função RPC cuida do resto!
       
-      console.log('🔍 [useSubscription] Chamando checkSubscriptionStatus com email do usuário:', currentUser.email)
       const status = await SubscriptionService.checkSubscriptionStatus(currentUser.email)
-      console.log('🔍 [useSubscription] Status retornado:', status)
-      console.log('🔍 [useSubscription] Status.access_allowed:', status.access_allowed)
-      console.log('🔍 [useSubscription] Status.has_subscription:', status.has_subscription)
-      console.log('🔍 [useSubscription] Status.status:', status.status)
-      console.log('🔍 [useSubscription] Status.days_remaining:', status.days_remaining)
       sharedState.subscriptionStatus = status
 
       // Buscar dados completos da assinatura se existir
@@ -162,16 +153,9 @@ export function useSubscription() {
       const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN') {
           const currentEmail = session?.user?.email || null
-          console.log('🔐 [useSubscription] SIGNED_IN detectado')
-          console.log('  � visibilityLock:', sharedVisibilityLock)
-          console.log('  👁️ visibilityChange (global):', sharedVisibilityChange)
-          console.log('  📧 currentEmail:', currentEmail)
-          console.log('  📧 lastEmail (global):', sharedLastEmail)
-          console.log('  ✅ emails iguais?', sharedLastEmail === currentEmail)
           
           // 🚨 VERIFICAR LOCK PRIMEIRO: Se lock ativo E mesmo email, IGNORAR
           if (sharedVisibilityLock && sharedLastEmail === currentEmail) {
-            console.log('⛔ [useSubscription] BLOQUEADO POR LOCK: troca de aba + mesmo email')
             sharedVisibilityChange = false // Resetar flag
             sharedVisibilityLock = false // Desativar lock AQUI
             return
@@ -180,27 +164,22 @@ export function useSubscription() {
           // 🔓 Desativar lock se não foi bloqueado acima
           if (sharedVisibilityLock) {
             sharedVisibilityLock = false
-            console.log('🔓 [useSubscription] LOCK DESATIVADO (após verificação)')
           }
           
           // Limpar flag de visibilidade
           if (sharedVisibilityChange) {
-            console.log('🧹 [useSubscription] Limpando flag de visibilidade')
             sharedVisibilityChange = false
           }
           
           // Verificar se o email mudou (novo login vs navegação)
           if (sharedLastEmail === currentEmail) {
-            console.log('⛔ [useSubscription] IGNORANDO: mesmo email (apenas navegação)')
             return // Ignorar se for o mesmo usuário
           }
           
           // Email diferente = novo login real
-          console.log('🔄 [useSubscription] PROCESSANDO: Email mudou - novo login detectado')
           sharedLastEmail = currentEmail
           await loadSubscriptionData(session?.user ?? null)
         } else if (event === 'SIGNED_OUT') {
-          console.log('🚪 [useSubscription] SIGNED_OUT detectado - limpando dados')
           updateSharedState({ subscriptionStatus: null, subscription: null, loading: false, error: null })
         }
       })

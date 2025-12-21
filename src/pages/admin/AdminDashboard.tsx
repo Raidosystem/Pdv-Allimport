@@ -369,7 +369,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // 🔒 VERIFICAÇÃO DE ACESSO: Apenas Admin da Empresa tem acesso
+  // 🔒 VERIFICAÇÃO DE ACESSO: Admin da Empresa tem acesso (isAdmin inclui isAdminEmpresa)
   if (!user || !isAdmin) {
     return (
       <div className="p-6">

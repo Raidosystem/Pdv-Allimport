@@ -480,7 +480,8 @@ export function AdminPanel() {
     }
   }
 
-  // Mostrar acesso negado apenas se há um usuário logado que não é admin
+  // Verificar se é admin (super_admin OU admin_empresa)
+  // Funcionários normais NÃO passam aqui
   const shouldShowAccessDenied = user && !isAdmin
 
   if (shouldShowAccessDenied) {

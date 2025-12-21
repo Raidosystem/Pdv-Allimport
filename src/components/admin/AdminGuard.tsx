@@ -18,7 +18,7 @@ interface PermissionGuardProps {
 export const AdminGuard: React.FC<AdminGuardProps> = ({ 
   children
 }) => {
-  const { loading } = usePermissions();
+  const { loading, isAdmin } = usePermissions();
 
   if (loading) {
     return (
@@ -31,20 +31,35 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({
     );
   }
 
-  // REGRA: Todo usuário logado tem acesso administrativo à sua empresa
-  // Não bloquear mais com base em isAdmin
-  console.log('🔐 AdminGuard: Permitindo acesso - todo usuário é admin da sua empresa');
-  
+  // Apenas admin (super_admin OU admin_empresa) pode acessar área administrativa
+  // Funcionários normais NÃO têm isAdmin = true
+  if (!isAdmin) {
+    console.log('🔐 AdminGuard: Acesso NEGADO - usuário não é admin');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center max-w-md">
+          <AlertTriangle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-900 mb-2">Acesso Administrativo Restrito</h3>
+          <p className="text-red-700">
+            Você não tem permissão para acessar esta área administrativa.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🔐 AdminGuard: Acesso PERMITIDO - usuário é admin');
   return <>{children}</>;
 };
 
-// Guarda para permissões específicas - também liberado
+// Guarda para permissões específicas - verifica can()
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({ 
   children, 
   recurso,
-  acao = 'read'
+  acao = 'read',
+  fallback
 }) => {
-  const { loading } = usePermissions();
+  const { loading, can, isAdmin } = usePermissions();
 
   if (loading) {
     return (
@@ -54,9 +69,36 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     );
   }
 
-  // REGRA: Todo usuário logado pode usar qualquer recurso do sistema
-  console.log(`🔐 PermissionGuard: Permitindo acesso ao recurso ${recurso}:${acao}`);
+  // Admin sempre tem permissão
+  if (isAdmin) {
+    console.log(`🔐 PermissionGuard: Admin - acesso ao recurso ${recurso}:${acao} PERMITIDO`);
+    return <>{children}</>;
+  }
+
+  // Funcionários: verificar permissão específica
+  const hasPermission = can(recurso, acao);
   
+  if (!hasPermission) {
+    console.log(`🔐 PermissionGuard: Acesso ao recurso ${recurso}:${acao} NEGADO`);
+    
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+    
+    return (
+      <div className="p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+          <p className="text-yellow-800 font-medium">Sem Permissão</p>
+          <p className="text-yellow-700 text-sm mt-1">
+            Você não tem permissão para {acao === 'read' ? 'ver' : 'realizar esta ação em'} {recurso}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log(`🔐 PermissionGuard: Acesso ao recurso ${recurso}:${acao} PERMITIDO`);
   return <>{children}</>;
 };
 

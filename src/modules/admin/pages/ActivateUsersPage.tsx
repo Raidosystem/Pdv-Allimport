@@ -272,30 +272,32 @@ export function ActivateUsersPage() {
     }
   }
 
-  // Excluir funcionário PERMANENTEMENTE
+  // Excluir funcionário PERMANENTEMENTE (incluindo auth.users)
   const handleExcluirFuncionario = async () => {
     try {
       if (!deleteConfirm.funcionarioId) return
 
-      // Excluir login primeiro (FK)
-      const { error: loginError } = await supabase
-        .from('login_funcionarios')
-        .delete()
-        .eq('funcionario_id', deleteConfirm.funcionarioId)
+      // ✅ USAR RPC QUE LIMPA TUDO (login_funcionarios, funcionarios, auth.users)
+      const { data, error } = await supabase
+        .rpc('excluir_funcionario_completo', {
+          p_funcionario_id: deleteConfirm.funcionarioId
+        })
 
-      if (loginError) throw loginError
+      if (error) {
+        console.error('❌ Erro ao chamar RPC:', error)
+        throw error
+      }
 
-      // Excluir funcionário
-      const { error: funcionarioError } = await supabase
-        .from('funcionarios')
-        .delete()
-        .eq('id', deleteConfirm.funcionarioId)
+      console.log('📋 Resultado da exclusão:', data)
 
-      if (funcionarioError) throw funcionarioError
+      if (data?.success) {
+        toast.success(data.message || `${deleteConfirm.funcionarioNome} foi excluído permanentemente do sistema.`)
+        setDeleteConfirm({ isOpen: false, funcionarioId: null, funcionarioNome: '' })
+        carregarFuncionarios()
+      } else {
+        toast.error(data?.error || 'Erro ao excluir funcionário')
+      }
 
-      toast.success(`${deleteConfirm.funcionarioNome} foi excluído permanentemente do sistema.`)
-      setDeleteConfirm({ isOpen: false, funcionarioId: null, funcionarioNome: '' })
-      carregarFuncionarios()
     } catch (error: any) {
       console.error('Erro ao excluir funcionário:', error)
       toast.error('Erro ao excluir funcionário: ' + error.message)

@@ -1,4 +1,4 @@
-import { ShoppingCart, Users, Package, CreditCard, BarChart3, Wrench } from 'lucide-react'
+import { ShoppingCart, Users, Package, CreditCard, BarChart3, Wrench, Globe, FileText, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 
@@ -33,6 +33,16 @@ export function LandingPage() {
       icon: Wrench,
       title: 'Ordens de Serviço',
       description: 'Gestão completa de OS e manutenções'
+    },
+    {
+      icon: Globe,
+      title: 'Catálogo Online',
+      description: 'Seus produtos online com link compartilhável'
+    },
+    {
+      icon: FileText,
+      title: 'Nota Fiscal Eletrônica',
+      description: 'Emissão automática de NFe integrada ao sistema'
     }
   ]
 
@@ -206,6 +216,18 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* WhatsApp Float Button */}
+      <a
+        href="https://wa.me/5518999783012?text=Olá!%20Tenho%20dúvidas%20sobre%20o%20RaVal%20PDV"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 xs:w-16 xs:h-16 bg-green-500 hover:bg-green-600 rounded-full shadow-2xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 group"
+        aria-label="Falar no WhatsApp"
+      >
+        <MessageCircle className="w-7 h-7 xs:w-8 xs:h-8 text-white" />
+        <span className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold animate-pulse">?</span>
+      </a>
     </div>
   )
 }

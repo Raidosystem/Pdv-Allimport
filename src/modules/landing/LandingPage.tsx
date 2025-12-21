@@ -131,7 +131,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-5 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 xs:gap-5 sm:gap-6 md:gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon
               const colors = [
@@ -140,7 +140,9 @@ export function LandingPage() {
                 'from-green-500 to-green-600',
                 'from-yellow-500 to-yellow-600',
                 'from-purple-500 to-purple-600',
-                'from-red-500 to-red-600'
+                'from-red-500 to-red-600',
+                'from-cyan-500 to-cyan-600',
+                'from-orange-500 to-orange-600'
               ]
               return (
                 <div
@@ -226,7 +228,6 @@ export function LandingPage() {
         aria-label="Falar no WhatsApp"
       >
         <MessageCircle className="w-7 h-7 xs:w-8 xs:h-8 text-white" />
-        <span className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold animate-pulse">?</span>
       </a>
     </div>
   )

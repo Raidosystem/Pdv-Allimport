@@ -45,6 +45,7 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
   const [showForm, setShowForm] = useState(false);
   const [editingConta, setEditingConta] = useState<ContaPagar | undefined>();
   const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'pendente' | 'vencido' | 'pago' | null>(null);
   
   // Filtros
   const [filters, setFilters] = useState<ContaPagarFilters>({});
@@ -127,11 +128,6 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
     await loadStats();
   };
 
-  const filteredContas = contas.filter(conta =>
-    conta.fornecedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    conta.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pago':
@@ -178,6 +174,17 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
     return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR');
   };
 
+  // Filtrar contas por busca, filtros e status do card clicado
+  const filteredContas = contas.filter(conta => {
+    const matchSearch = !searchTerm || 
+      conta.fornecedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      conta.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchStatusFilter = !statusFilter || conta.status === statusFilter;
+    
+    return matchSearch && matchStatusFilter;
+  });
+
   return (
     <div className="p-6 space-y-6">
       {/* Header - Oculto quando em modal */}
@@ -221,10 +228,17 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
         </div>
       )}
 
-      {/* Cards de Estatísticas */}
+      {/* Cards de Estatísticas - Botões de Filtro */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Pendentes */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <button
+          onClick={() => setStatusFilter(statusFilter === 'pendente' ? null : 'pendente')}
+          className={`bg-white rounded-lg border p-6 transition-all duration-200 text-left ${
+            statusFilter === 'pendente' 
+              ? 'border-yellow-500 shadow-lg ring-2 ring-yellow-200' 
+              : 'border-gray-200 hover:shadow-md hover:border-yellow-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pendentes</p>
@@ -237,10 +251,17 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
             </div>
             <Clock className="w-10 h-10 text-yellow-500" />
           </div>
-        </div>
+        </button>
 
         {/* Vencidas */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <button
+          onClick={() => setStatusFilter(statusFilter === 'vencido' ? null : 'vencido')}
+          className={`bg-white rounded-lg border p-6 transition-all duration-200 text-left ${
+            statusFilter === 'vencido' 
+              ? 'border-red-500 shadow-lg ring-2 ring-red-200' 
+              : 'border-gray-200 hover:shadow-md hover:border-red-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Vencidas</p>
@@ -253,10 +274,17 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
             </div>
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-        </div>
+        </button>
 
         {/* Pagas */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <button
+          onClick={() => setStatusFilter(statusFilter === 'pago' ? null : 'pago')}
+          className={`bg-white rounded-lg border p-6 transition-all duration-200 text-left ${
+            statusFilter === 'pago' 
+              ? 'border-green-500 shadow-lg ring-2 ring-green-200' 
+              : 'border-gray-200 hover:shadow-md hover:border-green-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pagas</p>
@@ -269,7 +297,7 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ isModal = false, onCl
             </div>
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Filtros e Busca */}

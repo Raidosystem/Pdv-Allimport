@@ -310,25 +310,40 @@ export function ConfiguracoesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {configSections.map((section) => {
                   const Icon = section.icon
+                  const isActive = activeSection === section.id
                   return (
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className="p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all text-left group"
+                      className={`p-4 rounded-lg transition-all text-left group ${
+                        isActive 
+                          ? 'bg-orange-500 border-2 border-orange-600 shadow-lg scale-105' 
+                          : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                      }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 ${section.color} rounded-lg flex items-center justify-center`}>
-                          <Icon className="w-5 h-5 text-white" />
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isActive ? 'bg-white' : section.color
+                        }`}>
+                          <Icon className={`w-5 h-5 ${
+                            isActive ? 'text-orange-600' : 'text-white'
+                          }`} />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 group-hover:text-gray-700">
+                          <h4 className={`font-medium ${
+                            isActive ? 'text-white font-bold' : 'text-gray-900 group-hover:text-gray-700'
+                          }`}>
                             {section.title}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className={`text-sm ${
+                            isActive ? 'text-orange-50' : 'text-gray-600'
+                          }`}>
                             {section.description}
                           </p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                        <ChevronRight className={`w-5 h-5 ${
+                          isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'
+                        }`} />
                       </div>
                     </button>
                   )

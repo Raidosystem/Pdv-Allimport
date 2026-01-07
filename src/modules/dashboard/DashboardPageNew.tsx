@@ -576,14 +576,16 @@ export function DashboardPage() {
             {allMenus.filter(menu => !menu.priority).map((menu) => {
               const Icon = menu.icon
               const isActive = activeMenu === menu.name
-              const colorClasses = {
-                primary: isActive ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600',
-                secondary: isActive ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600',
-                success: isActive ? 'bg-green-100 border-green-300 text-green-700' : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-600',
-                warning: isActive ? 'bg-yellow-100 border-yellow-300 text-yellow-700' : 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600',
-                danger: isActive ? 'bg-red-100 border-red-300 text-red-700' : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600',
-                info: isActive ? 'bg-cyan-100 border-cyan-300 text-cyan-700' : 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-600'
-              }[menu.color] || 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600'
+              const colorClasses = isActive 
+                ? 'bg-orange-500 border-orange-600 text-white shadow-lg' 
+                : {
+                    primary: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600',
+                    secondary: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600',
+                    success: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-600',
+                    warning: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600',
+                    danger: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600',
+                    info: 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-600'
+                  }[menu.color] || 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600'
 
               return (
                 <button

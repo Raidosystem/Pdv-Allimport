@@ -191,16 +191,12 @@ export function LocalLoginPage() {
 
       toast.success(`Bem-vindo, ${funcionarioData.nome}!`)
       
-      // 🎯 REDIRECIONAR BASEADO NO TIPO DE USUÁRIO
-      // Admin da Empresa -> /admin
-      // Funcionário comum -> /dashboard
-      const isAdminEmpresa = funcionarioData.tipo_admin === 'admin_empresa'
-      const redirectPath = isAdminEmpresa ? '/admin' : '/dashboard'
-      
+      // 🎯 REDIRECIONAR PARA O DASHBOARD
+      // Todos os funcionários (incluindo admins) vão para /dashboard
       console.log('🎯 Tipo de usuário:', funcionarioData.tipo_admin)
-      console.log('🎯 Redirecionando para:', redirectPath)
+      console.log('🎯 Redirecionando para: /dashboard')
       
-      navigate(redirectPath, { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       console.error('Erro no login:', error)
       toast.error('Erro ao fazer login')

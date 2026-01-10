@@ -119,11 +119,8 @@ export function LoginPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-            </form>
-
             {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
                 <p className="text-red-700 text-sm font-medium">
                   {error}
                 </p>
@@ -185,14 +182,6 @@ export function LoginPage() {
                 </Link>
               </div>
             </form>
-
-            {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-                <p className="text-red-700 text-sm font-medium">
-                  {error}
-                </p>
-              </div>
-            )}
 
             <div className="mt-8 space-y-4">
               <div className="relative">

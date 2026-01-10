@@ -4,7 +4,7 @@
 
 **🌐 IDIOMA**: Sempre responda e converse em **português brasileiro (pt-BR)**. Todo código, comentários e documentação devem estar em português.
 
-Sistema de **Ponto de Venda (PDV)** Progressive Web App com arquitetura multi-tenant, desenvolvido com React 19 + TypeScript + Supabase.
+Sistema de **Ponto de Venda (PDV)** Progressive Web App multi-tenant com **React 19 + TypeScript + Supabase**. Desenvolvido com Vite, TailwindCSS, React Query, React Hook Form/Zod, suportando PWA offline e real-time.
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -19,107 +19,184 @@ Este é um sistema **multi-tenant** com isolamento completo por empresa:
   FOR ALL USING (user_id = auth.uid());
   ```
 
-### Backend Supabase
-- **Client**: Configurado em `src/lib/supabase.ts` com PKCE flow
-- **Autenticação**: `AuthContext` em `src/modules/auth/AuthContext.tsx` gerencia sessão
-- **Real-time**: Configurado em `supabase.ts` com limite de 10 eventos/segundo
+### Backend Supabase & Configuração
+- **Client**: Configurado em `src/lib/supabase.ts` com PKCE flow, persistência de sessão, autoRefreshToken
+- **Autenticação**: `AuthContext` em `src/modules/auth/AuthContext.tsx` gerencia sessão e admin roles
+- **Real-time**: Configurado com limite de 10 eventos/segundo (evitar flood de eventos)
 - **Migrations**: Scripts SQL na raiz do projeto (numerados sequencialmente)
 - **⚠️ CRÍTICO**: Ao criar novas queries, SEMPRE considere RLS - use `.from('tabela')` sem `.eq('user_id')` pois RLS já filtra
 
 ### Estrutura de Módulos
 ```
 src/
-├── modules/           # Módulos funcionais isolados
-│   ├── auth/          # AuthContext, LoginPage, SignupPage, ProtectedRoute
-│   ├── sales/         # SalesPage, componentes de venda
-│   ├── clientes/      # Gestão de clientes
-│   ├── products/      # Gestão de produtos
-│   ├── dashboard/     # Dashboard principal
-│   └── admin/         # Painel administrativo
-├── components/        # Componentes reutilizáveis (Button, Card, Modal)
-├── services/          # Lógica de negócio e APIs Supabase
-├── hooks/             # Custom hooks (useCaixa, useSales, usePermissions)
-├── contexts/          # Contextos React adicionais
-├── types/             # Tipos TypeScript (sales.ts, cliente.ts)
-├── utils/             # Utilitários (format.ts, validation.ts)
-└── lib/               # Configurações (supabase.ts)
+├── modules/                    # Módulos funcionais isolados
+│   ├── auth/                   # AuthContext, ProtectedRoute, login/signup
+│   ├── sales/                  # Fluxo de vendas
+│   ├── clientes/               # Gestão de clientes
+│   ├── products/               # Gestão de produtos
+│   ├── dashboard/              # Dashboard principal
+│   ├── financeiro/             # Relatórios e DRE
+│   ├── loja-online/            # E-commerce integrado
+│   ├── admin/                  # Painel administrativo (super-admin apenas)
+│   └── landing/                # Landing page
+├── components/ui/              # Componentes base (Button, Card, Input, Modal)
+├── services/                   # Lógica de negócio e APIs Supabase
+├── hooks/                      # Custom hooks (useCaixa, useSales, usePermissions, etc)
+├── contexts/                   # Contextos React adicionais
+├── types/                      # Tipos TypeScript (sales.ts, cliente.ts, supabase.ts auto-gerado)
+├── utils/                      # Utilitários (format.ts, validation.ts)
+├── schemas/                    # Validação Zod
+├── lib/                        # Configurações (supabase.ts, etc)
+└── styles/                     # Variáveis CSS e estilos globais
 ```
+
+### Principais Serviços
+**Pattern**: `src/services/[entidade]Service.ts` (ex: `clienteService.ts`, `caixaService.ts`)
+- **ClienteService**: Busca com filtros complexos (CPF, telefone, nome), RLS automática
+- **SalesService**: Fluxo completo de vendas com cálculo de descontos
+- **CaixaService**: Abertura/fechamento de caixa com validações
+- **SubscriptionService**: Gestão de assinaturas e planos
+- **ReportsService**: Geração de relatórios com cálculos financeiros
+- **EmailService/EmailServiceSupabase**: Envio de e-mails via Resend ou Supabase
+- **WhatsappService**: Integração com WhatsApp para notificações
+- **MercadoPagoService**: Integração com Mercado Pago
 
 ## 🔧 Desenvolvimento Local
 
 ### Comandos Principais
 ```bash
-npm run dev          # Desenvolvimento local (porta 5174)
-npm run build        # Build de produção (executa update-version.js)
-npm run preview      # Preview do build (porta 4173)
-npm run lint         # ESLint
-npm run type-check   # Verificação TypeScript
+npm run dev          # Desenvolvimento local (porta 5174, hot reload Vite)
+npm run build        # Build produção (executa update-version.js + tsc + vite build)
+npm run build:prod   # Build com NODE_ENV=production
+npm run preview      # Preview do build local (porta 4173)
+npm run lint         # ESLint com eslint.config.js
+npm run type-check   # Verificação TypeScript sem emitir código
+npm run deploy       # Deploy Vercel em produção (vercel --prod)
+npm run deploy:dev   # Deploy Vercel em preview
+npm run update-version  # Atualiza versão em package.json (executado antes do build)
 ```
 
+### Estrutura de Build
+- **Bundler**: Vite com alias `@` para `src/`
+- **Chunks**: Manual chunks para `vendor` (react, react-dom) e `supabase`
+- **Output**: `dist/` com sourcemaps desabilitados em produção
+- **Assets**: Hashing automático para cache-busting
+- **PWA**: Service Worker em `public/sw.js`, manifest em `public/manifest.json`
+
 ### Scripts de Banco de Dados
-- **Executar SQL no Supabase**: Use o SQL Editor do dashboard do Supabase
-- **Migrations**: Arquivos `.sql` na raiz (ex: `RLS_MANUAL_SUPABASE.sql`)
-- **Scripts Node**: `scripts/` contém utilitários (ex: `create-test-user.mjs`)
-- **⚠️ Ordem de execução**: Sempre verifique `EXECUTAR_PRIMEIRO.md` antes de rodar SQLs
-- **🚨 VERIFICAR ESTRUTURA EXISTENTE**: Antes de criar/alterar tabelas, SEMPRE verifique a estrutura atual com `VERIFICAR_ESTRUTURA_TABELAS.sql` ou queries `SELECT * FROM information_schema.columns WHERE table_name = 'nome_tabela'` para não quebrar tabelas prontas
+- **SQL Scripts**: Arquivos `.sql` na raiz (ex: `RLS_MANUAL_SUPABASE.sql`)
+- **Executar SQL**: Use o SQL Editor do dashboard Supabase ou use `supabase-cli`
+- **Scripts Node**: Utilitários em `scripts/` (ex: `create-test-user.mjs`, `update-version.js`)
+- **⚠️ Ordem crítica**: Sempre verificar `EXECUTAR_PRIMEIRO.md` antes de rodar SQLs
+- **🚨 Validar estrutura**: Antes de criar/alterar tabelas, rodar `VERIFICAR_ESTRUTURA_TABELAS.sql`
 
 ### Variáveis de Ambiente
 ```env
 VITE_SUPABASE_URL=https://[project-ref].supabase.co
 VITE_SUPABASE_ANON_KEY=[anon-key]
 VITE_ADMIN_EMAILS=email1@example.com,email2@example.com
+NODE_ENV=production  # Para build:prod
 ```
+
+### Deploy
+- **Plataforma**: Vercel (configurado via `vercel.json`)
+- **Domínios**: 
+  - Principal: `pdv.gruporaval.com.br`
+  - Backups: `pdv-producao.surge.sh`, `pdv-final.surge.sh`
+- **GitHub Integration**: Auto-deploy em push/PR para main/dev
+- **Variáveis**: Configurar em dashboard Vercel (não em `.env.local`)
 
 ## 📝 Padrões de Código
 
+### Services & Classes
+- **Padrão**: Classes estáticas em `src/services/[Entidade]Service.ts` (ex: `ClienteService`, `SalesService`)
+- **Métodos**: `static async create()`, `static async update()`, `static async delete()`, `static async buscar()`, etc
+- **Exemplo ClienteService**:
+  ```typescript
+  export class ClienteService {
+    static async buscarClientes(filtros: ClienteFilters = {}) {
+      let query = supabase.from('clientes').select('*')
+      if (filtros.search) {
+        query = query.or(`nome.ilike.%${filtros.search}%,...`)
+      }
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    }
+  }
+  ```
+- **RLS automática**: Services não precisam filtrar `user_id` - RLS Supabase já filtra dados do usuário
+- **Error handling**: Sempre use try/catch e lance erros para que componentes tratem
+
 ### Componentes & Hooks
 - **Componentes funcionais** com TypeScript
-- **Hooks personalizados** para lógica compartilhada (ex: `useCaixa`, `useSales`)
-- **Context API** para estado global (AuthContext via `src/modules/auth`)
-- **React Query** para cache e sincronização servidor (TanStack Query)
-
-### Tipagem TypeScript
-- **Tipos centralizados**: `src/types/` (ex: `sales.ts` define Product, Customer, Sale)
-- **Tipos Supabase**: Gerados automaticamente em `src/types/supabase.ts`
-- **Evite `any`**: Use tipos estritos sempre que possível
-- **Exemplo de tipo**:
-  ```typescript
-  export interface Product {
-    id: string
-    name: string
-    price: number
-    stock_quantity: number
-    user_id: string // Chave de isolamento
+- **Hooks personalizados** para lógica compartilhada (ex: `useCaixa`, `useSales`, `usePermissions`)
+- **Context API** para estado global (`AuthContext`, `PermissionsProvider`)
+- **React Query**: Usado via hooks customizados que encapsulam queries ao Supabase
+- **Exemplo hook de lista**:
+  ```tsx
+  export function useClientes(filtros?: ClienteFilters) {
+    const [clientes, setClientes] = useState<Cliente[]>([])
+    const [loading, setLoading] = useState(false)
+    
+    useEffect(() => {
+      setLoading(true)
+      ClienteService.buscarClientes(filtros)
+        .then(setClientes)
+        .catch(err => console.error(err))
+        .finally(() => setLoading(false))
+    }, [filtros])
+    
+    return { clientes, loading }
   }
   ```
 
-### Services & APIs
-- **Padrão service**: `src/services/[entidade]Service.ts` (ex: `clienteService.ts`)
-- **Funções CRUD**: `create`, `update`, `delete`, `getAll`, `getById`
-- **Sempre use try/catch**: Tratamento de erros em todas as chamadas Supabase
-- **Exemplo de service**:
+### Tipagem TypeScript
+- **Tipos centralizados**: `src/types/` (ex: `sales.ts`, `cliente.ts`, `supabase.ts` auto-gerado)
+- **Evitar `any`**: Tipos estritos obrigatórios
+- **Chaves de isolamento**: Todo tipo deve ter `user_id` e/ou `empresa_id`
+- **Exemplo**:
   ```typescript
-  export async function getClientes() {
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('*') // RLS filtra automaticamente
-      .order('nome')
-    
-    if (error) throw error
-    return data
+  export interface Cliente {
+    id: string
+    nome: string
+    cpf_cnpj?: string
+    telefone?: string
+    user_id: string  // Isolamento
+    empresa_id?: string
+    criado_em: string
   }
   ```
 
 ### Validação de Formulários
 - **React Hook Form** + **Zod** para validação
-- **Schemas Zod**: Definir em `src/schemas/` ou inline no componente
+- **Schemas**: Definir em `src/schemas/` ou inline
+- **Validação em tempo real**: Usar `mode: 'onChange'` para feedback imediato
 - **Exemplo**:
   ```typescript
   const schema = z.object({
     nome: z.string().min(3, 'Mínimo 3 caracteres'),
     email: z.string().email('Email inválido').optional(),
-    cpf_cnpj: z.string().optional()
+    cpf_cnpj: z.string().refine(val => validarCPF(val), 'CPF inválido')
   })
+  
+  const form = useForm({ resolver: zodResolver(schema) })
+  ```
+
+### UI & Componentes
+- **Componentes base**: `src/components/ui/` (Button, Card, Input, Modal, Dialog, etc)
+- **TailwindCSS**: Classes utilitárias + config customizado em `tailwind.config.js`
+- **Toast notifications**: `react-hot-toast` (usar `toast.success()`, `toast.error()`)
+- **Responsive**: Mobile-first, classes `md:`, `lg:`, `xl:`
+- **Exemplo componente**:
+  ```tsx
+  export function MyButton({ children, ...props }) {
+    return (
+      <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+        {children}
+      </button>
+    )
+  }
   ```
 
 ## 🚨 Pontos de Atenção CRÍTICOS

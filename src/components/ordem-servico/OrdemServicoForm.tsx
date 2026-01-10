@@ -18,6 +18,9 @@ import { Card } from '../ui/Card'
 import { ClienteSelector } from '../ui/ClienteSelectorSimples'
 import { SenhaDesenho } from './SenhaDesenho'
 import { ordemServicoService } from '../../services/ordemServicoService'
+import { usePrintOrdemServico } from '../../hooks/usePrintOrdemServico'
+import { useEmpresaSettings } from '../../hooks/useEmpresaSettings'
+import { usePrintSettings } from '../../hooks/usePrintSettings'
 import * as checklistTemplateService from '../../services/checklistTemplateService'
 import { supabase } from '../../lib/supabase'
 import type { 
@@ -82,6 +85,11 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
   const [checklist, setChecklist] = useState<Record<string, boolean>>({})
   const [tipoPersonalizado, setTipoPersonalizado] = useState('')
   const [mostrarCampoPersonalizado, setMostrarCampoPersonalizado] = useState(false)
+  
+  // Hooks de impressão e configurações
+  const { printOrdemServico } = usePrintOrdemServico()
+  const { settings: empresaSettings } = useEmpresaSettings()
+  const { settings: printSettings } = usePrintSettings()
   
   // Estados para senha do aparelho
   const [tipoSenha, setTipoSenha] = useState<'nenhuma' | 'texto' | 'pin' | 'desenho'>('nenhuma')
@@ -729,6 +737,57 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
     }
   }
 
+  // Função para imprimir recibo da OS
+  const handleImprimirRecibo = (ordemData: any) => {
+    try {
+      console.log('🖨️ Preparando impressão da OS:', ordemData);
+      
+      printOrdemServico({
+        ordem: {
+          id: ordemData.id,
+          numero_ordem: ordemData.numero_ordem,
+          cliente_nome: ordemData.cliente_nome,
+          cliente_telefone: ordemData.cliente_telefone,
+          cliente_email: ordemData.cliente_email,
+          tipo: ordemData.tipo,
+          marca: ordemData.marca,
+          modelo: ordemData.modelo,
+          cor: ordemData.cor,
+          numero_serie: ordemData.numero_serie,
+          defeito_relatado: ordemData.defeito_relatado,
+          observacoes: ordemData.observacoes,
+          created_at: ordemData.criado_em || ordemData.created_at
+        },
+        storeInfo: {
+          nome: empresaSettings.nome,
+          razao_social: empresaSettings.razao_social,
+          phone: empresaSettings.telefone,
+          email: empresaSettings.email,
+          cnpj: empresaSettings.cnpj,
+          logradouro: empresaSettings.logradouro,
+          numero: empresaSettings.numero,
+          complemento: empresaSettings.complemento,
+          bairro: empresaSettings.bairro,
+          cidade: empresaSettings.cidade,
+          estado: empresaSettings.estado,
+          cep: empresaSettings.cep
+        },
+        printConfig: {
+          cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
+          rodape_linha1: printSettings.rodapeLinha1,
+          rodape_linha2: printSettings.rodapeLinha2,
+          rodape_linha3: printSettings.rodapeLinha3,
+          rodape_linha4: printSettings.rodapeLinha4
+        }
+      });
+      
+      console.log('✅ Impressão enviada');
+    } catch (error) {
+      console.error('❌ Erro ao imprimir:', error);
+      toast.error('Erro ao imprimir recibo. Tente novamente.');
+    }
+  };
+
   // Remover item do checklist
   const removerItemChecklist = async (itemId: string) => {
     console.log('➖ [CHECKLIST] Removendo item:', itemId)
@@ -849,6 +908,17 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
         
         // Sinalizar que a lista de OS precisa ser recarregada
         localStorage.setItem('os_list_needs_refresh', 'true')
+        
+        // Perguntar se deseja imprimir o recibo
+        setTimeout(() => {
+          const desejaImprimir = window.confirm(
+            'Ordem de serviço salva com sucesso!\n\nDeseja imprimir o recibo agora?'
+          );
+          
+          if (desejaImprimir) {
+            handleImprimirRecibo(ordemCriada);
+          }
+        }, 500);
         
         if (onSuccess) {
           onSuccess(ordemCriada as unknown as Record<string, unknown>)

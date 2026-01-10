@@ -9,6 +9,7 @@ import { formatarCpfCnpj } from '../utils/formatacao'
 import { onlyDigits } from '../lib/cpf'
 import { supabase } from '../lib/supabase'
 import { usePermissions } from '../hooks/usePermissions'
+import { usePrintSettings } from '../hooks/usePrintSettings'
 
 interface OrdemServico {
   id: string
@@ -358,6 +359,7 @@ const loadAllServiceOrders = async (): Promise<OrdemServico[]> => {
 export function OrdensServicoPage() {
   console.log('🔥 OrdensServicoPage carregando...')
   const { can } = usePermissions()
+  const { settings: printSettings, loading: loadingPrintSettings } = usePrintSettings()
   
   const [todasOrdens, setTodasOrdens] = useState<OrdemServico[]>([]) // Lista completa
   const [viewMode, setViewMode] = useState<ViewMode>('list')
@@ -375,6 +377,7 @@ export function OrdensServicoPage() {
   const [garantiaPersonalizada, setGarantiaPersonalizada] = useState<string>('')
   const [servicoRealizado, setServicoRealizado] = useState<string>('')
   const [resultadoReparo, setResultadoReparo] = useState<'reparado' | 'sem_reparo' | 'condenado'>('reparado')
+  const [valorFinal, setValorFinal] = useState<number>(0)
   const isInitialMount = useRef(true) // ✅ Flag para carregar UMA VEZ
 
   useEffect(() => {
@@ -486,6 +489,7 @@ export function OrdensServicoPage() {
     setGarantiaPersonalizada('')
     setServicoRealizado('') // Sempre vazio para o usuário preencher manualmente
     setResultadoReparo('reparado') // Resetar para o padrão
+    setValorFinal(ordem.valor_orcamento || 0) // Iniciar com valor do orçamento
     setShowEncerrarModal(true)
   }
 
@@ -517,7 +521,8 @@ export function OrdensServicoPage() {
           data_finalizacao: dataFinalISO,
           data_entrega: dataFinalISO,
           garantia_meses: garantiaFinal,
-          observacoes: servicoRealizado
+          observacoes: servicoRealizado,
+          valor_final: valorFinal
         })
         .eq('id', ordemParaEncerrar.id)
 
@@ -529,6 +534,7 @@ export function OrdensServicoPage() {
         status: 'Entregue' as any,
         garantia_meses: garantiaFinal,
         observacoes: servicoRealizado,
+        valor_final: valorFinal,
         data_finalizacao: dataFinalDisplay,
         data_entrega: dataFinalDisplay
       }
@@ -573,28 +579,18 @@ export function OrdensServicoPage() {
       ordem_completa: ordem
     })
     
-    // Buscar configurações de impressão
-    let cabecalho = 'COMPROVANTE DE ENTREGA'
-    let rodape = 'Obrigado pela preferência!'
+    // Usar configurações do hook usePrintSettings
+    const cabecalho = printSettings.cabecalhoPersonalizado || 'COMPROVANTE DE ENTREGA'
+    const rodapeLinha1 = printSettings.rodapeLinha1 || ''
+    const rodapeLinha2 = printSettings.rodapeLinha2 || ''
+    const rodapeLinha3 = printSettings.rodapeLinha3 || ''
+    const rodapeLinha4 = printSettings.rodapeLinha4 || ''
     
-    try {
-      const { data: user } = await supabase.auth.getUser()
-      if (user?.user) {
-        const { data: config } = await supabase
-          .from('configuracoes_impressao')
-          .select('cabecalho, rodape')
-          .eq('user_id', user.user.id)
-          .single()
-        
-        if (config) {
-          cabecalho = config.cabecalho || cabecalho
-          rodape = config.rodape || rodape
-          console.log('✅ [IMPRESSÃO] Configurações carregadas:', { cabecalho, rodape })
-        }
-      }
-    } catch (error) {
-      console.log('⚠️ [IMPRESSÃO] Usando configurações padrão:', error)
-    }
+    console.log('✅ [IMPRESSÃO OS] Configurações carregadas:', { 
+      cabecalho: cabecalho.substring(0, 50),
+      rodape1: rodapeLinha1.substring(0, 30),
+      timestamp: new Date().toISOString()
+    })
     
     const dataEntrega = new Date().toLocaleDateString('pt-BR')
     const dataGarantia = new Date()
@@ -800,7 +796,11 @@ export function OrdensServicoPage() {
         </div>
 
         <div class="footer">
-          ${rodape}
+          ${rodapeLinha1 ? `<div>${rodapeLinha1}</div>` : ''}
+          ${rodapeLinha2 ? `<div>${rodapeLinha2}</div>` : ''}
+          ${rodapeLinha3 ? `<div>${rodapeLinha3}</div>` : ''}
+          ${rodapeLinha4 ? `<div>${rodapeLinha4}</div>` : ''}
+          ${!rodapeLinha1 && !rodapeLinha2 && !rodapeLinha3 && !rodapeLinha4 ? `<div>Obrigado pela preferência!</div>` : ''}
         </div>
 
         <script>
@@ -953,142 +953,6 @@ export function OrdensServicoPage() {
             />
           </main>
         </div>
-
-        {/* Modal de Encerramento */}
-        {showEncerrarModal && ordemParaEncerrar && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                {/* Header do Modal */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Encerrar Ordem de Serviço</h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                      OS #{ordemParaEncerrar.numero_os || ordemParaEncerrar.id.slice(-6)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowEncerrarModal(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                {/* Informações do Equipamento */}
-                <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-blue-900 mb-2">Equipamento</h3>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Cliente:</span> {ordemParaEncerrar.cliente?.nome}</p>
-                    <p><span className="font-medium">Equipamento:</span> {ordemParaEncerrar.marca} {ordemParaEncerrar.modelo}</p>
-                    <p><span className="font-medium">Defeito:</span> {ordemParaEncerrar.defeito_relatado}</p>
-                  </div>
-                </div>
-
-                {/* Formulário de Encerramento */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Serviço Realizado *
-                    </label>
-                    <textarea
-                      value={servicoRealizado}
-                      onChange={(e) => setServicoRealizado(e.target.value)}
-                      placeholder="Descreva o serviço que foi executado..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Esta informação será incluída no comprovante de entrega
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Garantia do Serviço *
-                    </label>
-                    <div className="grid grid-cols-4 gap-2 mb-3">
-                      {[1, 3, 6, 12].map((meses) => (
-                        <button
-                          key={meses}
-                          type="button"
-                          onClick={() => {
-                            setGarantiaMeses(meses)
-                            setGarantiaPersonalizada('')
-                          }}
-                          className={`px-4 py-3 rounded-lg border-2 transition-all ${
-                            garantiaMeses === meses && garantiaPersonalizada === ''
-                              ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
-                              : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                          }`}
-                        >
-                          {meses} {meses === 1 ? 'mês' : 'meses'}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <div className="bg-orange-50 border-2 border-orange-400 rounded-lg p-3">
-                      <label className="block text-sm font-medium text-orange-700 mb-2">
-                        Meses Personalizados da Garantia
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="1"
-                          max="120"
-                          value={garantiaPersonalizada}
-                          onChange={(e) => setGarantiaPersonalizada(e.target.value)}
-                          placeholder="Digite o mês"
-                          className="w-full px-3 py-2 border-2 border-orange-400 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                        <span className="absolute right-3 top-2 text-sm text-gray-500">meses</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preview da Garantia */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="text-green-600 text-2xl">✓</div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-green-900 mb-1">Garantia do Serviço</h4>
-                        <p className="text-sm text-green-700">
-                          O equipamento terá <strong>{garantiaPersonalizada || garantiaMeses} {(garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses) === 1 ? 'mês' : 'meses'}</strong> de garantia
-                        </p>
-                        <p className="text-xs text-green-600 mt-1">
-                          Válida até: {new Date(new Date().setMonth(new Date().getMonth() + (garantiaPersonalizada ? parseInt(garantiaPersonalizada) : garantiaMeses))).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Ações do Modal */}
-                <div className="flex gap-3 mt-6 pt-6 border-t">
-                  <Button
-                    onClick={() => setShowEncerrarModal(false)}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={confirmarEncerramentoOrdem}
-                    disabled={!servicoRealizado.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    <Printer className="w-4 h-4 mr-2" />
-                    Encerrar e Imprimir
-                  </Button>
-                </div>
-
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Após encerrar, você poderá imprimir o comprovante de entrega com os dados da garantia
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </>
     )
   }
@@ -1487,6 +1351,28 @@ export function OrdensServicoPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Valor Final do Serviço *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-500">R$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={valorFinal}
+                      onChange={(e) => setValorFinal(parseFloat(e.target.value) || 0)}
+                      placeholder="0,00"
+                      className="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Informe o valor cobrado pelo serviço realizado
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Serviço Realizado *
                   </label>
                   <textarea
@@ -1540,7 +1426,7 @@ export function OrdensServicoPage() {
                     Garantia do Serviço *
                   </label>
                   <div className="grid grid-cols-4 gap-2 mb-3">
-                    {[1, 3, 6, 12].map((meses) => (
+                    {[1, 3, 5, 6].map((meses) => (
                       <button
                         key={meses}
                         type="button"
@@ -1609,7 +1495,7 @@ export function OrdensServicoPage() {
                 </Button>
                 <Button
                   onClick={confirmarEncerramentoOrdem}
-                  disabled={!servicoRealizado.trim()}
+                  disabled={!servicoRealizado.trim() || valorFinal <= 0}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   <Printer className="w-4 h-4 mr-2" />
@@ -1625,8 +1511,8 @@ export function OrdensServicoPage() {
         </div>
       )}
     </>
-    )
-  }
+  )
+}
 
   if (loading) {
     return (

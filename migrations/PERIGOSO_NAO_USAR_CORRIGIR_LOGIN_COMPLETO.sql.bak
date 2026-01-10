@@ -1,0 +1,360 @@
+-- ====================================================================
+-- CORREÇÃO COMPLETA DE PROBLEMAS DE LOGIN
+-- ====================================================================
+-- Este script resolve problemas de login para todos os usuários
+-- incluindo super admin e usuários que compraram o sistema
+-- ====================================================================
+
+-- 🔧 PASSO 1: Desabilitar RLS temporariamente para diagnóstico
+ALTER TABLE subscriptions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE user_approvals DISABLE ROW LEVEL SECURITY;
+
+NOTIFY pgrst, 'reload schema';
+NOTIFY pgrst, 'reload config';
+
+-- 🔍 PASSO 2: Verificar dados atuais
+SELECT 
+    '📊 VERIFICAÇÃO DE DADOS' as status,
+    'subscriptions' as tabela,
+    COUNT(*) as total_registros
+FROM subscriptions
+UNION ALL
+SELECT 
+    '📊 VERIFICAÇÃO DE DADOS',
+    'user_approvals',
+    COUNT(*)
+FROM user_approvals;
+
+-- 📋 PASSO 3: Verificar usuários específicos
+SELECT 
+    u.id,
+    u.email,
+    u.created_at,
+    u.email_confirmed_at,
+    ua.status as approval_status,
+    ua.user_role,
+    s.status as subscription_status,
+    s.plan_type
+FROM auth.users u
+LEFT JOIN user_approvals ua ON ua.user_id = u.id
+LEFT JOIN subscriptions s ON s.user_id = u.id
+WHERE u.email IN (
+    'novaradiosystem@outlook.com',
+    'gruporaval1001@gmail.com',
+    'joao@teste.com',
+    'marcellocattani@gmail.com',
+    'josefernando@grupocattanisl.com.br',
+    'geraldo.silveira@gmail.com',
+    'jennifer.ramos.ferreira@hotmail.com'
+)
+ORDER BY u.email;
+
+-- 🔧 PASSO 4: Garantir que todos os usuários estão em user_approvals
+INSERT INTO user_approvals (
+    user_id,
+    email,
+    full_name,
+    company_name,
+    status,
+    user_role,
+    created_at,
+    approved_at
+)
+SELECT 
+    u.id,
+    u.email,
+    COALESCE(u.raw_user_meta_data->>'full_name', 'Usuário'),
+    COALESCE(u.raw_user_meta_data->>'company_name', 'Empresa'),
+    'approved', -- Aprovar automaticamente
+    CASE 
+        WHEN u.email = 'novaradiosystem@outlook.com' THEN 'admin'
+        ELSE 'owner'
+    END,
+    u.created_at,
+    NOW()
+FROM auth.users u
+WHERE NOT EXISTS (
+    SELECT 1 FROM user_approvals ua WHERE ua.user_id = u.id
+)
+ON CONFLICT (user_id) DO UPDATE SET
+    status = 'approved',
+    approved_at = NOW();
+
+-- 🔧 PASSO 5: Atualizar constraint de status (se necessário)
+ALTER TABLE user_approvals DROP CONSTRAINT IF EXISTS user_approvals_status_check;
+ALTER TABLE user_approvals 
+    ADD CONSTRAINT user_approvals_status_check 
+    CHECK (status IN ('pending', 'approved', 'rejected', 'active'));
+
+-- 🔧 PASSO 6: Garantir que usuários com subscriptions ativas estejam aprovados
+UPDATE user_approvals ua
+SET 
+    status = 'approved',
+    approved_at = NOW()
+FROM subscriptions s
+WHERE s.user_id = ua.user_id
+AND s.status IN ('active', 'trial')
+AND ua.status != 'approved';
+
+-- 🔧 PASSO 7: Criar funções RPC para bypass de RLS (SE NÃO EXISTIREM)
+
+-- Função para verificar subscription (bypass RLS)
+CREATE OR REPLACE FUNCTION check_subscription_status(user_email TEXT)
+RETURNS TABLE (
+    has_subscription BOOLEAN,
+    status TEXT,
+    access_allowed BOOLEAN,
+    days_remaining INTEGER,
+    plan_type TEXT,
+    subscription_end_date TIMESTAMP WITH TIME ZONE,
+    trial_end_date TIMESTAMP WITH TIME ZONE
+)
+SECURITY DEFINER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        TRUE as has_subscription,
+        COALESCE(s.status, 'no_subscription')::TEXT as status,
+        CASE 
+            WHEN s.status = 'active' AND s.subscription_end_date > NOW() THEN TRUE
+            WHEN s.status = 'trial' AND s.trial_end_date > NOW() THEN TRUE
+            ELSE FALSE
+        END as access_allowed,
+        CASE 
+            WHEN s.status = 'active' AND s.subscription_end_date > NOW() THEN 
+                EXTRACT(DAY FROM (s.subscription_end_date - NOW()))::INTEGER
+            WHEN s.status = 'trial' AND s.trial_end_date > NOW() THEN 
+                EXTRACT(DAY FROM (s.trial_end_date - NOW()))::INTEGER
+            ELSE 0
+        END as days_remaining,
+        s.plan_type,
+        s.subscription_end_date,
+        s.trial_end_date
+    FROM subscriptions s
+    WHERE s.email = user_email
+    ORDER BY s.created_at DESC
+    LIMIT 1;
+END;
+$$;
+
+-- Função para admin ver todos subscribers
+CREATE OR REPLACE FUNCTION get_admin_subscribers()
+RETURNS TABLE (
+    user_id UUID,
+    email TEXT,
+    full_name TEXT,
+    company_name TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    status TEXT,
+    user_role TEXT
+)
+SECURITY DEFINER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        ua.user_id,
+        ua.email,
+        ua.full_name,
+        ua.company_name,
+        ua.created_at,
+        ua.status,
+        ua.user_role
+    FROM user_approvals ua
+    WHERE ua.user_role = 'owner'
+    ORDER BY ua.created_at DESC;
+END;
+$$;
+
+-- Função para admin ver todas empresas
+CREATE OR REPLACE FUNCTION get_all_empresas_admin()
+RETURNS TABLE (
+    id UUID,
+    user_id UUID,
+    nome TEXT,
+    cnpj TEXT,
+    email TEXT,
+    telefone TEXT,
+    endereco TEXT,
+    cidade TEXT,
+    estado TEXT,
+    cep TEXT,
+    created_at TIMESTAMP WITH TIME ZONE
+)
+SECURITY DEFINER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        e.id,
+        e.user_id,
+        e.nome,
+        e.cnpj,
+        e.email,
+        e.telefone,
+        e.endereco,
+        e.cidade,
+        e.estado,
+        e.cep,
+        e.created_at
+    FROM empresas e
+    ORDER BY e.created_at DESC;
+END;
+$$;
+
+-- Função para admin ver todas subscriptions
+CREATE OR REPLACE FUNCTION get_all_subscriptions_admin()
+RETURNS TABLE (
+    id UUID,
+    user_id UUID,
+    email TEXT,
+    status TEXT,
+    plan_type TEXT,
+    trial_start_date TIMESTAMP WITH TIME ZONE,
+    trial_end_date TIMESTAMP WITH TIME ZONE,
+    subscription_start_date TIMESTAMP WITH TIME ZONE,
+    subscription_end_date TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE
+)
+SECURITY DEFINER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        s.id,
+        s.user_id,
+        s.email,
+        s.status,
+        s.plan_type,
+        s.trial_start_date,
+        s.trial_end_date,
+        s.subscription_start_date,
+        s.subscription_end_date,
+        s.created_at
+    FROM subscriptions s
+    ORDER BY s.created_at DESC;
+END;
+$$;
+
+-- 🔧 PASSO 8: Remover políticas RLS antigas
+DROP POLICY IF EXISTS "users_own_subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "users_insert_own_subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "admins_view_all_subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "admins_manage_subscriptions" ON subscriptions;
+
+DROP POLICY IF EXISTS "users_own_approvals" ON user_approvals;
+DROP POLICY IF EXISTS "users_insert_own_approvals" ON user_approvals;
+DROP POLICY IF EXISTS "admins_view_all_approvals" ON user_approvals;
+DROP POLICY IF EXISTS "admins_manage_approvals" ON user_approvals;
+
+-- 🔧 PASSO 9: Criar políticas RLS CORRETAS
+
+-- Políticas para SUBSCRIPTIONS
+CREATE POLICY "users_view_own_subscriptions" ON subscriptions
+    FOR SELECT
+    USING (
+        -- Usuário vê sua própria subscription
+        user_id = auth.uid() 
+        OR 
+        email = (SELECT email FROM auth.users WHERE id = auth.uid())
+        OR
+        -- Ou é super admin
+        (SELECT email FROM auth.users WHERE id = auth.uid()) = 'novaradiosystem@outlook.com'
+    );
+
+CREATE POLICY "users_insert_own_subscriptions" ON subscriptions
+    FOR INSERT
+    WITH CHECK (
+        user_id = auth.uid() 
+        OR 
+        email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    );
+
+CREATE POLICY "admins_all_access_subscriptions" ON subscriptions
+    FOR ALL
+    USING (
+        (SELECT email FROM auth.users WHERE id = auth.uid()) = 'novaradiosystem@outlook.com'
+    );
+
+-- Políticas para USER_APPROVALS
+CREATE POLICY "users_view_own_approvals" ON user_approvals
+    FOR SELECT
+    USING (
+        -- Usuário vê seu próprio registro
+        user_id = auth.uid()
+        OR
+        -- Ou é super admin
+        (SELECT email FROM auth.users WHERE id = auth.uid()) = 'novaradiosystem@outlook.com'
+    );
+
+CREATE POLICY "users_insert_own_approvals" ON user_approvals
+    FOR INSERT
+    WITH CHECK (
+        user_id = auth.uid()
+    );
+
+CREATE POLICY "admins_all_access_approvals" ON user_approvals
+    FOR ALL
+    USING (
+        (SELECT email FROM auth.users WHERE id = auth.uid()) = 'novaradiosystem@outlook.com'
+    );
+
+-- 🔒 PASSO 10: REABILITAR RLS
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_approvals ENABLE ROW LEVEL SECURITY;
+
+NOTIFY pgrst, 'reload schema';
+NOTIFY pgrst, 'reload config';
+
+-- ✅ PASSO 11: VERIFICAÇÃO FINAL
+SELECT 
+    tablename,
+    rowsecurity as rls_habilitado,
+    (SELECT COUNT(*) FROM pg_policies WHERE tablename = pt.tablename) as total_policies
+FROM pg_tables pt
+WHERE tablename IN ('subscriptions', 'user_approvals')
+ORDER BY tablename;
+
+-- Listar políticas criadas
+SELECT 
+    schemaname,
+    tablename,
+    policyname,
+    cmd,
+    qual,
+    with_check
+FROM pg_policies
+WHERE tablename IN ('subscriptions', 'user_approvals')
+ORDER BY tablename, policyname;
+
+-- ====================================================================
+-- 📋 RESULTADO ESPERADO
+-- ====================================================================
+/*
+✅ RLS habilitado em ambas tabelas
+✅ 3 políticas em subscriptions
+✅ 3 políticas em user_approvals
+✅ Todos os usuários aprovados em user_approvals
+✅ Funções RPC criadas para bypass de RLS
+
+🎯 PRÓXIMOS PASSOS:
+1. Execute este script no SQL Editor do Supabase
+2. Aguarde a conclusão (pode levar 10-30 segundos)
+3. Recarregue a página do frontend (F5)
+4. Teste o login com:
+   - novaradiosystem@outlook.com (super admin)
+   - Outros usuários que compraram o sistema
+   
+🔐 SEGURANÇA:
+- RLS está habilitado
+- Políticas permitem acesso aos próprios dados
+- Super admin tem acesso total via política específica
+- Funções RPC usam SECURITY DEFINER para bypass controlado
+
+✅ Sistema pronto para login!
+*/

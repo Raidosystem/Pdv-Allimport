@@ -13,10 +13,10 @@ export interface PrintSettings {
 
 const DEFAULT_SETTINGS: PrintSettings = {
   cabecalhoPersonalizado: '',
-  rodapeLinha1: '',
-  rodapeLinha2: '',
-  rodapeLinha3: '',
-  rodapeLinha4: ''
+  rodapeLinha1: 'Garantia de produtos de 3 meses',
+  rodapeLinha2: 'Será cobrado uma taxa de serviço de avaliação do aparelho de mínimo de 30,00',
+  rodapeLinha3: 'A partir do quarto mês será cobrado uma multa diária de 1,00',
+  rodapeLinha4: 'Agradecemos pela preferencia, Volte sempre'
 };
 
 export function usePrintSettings() {
@@ -31,41 +31,58 @@ export function usePrintSettings() {
   // Carregar configurações do banco de dados
   const loadSettings = async () => {
     if (!user?.id) {
-      console.log('❌ Usuário não autenticado, usando configurações padrão');
+      console.log('❌ [PRINT SETTINGS] Usuário não autenticado, usando configurações padrão');
       setSettings(DEFAULT_SETTINGS);
       setLoading(false);
       return;
     }
 
-    console.log('🔄 Carregando configurações de impressão para usuário:', user.id);
+    console.log('🔄 [PRINT SETTINGS] Carregando configurações de impressão para usuário:', user.id);
+    console.log('🔄 [PRINT SETTINGS] Timestamp:', new Date().toISOString());
 
     try {
-      // Primeiro tenta buscar do banco
+      // Buscar diretamente da tabela (mais confiável que RPC)
       const { data, error } = await supabase
-        .rpc('buscar_configuracoes_impressao_usuario', {
-          p_user_id: user.id
-        });
+        .from('configuracoes_impressao')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      console.log('📊 [PRINT SETTINGS] Resultado da busca:', { data, error });
 
       if (error) {
-        console.error('❌ Erro ao carregar configurações:', error);
-        // Tenta migrar do localStorage se houver erro
-        await migrateFromLocalStorage();
+        // Se erro é "not found", é porque não tem configuração ainda
+        if (error.code === 'PGRST116') {
+          console.log('📝 [PRINT SETTINGS] Nenhuma configuração encontrada no banco, usando configurações padrão');
+          setSettings(DEFAULT_SETTINGS);
+          return;
+        }
+        
+        console.error('❌ [PRINT SETTINGS] Erro ao carregar configurações:', error);
+        setSettings(DEFAULT_SETTINGS);
         return;
       }
 
-      if (data && data.length > 0) {
-        const config = data[0];
-        console.log('✅ Configurações carregadas do banco:', config);
-        setSettings({
-          cabecalhoPersonalizado: config.cabecalho_personalizado || '',
-          rodapeLinha1: config.rodape_linha1 || '',
-          rodapeLinha2: config.rodape_linha2 || '',
-          rodapeLinha3: config.rodape_linha3 || '',
-          rodapeLinha4: config.rodape_linha4 || ''
+      if (data) {
+        console.log('✅ [PRINT SETTINGS] Configurações carregadas do banco:', {
+          cabecalho: data.cabecalho?.substring(0, 50) + '...',
+          cabecalho_personalizado: data.cabecalho_personalizado?.substring(0, 50) + '...',
+          rodape1: data.rodape_linha1?.substring(0, 30) + '...',
+          atualizado_em: data.atualizado_em
         });
+        
+        const loadedSettings = {
+          cabecalhoPersonalizado: data.cabecalho_personalizado || data.cabecalho || '',
+          rodapeLinha1: data.rodape_linha1 || '',
+          rodapeLinha2: data.rodape_linha2 || '',
+          rodapeLinha3: data.rodape_linha3 || '',
+          rodapeLinha4: data.rodape_linha4 || ''
+        };
+        
+        console.log('📦 [PRINT SETTINGS] Settings que serão aplicados:', loadedSettings);
+        setSettings(loadedSettings);
       } else {
-        console.log('📝 Nenhuma configuração encontrada no banco, usando configurações padrão');
-        // Se não tem dados no banco, usar configurações padrão
+        console.log('📝 [PRINT SETTINGS] Data null, usando configurações padrão');
         setSettings(DEFAULT_SETTINGS);
       }
     } catch (error) {
@@ -147,15 +164,23 @@ export function usePrintSettings() {
       const updatedSettings = { ...settings, ...newSettings };
       console.log('📋 Configurações completas para salvar:', updatedSettings);
 
+      // Usar UPSERT direto na tabela em vez de RPC
       const { data, error } = await supabase
-        .rpc('migrar_configuracoes_impressao_usuario', {
-          p_user_id: user.id,
-          p_cabecalho_personalizado: updatedSettings.cabecalhoPersonalizado,
-          p_rodape_linha1: updatedSettings.rodapeLinha1,
-          p_rodape_linha2: updatedSettings.rodapeLinha2,
-          p_rodape_linha3: updatedSettings.rodapeLinha3,
-          p_rodape_linha4: updatedSettings.rodapeLinha4
-        });
+        .from('configuracoes_impressao')
+        .upsert({
+          user_id: user.id,
+          cabecalho: updatedSettings.cabecalhoPersonalizado,
+          cabecalho_personalizado: updatedSettings.cabecalhoPersonalizado,
+          rodape_linha1: updatedSettings.rodapeLinha1,
+          rodape_linha2: updatedSettings.rodapeLinha2,
+          rodape_linha3: updatedSettings.rodapeLinha3,
+          rodape_linha4: updatedSettings.rodapeLinha4,
+          atualizado_em: new Date().toISOString()
+        }, {
+          onConflict: 'user_id' // Atualiza se já existe, insere se não
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('❌ Erro ao salvar configurações:', error);
@@ -185,23 +210,26 @@ export function usePrintSettings() {
 
   // Salvar apenas o cabeçalho
   const saveCabecalho = async (cabecalho: string) => {
-    console.log('💾 Salvando cabeçalho no BANCO DE DADOS:', cabecalho);
+    console.log('💾 [SAVE CABECALHO] Iniciando salvamento');
+    console.log('💾 [SAVE CABECALHO] Cabeçalho recebido:', cabecalho.substring(0, 100));
+    console.log('💾 [SAVE CABECALHO] User ID:', user?.id);
     
     if (!user?.id) {
-      console.error('❌ Usuário não autenticado');
+      console.error('❌ [SAVE CABECALHO] Usuário não autenticado');
       toast.error('Usuário não autenticado');
       return false;
     }
     
     // Salvar APENAS no banco de dados (sem localStorage)
     const result = await saveSettings({ cabecalhoPersonalizado: cabecalho });
-    console.log('✅ Resultado salvamento cabeçalho no banco:', result);
+    console.log('✅ [SAVE CABECALHO] Resultado do saveSettings:', result);
     
     if (!result) {
       toast.error('Erro ao salvar no banco de dados');
       return false;
     }
     
+    console.log('✅ [SAVE CABECALHO] Cabeçalho salvo com sucesso!');
     toast.success('Cabeçalho salvo no banco de dados!');
     return true;
   };
@@ -247,7 +275,8 @@ export function usePrintSettings() {
 
   // Carregar configurações quando o usuário mudar
   useEffect(() => {
-    console.log('🔄 useEffect disparado - user.id:', user?.id);
+    console.log('🔄 [PRINT SETTINGS] useEffect disparado - user.id:', user?.id);
+    console.log('🔄 [PRINT SETTINGS] Timestamp:', new Date().toISOString());
     loadSettings();
   }, [user?.id]);
 

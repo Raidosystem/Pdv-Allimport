@@ -333,7 +333,19 @@ export function ClienteFormUnificado({
         
         // Chamar callback de sucesso se fornecido
         if (onSuccess) {
-          onSuccess(data)
+          // Buscar o cliente completo atualizado
+          const { data: clienteAtualizado, error: errorBusca } = await supabase
+            .from('clientes')
+            .select('*')
+            .eq('id', clienteParaAtualizar.id)
+            .single()
+          
+          if (!errorBusca && clienteAtualizado) {
+            onSuccess(clienteAtualizado)
+          } else {
+            console.warn('⚠️ Erro ao buscar cliente atualizado, usando data do RPC:', errorBusca)
+            onSuccess(data)
+          }
         }
       } else {
         // Modo de criação de novo cliente
@@ -374,7 +386,19 @@ export function ClienteFormUnificado({
         
         // Chamar callback de sucesso se fornecido
         if (onSuccess) {
-          onSuccess(data)
+          // Buscar o cliente completo recém-criado
+          const { data: clienteCriado, error: errorBusca } = await supabase
+            .from('clientes')
+            .select('*')
+            .eq('id', data)
+            .single()
+          
+          if (!errorBusca && clienteCriado) {
+            onSuccess(clienteCriado)
+          } else {
+            console.warn('⚠️ Erro ao buscar cliente criado, usando ID do RPC:', errorBusca)
+            onSuccess(data)
+          }
         }
       }
       

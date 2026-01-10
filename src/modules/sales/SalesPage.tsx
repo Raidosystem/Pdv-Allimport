@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/Card'
 import { useAuth } from '../auth'
 import { useCaixa } from '../../hooks/useCaixa'
 import { usePrintReceipt } from '../../hooks/usePrintReceipt'
+import { usePrintSettings } from '../../hooks/usePrintSettings'
 import { useEmpresaSettings } from '../../hooks/useEmpresaSettings'
 import { useCart, useSaleCalculation, useKeyboardShortcuts } from '../../hooks/useSales'
 import { ProductSearch } from './components/ProductSearch'
@@ -27,6 +28,7 @@ export function SalesPage() {
   const { user } = useAuth()
   const { caixaAtual, loading: loadingCaixa, abrirCaixa } = useCaixa()
   const { printReceipt } = usePrintReceipt()
+  const { settings: printSettings, loading: loadingPrintSettings } = usePrintSettings()
   const { settings: empresaSettings } = useEmpresaSettings()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
@@ -263,9 +265,14 @@ export function SalesPage() {
       // Usa o customerData passado ou o customer do estado (para preview)
       const clienteParaImprimir = customerData !== undefined ? customerData : customer;
       
-      console.log('📄 Dados para impressão:', {
+      console.log('📄 [VENDA] Dados para impressão:', {
         customer: clienteParaImprimir,
-        empresaSettings
+        empresaSettings,
+        printSettings: {
+          cabecalho: printSettings.cabecalhoPersonalizado?.substring(0, 50),
+          rodape1: printSettings.rodapeLinha1?.substring(0, 30),
+          timestamp: new Date().toISOString()
+        }
       });
 
       const receiptData = {
@@ -314,20 +321,14 @@ export function SalesPage() {
         },
         cashReceived,
         changeAmount,
-        // Buscar configurações de impressão do localStorage
-        printConfig: (() => {
-          try {
-            const configStr = localStorage.getItem('print_config');
-            if (!configStr) return undefined;
-            
-            const config = JSON.parse(configStr);
-            console.log('📋 Configurações de impressão carregadas:', config);
-            return config;
-          } catch (error) {
-            console.error('Erro ao carregar configurações de impressão:', error);
-            return undefined;
-          }
-        })()
+        // Buscar configurações de impressão do banco de dados
+        printConfig: {
+          cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
+          rodape_linha1: printSettings.rodapeLinha1,
+          rodape_linha2: printSettings.rodapeLinha2,
+          rodape_linha3: printSettings.rodapeLinha3,
+          rodape_linha4: printSettings.rodapeLinha4
+        }
       };
 
       printReceipt(receiptData);

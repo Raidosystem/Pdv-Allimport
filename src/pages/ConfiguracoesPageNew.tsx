@@ -112,6 +112,7 @@ const ModalRodape = React.memo(({
   const [temp3, setTemp3] = useState(linha3)
   const [temp4, setTemp4] = useState(linha4)
 
+  // Inicializar apenas quando abrir o modal, não re-renderizar enquanto digita
   useEffect(() => {
     if (isOpen) {
       setTemp1(linha1)
@@ -119,7 +120,7 @@ const ModalRodape = React.memo(({
       setTemp3(linha3)
       setTemp4(linha4)
     }
-  }, [isOpen, linha1, linha2, linha3, linha4])
+  }, [isOpen]) // Removido linhas das dependências para evitar reset ao digitar
 
   if (!isOpen) return null
 
@@ -236,6 +237,165 @@ const ModalRodape = React.memo(({
 })
 
 ModalRodape.displayName = 'ModalRodape'
+
+// Componente de Modal de Cabeçalho isolado
+const ModalCabecalho = React.memo(({ 
+  isOpen, 
+  onClose, 
+  cabecalho,
+  empresaSettings,
+  onSave,
+  saving
+}: { 
+  isOpen: boolean
+  onClose: () => void
+  cabecalho: string
+  empresaSettings: ConfiguracaoEmpresa
+  onSave: (cabecalho: string) => Promise<boolean>
+  saving: boolean
+}) => {
+  const [tempCabecalho, setTempCabecalho] = useState(cabecalho)
+
+  // Inicializar apenas quando abrir o modal
+  useEffect(() => {
+    if (isOpen) {
+      setTempCabecalho(cabecalho)
+    }
+  }, [isOpen]) // Removido cabecalho das dependências
+
+  const gerarCabecalhoEmpresa = (empresa: ConfiguracaoEmpresa) => {
+    const partes = []
+    
+    if (empresa.nome) partes.push(empresa.nome.toUpperCase())
+    if (empresa.razao_social && empresa.razao_social !== empresa.nome) {
+      partes.push(empresa.razao_social)
+    }
+    if (empresa.cnpj) partes.push(`CNPJ: ${empresa.cnpj}`)
+    
+    const endereco = []
+    if (empresa.logradouro) endereco.push(empresa.logradouro)
+    if (empresa.numero) endereco.push(`Nº ${empresa.numero}`)
+    if (empresa.bairro) endereco.push(empresa.bairro)
+    if (endereco.length > 0) partes.push(endereco.join(', '))
+    
+    if (empresa.cidade && empresa.estado) {
+      partes.push(`${empresa.cidade} - ${empresa.estado}`)
+    }
+    
+    const contatos = []
+    if (empresa.telefone) contatos.push(`Tel: ${empresa.telefone}`)
+    if (empresa.email) contatos.push(empresa.email)
+    if (contatos.length > 0) partes.push(contatos.join(' | '))
+    
+    return partes.join('\n')
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-lg max-w-2xl w-full shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FileText className="w-6 h-6 text-blue-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Editar Cabeçalho do Recibo</h3>
+                <p className="text-sm text-gray-600">Personalize o texto que aparece no topo dos recibos</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="text-blue-600 mt-0.5">ℹ️</div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900 mb-1">Dados carregados da sua empresa</p>
+                <p className="text-xs text-blue-700">
+                  As informações abaixo foram carregadas automaticamente dos dados cadastrados na seção 
+                  <strong> Dados da Empresa</strong>. Você pode editar livremente o cabeçalho do recibo como preferir.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Texto do Cabeçalho
+            </label>
+            <textarea
+              rows={8}
+              value={tempCabecalho}
+              onChange={(e) => setTempCabecalho(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+              placeholder="Ex: RAVAL PDV - Eletrônicos e Acessórios"
+              autoFocus
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              💡 Este texto aparecerá no topo de todos os recibos impressos. Use quebras de linha para organizar as informações.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const novosCabecalho = gerarCabecalhoEmpresa(empresaSettings)
+              setTempCabecalho(novosCabecalho)
+              toast.success('Dados da empresa recarregados!')
+            }}
+            className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Recarregar dados da empresa
+          </button>
+        </div>
+
+        <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const success = await onSave(tempCabecalho)
+              if (success) {
+                onClose()
+                toast.success('Cabeçalho salvo no banco de dados!')
+              } else {
+                toast.error('Erro ao salvar cabeçalho. Tente novamente.')
+              }
+            }}
+            disabled={saving}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Salvando...' : 'Salvar Cabeçalho'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+ModalCabecalho.displayName = 'ModalCabecalho'
 
 export function ConfiguracoesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
@@ -381,19 +541,15 @@ export function ConfiguracoesPage() {
   // Estados para os modais
   const [modalCabecalhoOpen, setModalCabecalhoOpen] = useState(false)
   const [modalRodapeOpen, setModalRodapeOpen] = useState(false)
-  
-  // Estados locais temporários para edição no modal de cabeçalho
-  const [tempCabecalho, setTempCabecalho] = useState('')
-
-  // Handler simples para cabeçalho (sem useCallback que pode causar problemas)
-  const handleTempCabecalhoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTempCabecalho(e.target.value)
-  }
 
   // Sincronizar com as configurações de impressão carregadas do banco
   useEffect(() => {
     if (!loadingPrint) {
-      console.log('🔄 Sincronizando configurações do hook:', printSettings);
+      console.log('🔄 [CONFIGURACOES PAGE] Sincronizando configurações do hook:', {
+        cabecalho: printSettings.cabecalhoPersonalizado?.substring(0, 50),
+        rodape1: printSettings.rodapeLinha1?.substring(0, 30),
+        timestamp: new Date().toISOString()
+      });
       setConfigImpressao(prev => ({
         ...prev,
         cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
@@ -922,10 +1078,7 @@ export function ConfiguracoesPage() {
           {/* Card Cabeçalho */}
           <button
             type="button"
-            onClick={() => {
-              setTempCabecalho(configImpressao.cabecalho_personalizado)
-              setModalCabecalhoOpen(true)
-            }}
+            onClick={() => setModalCabecalhoOpen(true)}
             className="p-6 border-2 border-gray-300 hover:border-blue-500 rounded-lg transition-all text-left group hover:shadow-md"
           >
             <div className="flex items-center justify-between mb-3">
@@ -1128,123 +1281,20 @@ export function ConfiguracoesPage() {
       </div>
 
       {/* Modal de Cabeçalho */}
-      {modalCabecalhoOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setModalCabecalhoOpen(false)
-            setTempCabecalho('')
-          }}
-        >
-          <div 
-            className="bg-white rounded-lg max-w-2xl w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-blue-600" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Editar Cabeçalho do Recibo</h3>
-                    <p className="text-sm text-gray-600">Personalize o texto que aparece no topo dos recibos</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setModalCabecalhoOpen(false)
-                    setTempCabecalho('')
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              {/* Informação sobre dados da empresa */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-blue-600 mt-0.5">ℹ️</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900 mb-1">Dados carregados da sua empresa</p>
-                    <p className="text-xs text-blue-700">
-                      As informações abaixo foram carregadas automaticamente dos dados cadastrados na seção 
-                      <strong> Dados da Empresa</strong>. Você pode editar livremente o cabeçalho do recibo como preferir.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Texto do Cabeçalho
-                </label>
-                <textarea
-                  rows={8}
-                  value={tempCabecalho}
-                  onChange={handleTempCabecalhoChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                  placeholder="Ex: RAVAL PDV - Eletrônicos e Acessórios"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Este texto aparecerá no topo de todos os recibos impressos. Use quebras de linha para organizar as informações.
-                </p>
-              </div>
-
-              {/* Botão para recarregar dados da empresa */}
-              <button
-                type="button"
-                onClick={() => {
-                  console.log('🔄 Recarregando dados da empresa:', empresaSettings);
-                  const novosCabecalho = gerarCabecalhoEmpresa(empresaSettings)
-                  console.log('📝 Novo cabeçalho gerado:', novosCabecalho);
-                  setTempCabecalho(novosCabecalho)
-                  toast.success('Dados da empresa recarregados!')
-                }}
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Recarregar dados da empresa
-              </button>
-            </div>
-
-            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setModalCabecalhoOpen(false)
-                  setTempCabecalho('')
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log('💾 Tentando salvar cabeçalho:', tempCabecalho);
-                  const success = await saveCabecalho(tempCabecalho)
-                  if (success) {
-                    console.log('✅ Cabeçalho salvo, atualizando estado local');
-                    setConfigImpressao(prev => ({ ...prev, cabecalho_personalizado: tempCabecalho }))
-                    setModalCabecalhoOpen(false)
-                    setTempCabecalho('')
-                    toast.success('Cabeçalho salvo no banco de dados!')
-                  } else {
-                    console.log('❌ Falha ao salvar cabeçalho');
-                    toast.error('Erro ao salvar cabeçalho. Tente novamente.')
-                  }
-                }}
-                disabled={savingPrint}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {savingPrint ? 'Salvando...' : 'Salvar Cabeçalho'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalCabecalho
+        isOpen={modalCabecalhoOpen}
+        onClose={() => setModalCabecalhoOpen(false)}
+        cabecalho={configImpressao.cabecalho_personalizado}
+        empresaSettings={configEmpresa}
+        saving={savingPrint}
+        onSave={async (cabecalho) => {
+          const success = await saveCabecalho(cabecalho)
+          if (success) {
+            setConfigImpressao(prev => ({ ...prev, cabecalho_personalizado: cabecalho }))
+          }
+          return success
+        }}
+      />
 
       {/* Modal de Rodapé */}
       <ModalRodape

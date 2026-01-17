@@ -24,16 +24,21 @@ export async function activateUserAfterEmailVerification(
   email: string
 ): Promise<ActivationResponse> {
   try {
-    console.log('🎯 Ativando teste de 15 dias para novo usuário:', email);
+    console.log('🎯 Ativando usuário após verificação de email:', email);
 
-    // Chamar NOVA função que ativa teste de 15 dias
+    // 🔥 USAR FUNÇÃO SECURITY DEFINER que bypassa RLS
+    console.log('📝 Chamando approve_user_after_email_verification (bypassa RLS)...');
+    
     const { data, error } = await supabase
-      .rpc('activate_trial_for_new_user', {
+      .rpc('approve_user_after_email_verification', {
         user_email: email
       });
 
+    console.log('📊 Resultado da aprovação:', { data, error });
+
     if (error) {
-      console.error('❌ Erro ao ativar período de teste:', error);
+      console.error('❌ Erro ao aprovar e ativar usuário:', error);
+      console.error('📋 Detalhes do erro:', JSON.stringify(error, null, 2));
       throw error;
     }
 

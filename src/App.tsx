@@ -9,6 +9,7 @@ import { OfflineIndicator } from './components/OfflineIndicator'
 import { UpdateCard } from './components/UpdateCard'
 import { PWARedirect } from './components/PWARedirect'
 import { PWAUpdateNotification } from './components/PWAUpdateNotification'
+import { PWAReinstallPrompt } from './components/PWAReinstallPrompt'
 import { BackupFolderSetup } from './components/BackupFolderSetup'
 import './App.css'
 import { useState, useEffect, lazy, Suspense } from 'react'
@@ -242,6 +243,7 @@ function App() {
         {/* PWA Install component now inline above */}
         <PWARedirect />
         <PWAUpdateNotification />
+        <PWAReinstallPrompt />
         <BackupFolderSetup />
         <Suspense fallback={<PageLoader />}>
           <Routes>

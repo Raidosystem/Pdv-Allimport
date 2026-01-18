@@ -1,15 +1,16 @@
 // Service Worker para PWA - PDV Allimport
-const CACHE_NAME = 'pdv-allimport-v2.2.6';
-const STATIC_CACHE = 'pdv-static-v2.2.6';
+const CACHE_VERSION = '2.3.2'; // ATUALIZAR SEMPRE QUE FIZER DEPLOY
+const CACHE_NAME = `pdv-allimport-v${CACHE_VERSION}`;
+const STATIC_CACHE = `pdv-static-v${CACHE_VERSION}`;
 
 // Recursos essenciais para cache (apenas os que existem com certeza)
 const CORE_FILES = [
   '/manifest.json'
 ];
 
-// Install event - cache core files
+// Install event - cache core files e FORÇA ATUALIZAÇÃO IMEDIATA
 self.addEventListener('install', event => {
-  console.log('SW v2.2.6: Installing...');
+  console.log(`🆕 SW v${CACHE_VERSION}: Installing...`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -25,7 +26,8 @@ self.addEventListener('install', event => {
         );
       })
       .then(() => {
-        console.log('SW: Install complete');
+        console.log('✅ SW: Install complete - SKIP WAITING FORÇADO');
+        // FORÇA atualização imediata sem esperar
         return self.skipWaiting();
       })
       .catch(err => {
@@ -35,9 +37,9 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event - clean old caches
+// Activate event - clean old caches e ASSUME CONTROLE IMEDIATO
 self.addEventListener('activate', event => {
-  console.log('SW: Activating...');
+  console.log(`🔄 SW v${CACHE_VERSION}: Activating...`);
   event.waitUntil(
     Promise.all([
       // Clean old caches
@@ -45,18 +47,35 @@ self.addEventListener('activate', event => {
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE) {
-              console.log('SW: Deleting old cache:', cacheName);
+              console.log('🗑️ SW: Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       }),
-      // Take control immediately
-      self.clients.claim()
+      // Take control immediately - FORÇA RELOAD
+      self.clients.claim().then(() => {
+        console.log('✅ SW: Control claimed - RELOADING clients');
+        // FORÇA reload de TODAS as abas abertas
+        return self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => {
+            console.log('🔄 Reloading client:', client.url);
+            client.navigate(client.url);
+          });
+        });
+      })
     ]).then(() => {
-      console.log('SW: Activation complete');
+      console.log('✅ SW: Activation complete');
     })
   );
+});
+
+// Listener para SKIP_WAITING forçado pelo app
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('⚡ SW: SKIP_WAITING recebido do app');
+    self.skipWaiting();
+  }
 });
 
 // Fetch event - serve from cache when offline

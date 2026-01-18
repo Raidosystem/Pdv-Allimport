@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { X, RefreshCw } from 'lucide-react'
 import { isPWA } from './PWARedirect'
 
+// Versão atual do cache/build
+const CURRENT_VERSION = '2.3.2'
+
 /**
  * Componente que mostra notificação quando há atualização disponível no PWA
  * Aparece como um banner no topo da tela
@@ -12,74 +15,135 @@ export function PWAUpdateNotification() {
   const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
+    console.log('🔔 PWAUpdateNotification: Iniciando verificação de updates...');
+    
     // Só mostrar em PWA
     if (!isPWA()) {
+      console.log('🔔 Não é PWA, pulando verificação de updates');
       return
     }
 
+    // Verificar se há mudanças no manifest que requerem reinstalação
+    const checkManifestChanges = async () => {
+      try {
+        const response = await fetch('/manifest.json?' + Date.now(), { cache: 'no-cache' });
+        const manifest = await response.json();
+        const lastManifest = localStorage.getItem('last-manifest');
+        
+        if (lastManifest) {
+          const lastData = JSON.parse(lastManifest);
+          // Verificar mudanças críticas (display, orientation, start_url)
+          if (manifest.display !== lastData.display || 
+              manifest.orientation !== lastData.orientation ||
+              manifest.start_url !== lastData.start_url) {
+            console.log('⚠️ MUDANÇA CRÍTICA NO MANIFEST DETECTADA!');
+            console.log('Anterior:', lastData);
+            console.log('Atual:', manifest);
+            setShowUpdate(true);
+          }
+        }
+        
+        // Salvar manifest atual
+        localStorage.setItem('last-manifest', JSON.stringify({
+          display: manifest.display,
+          orientation: manifest.orientation,
+          start_url: manifest.start_url,
+          version: manifest.version || CURRENT_VERSION
+        }));
+      } catch (error) {
+        console.log('Erro ao verificar manifest:', error);
+      }
+    };
+
+    // Verificar imediatamente
+    checkManifestChanges();
+    
+    // Verificar a cada 15 segundos
+    const manifestInterval = setInterval(checkManifestChanges, 15000);
+
     // Verificar se há Service Worker registrado
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((reg) => {
-        setRegistration(reg)
+      // REGISTRAR Service Worker (garantir que está registrado)
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => {
+          console.log('✅ Service Worker registrado:', reg);
+          setRegistration(reg)
 
-        // Verificar por atualizações a cada 30 segundos
-        const interval = setInterval(() => {
-          reg.update().catch((err) => {
-            console.log('Erro ao verificar atualização:', err)
-          })
-        }, 30000)
+          // LISTENER 1: Detectar quando há um novo SW WAITING
+          const checkUpdate = () => {
+            if (reg.waiting) {
+              console.log('🆕 NOVO SW DETECTADO (waiting)!');
+              setShowUpdate(true);
+            }
+          };
 
-        // Listener para quando há nova versão esperando
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Nova versão disponível
-                console.log('🆕 Nova versão disponível!')
-                setShowUpdate(true)
-              }
-            })
-          }
+          // LISTENER 2: Event updatefound - quando novo SW está instalando
+          reg.addEventListener('updatefound', () => {
+            console.log('🔍 Update found! Novo SW instalando...');
+            const newWorker = reg.installing;
+            
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                console.log('🔄 SW state:', newWorker.state);
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // Novo SW instalado e há um SW antigo controlando
+                  console.log('🆕 NOVO SW INSTALADO! Mostrando banner...');
+                  setShowUpdate(true);
+                }
+              });
+            }
+          });
+
+          // LISTENER 3: Verificação periódica a cada 10 segundos
+          const interval = setInterval(() => {
+            console.log('🔄 Verificando updates no SW...');
+            reg.update().then(() => {
+              checkUpdate();
+            }).catch(err => {
+              console.log('❌ Erro ao verificar update:', err);
+            });
+          }, 10000); // 10 segundos
+
+          // LISTENER 4: Detectar quando o controller muda (novo SW ativou)
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('🔄 Controller changed! Recarregando página...');
+            window.location.reload();
+          });
+
+          // Verificar imediatamente se já há um SW waiting
+          checkUpdate();
+
+          return () => {
+            clearInterval(interval);
+            clearInterval(manifestInterval);
+          };
         })
-
-        return () => clearInterval(interval)
-      })
+        .catch(err => {
+          console.error('❌ Erro ao registrar SW:', err);
+        });
+    } else {
+      console.log('⚠️ Service Worker não suportado');
     }
-
-    // Verificar versão no servidor a cada minuto
-    const versionCheck = setInterval(async () => {
-      try {
-        const response = await fetch('/version.json?' + Date.now())
-        const data = await response.json()
-        const currentVersion = localStorage.getItem('app-version')
-        
-        if (currentVersion && data.version !== currentVersion) {
-          console.log('🆕 Nova versão detectada:', data.version)
-          setShowUpdate(true)
-        }
-      } catch (error) {
-        console.log('Erro ao verificar versão:', error)
-      }
-    }, 60000)
-
-    return () => clearInterval(versionCheck)
   }, [])
 
   const handleUpdate = async () => {
+    console.log('⚡ Usuário clicou em "Atualizar agora"');
     setUpdating(true)
 
     try {
-      // Se há Service Worker, atualizar
+      // Se há Service Worker waiting, ativar
       if (registration?.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+        console.log('📤 Enviando SKIP_WAITING para SW...');
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         
-        // Esperar Service Worker ativar e recarregar
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          window.location.reload()
-        })
+        // Aguardar um pouco e recarregar (o controllerchange listener também vai recarregar)
+        setTimeout(() => {
+          console.log('🔄 Recarregando página após update...');
+          window.location.reload();
+        }, 500);
       } else {
         // Forçar reload do cache
+        console.log('🔄 Sem SW waiting, limpando cache e recarregando...');
         if ('caches' in window) {
           const cacheNames = await caches.keys()
           await Promise.all(cacheNames.map(name => caches.delete(name)))
@@ -87,21 +151,22 @@ export function PWAUpdateNotification() {
         window.location.reload()
       }
     } catch (error) {
-      console.error('Erro ao atualizar:', error)
+      console.error('❌ Erro ao atualizar:', error)
       // Fallback: recarregar página
       window.location.reload()
     }
   }
 
   const handleDismiss = () => {
+    console.log('❌ Usuário dispensou notificação de update');
     setShowUpdate(false)
-    // Lembrar que usuário dispensou (mostrar novamente em 1 hora)
-    localStorage.setItem('update-dismissed', Date.now().toString())
   }
 
   if (!showUpdate) {
     return null
   }
+
+  console.log('🎨 Renderizando banner de update');
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[10000] animate-slideDown">
@@ -117,7 +182,7 @@ export function PWAUpdateNotification() {
                   🎉 Nova atualização disponível!
                 </p>
                 <p className="text-xs md:text-sm text-blue-100 mt-0.5">
-                  Atualize agora para ter acesso às melhorias e correções
+                  Clique em "Atualizar" ou reinstale o app para ver modo fullscreen e melhorias
                 </p>
               </div>
             </div>

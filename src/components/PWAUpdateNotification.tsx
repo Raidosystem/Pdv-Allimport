@@ -23,44 +23,6 @@ export function PWAUpdateNotification() {
       return
     }
 
-    // Verificar se há mudanças no manifest que requerem reinstalação
-    const checkManifestChanges = async () => {
-      try {
-        const response = await fetch('/manifest.json?' + Date.now(), { cache: 'no-cache' });
-        const manifest = await response.json();
-        const lastManifest = localStorage.getItem('last-manifest');
-        
-        if (lastManifest) {
-          const lastData = JSON.parse(lastManifest);
-          // Verificar mudanças críticas (display, orientation, start_url)
-          if (manifest.display !== lastData.display || 
-              manifest.orientation !== lastData.orientation ||
-              manifest.start_url !== lastData.start_url) {
-            console.log('⚠️ MUDANÇA CRÍTICA NO MANIFEST DETECTADA!');
-            console.log('Anterior:', lastData);
-            console.log('Atual:', manifest);
-            setShowUpdate(true);
-          }
-        }
-        
-        // Salvar manifest atual
-        localStorage.setItem('last-manifest', JSON.stringify({
-          display: manifest.display,
-          orientation: manifest.orientation,
-          start_url: manifest.start_url,
-          version: manifest.version || CURRENT_VERSION
-        }));
-      } catch (error) {
-        console.log('Erro ao verificar manifest:', error);
-      }
-    };
-
-    // Verificar imediatamente
-    checkManifestChanges();
-    
-    // Verificar a cada 15 segundos
-    const manifestInterval = setInterval(checkManifestChanges, 15000);
-
     // Verificar se há Service Worker registrado
     if ('serviceWorker' in navigator) {
       // REGISTRAR Service Worker (garantir que está registrado)
@@ -115,7 +77,6 @@ export function PWAUpdateNotification() {
 
           return () => {
             clearInterval(interval);
-            clearInterval(manifestInterval);
           };
         })
         .catch(err => {
@@ -131,29 +92,32 @@ export function PWAUpdateNotification() {
     setUpdating(true)
 
     try {
+      // Limpar caches antigos PRIMEIRO
+      if ('caches' in window) {
+        console.log('🗑️ Limpando caches antigos...');
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => {
+          console.log('🗑️ Deletando cache:', name);
+          return caches.delete(name);
+        }));
+      }
+
       // Se há Service Worker waiting, ativar
       if (registration?.waiting) {
         console.log('📤 Enviando SKIP_WAITING para SW...');
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        
-        // Aguardar um pouco e recarregar (o controllerchange listener também vai recarregar)
-        setTimeout(() => {
-          console.log('🔄 Recarregando página após update...');
-          window.location.reload();
-        }, 500);
-      } else {
-        // Forçar reload do cache
-        console.log('🔄 Sem SW waiting, limpando cache e recarregando...');
-        if ('caches' in window) {
-          const cacheNames = await caches.keys()
-          await Promise.all(cacheNames.map(name => caches.delete(name)))
-        }
-        window.location.reload()
       }
+
+      // Aguardar um pouco para SW processar e recarregar
+      console.log('⏳ Aguardando 300ms antes de recarregar...');
+      setTimeout(() => {
+        console.log('🔄 RECARREGANDO PÁGINA...');
+        window.location.reload();
+      }, 300);
     } catch (error) {
-      console.error('❌ Erro ao atualizar:', error)
-      // Fallback: recarregar página
-      window.location.reload()
+      console.error('❌ Erro ao atualizar:', error);
+      // Fallback: recarregar página imediatamente
+      window.location.reload();
     }
   }
 
@@ -182,7 +146,7 @@ export function PWAUpdateNotification() {
                   🎉 Nova atualização disponível!
                 </p>
                 <p className="text-xs md:text-sm text-blue-100 mt-0.5">
-                  Clique em "Atualizar" ou reinstale o app para ver modo fullscreen e melhorias
+                  Clique em "Atualizar agora" - o app será reiniciado automaticamente
                 </p>
               </div>
             </div>

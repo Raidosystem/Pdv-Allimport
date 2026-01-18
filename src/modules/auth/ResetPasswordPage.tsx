@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff, Check } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/Button'
@@ -14,15 +14,18 @@ export function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Verificar se temos os tokens necessários na URL
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
+    // Supabase envia tokens no hash fragment (#), não em query params (?)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    const type = hashParams.get('type')
     
-    if (!accessToken || !refreshToken) {
+    console.log('🔑 Tokens capturados:', { accessToken: accessToken?.substring(0, 20) + '...', refreshToken: refreshToken?.substring(0, 20) + '...', type })
+    
+    if (!accessToken || !refreshToken || type !== 'recovery') {
       setError('Link de recuperação inválido ou expirado.')
       return
     }
@@ -31,8 +34,15 @@ export function ResetPasswordPage() {
     supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
+    }).then(({ error }) => {
+      if (error) {
+        console.error('❌ Erro ao definir sessão:', error)
+        setError('Erro ao validar link de recuperação.')
+      } else {
+        console.log('✅ Sessão definida com sucesso')
+      }
     })
-  }, [searchParams])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

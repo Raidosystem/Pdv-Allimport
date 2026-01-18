@@ -28,6 +28,19 @@ export function useAppearanceSettings() {
   // Carregar configurações
   const loadSettings = useCallback(async () => {
     try {
+      // 🔒 NÃO carregar em páginas públicas (reset-password, login, signup, etc)
+      const isPublicPage = ['/reset-password', '/login', '/signup', '/forgot-password', '/'].some(path => 
+        window.location.pathname.includes(path)
+      )
+      
+      if (isPublicPage) {
+        // Páginas públicas sempre usam padrão
+        setSettings(DEFAULT_SETTINGS)
+        applySettings(DEFAULT_SETTINGS)
+        setLoading(false)
+        return
+      }
+
       // Carregar APENAS do Supabase (100% online)
       if (user?.id) {
         const { data, error } = await supabase
@@ -36,12 +49,16 @@ export function useAppearanceSettings() {
           .eq('user_id', user.id)
           .single()
 
+        // 🔇 Silenciar erro 406 (tabela não existe ou sem RLS) - usar padrão
         if (!error && data?.appearance_settings) {
           const serverSettings = data.appearance_settings as AppearanceSettings
           setSettings(serverSettings)
           applySettings(serverSettings)
         } else {
-          // Usar configurações padrão se não encontrar
+          // Erro 406, PGRST116 ou tabela não existe - usar padrão silenciosamente
+          if (error && error.code !== 'PGRST116' && !error.message?.includes('406')) {
+            console.warn('⚠️ Configurações de aparência não disponíveis:', error.message)
+          }
           setSettings(DEFAULT_SETTINGS)
           applySettings(DEFAULT_SETTINGS)
         }
@@ -50,8 +67,11 @@ export function useAppearanceSettings() {
         setSettings(DEFAULT_SETTINGS)
         applySettings(DEFAULT_SETTINGS)
       }
-    } catch (error) {
-      console.error('Erro ao carregar configurações de aparência:', error)
+    } catch (error: any) {
+      // Silenciar erro 406 completamente
+      if (!error?.message?.includes('406')) {
+        console.warn('⚠️ Erro ao carregar configurações de aparência:', error)
+      }
       setSettings(DEFAULT_SETTINGS)
       applySettings(DEFAULT_SETTINGS)
     } finally {

@@ -18,14 +18,9 @@ export function ResetPasswordPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 🔒 SEGURANÇA CRÍTICA: Fazer logout de qualquer sessão existente ANTES de processar tokens
-    // Isso previne que sessões antigas interfiram com o fluxo de recuperação
+    // 🔒 SEGURANÇA CRÍTICA: Extrair tokens ANTES de limpar sessão
     const initResetPassword = async () => {
-      // 1. Limpar qualquer sessão existente
-      await supabase.auth.signOut({ scope: 'local' })
-      console.log('🧹 Sessão anterior limpa')
-      
-      // 2. Extrair tokens do hash
+      // 1. PRIMEIRO extrair tokens do hash (antes de qualquer operação)
       const hashParams = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
@@ -42,9 +37,13 @@ export function ResetPasswordPage() {
         return
       }
 
-      // 3. Armazenar tokens - NÃO criar sessão ainda
-      console.log('✅ Tokens armazenados - aguardando redefinição de senha')
+      // 2. Armazenar tokens em memória ANTES de qualquer operação
+      console.log('✅ Tokens capturados e armazenados')
       setRecoveryTokens({ access: accessToken, refresh: refreshToken })
+      
+      // 3. DEPOIS limpar qualquer sessão antiga (não afeta tokens já capturados)
+      await supabase.auth.signOut({ scope: 'local' })
+      console.log('🧹 Sessão anterior limpa (tokens já salvos)')
     }
     
     initResetPassword()

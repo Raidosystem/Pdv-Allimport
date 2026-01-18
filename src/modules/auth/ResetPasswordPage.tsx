@@ -95,16 +95,14 @@ export function ResetPasswordPage() {
         console.log('✅ Usuário:', session.user.email)
         console.log('✅ Tokens obtidos e salvos')
         
-        // Armazenar tokens
+        // 🔒 CRÍTICO: NÃO fazer logout! Manter sessão ativa para poder alterar senha
+        // Armazenar tokens para referência
         setRecoveryTokens({ 
           access: session.access_token, 
           refresh: session.refresh_token 
         })
         
-        // Fazer logout para não deixar sessão ativa
-        await supabase.auth.signOut({ scope: 'local' })
-        console.log('🧹 Sessão temporária limpa (tokens salvos em memória)')
-        console.log('✅ Pronto para redefinir senha!')
+        console.log('✅ Sessão mantida ativa - pronto para redefinir senha!')
         return
       }
       
@@ -134,9 +132,19 @@ export function ResetPasswordPage() {
       console.log('✅ Tokens capturados do hash')
       setRecoveryTokens({ access: accessToken, refresh: refreshToken })
       
-      // Limpar sessão
-      await supabase.auth.signOut({ scope: 'local' })
-      console.log('🧹 Sessão anterior limpa')
+      // 🔒 Criar sessão para poder alterar senha
+      const { error: setSessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      })
+      
+      if (setSessionError) {
+        console.error('❌ Erro ao criar sessão:', setSessionError)
+        setError('Link inválido ou expirado. Solicite um novo link.')
+        return
+      }
+      
+      console.log('✅ Sessão criada - pronto para redefinir senha!')
     }
     
     initResetPassword()
@@ -167,18 +175,19 @@ export function ResetPasswordPage() {
 
     try {
       console.log('🔄 Redefinindo senha...')
+      console.log('🔍 Verificando sessão atual...')
       
-      // 🔒 SEGURANÇA: Criar sessão TEMPORÁRIA apenas para alterar senha
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: recoveryTokens.access,
-        refresh_token: recoveryTokens.refresh,
-      })
-
-      if (sessionError) {
-        throw new Error('Erro ao validar tokens: ' + sessionError.message)
+      // Verificar se há sessão ativa
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        console.error('❌ Nenhuma sessão ativa encontrada')
+        throw new Error('Sessão expirada. Por favor, solicite um novo link.')
       }
+      
+      console.log('✅ Sessão ativa encontrada:', session.user.email)
 
-      // Atualizar senha
+      // Atualizar senha (sessão já está ativa)
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })

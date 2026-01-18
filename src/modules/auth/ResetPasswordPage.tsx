@@ -15,9 +15,15 @@ export function ResetPasswordPage() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [sessionValid, setSessionValid] = useState(false)
+  const [recoveryTokens, setRecoveryTokens] = useState<{ access: string; refresh: string } | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Garantir que não há sessão ativa ao entrar na página
+    supabase.auth.signOut({ scope: 'local' }).then(() => {
+      console.log('🔓 Sessão limpa ao entrar na página de recuperação')
+    })
+
     // Supabase envia tokens no hash fragment (#), não em query params (?)
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
     const accessToken = hashParams.get('access_token')
@@ -43,15 +49,18 @@ export function ResetPasswordPage() {
       return
     }
 
-    console.log('✅ Tokens encontrados, definindo sessão...')
+    // Armazenar tokens mas NÃO criar sessão - apenas validar
+    setRecoveryTokens({ access: accessToken, refresh: refreshToken })
 
-    // Definir a sessão com os tokens - o Supabase vai validar a expiração
+    console.log('✅ Tokens encontrados e armazenados temporariamente')
+    
+    // Validar tokens sem criar sessão permanente
     supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     }).then(({ data, error }) => {
       if (error) {
-        console.error('❌ Erro ao definir sessão:', error)
+        console.error('❌ Erro ao validar tokens:', error)
         console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2))
         
         // Verificar se é erro de token expirado
@@ -60,12 +69,19 @@ export function ResetPasswordPage() {
         } else {
           setError('Erro ao validar link: ' + error.message)
         }
+        setRecoveryTokens(null)
       } else {
-        console.log('✅ Sessão definida com sucesso')
+        console.log('✅ Tokens válidos')
         console.log('✅ Usuário:', data.session?.user?.email)
         console.log('✅ Token expira em:', data.session?.expires_at ? new Date(data.session.expires_at * 1000).toLocaleString('pt-BR') : 'N/A')
         setSessionValid(true)
-        setError('') // Limpar erro se houver
+        setError('')
+        
+        // IMPORTANTE: Fazer logout imediatamente após validar
+        // Os tokens ficam armazenados em recoveryTokens para usar no updateUser
+        supabase.auth.signOut({ scope: 'local' }).then(() => {
+          console.log('🔓 Sessão removida após validação - usuário NÃO está logado')
+        })
       }
     })
   }, [])
@@ -87,14 +103,39 @@ export function ResetPasswordPage() {
       return
     }
 
+    if (!recoveryTokens) {
+      setError('Tokens de recuperação não encontrados. Solicite um novo link.')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error } = await supabase.auth.updateUser({
+      console.log('🔄 Redefinindo senha com tokens de recuperação...')
+      
+      // Criar sessão temporária apenas para atualizar senha
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: recoveryTokens.access,
+        refresh_token: recoveryTokens.refresh,
+      })
+
+      if (sessionError) {
+        throw new Error('Erro ao validar tokens: ' + sessionError.message)
+      }
+
+      // Atualizar senha
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })
 
-      if (error) {
-        throw error
+      if (updateError) {
+        throw updateError
       }
+
+      console.log('✅ Senha atualizada com sucesso')
+
+      // CRÍTICO: Fazer logout IMEDIATAMENTE após mudar senha
+      await supabase.auth.signOut({ scope: 'global' })
+      console.log('🔓 Logout realizado - usuário deve fazer login com nova senha')
 
       setSuccess(true)
       
@@ -102,8 +143,9 @@ export function ResetPasswordPage() {
       setTimeout(() => {
         navigate('/login')
       }, 3000)
-    } catch {
-      setError('Erro ao redefinir senha. Tente novamente.')
+    } catch (err: any) {
+      console.error('❌ Erro ao redefinir senha:', err)
+      setError('Erro ao redefinir senha: ' + (err.message || 'Tente novamente.'))
     } finally {
       setLoading(false)
     }

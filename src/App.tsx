@@ -18,6 +18,7 @@ import { useAppearanceSettings } from './hooks/useAppearanceSettings'
 import { LoginPage } from './modules/auth/LoginPage'
 import { LocalLoginPage } from './modules/auth/LocalLoginPage'
 import { SignupPageNew } from './modules/auth/SignupPageNew'
+import { ResetPasswordPage } from './modules/auth/ResetPasswordPage' // 🔥 MUDADO: Não lazy para debug
 
 // Landing page - lazy loading para melhorar performance inicial
 const LandingPage = lazy(() => import('./modules/landing/LandingPage').then(m => ({ default: m.LandingPage })))
@@ -40,7 +41,7 @@ const LojaOnlinePage = lazy(() => import('./pages/admin/LojaOnlinePage'))
 // Auth secundárias - lazy loading
 const ConfirmEmailPage = lazy(() => import('./modules/auth/ConfirmEmailPage').then(m => ({ default: m.ConfirmEmailPage })))
 const ForgotPasswordPage = lazy(() => import('./modules/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
-const ResetPasswordPage = lazy(() => import('./modules/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
+// ResetPasswordPage removido do lazy - carregado diretamente acima
 const TrocarSenhaPage = lazy(() => import('./pages/TrocarSenhaPage'))
 
 // Páginas secundárias - lazy loading

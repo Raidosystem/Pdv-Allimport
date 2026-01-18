@@ -19,11 +19,6 @@ export function ResetPasswordPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Garantir que não há sessão ativa ao entrar na página
-    supabase.auth.signOut({ scope: 'local' }).then(() => {
-      console.log('🔓 Sessão limpa ao entrar na página de recuperação')
-    })
-
     // Supabase envia tokens no hash fragment (#), não em query params (?)
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
     const accessToken = hashParams.get('access_token')

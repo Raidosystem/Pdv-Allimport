@@ -2,13 +2,6 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "redirects": [
-    {
-      "source": "https://www.pdv.gruporaval.com.br/:path*",
-      "destination": "https://pdv.gruporaval.com.br/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

@@ -285,6 +285,12 @@ const showInstallButton = () => {
         
         if (outcome === 'accepted') {
           deferredPrompt = null
+          
+          // Após instalar PWA, oferecer configuração de pasta de backup
+          setTimeout(() => {
+            setupBackupFolder()
+          }, 2000)
+          
           hideInstallButton()
         } else {
           // Usuário cancelou
@@ -305,6 +311,190 @@ const showInstallButton = () => {
   
   document.body.appendChild(installBtn)
   console.log('✅ Botão PWA adicionado')
+}
+
+// Configurar pasta de backup após instalação do PWA
+const setupBackupFolder = async () => {
+  // Verificar se navegador suporta File System Access API
+  if (!('showDirectoryPicker' in window)) {
+    console.log('⚠️ File System Access API não suportada')
+    return
+  }
+
+  // Verificar se já foi configurado
+  if (localStorage.getItem('backup-folder-configured') === 'true') {
+    console.log('✅ Pasta de backup já configurada')
+    return
+  }
+
+  // Criar modal para perguntar ao usuário
+  const modal = document.createElement('div')
+  modal.id = 'backup-setup-modal'
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+  `
+
+  const modalContent = document.createElement('div')
+  modalContent.style.cssText = `
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+  `
+
+  modalContent.innerHTML = `
+    <h2 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: #1f2937; font-weight: bold;">
+      📁 Configurar Backup Automático
+    </h2>
+    <p style="margin: 0 0 1.5rem 0; color: #6b7280; line-height: 1.6;">
+      Deseja criar uma pasta para salvar backups automáticos dos seus dados? 
+      A pasta será criada em <strong>Documentos</strong> e você poderá exportar seus dados regularmente.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+      <button id="backup-skip" style="
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e5e7eb;
+        background: white;
+        color: #6b7280;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      ">
+        Agora não
+      </button>
+      <button id="backup-create" style="
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: linear-gradient(to right, #3b82f6, #8b5cf6);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      ">
+        ✅ Criar pasta
+      </button>
+    </div>
+  `
+
+  modal.appendChild(modalContent)
+  document.body.appendChild(modal)
+
+  // Adicionar estilos de animação
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #backup-skip:hover {
+      background: #f3f4f6 !important;
+      border-color: #d1d5db !important;
+    }
+    #backup-create:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+  `
+  document.head.appendChild(style)
+
+  // Handler para criar pasta
+  const createBtn = document.getElementById('backup-create')
+  createBtn?.addEventListener('click', async () => {
+    try {
+      // Buscar nome da empresa do localStorage (se existir)
+      const userEmail = localStorage.getItem('user-email') || 'Empresa'
+      const empresaNome = userEmail.split('@')[0] || 'RaVal-PDV'
+
+      const dirHandle = await (window as any).showDirectoryPicker({
+        mode: 'readwrite',
+        startIn: 'documents',
+        id: 'backup-raval-pdv'
+      })
+
+      // Criar subpasta com nome da empresa
+      const backupFolderName = `Backup-${empresaNome.replace(/\s+/g, '-')}`
+      const backupHandle = await dirHandle.getDirectoryHandle(backupFolderName, { create: true })
+
+      // Criar arquivo README.txt
+      const readmeHandle = await backupHandle.getFileHandle('README.txt', { create: true })
+      const writable = await readmeHandle.createWritable()
+      await writable.write(`Pasta de Backup Automático - RaVal PDV
+
+Esta pasta foi criada automaticamente pelo sistema RaVal PDV.
+Os backups são salvos aqui em formato JSON.
+
+📅 Data de criação: ${new Date().toLocaleString('pt-BR')}
+🏢 Empresa: ${empresaNome}
+
+⚠️ NÃO DELETE ESTA PASTA - seus backups estão aqui!
+
+Para fazer backup manual:
+1. Entre no sistema
+2. Vá em Configurações > Backup
+3. Clique em "Exportar dados"
+`)
+      await writable.close()
+
+      // Salvar configuração
+      localStorage.setItem('backup-folder-configured', 'true')
+      localStorage.setItem('backup-folder-name', backupFolderName)
+
+      console.log('✅ Pasta de backup criada:', backupFolderName)
+
+      // Mostrar mensagem de sucesso
+      modalContent.innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+          <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; color: #10b981; font-weight: bold;">
+            Pasta criada com sucesso!
+          </h2>
+          <p style="margin: 0; color: #6b7280;">
+            Localização: <strong>Documentos/${backupFolderName}</strong>
+          </p>
+        </div>
+      `
+
+      setTimeout(() => {
+        modal.style.opacity = '0'
+        setTimeout(() => modal.remove(), 300)
+      }, 2000)
+
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('❌ Erro ao criar pasta:', error)
+        alert('Erro ao criar pasta de backup. Você pode configurar depois em Configurações.')
+      }
+      modal.remove()
+    }
+  })
+
+  // Handler para pular
+  const skipBtn = document.getElementById('backup-skip')
+  skipBtn?.addEventListener('click', () => {
+    localStorage.setItem('backup-folder-skipped', 'true')
+    modal.style.opacity = '0'
+    setTimeout(() => modal.remove(), 300)
+  })
 }
 
 // Ocultar botão de instalação

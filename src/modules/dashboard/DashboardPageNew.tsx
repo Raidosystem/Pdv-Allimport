@@ -4,6 +4,7 @@ import { CaixaPage } from '../../pages/CaixaPageNew'
 import RelatoriosPage from '../../pages/RelatoriosPage'
 import { AdministracaoPage } from '../../pages/AdministracaoPageNew'
 import { ConfiguracoesPage } from '../../pages/ConfiguracoesPageNew'
+import { ResponsiveCarousel } from '../../components/ResponsiveCarousel'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { 
@@ -696,7 +697,7 @@ export function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <ResponsiveCarousel className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                       {menu.options?.map((option, index) => (
                         <Link
                           key={option.path}
@@ -722,7 +723,7 @@ export function DashboardPage() {
                           </div>
                         </Link>
                       ))}
-                    </div>
+                    </ResponsiveCarousel>
                   </div>
                 )
               })

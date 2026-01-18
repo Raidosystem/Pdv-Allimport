@@ -83,66 +83,76 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-900 via-secondary-800 to-black flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-transparent"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-400/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Pattern - Mais vibrante */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/30 to-purple-500/30"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-primary-500/15 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Logo Card */}
-        <Card className="mb-6 bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-          <div className="text-center py-6">
-            <Link to="/" className="inline-flex items-center space-x-3">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-                <ShoppingCart className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-secondary-900">RaVal pdv</h1>
-                <p className="text-primary-600 font-medium">Sistema de Ponto de Venda</p>
-              </div>
-            </Link>
+        {/* Logo Card - Mais destacado */}
+        <Card className="mb-8 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.4)] border-0 overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
+          <div className="bg-gradient-to-r from-primary-500 to-purple-600 p-1">
+            <div className="bg-white text-center py-8">
+              <Link to="/" className="inline-flex flex-col items-center space-y-4 group">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary-500 via-blue-600 to-purple-600 rounded-3xl flex items-center justify-center shadow-[0_10px_30px_rgba(59,130,246,0.5)] transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  <ShoppingCart className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    RaVal PDV
+                  </h1>
+                  <p className="text-primary-600 font-semibold text-lg mt-1">Sistema de Ponto de Venda</p>
+                </div>
+              </Link>
+            </div>
           </div>
         </Card>
 
-        {/* Login Card */}
-        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <ShoppingCart className="w-10 h-10 text-white" />
+        {/* Login Card - Design melhorado */}
+        <Card className="bg-white shadow-[0_20px_60px_rgba(0,0,0,0.4)] border-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-primary-500 to-purple-600 p-1">
+            <div className="bg-white p-8 md:p-10">
+              <div className="text-center mb-8">
+                <div className="inline-block p-2 bg-gradient-to-br from-primary-50 to-purple-50 rounded-3xl mb-4 shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 via-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <ShoppingCart className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-secondary-900 to-secondary-700 bg-clip-text text-transparent mb-2">
+                  Bem-vindo de volta!
+                </h2>
+                <p className="text-secondary-600 text-base">
+                  Entre com suas credenciais para acessar
+                </p>
               </div>
-              <h2 className="text-3xl font-bold text-secondary-900 mb-2">
-                Bem-vindo de volta
-              </h2>
-              <p className="text-secondary-600 text-lg">
-                Acesse seu sistema
-              </p>
-            </div>
 
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-                <p className="text-red-700 text-sm font-medium">
+              <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 shadow-lg">
+                <p className="text-red-700 text-sm font-semibold text-center">
                   {error}
                 </p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <Input
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  required
-                  className="text-lg p-4"
-                />
+              <div className="space-y-5">
+                <div className="group">
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    required
+                    className="text-lg p-4 border-2 focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all rounded-xl shadow-sm hover:shadow-md"
+                  />
+                </div>
 
-                <div className="relative">
+                <div className="relative group">
                   <Input
                     label="Senha"
                     type={showPassword ? 'text' : 'password'}
@@ -150,12 +160,12 @@ export function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="text-lg p-4 pr-12"
+                    className="text-lg p-4 pr-12 border-2 focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all rounded-xl shadow-sm hover:shadow-md"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-12 text-secondary-400 hover:text-secondary-600 transition-colors"
+                    className="absolute right-4 top-[52px] text-secondary-400 hover:text-primary-600 transition-colors p-1 hover:bg-primary-50 rounded-lg"
                   >
                     {showPassword ? (
                       <EyeOff className="w-5 h-5" />
@@ -168,20 +178,22 @@ export function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full text-lg py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transform hover:scale-[1.02] transition-all"
+                className="w-full text-lg py-5 bg-gradient-to-r from-primary-500 via-blue-600 to-purple-600 hover:from-primary-600 hover:via-blue-700 hover:to-purple-700 shadow-[0_10px_30px_rgba(59,130,246,0.4)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.6)] transform hover:scale-[1.02] transition-all duration-300 font-bold rounded-xl"
                 loading={loading}
                 disabled={!email || !password}
               >
-                Entrar no Sistema
+                🚀 Entrar no Sistema
               </Button>
 
               {/* Link Esqueci a Senha */}
               <div className="text-center">
                 <Link 
                   to="/forgot-password" 
-                  className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  className="group inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-all duration-200 hover:scale-105 px-4 py-2 rounded-lg hover:bg-primary-50"
                 >
-                  Esqueci minha senha
+                  <span className="text-xl">🔑</span>
+                  <span>Esqueci minha senha</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                 </Link>
               </div>
             </form>
@@ -189,40 +201,41 @@ export function LoginPage() {
             <div className="mt-8 space-y-4">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-secondary-200"></div>
+                  <div className="w-full border-t-2 border-secondary-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-secondary-500">Não tem conta?</span>
+                  <span className="px-4 bg-white text-secondary-600 font-semibold">Não tem conta?</span>
                 </div>
               </div>
               
               <Link to="/signup" className="block">
                 <Button 
                   variant="outline" 
-                  className="w-full text-lg py-4 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300"
+                  className="w-full text-lg py-5 border-2 border-primary-300 text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 hover:border-primary-400 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 font-bold rounded-xl"
                 >
-                  Criar conta grátis
+                  ✨ Criar conta grátis
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-6 text-center space-y-3">
+            <div className="mt-8 pt-6 border-t-2 border-secondary-100 text-center space-y-4">
               {/* Botão de acesso para funcionários - só aparece se empresa tiver funcionários */}
               {/* A lógica decide automaticamente após o login */}
               
               <Link 
                 to="/resend-confirmation" 
-                className="block text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                className="block text-primary-600 hover:text-primary-700 font-semibold transition-colors hover:scale-105 transform duration-200 inline-block"
               >
-                Não recebeu o email de confirmação?
+                📧 Não recebeu o email de confirmação?
               </Link>
               
               <Link 
                 to="/" 
-                className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors"
+                className="inline-flex items-center text-secondary-500 hover:text-primary-600 transition-colors font-medium hover:scale-105 transform duration-200"
               >
                 ← Voltar para o início
               </Link>
+            </div>
             </div>
           </div>
         </Card>

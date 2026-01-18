@@ -27,6 +27,7 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
     boleto_linha_digitavel: ''
   });
 
+  const [valorDisplay, setValorDisplay] = useState('');
   const [loading, setLoading] = useState(false);
   const [showBoletoUpload, setShowBoletoUpload] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,8 +46,41 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
         boleto_codigo_barras: conta.boleto_codigo_barras || '',
         boleto_linha_digitavel: conta.boleto_linha_digitavel || ''
       });
+      // Formatar valor para exibição
+      setValorDisplay(conta.valor.toFixed(2).replace('.', ','));
     }
   }, [conta]);
+
+  // Função para formatar valor monetário
+  const formatarValor = (value: string) => {
+    // Remove tudo que não é número
+    const apenasNumeros = value.replace(/\D/g, '');
+    
+    if (!apenasNumeros) return '';
+    
+    // Converte para número e divide por 100 para ter os centavos
+    const numero = parseInt(apenasNumeros) / 100;
+    
+    // Formata com 2 casas decimais e vírgula
+    return numero.toFixed(2).replace('.', ',');
+  };
+
+  // Handler para mudança no campo de valor
+  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const formatted = formatarValor(value);
+    
+    setValorDisplay(formatted);
+    
+    // Converte para número e atualiza formData
+    const numeroValor = parseFloat(formatted.replace(',', '.')) || 0;
+    setFormData(prev => ({ ...prev, valor: numeroValor }));
+    
+    // Limpar erro do campo
+    if (errors.valor) {
+      setErrors(prev => ({ ...prev, valor: '' }));
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -173,12 +207,11 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
                 Valor (R$) *
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="valor"
-                value={formData.valor}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
+                value={valorDisplay}
+                onChange={handleValorChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.valor ? 'border-red-500' : 'border-gray-300'
                 }`}

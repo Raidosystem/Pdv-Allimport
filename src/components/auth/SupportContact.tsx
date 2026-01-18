@@ -11,9 +11,9 @@ export function SupportContact({ userEmail }: SupportContactProps) {
   const [copied, setCopied] = useState(false)
 
   const supportInfo = {
-    whatsapp: '+55 11 99999-9999',
-    email: 'suporte@pdvallimport.com',
-    phone: '+55 11 3333-4444'
+    whatsapp: '+55 17 99978-3012',
+    email: 'gruporaval@gmail.com',
+    phone: '+55 17 99978-3012'
   }
 
   const copyToClipboard = (text: string) => {

@@ -237,7 +237,7 @@ export function LandingPage() {
 
       {/* WhatsApp Float Button */}
       <a
-        href="https://wa.me/5518999783012?text=Olá!%20Tenho%20dúvidas%20sobre%20o%20RaVal%20PDV"
+        href="https://wa.me/5517999783012?text=Olá!%20Tenho%20dúvidas%20sobre%20o%20RaVal%20PDV"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 w-14 h-14 xs:w-16 xs:h-16 bg-green-500 hover:bg-green-600 rounded-full shadow-2xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 group"

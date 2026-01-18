@@ -26,6 +26,8 @@ export function ResetPasswordPage() {
     
     console.log('🔍 URL completa:', window.location.href)
     console.log('🔍 Hash completo:', window.location.hash)
+    console.log('🕐 Horário local:', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
+    console.log('🕐 Horário UTC:', new Date().toISOString())
     console.log('🔑 Tokens capturados:', { 
       accessToken: accessToken?.substring(0, 30) + '...', 
       refreshToken: refreshToken?.substring(0, 30) + '...', 
@@ -43,16 +45,25 @@ export function ResetPasswordPage() {
 
     console.log('✅ Tokens encontrados, definindo sessão...')
 
-    // Definir a sessão com os tokens
+    // Definir a sessão com os tokens - o Supabase vai validar a expiração
     supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     }).then(({ data, error }) => {
       if (error) {
         console.error('❌ Erro ao definir sessão:', error)
-        setError('Erro ao validar link de recuperação: ' + error.message)
+        console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2))
+        
+        // Verificar se é erro de token expirado
+        if (error.message?.includes('expired') || error.message?.includes('Invalid') || error.status === 400) {
+          setError('Link de recuperação expirado. Links têm validade de 1 hora.')
+        } else {
+          setError('Erro ao validar link: ' + error.message)
+        }
       } else {
-        console.log('✅ Sessão definida com sucesso:', data.session?.user?.email)
+        console.log('✅ Sessão definida com sucesso')
+        console.log('✅ Usuário:', data.session?.user?.email)
+        console.log('✅ Token expira em:', data.session?.expires_at ? new Date(data.session.expires_at * 1000).toLocaleString('pt-BR') : 'N/A')
         setSessionValid(true)
         setError('') // Limpar erro se houver
       }
@@ -173,7 +184,10 @@ export function ResetPasswordPage() {
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
                   <p className="text-red-600 font-medium text-center">{error}</p>
                   <p className="text-red-500 text-sm text-center mt-2">
-                    Solicite um novo link de recuperação de senha.
+                    Links de recuperação são válidos por 1 hora. Solicite um novo link se necessário.
+                  </p>
+                  <p className="text-red-400 text-xs text-center mt-1">
+                    💡 Dica: Use o link assim que receber o email para evitar expiração.
                   </p>
                 </div>
               )}

@@ -79,6 +79,17 @@ export function ForgotPasswordPage() {
                 Verifique sua caixa de entrada e spam.
               </p>
 
+              <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                <h3 className="text-blue-800 font-semibold mb-2">🕐 Validade do Link</h3>
+                <p className="text-blue-700 text-sm mb-2">
+                  O link de recuperação é válido por <strong>1 hora</strong>. 
+                  Use-o assim que receber o email para evitar expiração.
+                </p>
+                <p className="text-blue-600 text-xs">
+                  💡 Se o link expirar, você pode solicitar um novo link nesta mesma página.
+                </p>
+              </div>
+
               <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
                 <h3 className="text-amber-800 font-semibold mb-2">⚠️ Importante</h3>
                 <p className="text-amber-700 text-sm">

@@ -251,10 +251,13 @@ export function ResetPasswordPage() {
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
                   <p className="text-red-600 font-medium text-center">{error}</p>
                   <p className="text-red-500 text-sm text-center mt-2">
-                    Links de recuperação são válidos por 1 hora. Solicite um novo link se necessário.
+                    Links de recuperação são válidos por 1 hora e só podem ser usados 1 vez.
+                  </p>
+                  <p className="text-red-400 text-xs text-center mt-2">
+                    💡 Horário atual: {new Date().toLocaleTimeString('pt-BR')}
                   </p>
                   <p className="text-red-400 text-xs text-center mt-1">
-                    💡 Dica: Use o link assim que receber o email para evitar expiração.
+                    Certifique-se de usar o email MAIS RECENTE que você recebeu.
                   </p>
                 </div>
               )}

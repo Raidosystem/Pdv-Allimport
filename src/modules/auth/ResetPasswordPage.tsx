@@ -14,101 +14,31 @@ export function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [sessionValid, setSessionValid] = useState(false)
   const [recoveryTokens, setRecoveryTokens] = useState<{ access: string; refresh: string } | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Verificar se há erro nos query params (Supabase envia erro antes do hash)
-    const urlParams = new URLSearchParams(window.location.search)
-    const urlError = urlParams.get('error')
-    const errorCode = urlParams.get('error_code')
-    const errorDescription = urlParams.get('error_description')
-    
-    if (urlError) {
-      console.error('❌ Erro nos query params:', { urlError, errorCode, errorDescription })
-      if (errorCode === 'otp_expired') {
-        setError('Link de recuperação expirado. Por favor, solicite um novo link.')
-      } else {
-        setError(`Erro: ${errorDescription || urlError}`)
-      }
-      return
-    }
-
-    // Supabase envia tokens no hash fragment (#), não em query params (?)
+    // 🔒 SEGURANÇA: NÃO fazer signOut aqui - apenas armazenar tokens
+    // Supabase envia tokens no hash fragment (#)
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
     const accessToken = hashParams.get('access_token')
     const refreshToken = hashParams.get('refresh_token')
-    const type = hashParams.get('type')
     
-    // Verificar erro no hash também
-    const hashError = hashParams.get('error')
-    const hashErrorCode = hashParams.get('error_code')
-    
-    if (hashError) {
-      console.error('❌ Erro no hash:', { hashError, hashErrorCode })
-      if (hashErrorCode === 'otp_expired') {
-        setError('Link de recuperação expirado. Por favor, solicite um novo link.')
-      } else {
-        setError(`Erro: ${hashError}`)
-      }
-      return
-    }
-    
-    console.log('🔍 URL completa:', window.location.href)
-    console.log('🔍 Hash completo:', window.location.hash)
-    console.log('🕐 Horário local:', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
-    console.log('🕐 Horário UTC:', new Date().toISOString())
-    console.log('🔑 Tokens capturados:', { 
-      accessToken: accessToken?.substring(0, 30) + '...', 
-      refreshToken: refreshToken?.substring(0, 30) + '...', 
-      type,
-      hasAccess: !!accessToken,
-      hasRefresh: !!refreshToken
+    console.log('🔍 URL:', window.location.href)
+    console.log('🔑 Tokens presentes:', { 
+      hasAccess: !!accessToken, 
+      hasRefresh: !!refreshToken 
     })
     
-    // Validar apenas se há tokens - o type pode variar
     if (!accessToken || !refreshToken) {
-      console.error('❌ Tokens ausentes no hash')
-      setError('Link de recuperação inválido ou expirado.')
+      console.log('⚠️ Tokens não encontrados')
+      setError('Link inválido ou expirado. Solicite um novo link.')
       return
     }
 
-    // Armazenar tokens mas NÃO criar sessão - apenas validar
+    // 🔒 APENAS armazenar tokens - NÃO criar sessão ainda
+    console.log('✅ Tokens armazenados - aguardando redefinição de senha')
     setRecoveryTokens({ access: accessToken, refresh: refreshToken })
-
-    console.log('✅ Tokens encontrados e armazenados temporariamente')
-    
-    // Validar tokens sem criar sessão permanente
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    }).then(({ data, error }) => {
-      if (error) {
-        console.error('❌ Erro ao validar tokens:', error)
-        console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2))
-        
-        // Verificar se é erro de token expirado
-        if (error.message?.includes('expired') || error.message?.includes('Invalid') || error.status === 400) {
-          setError('Link de recuperação expirado. Links têm validade de 1 hora.')
-        } else {
-          setError('Erro ao validar link: ' + error.message)
-        }
-        setRecoveryTokens(null)
-      } else {
-        console.log('✅ Tokens válidos')
-        console.log('✅ Usuário:', data.session?.user?.email)
-        console.log('✅ Token expira em:', data.session?.expires_at ? new Date(data.session.expires_at * 1000).toLocaleString('pt-BR') : 'N/A')
-        setSessionValid(true)
-        setError('')
-        
-        // IMPORTANTE: Fazer logout imediatamente após validar
-        // Os tokens ficam armazenados em recoveryTokens para usar no updateUser
-        supabase.auth.signOut({ scope: 'local' }).then(() => {
-          console.log('🔓 Sessão removida após validação - usuário NÃO está logado')
-        })
-      }
-    })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,9 +65,9 @@ export function ResetPasswordPage() {
     }
 
     try {
-      console.log('🔄 Redefinindo senha com tokens de recuperação...')
+      console.log('🔄 Redefinindo senha...')
       
-      // Criar sessão temporária apenas para atualizar senha
+      // 🔒 SEGURANÇA: Criar sessão TEMPORÁRIA apenas para alterar senha
       const { error: sessionError } = await supabase.auth.setSession({
         access_token: recoveryTokens.access,
         refresh_token: recoveryTokens.refresh,
@@ -158,7 +88,7 @@ export function ResetPasswordPage() {
 
       console.log('✅ Senha atualizada com sucesso')
 
-      // CRÍTICO: Fazer logout IMEDIATAMENTE após mudar senha
+      // 🔒 CRÍTICO: Fazer logout IMEDIATAMENTE após alterar senha
       await supabase.auth.signOut({ scope: 'global' })
       console.log('🔓 Logout realizado - usuário deve fazer login com nova senha')
 
@@ -247,7 +177,7 @@ export function ResetPasswordPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && !sessionValid && (
+              {error && (
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
                   <p className="text-red-600 font-medium text-center">{error}</p>
                   <p className="text-red-500 text-sm text-center mt-2">
@@ -270,7 +200,6 @@ export function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={!sessionValid && !!error}
                   className="text-lg p-4 pr-12"
                 />
                 <button
@@ -294,7 +223,6 @@ export function ResetPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={!sessionValid && !!error}
                   className="text-lg p-4 pr-12"
                 />
                 <button
@@ -326,12 +254,12 @@ export function ResetPasswordPage() {
                 type="submit"
                 className="w-full text-lg py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg transform hover:scale-[1.02] transition-all"
                 loading={loading}
-                disabled={!password || !confirmPassword || password !== confirmPassword || (!sessionValid && !!error)}
+                disabled={!password || !confirmPassword || password !== confirmPassword}
               >
                 Redefinir Senha
               </Button>
 
-              {(!sessionValid && !!error) && (
+              {error && (
                 <div className="text-center">
                   <Link 
                     to="/forgot-password" 

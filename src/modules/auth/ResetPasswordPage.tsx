@@ -18,7 +18,7 @@ export function ResetPasswordPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 🔒 SEGURANÇA CRÍTICA: Extrair tokens ANTES de limpar sessão
+    // 🔒 SEGURANÇA CRÍTICA: Processar tokens de recuperação
     const initResetPassword = async () => {
       console.log('🔍 =========================')
       console.log('🔍 DEBUG RESET PASSWORD')
@@ -28,25 +28,11 @@ export function ResetPasswordPage() {
       console.log('🔍 Search params:', window.location.search)
       console.log('🔍 Hash completo:', window.location.hash)
       
-      // 1. PRIMEIRO extrair tokens do hash (antes de qualquer operação)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const accessToken = hashParams.get('access_token')
-      const refreshToken = hashParams.get('refresh_token')
-      const typeParam = hashParams.get('type')
-      
-      // Também verificar query params (Supabase pode usar PKCE)
+      // Verificar query params (Supabase PKCE envia code nos query params)
       const queryParams = new URLSearchParams(window.location.search)
       const code = queryParams.get('code')
       const errorParam = queryParams.get('error')
       const errorDescription = queryParams.get('error_description')
-      
-      console.log('🔑 Hash params:', {
-        hasAccess: !!accessToken,
-        hasRefresh: !!refreshToken,
-        type: typeParam,
-        accessPreview: accessToken?.substring(0, 20) + '...',
-        refreshPreview: refreshToken?.substring(0, 20) + '...'
-      })
       
       console.log('🔑 Query params:', {
         hasCode: !!code,
@@ -62,51 +48,70 @@ export function ResetPasswordPage() {
         return
       }
       
-      // Verificar se há code (PKCE flow)
-      if (code && !accessToken) {
-        console.log('🔄 Detectado PKCE code - Supabase vai trocar por tokens automaticamente')
-        console.log('⏳ Aguardando Supabase processar code...')
-        // Supabase vai processar automaticamente e atualizar a URL
-        // Vamos aguardar um momento
-        await new Promise(resolve => setTimeout(resolve, 2000))
+      // Se tem code, deixar Supabase processar automaticamente via detectSessionInUrl
+      if (code) {
+        console.log('🔄 PKCE code detectado - Supabase vai processar automaticamente')
+        console.log('⏳ Aguardando Supabase trocar code por tokens...')
         
-        // Verificar novamente após espera
-        const hashParamsRetry = new URLSearchParams(window.location.hash.substring(1))
-        const accessTokenRetry = hashParamsRetry.get('access_token')
-        const refreshTokenRetry = hashParamsRetry.get('refresh_token')
+        // Aguardar Supabase processar o code (detectSessionInUrl: true)
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
-        console.log('🔁 Após espera, tokens:', {
-          hasAccess: !!accessTokenRetry,
-          hasRefresh: !!refreshTokenRetry
-        })
+        // Verificar se a sessão foi criada
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        if (accessTokenRetry && refreshTokenRetry) {
-          console.log('✅ Tokens obtidos via PKCE!')
-          setRecoveryTokens({ access: accessTokenRetry, refresh: refreshTokenRetry })
-          await supabase.auth.signOut({ scope: 'local' })
-          console.log('🧹 Sessão anterior limpa (tokens já salvos)')
+        if (sessionError || !session) {
+          console.error('❌ Erro ao obter sessão após PKCE:', sessionError)
+          setError('Link inválido ou expirado. Solicite um novo link.')
           return
         }
+        
+        console.log('✅ Sessão PKCE obtida:', {
+          user: session.user.email,
+          hasAccess: !!session.access_token,
+          hasRefresh: !!session.refresh_token
+        })
+        
+        // Armazenar tokens
+        setRecoveryTokens({ 
+          access: session.access_token, 
+          refresh: session.refresh_token 
+        })
+        
+        // Fazer logout para não deixar sessão ativa
+        await supabase.auth.signOut({ scope: 'local' })
+        console.log('🧹 Sessão temporária limpa (tokens salvos)')
+        return
       }
       
+      // Fallback: verificar hash params (fluxo antigo)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const typeParam = hashParams.get('type')
+      
+      console.log('🔑 Hash params:', {
+        hasAccess: !!accessToken,
+        hasRefresh: !!refreshToken,
+        type: typeParam
+      })
+
       if (!accessToken || !refreshToken) {
-        console.error('❌ Tokens não encontrados no hash')
+        console.error('❌ Nem code nem tokens encontrados')
         console.log('💡 Isso pode significar:')
         console.log('   1. Link expirado (mais de 1 hora)')
         console.log('   2. Link já foi usado')
-        console.log('   3. Supabase não configurado corretamente')
-        console.log('   4. PKCE flow não completou')
+        console.log('   3. Redirect URLs não configuradas no Supabase')
         setError('Link inválido ou expirado. Solicite um novo link.')
         return
       }
 
-      // 2. Armazenar tokens em memória ANTES de qualquer operação
-      console.log('✅ Tokens capturados e armazenados')
+      // Armazenar tokens do hash
+      console.log('✅ Tokens capturados do hash')
       setRecoveryTokens({ access: accessToken, refresh: refreshToken })
       
-      // 3. DEPOIS limpar qualquer sessão antiga (não afeta tokens já capturados)
+      // Limpar sessão
       await supabase.auth.signOut({ scope: 'local' })
-      console.log('🧹 Sessão anterior limpa (tokens já salvos)')
+      console.log('🧹 Sessão anterior limpa')
     }
     
     initResetPassword()

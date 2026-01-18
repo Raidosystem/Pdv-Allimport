@@ -13,21 +13,33 @@ export function BackupFolderSetup() {
   useEffect(() => {
     // Só mostrar em PWA
     if (!isPWA()) {
+      console.log('❌ Não é PWA - não mostrando backup setup')
       return
     }
+
+    console.log('✅ É PWA - verificando configuração de backup')
 
     // Verificar se já foi configurado ou rejeitado
     const alreadyConfigured = localStorage.getItem('backup-folder-configured') === 'true'
     const wasSkipped = localStorage.getItem('backup-folder-skipped') === 'true'
-    const firstAccess = localStorage.getItem('pwa-first-access') !== 'true'
+    const hasShownBefore = localStorage.getItem('backup-modal-shown') === 'true'
 
-    // Mostrar modal apenas no primeiro acesso ao PWA e se não foi configurado/rejeitado
-    if (firstAccess && !alreadyConfigured && !wasSkipped) {
-      // Aguardar 3 segundos para usuário se situar
+    console.log('📊 Estado backup:', { alreadyConfigured, wasSkipped, hasShownBefore })
+
+    // Mostrar modal se:
+    // 1. Ainda não foi configurado
+    // 2. Usuário não pulou
+    // 3. Modal nunca foi mostrado antes
+    if (!alreadyConfigured && !wasSkipped && !hasShownBefore) {
+      console.log('🎯 Mostrando modal de backup em 2 segundos...')
+      // Aguardar 2 segundos para usuário se situar na tela de login
       setTimeout(() => {
+        console.log('📁 Exibindo modal de backup')
         setShowModal(true)
-        localStorage.setItem('pwa-first-access', 'true')
-      }, 3000)
+        localStorage.setItem('backup-modal-shown', 'true')
+      }, 2000)
+    } else {
+      console.log('ℹ️ Modal de backup não será mostrado')
     }
   }, [])
 

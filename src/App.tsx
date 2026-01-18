@@ -8,6 +8,8 @@ import { CacheErrorBoundary } from './utils/cacheBuster'
 import { OfflineIndicator } from './components/OfflineIndicator'
 import { UpdateCard } from './components/UpdateCard'
 import { PWARedirect } from './components/PWARedirect'
+import { PWAUpdateNotification } from './components/PWAUpdateNotification'
+import { BackupFolderSetup } from './components/BackupFolderSetup'
 import './App.css'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { initVersionCheck } from './utils/version-check'
@@ -239,6 +241,8 @@ function App() {
         {/* Indicador Offline e PWA */}
         {/* PWA Install component now inline above */}
         <PWARedirect />
+        <PWAUpdateNotification />
+        <BackupFolderSetup />
         <Suspense fallback={<PageLoader />}>
           <Routes>
           {/* Rotas públicas */}

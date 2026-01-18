@@ -2,28 +2,40 @@ import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 /**
+ * Verifica se está no modo PWA
+ */
+export function isPWA(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         (window.navigator as any).standalone === true ||
+         document.referrer.includes('android-app://') ||
+         window.matchMedia('(display-mode: fullscreen)').matches ||
+         window.matchMedia('(display-mode: minimal-ui)').matches
+}
+
+/**
  * Componente que redireciona para login quando app está instalado como PWA
- * Só funciona na raiz (/), permitindo landing page no navegador
+ * Funciona em qualquer rota se for PWA
  */
 export function PWARedirect() {
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
-    // Verificar se está no modo PWA (standalone)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone === true ||
-                        document.referrer.includes('android-app://')
+    // Verificar se está no modo PWA
+    const isStandalone = isPWA()
 
-    // Só redirecionar se:
-    // 1. Está na raiz (/)
-    // 2. Está instalado como PWA
-    // 3. Não está logado (sem token no localStorage)
+    console.log('🔍 PWARedirect - pathname:', location.pathname, 'isPWA:', isStandalone)
+    console.log('🔍 User-Agent:', navigator.userAgent)
+    console.log('🔍 Display mode:', window.matchMedia('(display-mode: standalone)').matches)
+
+    // Se está no PWA e na raiz, redirecionar IMEDIATAMENTE
     if (location.pathname === '/' && isStandalone) {
-      const hasSession = localStorage.getItem('supabase.auth.token') !== null
+      // Verificar se tem sessão ativa do Supabase
+      const supabaseSession = localStorage.getItem('sb-kmcaaqetxtwkdcczdomw-auth-token')
+      const hasSession = supabaseSession !== null
       
       if (!hasSession) {
-        console.log('🚀 PWA detectado - redirecionando para /login')
+        console.log('🚀 PWA detectado - redirecionando IMEDIATAMENTE para /login')
         navigate('/login', { replace: true })
       } else {
         console.log('🚀 PWA detectado - usuário já logado, indo para /dashboard')
@@ -34,3 +46,4 @@ export function PWARedirect() {
 
   return null // Componente invisível
 }
+

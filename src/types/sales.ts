@@ -1,3 +1,10 @@
+/**
+ * NOTA: Esta interface Product difere de types/product.ts propositalmente:
+ * - Esta (sales.ts): Formato para vendas (campos em inglês, usado no carrinho)
+ * - product.ts: Formato do banco Supabase (campos em português)
+ * 
+ * Use adaptProductForSales() se precisar converter entre os formatos
+ */
 export interface Product {
   id: string
   name: string

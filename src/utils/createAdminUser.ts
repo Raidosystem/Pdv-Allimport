@@ -1,11 +1,29 @@
 import { supabase } from '../lib/supabase'
 
+/**
+ * ⚠️ ARQUIVO DE TESTE - NUNCA USAR EM PRODUÇÃO
+ * 
+ * Este arquivo é APENAS para desenvolvimento local e testes.
+ * Senha hardcoded intencionalmente para facilitar testes.
+ * 
+ * 🚨 IMPORTANTE:
+ * - NÃO executar em ambiente de produção
+ * - NÃO usar esta função em código de produção
+ * - Usuário admin real deve ser criado via Supabase Dashboard
+ */
+
 export async function createAdminUser() {
+  // Verificar se está em produção
+  if (import.meta.env.PROD) {
+    console.error('❌ ERRO: Não é permitido criar admin em produção via código!')
+    return { success: false, error: 'Operação bloqueada em produção' }
+  }
+
   try {
     // Usar signup normal em vez de admin.createUser
     const { data, error } = await supabase.auth.signUp({
       email: 'novaradiosystem@outlook.com',
-      password: '@qw12aszx##',
+      password: '@qw12aszx##', // ⚠️ Senha de teste - APENAS para desenvolvimento
       options: {
         data: {
           full_name: 'Administrador Principal',

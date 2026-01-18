@@ -127,7 +127,7 @@ ALTER COLUMN payment_amount SET DEFAULT 59.90;
 
 UPDATE public.subscriptions 
 SET payment_amount = 59.90, updated_at = NOW()
-WHERE payment_amount = 29.90;
+WHERE payment_amount = 59.90;
 ```
 
 ## ✅ Checklist de Deploy

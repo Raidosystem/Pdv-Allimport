@@ -87,6 +87,7 @@ export function useOrdemServico() {
       
       const novaOS: OrdemServico = {
         id: Date.now().toString(),
+        user_id: 'temp-user',
         cliente_id: Date.now().toString(),
         data_entrada: new Date().toISOString().split('T')[0],
         status: osData.status || 'Fazendo orçamento',
@@ -97,7 +98,6 @@ export function useOrdemServico() {
         observacoes: osData.observacoes,
         valor_orcamento: osData.valor_orcamento,
         checklist: { liga: true },
-        usuario_id: '1',
         criado_em: new Date().toISOString(),
         atualizado_em: new Date().toISOString(),
         cliente: {

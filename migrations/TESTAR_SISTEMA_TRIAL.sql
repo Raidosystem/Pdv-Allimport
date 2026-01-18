@@ -133,7 +133,7 @@ SELECT check_subscription_status('novaradiosystem@outlook.com');
 SELECT upgrade_to_paid_subscription(
   'novaradiosystem@outlook.com',
   'monthly',
-  29.90
+  59.90
 );
 
 -- 4. Verificar resultado (deve mostrar ~40 dias de assinatura ativa)

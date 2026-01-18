@@ -275,7 +275,7 @@ SELECT check_subscription_status('teste_novo@exemplo.com');
 
 -- Teste 3: Simular upgrade de teste para pago (mensal)
 -- Isso vai SOMAR os dias restantes do teste com 30 dias do plano mensal
-SELECT upgrade_to_paid_subscription('teste_novo@exemplo.com', 'monthly', 29.90);
+SELECT upgrade_to_paid_subscription('teste_novo@exemplo.com', 'monthly', 59.90);
 
 -- Teste 4: Verificar status após upgrade
 SELECT check_subscription_status('teste_novo@exemplo.com');

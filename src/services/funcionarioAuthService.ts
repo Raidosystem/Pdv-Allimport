@@ -103,9 +103,19 @@ export async function criarFuncionarioComAuth(
       
       // Tentar limpar conta Auth criada (rollback)
       try {
-        await supabase.rpc('delete_user', { user_id: authData.user.id })
+        const { error: deleteError } = await supabase.rpc('delete_user', { user_id: authData.user.id })
+        if (deleteError) {
+          // Se a função RPC não existir, apenas avisar
+          if (deleteError.message.includes('function') || deleteError.message.includes('does not exist')) {
+            console.warn('⚠️  Função delete_user não disponível. Conta Auth pode ficar órfã:', authData.user.id)
+          } else {
+            console.error('⚠️  Erro ao deletar conta Auth:', deleteError)
+          }
+        } else {
+          console.log('✅ Conta Auth removida no rollback')
+        }
       } catch (e) {
-        console.warn('⚠️  Não foi possível limpar conta Auth:', e)
+        console.warn('⚠️  Exceção ao limpar conta Auth:', e)
       }
       
       throw funcionarioError

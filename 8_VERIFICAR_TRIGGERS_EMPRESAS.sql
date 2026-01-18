@@ -1,0 +1,13 @@
+-- ============================================
+-- 8️⃣ VERIFICAR TRIGGER QUE CRIA FUNCIONARIOS APÓS CRIAR EMPRESA
+-- ============================================
+
+SELECT 
+  trigger_name,
+  event_manipulation,
+  action_statement,
+  action_timing
+FROM information_schema.triggers
+WHERE event_object_table = 'empresas'
+  AND event_object_schema = 'public'
+ORDER BY trigger_name;

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
 import { OrdemServicoForm } from '../components/ordem-servico/OrdemServicoForm'
+import PrintOrdemServicoModal from '../components/PrintOrdemServicoModal'
 import { formatarCpfCnpj } from '../utils/formatacao'
 import { onlyDigits } from '../lib/cpf'
 import { supabase } from '../lib/supabase'
@@ -378,6 +379,9 @@ export function OrdensServicoPage() {
   const [servicoRealizado, setServicoRealizado] = useState<string>('')
   const [resultadoReparo, setResultadoReparo] = useState<'reparado' | 'sem_reparo' | 'condenado'>('reparado')
   const [valorFinal, setValorFinal] = useState<number>(0)
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [ordemParaImprimir, setOrdemParaImprimir] = useState<OrdemServico | null>(null)
+  const [printModalTitle, setPrintModalTitle] = useState<string>('')
   const isInitialMount = useRef(true) // ✅ Flag para carregar UMA VEZ
 
   useEffect(() => {
@@ -489,7 +493,7 @@ export function OrdensServicoPage() {
     setGarantiaPersonalizada('')
     setServicoRealizado('') // Sempre vazio para o usuário preencher manualmente
     setResultadoReparo('reparado') // Resetar para o padrão
-    setValorFinal(ordem.valor_orcamento || 0) // Iniciar com valor do orçamento
+    setValorFinal(ordem.valor_orcamento || 0) // Valor do orçamento se houver
     setShowEncerrarModal(true)
   }
 
@@ -559,13 +563,32 @@ export function OrdensServicoPage() {
         setViewingOrdem(ordemAtualizada)
       }
       
+      // Fechar modal de encerramento primeiro
       setShowEncerrarModal(false)
       
-      // Perguntar se deseja imprimir
-      const desejaImprimir = window.confirm('✅ Ordem encerrada com sucesso!\n\nDeseja imprimir o comprovante de entrega?')
-      if (desejaImprimir) {
-        imprimirComprovanteEntrega(ordemAtualizada)
-      }
+      // Aguardar fechamento completo e abrir modal de impressão
+      console.log('🎯 [MODAL IMPRESSÃO] Preparando para abrir modal após fechar encerrar')
+      
+      // Usar requestAnimationFrame para garantir que o estado seja atualizado após a renderização
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('🎯 [MODAL IMPRESSÃO] Abrindo modal de impressão:', {
+            ordemId: ordemAtualizada.id,
+            numeroOS: ordemAtualizada.numero_os,
+            timestamp: new Date().toISOString()
+          })
+          
+          setOrdemParaImprimir(ordemAtualizada)
+          setPrintModalTitle('Ordem Encerrada!')
+          setShowPrintModal(true)
+          
+          console.log('✅ [MODAL IMPRESSÃO] Estados atualizados:', {
+            showPrintModal: true,
+            printModalTitle: 'Ordem Encerrada!',
+            hasOrdem: !!ordemAtualizada
+          })
+        })
+      })
     } catch (error) {
       console.error('Erro ao encerrar ordem:', error)
       alert('❌ Erro ao encerrar ordem. Tente novamente.')
@@ -950,9 +973,33 @@ export function OrdensServicoPage() {
               ordem={editingOrdem}
               onSuccess={handleSalvarOrdem}
               onCancel={handleCancelar}
+              onOrdemCriada={(ordem) => {
+                // Mostrar modal de impressão quando ordem for criada
+                setOrdemParaImprimir(ordem)
+                setPrintModalTitle('Ordem Criada!')
+                setShowPrintModal(true)
+              }}
             />
           </main>
         </div>
+        
+        {/* Modal de Impressão */}
+        <PrintOrdemServicoModal
+          isOpen={showPrintModal}
+          onClose={() => {
+            setShowPrintModal(false)
+            setOrdemParaImprimir(null)
+          }}
+          onConfirm={() => {
+            if (ordemParaImprimir) {
+              imprimirComprovanteEntrega(ordemParaImprimir)
+            }
+          }}
+          title={printModalTitle}
+          ordemNumero={ordemParaImprimir?.numero_os}
+          clienteName={ordemParaImprimir?.cliente?.nome}
+          valorTotal={ordemParaImprimir?.valor_final || ordemParaImprimir?.valor_orcamento}
+        />
       </>
     )
   }
@@ -977,6 +1024,19 @@ export function OrdensServicoPage() {
             </div>
             
             <div className="flex gap-2">
+              {/* Botão Reimprimir OS - Disponível para todas as ordens */}
+              <Button
+                onClick={() => {
+                  setOrdemParaImprimir(viewingOrdem)
+                  setPrintModalTitle(viewingOrdem.status === 'Entregue' ? 'Ordem Encerrada!' : 'Ordem Criada!')
+                  setShowPrintModal(true)
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                Reimprimir OS
+              </Button>
+              
               {viewingOrdem.status === 'Entregue' ? (
                 <Button
                   disabled
@@ -1318,8 +1378,8 @@ export function OrdensServicoPage() {
 
       {/* Modal de Encerramento */}
       {showEncerrarModal && ordemParaEncerrar && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4" onClick={() => setShowEncerrarModal(false)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               {/* Header do Modal */}
               <div className="flex items-center justify-between mb-6">
@@ -1349,6 +1409,46 @@ export function OrdensServicoPage() {
 
               {/* Formulário de Encerramento */}
               <div className="space-y-4">
+                {/* Resultado do Reparo - MOVIDO PARA O TOPO */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Resultado do Reparo *
+                  </label>
+                  <select
+                    value={resultadoReparo}
+                    onChange={(e) => {
+                      const novoResultado = e.target.value as 'reparado' | 'sem_reparo' | 'condenado'
+                      setResultadoReparo(novoResultado)
+                      // Se não for reparado, zerar garantia e valor
+                      if (novoResultado !== 'reparado') {
+                        setGarantiaMeses(0)
+                        setGarantiaPersonalizada('')
+                        setValorFinal(0) // Forçar valor a 0
+                      } else {
+                        setGarantiaMeses(3) // Restaurar garantia padrão
+                        // Se for reparado, restaurar valor do orçamento (se houver)
+                        if (ordemParaEncerrar?.valor_orcamento) {
+                          setValorFinal(ordemParaEncerrar.valor_orcamento)
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="reparado">Aparelho Reparado</option>
+                    <option value="sem_reparo">Aparelho Sem Reparo</option>
+                    <option value="condenado">Aparelho Condenado</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {resultadoReparo === 'reparado' 
+                      ? 'Reparo realizado com sucesso - garantia disponível'
+                      : resultadoReparo === 'sem_reparo'
+                      ? 'Cliente optou por não realizar o reparo'
+                      : 'Aparelho não tem condições de reparo'}
+                  </p>
+                </div>
+
+                {/* Valor - SÓ OBRIGATÓRIO SE REPARADO */}
+                {resultadoReparo === 'reparado' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Valor Final do Serviço *
@@ -1370,6 +1470,16 @@ export function OrdensServicoPage() {
                     Informe o valor cobrado pelo serviço realizado
                   </p>
                 </div>
+                )}
+
+                {/* Mensagem quando não é reparado */}
+                {resultadoReparo !== 'reparado' && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800">
+                    ℹ️ Como o aparelho não foi reparado, não é necessário informar valor.
+                  </p>
+                </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1384,38 +1494,6 @@ export function OrdensServicoPage() {
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Esta informação será incluída no comprovante de entrega
-                  </p>
-                </div>
-
-                {/* Resultado do Reparo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Resultado do Reparo *
-                  </label>
-                  <select
-                    value={resultadoReparo}
-                    onChange={(e) => {
-                      setResultadoReparo(e.target.value as 'reparado' | 'sem_reparo' | 'condenado')
-                      // Se não for reparado, zerar garantia
-                      if (e.target.value !== 'reparado') {
-                        setGarantiaMeses(0)
-                        setGarantiaPersonalizada('')
-                      } else {
-                        setGarantiaMeses(3) // Restaurar garantia padrão
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="reparado">Aparelho Reparado</option>
-                    <option value="sem_reparo">Aparelho Sem Reparo</option>
-                    <option value="condenado">Aparelho Condenado</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {resultadoReparo === 'reparado' 
-                      ? 'Reparo realizado com sucesso - garantia disponível'
-                      : resultadoReparo === 'sem_reparo'
-                      ? 'Cliente optou por não realizar o reparo'
-                      : 'Aparelho não tem condições de reparo'}
                   </p>
                 </div>
 
@@ -1495,7 +1573,23 @@ export function OrdensServicoPage() {
                 </Button>
                 <Button
                   onClick={confirmarEncerramentoOrdem}
-                  disabled={!servicoRealizado.trim() || valorFinal <= 0}
+                  disabled={(() => {
+                    const semServico = !servicoRealizado.trim()
+                    const reparadoSemValor = resultadoReparo === 'reparado' && valorFinal <= 0
+                    const desabilitado = semServico || reparadoSemValor
+                    
+                    // Debug
+                    console.log('🔍 [DEBUG BOTÃO]', {
+                      resultadoReparo,
+                      valorFinal,
+                      servicoRealizado: servicoRealizado.trim(),
+                      semServico,
+                      reparadoSemValor,
+                      desabilitado
+                    })
+                    
+                    return desabilitado
+                  })()}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   <Printer className="w-4 h-4 mr-2" />
@@ -1510,6 +1604,24 @@ export function OrdensServicoPage() {
           </div>
         </div>
       )}
+      
+      {/* Modal de Impressão */}
+      <PrintOrdemServicoModal
+        isOpen={showPrintModal}
+        onClose={() => {
+          setShowPrintModal(false)
+          setOrdemParaImprimir(null)
+        }}
+        onConfirm={() => {
+          if (ordemParaImprimir) {
+            imprimirComprovanteEntrega(ordemParaImprimir)
+          }
+        }}
+        title={printModalTitle}
+        ordemNumero={ordemParaImprimir?.numero_os}
+        clienteName={ordemParaImprimir?.cliente?.nome}
+        valorTotal={ordemParaImprimir?.valor_final || ordemParaImprimir?.valor_orcamento}
+      />
     </>
   )
 }
@@ -1803,6 +1915,24 @@ export function OrdensServicoPage() {
           </div>
         )}
       </div>
+      
+      {/* Modal de Impressão */}
+      <PrintOrdemServicoModal
+        isOpen={showPrintModal}
+        onClose={() => {
+          setShowPrintModal(false)
+          setOrdemParaImprimir(null)
+        }}
+        onConfirm={() => {
+          if (ordemParaImprimir) {
+            imprimirComprovanteEntrega(ordemParaImprimir)
+          }
+        }}
+        title={printModalTitle}
+        ordemNumero={ordemParaImprimir?.numero_os}
+        clienteName={ordemParaImprimir?.cliente?.nome}
+        valorTotal={ordemParaImprimir?.valor_final || ordemParaImprimir?.valor_orcamento}
+      />
     </div>
   )
 }

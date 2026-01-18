@@ -19,31 +19,19 @@ const FerramentasPage: React.FC = () => {
           </h2>
           
           <div className="flex gap-3 ml-auto">
-            {/* Botão Laudo */}
+            {/* Botão Laudo - Cor fixa azul */}
             <button
               onClick={() => setSubsection('laudo')}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-                ${subsection === 'laudo'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              `}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all bg-blue-600 text-white shadow-md hover:bg-blue-700"
             >
               <FileText className="w-5 h-5" />
               Laudo Técnico
             </button>
 
-            {/* Botão Orçamento */}
+            {/* Botão Orçamento - Cor fixa verde */}
             <button
               onClick={() => setSubsection('orcamento')}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-                ${subsection === 'orcamento'
-                  ? 'bg-green-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              `}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all bg-green-600 text-white shadow-md hover:bg-green-700"
             >
               <Calculator className="w-5 h-5" />
               Orçamento

@@ -1,8 +1,9 @@
 import type { MercadoPagoPreference, MercadoPagoPayment } from '../types/subscription'
 
 // Configuração do Mercado Pago via variáveis de ambiente
+// ⚠️ IMPORTANTE: Configure as variáveis no arquivo .env ou Vercel
 const MP_ACCESS_TOKEN = import.meta.env.VITE_MP_ACCESS_TOKEN || ''
-const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'APP_USR-4a8bfb6e-0ff5-47d1-be9c-092fbcf7e022'
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || ''
 const MP_BASE_URL = 'https://api.mercadopago.com'
 
 export class MercadoPagoService {
@@ -16,6 +17,11 @@ export class MercadoPagoService {
   static getCredentials() {
     if (!MP_ACCESS_TOKEN) {
       console.error('❌ VITE_MP_ACCESS_TOKEN não configurado')
+      throw new Error('Mercado Pago não configurado. Configure VITE_MP_ACCESS_TOKEN no .env')
+    }
+    if (!MP_PUBLIC_KEY) {
+      console.error('❌ VITE_MP_PUBLIC_KEY não configurado')
+      throw new Error('Mercado Pago não configurado. Configure VITE_MP_PUBLIC_KEY no .env')
     }
     return {
       accessToken: MP_ACCESS_TOKEN,

@@ -54,7 +54,7 @@ class OrdemServicoService {
         *,
         cliente:clientes(*)
       `)
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false }) // ✅ Mudança: usar created_at ao invés de data_entrada
 
     // Aplicar filtros
@@ -107,7 +107,7 @@ class OrdemServicoService {
         cliente:clientes(*)
       `)
       .eq('id', id)
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -166,7 +166,7 @@ class OrdemServicoService {
       status: 'Em análise', // ✅ Corrigido: usar status válido da enum
       data_previsao: dadosForm.data_previsao || null,
       valor_orcamento: dadosForm.valor_orcamento,
-      usuario_id: user.id
+      user_id: user.id
     }
 
     console.log('🔍 [SERVICE] Dados recebidos do form:', {
@@ -218,17 +218,17 @@ class OrdemServicoService {
     // Tratar campos de data vazios como null
     const dadosLimpos = { ...dados }
     if (dadosLimpos.data_previsao === '') {
-      dadosLimpos.data_previsao = null as any
+      dadosLimpos.data_previsao = undefined
     }
     if (dadosLimpos.data_entrega === '') {
-      dadosLimpos.data_entrega = null as any
+      dadosLimpos.data_entrega = undefined
     }
 
     const { data, error } = await supabase
       .from('ordens_servico')
       .update(dadosLimpos)
       .eq('id', id)
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id)
       .select(`
         *,
         cliente:clientes(*)
@@ -249,7 +249,7 @@ class OrdemServicoService {
     const user = await requireAuth()
     console.log('👤 Usuário autenticado:', user.id);
 
-    const dadosAtualizacao: any = { status: novoStatus }
+    const dadosAtualizacao: Partial<OrdemServico> = { status: novoStatus }
     
     // Se for "Entregue", marcar data de entrega
     if (novoStatus === 'Entregue') {
@@ -262,7 +262,7 @@ class OrdemServicoService {
       .from('ordens_servico')
       .update(dadosAtualizacao)
       .eq('id', id)
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('❌ Erro no Supabase ao atualizar status:', error)
@@ -298,7 +298,7 @@ class OrdemServicoService {
       .from('ordens_servico')
       .update(dadosAtualizacao)
       .eq('id', id)
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id)
       .select(`
         *,
         cliente:clientes(*)
@@ -387,7 +387,7 @@ class OrdemServicoService {
     const { data, error } = await supabase
       .from('ordens_servico')
       .select('status')
-      .eq('usuario_id', user.id)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Erro ao buscar estatísticas:', error)

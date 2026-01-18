@@ -34,7 +34,7 @@ INSERT INTO public.subscriptions (
 ) VALUES (
   '${testEmail}',
   'pending',
-  NOW() + INTERVAL '7 days', -- 7 dias de teste
+  NOW() + INTERVAL '15 days', -- 15 dias de teste
   NOW(),
   NOW()
 ) ON CONFLICT (email) DO NOTHING;

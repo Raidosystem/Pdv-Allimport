@@ -387,17 +387,28 @@ export function ClienteFormUnificado({
         // Chamar callback de sucesso se fornecido
         if (onSuccess) {
           // Buscar o cliente completo recém-criado
+          const clienteId = typeof data === 'string' ? data : (typeof data === 'object' && data?.id ? data.id : String(data))
+          console.log('🔍 [DEBUG] ID do cliente para busca:', clienteId, 'tipo:', typeof clienteId, 'data original:', data)
+          
           const { data: clienteCriado, error: errorBusca } = await supabase
             .from('clientes')
             .select('*')
-            .eq('id', data)
+            .eq('id', clienteId)
             .single()
           
           if (!errorBusca && clienteCriado) {
             onSuccess(clienteCriado)
           } else {
-            console.warn('⚠️ Erro ao buscar cliente criado, usando ID do RPC:', errorBusca)
-            onSuccess(data)
+            console.warn('⚠️ Erro ao buscar cliente criado:', errorBusca)
+            // Se falhar, criar objeto mínimo com os dados que temos
+            onSuccess({
+              id: clienteId,
+              nome: clienteData.nome,
+              telefone: clienteData.telefone,
+              email: clienteData.email,
+              cpf_cnpj: clienteData.cpf_cnpj,
+              criado_em: new Date().toISOString()
+            })
           }
         }
       }
@@ -452,7 +463,7 @@ export function ClienteFormUnificado({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Nome */}
         <div>
           <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
@@ -712,7 +723,8 @@ export function ClienteFormUnificado({
             )}
 
             <button
-              type="submit"
+              type="button"
+              onClick={(e) => handleSubmit(e)}
               disabled={!canSubmit()}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 canSubmit()
@@ -734,7 +746,7 @@ export function ClienteFormUnificado({
             </button>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   )
 }

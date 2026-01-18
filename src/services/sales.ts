@@ -394,6 +394,17 @@ export const saleService = {
             quantity: itemResult.quantidade,
             unit_price: itemResult.preco_unitario,
             total_price: itemResult.subtotal,
+            product: item.product_name ? {
+              id: item.product_id || '',
+              name: item.product_name,
+              price: item.unit_price,
+              stock_quantity: 0,
+              min_stock: 0,
+              unit: 'un',
+              active: true,
+              created_at: '',
+              updated_at: ''
+            } : undefined,
             created_at: itemResult.created_at
           });
         }
@@ -489,42 +500,58 @@ export const saleService = {
       });
       
       if (sale.sale_items && sale.sale_items.length > 0) {
-        // Buscar nomes dos produtos dos items
-        const productIds = sale.sale_items.map(item => item.product_id).filter(Boolean);
+        // PRIMEIRO: Tentar usar os nomes dos produtos já disponíveis nos sale_items
+        const itemsComNomes = sale.sale_items.filter(item => item.product?.name);
         
-        console.log('🔍 Product IDs extraídos:', productIds);
-        
-        if (productIds.length > 0) {
-          try {
-            const { data: products, error: prodError } = await supabase
-              .from('produtos')
-              .select('id, nome')
-              .in('id', productIds)
-              .limit(3);
-            
-            console.log('🔍 Produtos encontrados:', { products, error: prodError });
-            
-            if (products && products.length > 0) {
-              const productNames = products.map(p => p.nome).join(', ');
-              
-              if (sale.sale_items.length > 3) {
-                descricao = `Venda: ${productNames} e mais ${sale.sale_items.length - 3} item(ns)`;
-              } else {
-                descricao = `Venda: ${productNames}`;
-              }
-              
-              console.log('✅ Descrição gerada:', descricao);
-            } else {
-              descricao = `Venda de ${sale.sale_items.length} item(ns)`;
-              console.log('⚠️ Nenhum produto encontrado - usando fallback');
-            }
-          } catch (error) {
-            console.warn('⚠️ Erro ao buscar nomes dos produtos:', error);
-            descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+        if (itemsComNomes.length > 0) {
+          // Usar nomes já disponíveis
+          const productNames = itemsComNomes.map(item => item.product!.name).slice(0, 3).join(', ');
+          
+          if (sale.sale_items.length > 3) {
+            descricao = `Venda: ${productNames} e mais ${sale.sale_items.length - 3} item(ns)`;
+          } else {
+            descricao = `Venda: ${productNames}`;
           }
+          
+          console.log('✅ Descrição gerada com nomes dos items:', descricao);
         } else {
-          descricao = `Venda de ${sale.sale_items.length} item(ns)`;
-          console.log('⚠️ Nenhum product_id válido - usando fallback');
+          // FALLBACK: Buscar nomes dos produtos no banco
+          const productIds = sale.sale_items.map(item => item.product_id).filter(Boolean);
+          
+          console.log('🔍 Product IDs extraídos (busca no banco):', productIds);
+          
+          if (productIds.length > 0) {
+            try {
+              const { data: products, error: prodError } = await supabase
+                .from('produtos')
+                .select('id, nome')
+                .in('id', productIds)
+                .limit(3);
+              
+              console.log('🔍 Produtos encontrados:', { products, error: prodError });
+              
+              if (products && products.length > 0) {
+                const productNames = products.map(p => p.nome).join(', ');
+                
+                if (sale.sale_items.length > 3) {
+                  descricao = `Venda: ${productNames} e mais ${sale.sale_items.length - 3} item(ns)`;
+                } else {
+                  descricao = `Venda: ${productNames}`;
+                }
+                
+                console.log('✅ Descrição gerada (busca no banco):', descricao);
+              } else {
+                descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+                console.log('⚠️ Nenhum produto encontrado - usando fallback');
+              }
+            } catch (error) {
+              console.warn('⚠️ Erro ao buscar nomes dos produtos:', error);
+              descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+            }
+          } else {
+            descricao = `Venda de ${sale.sale_items.length} item(ns)`;
+            console.log('⚠️ Nenhum product_id válido - usando fallback');
+          }
         }
       } else {
         // Fallback se não houver items
@@ -550,7 +577,7 @@ export const saleService = {
         tipo: 'entrada',
         descricao,
         valor: sale.total_amount,
-        user_id: sale.user_id,  // ✅ CORRIGIDO: user_id é o campo NOT NULL correto da tabela
+        user_id: sale.user_id,  // ✅ CORRIGIDO: Padronizado para user_id (conforme schema do banco)
         venda_id: sale.id,
         data: new Date().toISOString()
       };
@@ -572,6 +599,7 @@ export const saleService = {
         tipo: 'entrada',
         descricao,
         valor: sale.total_amount,
+        user_id: sale.user_id,
         venda_id: sale.id
       });
       

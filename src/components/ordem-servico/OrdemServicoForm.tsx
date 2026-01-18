@@ -25,7 +25,8 @@ import * as checklistTemplateService from '../../services/checklistTemplateServi
 import { supabase } from '../../lib/supabase'
 import type { 
   NovaOrdemServicoForm, 
-  TipoEquipamento 
+  TipoEquipamento,
+  StatusOS
 } from '../../types/ordemServico'
 import type { Cliente } from '../../types/cliente'
 
@@ -54,6 +55,7 @@ interface OrdemServicoFormProps {
   ordem?: any // Ordem para edição
   onSuccess?: (ordem: Record<string, unknown>) => void
   onCancel?: () => void
+  onOrdemCriada?: (ordem: any) => void // Nova prop para mostrar modal de impressão
 }
 
 const TIPOS_EQUIPAMENTO_BASE: { value: TipoEquipamento; label: string }[] = [
@@ -77,7 +79,7 @@ const CHECKLIST_PADRAO = [
   { id: 'carregamento_ok', label: 'Carregamento OK?' }
 ]
 
-export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFormProps) {
+export function OrdemServicoForm({ ordem, onSuccess, onCancel, onOrdemCriada }: OrdemServicoFormProps) {
   console.log('🏗️ [COMPONENT] OrdemServicoForm montado/renderizado', ordem ? 'EDITANDO' : 'NOVO')
   
   const [loading, setLoading] = useState(false)
@@ -115,8 +117,8 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
   const [novoItemChecklist, setNovoItemChecklist] = useState('')
   const [mostrandoFormNovoItem, setMostrandoFormNovoItem] = useState(false)
   
-  // Estado para o status da ordem
-  const [statusOrdem, setStatusOrdem] = useState<'Fazendo orçamento' | 'Em conserto' | 'Pronto'>('Fazendo orçamento')
+  // Estado para o status da ordem (aceita todos os status válidos)
+  const [statusOrdem, setStatusOrdem] = useState<StatusOS>('Fazendo orçamento')
   
   const [equipamentosAnteriores, setEquipamentosAnteriores] = useState<Array<{
     tipo: string
@@ -236,9 +238,9 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
       setMarcaBusca(ordem.marca || '')
       setModeloBusca(ordem.modelo || '')
       
-      // Carregar status (apenas se for um dos editáveis)
-      if (ordem.status && ['Fazendo orçamento', 'Em conserto', 'Pronto'].includes(ordem.status)) {
-        setStatusOrdem(ordem.status as 'Fazendo orçamento' | 'Em conserto' | 'Pronto')
+      // Carregar status (todos os valores válidos)
+      if (ordem.status) {
+        setStatusOrdem(ordem.status as StatusOS)
       }
       
       // Se houver cliente, setar
@@ -742,19 +744,42 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
     try {
       console.log('🖨️ Preparando impressão da OS:', ordemData);
       
+      // Extrair nome do cliente - pode vir de diferentes lugares
+      const clienteNome = ordemData.cliente_nome || 
+                         ordemData.cliente?.nome || 
+                         ordemData.clientes?.nome ||
+                         'Cliente não identificado';
+      
+      const clienteTelefone = ordemData.cliente_telefone || 
+                             ordemData.cliente?.telefone || 
+                             ordemData.clientes?.telefone || 
+                             '';
+      
+      const clienteEmail = ordemData.cliente_email || 
+                          ordemData.cliente?.email || 
+                          ordemData.clientes?.email || 
+                          '';
+      
+      console.log('👤 Dados do cliente extraídos:', { 
+        clienteNome, 
+        clienteTelefone, 
+        clienteEmail,
+        ordemData_estrutura: Object.keys(ordemData)
+      });
+      
       printOrdemServico({
         ordem: {
           id: ordemData.id,
-          numero_ordem: ordemData.numero_ordem,
-          cliente_nome: ordemData.cliente_nome,
-          cliente_telefone: ordemData.cliente_telefone,
-          cliente_email: ordemData.cliente_email,
+          numero_ordem: ordemData.numero_os || ordemData.numero_ordem,
+          cliente_nome: clienteNome,
+          cliente_telefone: clienteTelefone,
+          cliente_email: clienteEmail,
           tipo: ordemData.tipo,
           marca: ordemData.marca,
           modelo: ordemData.modelo,
           cor: ordemData.cor,
           numero_serie: ordemData.numero_serie,
-          defeito_relatado: ordemData.defeito_relatado,
+          defeito_relatado: ordemData.defeito_relatado || ordemData.descricao_problema,
           observacoes: ordemData.observacoes,
           created_at: ordemData.criado_em || ordemData.created_at
         },
@@ -884,6 +909,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
         console.log('➕ [CRIAR] Senha preparada:', senhaAparelho)
         
         const novaOrdem: NovaOrdemServicoForm = {
+          cliente_id: clienteSelecionado.id, // ✅ FIX: Passar ID do cliente selecionado
           cliente_nome: clienteSelecionado.nome,
           cliente_telefone: clienteSelecionado.telefone,
           cliente_email: clienteSelecionado.email,
@@ -897,8 +923,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
           observacoes: data.observacoes,
           defeito_relatado: data.defeito_relatado,
           data_previsao: data.data_previsao,
-          valor_orcamento: data.valor_orcamento,
-          status: statusOrdem // Adicionar status
+          valor_orcamento: data.valor_orcamento
         }
 
         console.log('💾 [CRIAR] Enviando para banco:', novaOrdem)
@@ -909,16 +934,10 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
         // Sinalizar que a lista de OS precisa ser recarregada
         localStorage.setItem('os_list_needs_refresh', 'true')
         
-        // Perguntar se deseja imprimir o recibo
-        setTimeout(() => {
-          const desejaImprimir = window.confirm(
-            'Ordem de serviço salva com sucesso!\n\nDeseja imprimir o recibo agora?'
-          );
-          
-          if (desejaImprimir) {
-            handleImprimirRecibo(ordemCriada);
-          }
-        }, 500);
+        // Chamar callback para mostrar modal de impressão (se fornecido)
+        if (onOrdemCriada) {
+          onOrdemCriada(ordemCriada)
+        }
         
         if (onSuccess) {
           onSuccess(ordemCriada as unknown as Record<string, unknown>)
@@ -1539,12 +1558,13 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel }: OrdemServicoFor
             </label>
             <select
               value={statusOrdem}
-              onChange={(e) => setStatusOrdem(e.target.value as 'Fazendo orçamento' | 'Em conserto' | 'Pronto')}
+              onChange={(e) => setStatusOrdem(e.target.value as StatusOS)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Fazendo orçamento">Fazendo orçamento</option>
               <option value="Em conserto">Em conserto</option>
               <option value="Pronto">Pronto</option>
+              <option value="Entregue">Entregue</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">
               O status "Entregue" é definido automaticamente ao encerrar a ordem

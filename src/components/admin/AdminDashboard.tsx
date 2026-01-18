@@ -740,10 +740,10 @@ export function AdminDashboard() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Atalhos Rápidos</label>
                     <div className="grid grid-cols-4 gap-3">
                       <button
-                        onClick={() => setDaysToAdd(7)}
+                        onClick={() => setDaysToAdd(15)}
                         className="px-4 py-3 bg-gray-100 hover:bg-blue-500 hover:text-white border-2 border-gray-300 rounded-xl font-bold transition-all"
                       >
-                        7 dias
+                        15 dias
                       </button>
                       <button
                         onClick={() => setDaysToAdd(30)}

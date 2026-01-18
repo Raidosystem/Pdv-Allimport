@@ -1152,10 +1152,10 @@ export function AdminPanel() {
                         <p className="text-sm font-semibold text-gray-700 mb-2">Atalhos Rápidos:</p>
                         <div className="grid grid-cols-4 gap-2">
                           <button
-                            onClick={() => setDaysToAdd(7)}
+                            onClick={() => setDaysToAdd(15)}
                             className="px-4 py-3 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 font-bold rounded-xl transition-colors border-2 border-gray-200 hover:border-blue-300"
                           >
-                            7 dias
+                            15 dias
                           </button>
                           <button
                             onClick={() => setDaysToAdd(30)}

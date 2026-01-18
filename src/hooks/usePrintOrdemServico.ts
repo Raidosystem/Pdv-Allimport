@@ -44,7 +44,10 @@ interface PrintOrdemServicoData {
 export function usePrintOrdemServico() {
   const printOrdemServico = useCallback((data: PrintOrdemServicoData) => {
     try {
-      console.log('🖨️ Iniciando impressão de Ordem de Serviço:', data);
+      console.log('🖨️ [PRINT] Iniciando impressão de Ordem de Serviço');
+      console.log('🖨️ [PRINT] Dados recebidos:', data);
+      console.log('🖨️ [PRINT] Cliente nome:', data.ordem.cliente_nome);
+      console.log('🖨️ [PRINT] Estrutura ordem:', Object.keys(data.ordem));
 
       // Formatar data
       const dataOS = data.ordem.created_at 
@@ -171,7 +174,7 @@ export function usePrintOrdemServico() {
             <div class="secao">
               <div class="secao-titulo">CLIENTE</div>
               <div class="linha">
-                <span class="label">Nome:</span> ${data.ordem.cliente_nome}
+                <span class="label">Nome:</span> ${data.ordem.cliente_nome || 'Não informado'}
               </div>
               ${data.ordem.cliente_telefone ? `
                 <div class="linha">
@@ -241,22 +244,41 @@ export function usePrintOrdemServico() {
         </html>
       `;
 
-      // Abrir janela de impressão
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        throw new Error('Não foi possível abrir a janela de impressão. Verifique se pop-ups estão bloqueados.');
-      }
+      // Abrir janela de impressão (com timeout para evitar bloqueio)
+      setTimeout(() => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+          throw new Error('Não foi possível abrir a janela de impressão. Verifique se pop-ups estão bloqueados.');
+        }
 
-      printWindow.document.write(printContent);
-      printWindow.document.close();
+        printWindow.document.write(printContent);
+        printWindow.document.close();
 
-      // Aguardar carregamento e imprimir
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.focus();
-          printWindow.print();
-        }, 250);
-      };
+        // Aguardar carregamento e imprimir
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            
+            // ✅ CORRIGIDO: Fechar janela automaticamente após impressão
+            // Isso previne tela branca ao voltar
+            printWindow.onafterprint = () => {
+              console.log('✅ Impressão concluída, fechando janela');
+              setTimeout(() => {
+                printWindow.close();
+              }, 500);
+            };
+            
+            // Fallback: fechar após 30 segundos se usuário não imprimir
+            setTimeout(() => {
+              if (!printWindow.closed) {
+                console.log('⚠️ Fechando janela de impressão por timeout');
+                printWindow.close();
+              }
+            }, 30000);
+          }, 250);
+        };
+      }, 100);
 
       console.log('✅ Impressão enviada com sucesso');
     } catch (error) {

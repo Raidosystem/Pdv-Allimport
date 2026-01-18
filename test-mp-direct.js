@@ -6,7 +6,7 @@ async function testPreference() {
       items: [
         {
           title: "Teste Assinatura PDV",
-          unit_price: 29.90,
+          unit_price: 59.90,
           quantity: 1
         }
       ],

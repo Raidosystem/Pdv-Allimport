@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Printer, FileText, AlertCircle } from 'lucide-react'
+import { Printer, FileText, AlertCircle, Clock, DollarSign } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -19,7 +19,8 @@ import { ProductFormModal } from '../../components/product/ProductFormModal'
 import { QuickSaleModal } from './components/QuickSaleModal'
 import PrintConfirmationModal from '../../components/PrintConfirmationModal'
 import { salesService } from '../../services/sales'
-import type { Product, Customer } from '../../types/sales'
+import { supabase } from '../../lib/supabase'
+import type { Product, Customer, Sale } from '../../types/sales'
 import type { Cliente } from '../../types/cliente'
 import { formatCurrency } from '../../utils/format'
 
@@ -40,6 +41,10 @@ export function SalesPage() {
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [pendingSaleData, setPendingSaleData] = useState<any>(null)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
+  const [recentSales, setRecentSales] = useState<any[]>([])
+  const [loadingRecentSales, setLoadingRecentSales] = useState(false)
+  const [showReprintModal, setShowReprintModal] = useState(false)
+  const [saleToReprint, setSaleToReprint] = useState<any>(null)
 
   // Sincronizar cliente selecionado com customer para impressão
   useEffect(() => {
@@ -109,6 +114,142 @@ export function SalesPage() {
       setInitialCheckDone(true);
     }
   }, [caixaAtual, loadingCaixa, initialCheckDone]) // Deps necessárias para verificação inicial
+
+  // Carregar últimas vendas
+  const loadRecentSales = async () => {
+    if (!user) {
+      console.log('⚠️ [RECENT SALES] User não disponível')
+      return
+    }
+    
+    try {
+      console.log('🔄 [RECENT SALES] Carregando vendas recentes...')
+      setLoadingRecentSales(true)
+      const { data, error } = await supabase
+        .from('vendas')
+        .select(`
+          *,
+          clientes (
+            nome,
+            cpf_cnpj
+          ),
+          vendas_itens (
+            *,
+            produtos (
+              id,
+              nome,
+              codigo_barras
+            )
+          )
+        `)
+        .order('criado_em', { ascending: false })
+        .limit(10)
+      
+      if (error) {
+        console.error('❌ [RECENT SALES] Erro ao carregar:', error)
+        throw error
+      }
+      
+      console.log('✅ [RECENT SALES] Vendas carregadas:', data?.length || 0)
+      setRecentSales(data || [])
+    } catch (error) {
+      console.error('❌ [RECENT SALES] Erro ao carregar vendas recentes:', error)
+    } finally {
+      setLoadingRecentSales(false)
+    }
+  }
+
+  // Carregar vendas ao iniciar e quando caixa estiver aberto
+  useEffect(() => {
+    if (caixaAtual?.status === 'aberto' && user) {
+      console.log('🎯 [RECENT SALES] useEffect disparado - carregando vendas')
+      loadRecentSales()
+    }
+  }, [caixaAtual?.status, user?.id]) // Dependências mais específicas
+
+  // Função para reimprimir venda
+  const handleReprintSale = (sale: any) => {
+    console.log('🖨️ Preparando reimpressão de venda:', sale.id)
+    setSaleToReprint(sale)
+    setShowReprintModal(true)
+  }
+
+  const confirmReprintSale = () => {
+    if (!saleToReprint) return
+
+    try {
+      const customerData = saleToReprint.clientes ? {
+        id: saleToReprint.customer_id || '',
+        name: saleToReprint.clientes.nome,
+        document: saleToReprint.clientes.cpf_cnpj,
+      } : {
+        id: 'quick-customer',
+        name: saleToReprint.detalhes_pagamento?.quick_customer_name || 'Cliente Rápido'
+      }
+
+      // Formatar itens com dados dos produtos
+      const formattedItems = (saleToReprint.vendas_itens || []).map((item: any) => ({
+        product_id: item.product_id || item.produto_id,
+        quantity: item.quantidade || item.quantity,
+        unit_price: item.preco_unitario || item.unit_price,
+        total_price: item.preco_total || item.total_price,
+        product: {
+          name: item.produtos?.nome || item.product?.name || 'Produto',
+          sku: item.produtos?.codigo_barras || item.product?.sku
+        }
+      }))
+
+      console.log('🖨️ [REPRINT] Dados completos para impressão:', {
+        customer: customerData,
+        items: formattedItems,
+        empresaSettings,
+        printSettings
+      })
+
+      printReceipt({
+        sale: {
+          id: saleToReprint.id,
+          total_amount: saleToReprint.total,
+          discount_amount: saleToReprint.desconto || 0,
+          payment_method: saleToReprint.metodo_pagamento,
+          payment_details: saleToReprint.detalhes_pagamento,
+          created_at: saleToReprint.criado_em,
+          items: formattedItems
+        },
+        customer: customerData,
+        storeName: empresaSettings.nome || "RaVal pdv",
+        storeInfo: {
+          logo: empresaSettings.logo,
+          razao_social: empresaSettings.razao_social,
+          cnpj: empresaSettings.cnpj,
+          phone: empresaSettings.telefone,
+          email: empresaSettings.email,
+          logradouro: empresaSettings.logradouro,
+          numero: empresaSettings.numero,
+          complemento: empresaSettings.complemento,
+          bairro: empresaSettings.bairro,
+          cidade: empresaSettings.cidade,
+          estado: empresaSettings.estado,
+          cep: empresaSettings.cep,
+          address: !empresaSettings.logradouro ? "Configure o endereço em Configurações → Empresa" : undefined
+        },
+        printConfig: {
+          cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
+          rodape_linha1: printSettings.rodapeLinha1,
+          rodape_linha2: printSettings.rodapeLinha2,
+          rodape_linha3: printSettings.rodapeLinha3,
+          rodape_linha4: printSettings.rodapeLinha4
+        }
+      })
+
+      toast.success('Comprovante reimpresso!')
+      setShowReprintModal(false)
+      setSaleToReprint(null)
+    } catch (error) {
+      console.error('Erro ao reimprimir:', error)
+      toast.error('Erro ao reimprimir comprovante')
+    }
+  }
 
     const handleOpenCashRegister = async (amount: number) => {
     if (!user) return
@@ -206,7 +347,8 @@ export function SalesPage() {
 
       // Preparar dados da venda - produtos de venda rápida ficam apenas na memória
       const saleData = {
-        customer_id: customer?.id,
+        // ✅ Só enviar customer_id se for UUID válido (não quick-customer)
+        customer_id: (customer?.id && !customer.id.startsWith('quick-')) ? customer.id : undefined,
         cash_register_id: caixaAtual.id,
         user_id: user.id,
         total_amount: totalAmount,
@@ -215,7 +357,9 @@ export function SalesPage() {
         payment_details: {
           payments_count: payments.length,
           cash_received: cashReceived,
-          change_amount: changeAmount
+          change_amount: changeAmount,
+          // Salvar nome do cliente rápido para impressão
+          quick_customer_name: customer?.id.startsWith('quick-') ? customer.name : undefined
         } as Record<string, string | number | boolean>,
         status: 'completed' as const,
         notes: '',
@@ -246,6 +390,9 @@ export function SalesPage() {
       resetCalculation()
 
       toast.success('Venda finalizada com sucesso!')
+
+      // Recarregar vendas recentes
+      loadRecentSales()
 
       // Mostrar modal de confirmação de impressão
       setPendingSaleData(dadosParaImpressao)
@@ -488,8 +635,9 @@ export function SalesPage() {
                 </Card>
               </div>
 
-              {/* Coluna do Meio - Carrinho */}
-              <div className="lg:col-span-5">
+              {/* Coluna do Meio - Carrinho e Últimas Vendas */}
+              <div className="lg:col-span-5 space-y-4">
+                {/* Carrinho */}
                 <SaleResumo
                   items={items}
                   onUpdateQuantity={updateQuantity}
@@ -504,6 +652,105 @@ export function SalesPage() {
                   onDiscountTypeChange={setDiscountType}
                   onDiscountValueChange={setDiscountValue}
                 />
+
+                {/* Últimas Vendas */}
+                <Card className="p-4 bg-white border-0 shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-900">Últimas Vendas</h3>
+                        <p className="text-xs text-gray-600">10 mais recentes</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadRecentSales}
+                      disabled={loadingRecentSales}
+                      className="text-xs"
+                    >
+                      {loadingRecentSales ? 'Carregando...' : 'Atualizar'}
+                    </Button>
+                  </div>
+
+                  {loadingRecentSales ? (
+                    <div className="text-center py-6">
+                      <div className="w-6 h-6 mx-auto border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-2" />
+                      <p className="text-xs text-gray-600">Carregando vendas...</p>
+                    </div>
+                  ) : recentSales.length === 0 ? (
+                    <div className="text-center py-6">
+                      <FileText className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                      <p className="text-xs text-gray-600">Nenhuma venda realizada ainda</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 px-2 font-semibold text-gray-700">Data/Hora</th>
+                            <th className="text-left py-2 px-2 font-semibold text-gray-700">Cliente</th>
+                            <th className="text-left py-2 px-2 font-semibold text-gray-700">Pgto</th>
+                            <th className="text-right py-2 px-2 font-semibold text-gray-700">Total</th>
+                            <th className="text-center py-2 px-2 font-semibold text-gray-700">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {recentSales.map((sale, index) => (
+                            <tr 
+                              key={sale.id} 
+                              className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index === 0 ? 'bg-blue-50' : ''}`}
+                            >
+                              <td className="py-2 px-2 text-gray-700">
+                                {new Date(sale.criado_em).toLocaleString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                              <td className="py-2 px-2 text-gray-700 truncate max-w-[120px]">
+                                {sale.clientes?.nome || sale.detalhes_pagamento?.quick_customer_name || 'Cliente Rápido'}
+                              </td>
+                              <td className="py-2 px-2">
+                                <span className={`px-1.5 py-0.5 rounded-full font-medium ${
+                                  sale.metodo_pagamento === 'cash' ? 'bg-green-100 text-green-700' :
+                                  sale.metodo_pagamento === 'credit' ? 'bg-blue-100 text-blue-700' :
+                                  sale.metodo_pagamento === 'debit' ? 'bg-purple-100 text-purple-700' :
+                                  sale.metodo_pagamento === 'pix' ? 'bg-teal-100 text-teal-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {sale.metodo_pagamento === 'cash' ? '💵' :
+                                   sale.metodo_pagamento === 'credit' ? '💳' :
+                                   sale.metodo_pagamento === 'debit' ? '💳' :
+                                   sale.metodo_pagamento === 'pix' ? '📱' :
+                                   sale.metodo_pagamento}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2 font-semibold text-right text-gray-900">
+                                {formatCurrency(sale.total)}
+                              </td>
+                              <td className="py-2 px-2 text-center">
+                                <Button
+                                  onClick={() => handleReprintSale(sale)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="px-2 py-1 h-auto text-xs hover:bg-blue-50"
+                                  title="Reimprimir Venda"
+                                >
+                                  <Printer className="w-3.5 h-3.5" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </Card>
               </div>
 
               {/* Coluna Direita - Pagamento */}
@@ -615,7 +862,66 @@ export function SalesPage() {
         saleTotal={totalAmount}
         customerName={pendingSaleData?.customerData?.name || customer?.name || clienteSelecionado?.nome}
       />
+      {/* Modal de Confirmação de Reimpressão */}
+      {showReprintModal && saleToReprint && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110]">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Reimprimir Venda</h3>
+              <button
+                onClick={() => {
+                  setShowReprintModal(false)
+                  setSaleToReprint(null)
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
 
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Cliente:</span>
+                <span className="font-medium text-gray-900">
+                  {saleToReprint.clientes?.nome || saleToReprint.detalhes_pagamento?.quick_customer_name || 'Cliente Rápido'}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Total:</span>
+                <span className="font-semibold text-lg text-green-600">
+                  {formatCurrency(saleToReprint.total)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Data:</span>
+                <span className="font-medium text-gray-900">
+                  {new Date(saleToReprint.criado_em).toLocaleString('pt-BR')}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowReprintModal(false)
+                  setSaleToReprint(null)
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmReprintSale}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Imprimir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal de Venda Rápida */}
       {showQuickSaleModal && (
         <QuickSaleModal

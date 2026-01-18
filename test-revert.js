@@ -58,7 +58,7 @@ async function testSpecificEndpoints() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                amount: 29.90,
+                amount: 59.90,
                 description: 'Teste Preference - Reversão',
                 email: 'teste@exemplo.com'
             })

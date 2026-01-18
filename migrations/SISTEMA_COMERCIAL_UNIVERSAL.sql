@@ -264,7 +264,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ===============================================
--- 6. FUNÇÃO PARA TRIAL GRATUITO (7 DIAS)
+-- 6. FUNÇÃO PARA TRIAL GRATUITO (15 DIAS)
 -- ===============================================
 
 CREATE OR REPLACE FUNCTION public.create_trial_subscription(
@@ -281,7 +281,7 @@ BEGIN
         v_trial_payment_id,
         p_user_email,
         NULL, -- sem plano específico
-        7 -- 7 dias de trial
+        15 -- 15 dias de trial
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

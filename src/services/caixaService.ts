@@ -154,9 +154,10 @@ class CaixaService {
             .eq('caixa_id', data.id)
             .order('data', { ascending: false });
           
-          // Adicionar movimentações ao objeto de retorno se existirem
+          // Adicionar movimentações ao objeto e calcular resumo
           if (movimentacoes) {
-            return { ...data, movimentacoes_caixa: movimentacoes };
+            console.log('📦 Caixa carregado com', movimentacoes.length, 'movimentações');
+            return this.calcularResumoCaixa({ ...data, movimentacoes_caixa: movimentacoes });
           }
         } catch (err) {
           // Ignorar erros ao buscar movimentações
@@ -336,7 +337,7 @@ class CaixaService {
         // Retornar dados simulados para permitir operação offline
         return {
           id: caixaId,
-          usuario_id: 'offline-user',
+          user_id: 'offline-user',
           valor_inicial: 0,
           valor_final: dados.valor_contado,
           diferenca: 0,

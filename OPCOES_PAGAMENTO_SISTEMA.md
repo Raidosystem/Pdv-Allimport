@@ -14,7 +14,7 @@
 - **Arquivo:** `src/components/subscription/SubscriptionBanner.tsx`
 - **Onde aparece:** Topo de todas as páginas do dashboard
 - **Quando aparece:**
-  - Trial com 7 dias ou menos restantes
+  - Trial com 15 dias ou menos restantes
   - Trial expirado
 - **Funcionalidades:**
   - Banner amarelo/laranja para avisos
@@ -58,13 +58,13 @@
 3. **SubscriptionGuard** bloqueia e mostra PaymentPage
 4. Devem pagar para usar o sistema
 
-### **🆓 USUÁRIOS EM TRIAL (Mais de 7 dias):**
+### **🆓 USUÁRIOS EM TRIAL (Mais de 15 dias):**
 1. Acessam normalmente o sistema
 2. Veem **SubscriptionStatus** azul no header: "Trial: X dias"
 3. Veem botão **"Assinatura"** no header (opcional)
 4. Podem usar todas as funcionalidades
 
-### **⚠️ USUÁRIOS EM TRIAL (7 dias ou menos):**
+### **⚠️ USUÁRIOS EM TRIAL (15 dias ou menos):**
 1. Veem **SubscriptionBanner** amarelo/laranja no topo
 2. **SubscriptionStatus** vira clicável e leva para `/assinatura`
 3. Banner tem botão "Assinar Agora"
@@ -92,7 +92,7 @@
 - **Ativação:** Automática após confirmação do pagamento
 
 ### **📊 Preços e Planos:**
-- **Trial:** 30 dias gratuitos
+- **Trial:** 15 dias gratuitos
 - **Assinatura:** R$ 59,90/mês
 - **Renovação:** Automática via Mercado Pago
 

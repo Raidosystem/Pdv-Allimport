@@ -1,3 +1,9 @@
+/**
+ * Interface Product - Formato do Banco de Dados Supabase
+ * 
+ * NOTA: Campos em português seguindo padrão do banco.
+ * Para usar em vendas, veja types/sales.ts Product (formato em inglês)
+ */
 export interface Product {
   id?: string
   nome: string

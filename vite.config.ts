@@ -15,14 +15,25 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js'],
+          // Core vendors
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Supabase
+          'vendor-supabase': ['@supabase/supabase-js'],
+          // Forms
+          'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers'],
+          // UI/Charts
+          'vendor-charts': ['recharts'],
+          // PDF generation (lazy loaded)
+          'vendor-pdf': ['jspdf', '@react-pdf/renderer', 'html2canvas'],
+          // Tables
+          'vendor-tables': ['@tanstack/react-table', '@tanstack/react-query'],
         },
       },
     },

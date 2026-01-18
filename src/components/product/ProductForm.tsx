@@ -10,6 +10,7 @@ import { Card } from '../ui/Card'
 import { useProducts } from '../../hooks/useProducts'
 import { CategorySelector } from './CategorySelector'
 import { supabase } from '../../lib/supabase'
+import { ProductService } from '../../services/productService'
 import type { Fornecedor } from '../../types/fornecedor'
 
 const ProductFormSchema = z.object({
@@ -38,6 +39,8 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
   const [formKey, setFormKey] = useState(0) // Chave para forçar remontagem
   const estoqueInputRef = useRef<HTMLInputElement>(null) // Ref para o input de estoque
+  const [codigoExiste, setCodigoExiste] = useState(false)
+  const [checkingCodigo, setCheckingCodigo] = useState(false)
   const { categories, fetchCategories, createCategory, saveProduct } = useProducts()
 
   // Estados para exibição formatada dos campos (apenas preços)
@@ -291,6 +294,47 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
     }
   }
 
+  // Verificar se código já existe (com debounce)
+  const verificarCodigo = async (codigo: string) => {
+    if (!codigo || codigo.trim() === '' || productId) {
+      setCodigoExiste(false)
+      return
+    }
+
+    setCheckingCodigo(true)
+    try {
+      const existe = await ProductService.checkCodeExists(codigo.trim())
+      setCodigoExiste(existe)
+    } catch (error) {
+      console.error('Erro ao verificar código:', error)
+    } finally {
+      setCheckingCodigo(false)
+    }
+  }
+
+  // Gerar código automático
+  const gerarCodigoAutomatico = async () => {
+    try {
+      const novoCodigo = await ProductService.generateUniqueCode()
+      setValue('codigo', novoCodigo)
+      toast.success('✅ Código gerado automaticamente')
+      setCodigoExiste(false)
+    } catch (error) {
+      console.error('Erro ao gerar código:', error)
+      toast.error('❌ Erro ao gerar código')
+    }
+  }
+
+  // Debounce para verificação de código
+  useEffect(() => {
+    const codigo = watch('codigo')
+    const timer = setTimeout(() => {
+      verificarCodigo(codigo)
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [watch('codigo')])
+
   const getErrorMessage = (error: any): string => {
     if (!error) return ''
     if (typeof error === 'string') return error
@@ -299,15 +343,33 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
   }
 
   const handleSubmitForm = async (data: ProductFormData) => {
-    if (loading) return
+    if (loading) {
+      console.warn('⚠️ [ProductForm] Submit ignorado - já está salvando')
+      return
+    }
 
+    // Verificar se código já existe antes de salvar
+    if (!productId && codigoExiste) {
+      toast.error('❌ Código já existe no sistema. Use outro código.')
+      console.error('❌ [ProductForm] Tentativa de salvar com código duplicado:', data.codigo)
+      return
+    }
+
+    console.log('🚀 [ProductForm] ===== INÍCIO DO SALVAMENTO =====')
     console.log('📝 [ProductForm] Dados do formulário antes de salvar:', {
       nome: data.nome,
+      codigo: data.codigo,
       categoria: data.categoria,
       categoria_vazio: !data.categoria,
-      sku: data.codigo,
+      preco_venda: data.preco_venda,
+      preco_custo: data.preco_custo,
       estoque: data.estoque,
-      estoque_tipo: typeof data.estoque
+      estoque_tipo: typeof data.estoque,
+      unidade: data.unidade,
+      ativo: data.ativo,
+      exibir_loja_online: data.exibir_loja_online,
+      fornecedor: data.fornecedor,
+      imageUrl: imageUrl
     })
 
     console.log('📂 [ProductForm] Categorias carregadas no momento do submit:', {
@@ -317,6 +379,19 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
       existe: categories.some(c => c.id === data.categoria)
     })
 
+    // Validações antes de enviar
+    if (!data.nome || data.nome.trim().length === 0) {
+      toast.error('Nome do produto é obrigatório')
+      console.error('❌ [ProductForm] Nome vazio')
+      return
+    }
+
+    if (!data.categoria || data.categoria.trim().length === 0) {
+      toast.error('Categoria é obrigatória')
+      console.error('❌ [ProductForm] Categoria vazia')
+      return
+    }
+
     setLoading(true)
     try {
       // Converter categoria para categoria_id e adicionar image_url
@@ -325,7 +400,15 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
         categoria_id: data.categoria,
         image_url: imageUrl
       }
+      
+      console.log('📤 [ProductForm] Chamando saveProduct com:', {
+        ...productData,
+        productId
+      })
+      
       const success = await saveProduct(productData, productId)
+      
+      console.log('📥 [ProductForm] Resposta de saveProduct:', success)
       
       if (success) {
         toast.success(productId ? 'Produto atualizado!' : 'Produto cadastrado!')
@@ -334,16 +417,23 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
         window.dispatchEvent(new CustomEvent('productAdded'))
         window.dispatchEvent(new CustomEvent('productUpdated'))
         
+        console.log('✅ [ProductForm] Produto salvo com sucesso!')
+        
         // Chamar onSuccess() para fechar o modal automaticamente
         if (onSuccess) {
           onSuccess()
         }
+      } else {
+        console.error('❌ [ProductForm] saveProduct retornou false')
+        toast.error('Erro ao salvar produto. Verifique os dados e tente novamente.')
       }
     } catch (error) {
-      console.error('Erro ao salvar produto:', error)
-      toast.error('Erro ao salvar produto')
+      console.error('💥 [ProductForm] Erro ao salvar produto:', error)
+      console.error('💥 [ProductForm] Stack trace:', error instanceof Error ? error.stack : 'N/A')
+      toast.error('Erro ao salvar produto: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
     } finally {
       setLoading(false)
+      console.log('🏁 [ProductForm] ===== FIM DO SALVAMENTO =====')
     }
   }
 
@@ -377,19 +467,52 @@ function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Código *
           </label>
-          <Controller
-            name="codigo"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                  value={value}
-                  onChange={onChange}
-                  placeholder="Código interno"
-                  error={getErrorMessage(errors.codigo)}
-                />
-              )}
-            />
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Controller
+                name="codigo"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <Input
+                      value={value}
+                      onChange={onChange}
+                      placeholder="Código interno"
+                      error={getErrorMessage(errors.codigo) || (codigoExiste ? 'Código já existe' : '')}
+                      className={codigoExiste ? 'border-red-500 focus:border-red-500' : ''}
+                    />
+                    {checkingCodigo && (
+                      <span className="absolute right-3 top-2.5 text-gray-400 text-sm">
+                        Verificando...
+                      </span>
+                    )}
+                    {!checkingCodigo && value && !productId && (
+                      <span className={`absolute right-3 top-2.5 ${codigoExiste ? 'text-red-500' : 'text-green-500'}`}>
+                        {codigoExiste ? '❌' : '✓'}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+            {!productId && (
+              <Button
+                type="button"
+                onClick={gerarCodigoAutomatico}
+                variant="secondary"
+                className="whitespace-nowrap"
+                title="Gerar código automático"
+              >
+                🎲 Gerar
+              </Button>
+            )}
           </div>
+          {codigoExiste && (
+            <p className="mt-1 text-sm text-red-600">
+              ⚠️ Este código já está em uso. Use outro ou clique em "Gerar" para criar um código único.
+            </p>
+          )}
+        </div>
 
           <div>
             <Controller

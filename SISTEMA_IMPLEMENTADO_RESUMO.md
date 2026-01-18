@@ -107,7 +107,7 @@ SET trial_start_date = NOW() - INTERVAL '5 days'
 WHERE user_id = (SELECT id FROM auth.users WHERE email = 'novo_teste@exemplo.com');
 
 -- Fazer upgrade para mensal (vai somar 10 dias + 30 dias = 40 dias)
-SELECT upgrade_to_paid_subscription('novo_teste@exemplo.com', 'monthly', 29.90);
+SELECT upgrade_to_paid_subscription('novo_teste@exemplo.com', 'monthly', 59.90);
 
 -- Ver resultado
 SELECT check_subscription_status('novo_teste@exemplo.com');
@@ -147,7 +147,7 @@ async function onPaymentSuccess() {
   const result = await SubscriptionService.upgradeToPaidSubscription(
     user.email,
     'monthly',  // ou 'yearly', 'quarterly', etc.
-    29.90
+    59.90
   )
 
   if (result.success) {

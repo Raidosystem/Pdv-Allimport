@@ -5,25 +5,12 @@ export function useCart() {
   const [items, setItems] = useState<CartItem[]>([])
 
   const addItem = useCallback((product: Product, quantity: number = 1) => {
-    console.log('🛒 useCart.addItem chamado:', { 
-      productId: product.id, 
-      productName: product.name, 
-      quantity,
-      price: product.price 
-    })
-    
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.product.id === product.id)
       
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity
         const newTotal = newQuantity * existingItem.unit_price
-        console.log('✏️ Atualizando item existente:', { 
-          oldQuantity: existingItem.quantity, 
-          addedQuantity: quantity,
-          newQuantity,
-          newTotal
-        })
         
         return prevItems.map(item =>
           item.product.id === product.id
@@ -42,8 +29,6 @@ export function useCart() {
         unit_price: product.price,
         total_price: product.price * quantity
       }
-      
-      console.log('➕ Adicionando novo item ao carrinho:', newItem)
       
       return [...prevItems, newItem]
     })

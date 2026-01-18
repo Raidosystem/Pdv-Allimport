@@ -2,60 +2,96 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './modules/auth'
 import { PermissionsProvider } from './hooks/usePermissions'
-import { LoginPage } from './modules/auth/LoginPage'
-import { LocalLoginPage } from './modules/auth/LocalLoginPage'
-import { SignupPageNew } from './modules/auth/SignupPageNew'
-import { ConfirmEmailPage } from './modules/auth/ConfirmEmailPage'
-import { ForgotPasswordPage } from './modules/auth/ForgotPasswordPage'
-import { ResetPasswordPage } from './modules/auth/ResetPasswordPage'
-import TrocarSenhaPage from './pages/TrocarSenhaPage'
-import { AdminPanel } from './components/admin/AdminPanel'
-import { AdminDashboard } from './components/admin/AdminDashboard'
-import { LandingPage } from './modules/landing/LandingPage'
-import { DashboardPage } from './modules/dashboard/DashboardPageNew'
-import { SalesPage } from './modules/sales/SalesPage'
-import { ClientesPage } from './modules/clientes/ClientesPage'
-import { ProductsPage } from './pages/ProductsPage'
-import { FornecedoresPage } from './pages/FornecedoresPage'
-import { TestePage } from './pages/TestePage'
-import { TestPage } from './pages/TestPage'
-import { CaixaPage } from './pages/CaixaPageNew'
-import { HistoricoCaixaPage } from './pages/HistoricoCaixaPage'
-import { OrdensServicoPage } from './pages/OrdensServicoPageNew'
-import ContasPagarList from './modules/financeiro/contas-pagar/ContasPagarList'
-import { OrdemServicoDetalhePage } from './pages/OrdemServicoDetalhePage'
-import { OrdemServicoEditPage } from './pages/OrdemServicoEditPage'
-import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
-import { CacheErrorBoundary } from './utils/cacheBuster'
-import { ConfiguracoesEmpresaPage } from './pages/ConfiguracoesEmpresaPageNew'
-import ImportBackupPage from './pages/ImportBackupPage'
-import ImportacaoPrivadaPage from './pages/ImportacaoPrivadaPage'
-import ImportacaoAutomaticaPage from './pages/ImportacaoAutomaticaPage'
-import RelatoriosPage from './pages/RelatoriosPage'
-import RelatoriosPageAdvanced from './pages/RelatoriosPageAdvanced'
-import ResumoDiarioPage from './pages/RelatoriosResumoDiarioPage'
-import RelatoriosPeriodoPage from './pages/RelatoriosPeriodoPage'
-import RelatoriosRankingPage from './pages/RelatoriosRankingPage'
-import RelatoriosGraficosPage from './pages/RelatoriosGraficosPage'
-import RelatoriosExportacoesPage from './pages/RelatoriosExportacoesPage'
-import RelatoriosDetalhadoPage from './pages/RelatoriosDetalhadoPage'
-import { ActivateUsersPage } from './modules/admin/pages/ActivateUsersPage'
-import LojaOnlinePage from './pages/admin/LojaOnlinePage'
-import { ConfiguracaoModulosPage } from './pages/admin/ConfiguracaoModulosPage'
-import LojaPublicaPage from './pages/LojaPublicaPage'
-import DebugSupabase from './pages/DebugSupabase'
 import { ProtectedRoute } from './modules/auth/ProtectedRoute'
 import { SubscriptionGuard } from './components/SubscriptionGuard'
-import { PaymentPage } from './components/subscription/PaymentPage'
-import { PaymentTest } from './components/PaymentTest'
+import { CacheErrorBoundary } from './utils/cacheBuster'
 import { OfflineIndicator } from './components/OfflineIndicator'
 import { UpdateCard } from './components/UpdateCard'
-// import { InstallPWA } from './components/InstallPWA'
 import './App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { initVersionCheck } from './utils/version-check'
 import { startVersionChecking } from './utils/versionControl'
 import { useAppearanceSettings } from './hooks/useAppearanceSettings'
+
+// 🚀 LAZY LOADING - Carrega componentes sob demanda para bundle inicial menor
+// Auth pages - carregadas imediatamente (usuário precisa fazer login)
+import { LoginPage } from './modules/auth/LoginPage'
+import { LocalLoginPage } from './modules/auth/LocalLoginPage'
+import { SignupPageNew } from './modules/auth/SignupPageNew'
+import { LandingPage } from './modules/landing/LandingPage'
+
+// Páginas principais - lazy loading
+const DashboardPage = lazy(() => import('./modules/dashboard/DashboardPageNew').then(m => ({ default: m.DashboardPage })))
+const SalesPage = lazy(() => import('./modules/sales/SalesPage').then(m => ({ default: m.SalesPage })))
+const ClientesPage = lazy(() => import('./modules/clientes/ClientesPage').then(m => ({ default: m.ClientesPage })))
+const ProductsPage = lazy(() => import('./pages/ProductsPage').then(m => ({ default: m.ProductsPage })))
+const CaixaPage = lazy(() => import('./pages/CaixaPageNew').then(m => ({ default: m.CaixaPage })))
+const OrdensServicoPage = lazy(() => import('./pages/OrdensServicoPageNew').then(m => ({ default: m.OrdensServicoPage })))
+
+// Admin pages - lazy loading
+const AdminPanel = lazy(() => import('./components/admin/AdminPanel').then(m => ({ default: m.AdminPanel })))
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
+const ActivateUsersPage = lazy(() => import('./modules/admin/pages/ActivateUsersPage').then(m => ({ default: m.ActivateUsersPage })))
+const ConfiguracaoModulosPage = lazy(() => import('./pages/admin/ConfiguracaoModulosPage').then(m => ({ default: m.ConfiguracaoModulosPage })))
+const LojaOnlinePage = lazy(() => import('./pages/admin/LojaOnlinePage'))
+
+// Auth secundárias - lazy loading
+const ConfirmEmailPage = lazy(() => import('./modules/auth/ConfirmEmailPage').then(m => ({ default: m.ConfirmEmailPage })))
+const ForgotPasswordPage = lazy(() => import('./modules/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('./modules/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
+const TrocarSenhaPage = lazy(() => import('./pages/TrocarSenhaPage'))
+
+// Páginas secundárias - lazy loading
+const FornecedoresPage = lazy(() => import('./pages/FornecedoresPage').then(m => ({ default: m.FornecedoresPage })))
+const HistoricoCaixaPage = lazy(() => import('./pages/HistoricoCaixaPage').then(m => ({ default: m.HistoricoCaixaPage })))
+const ContasPagarList = lazy(() => import('./modules/financeiro/contas-pagar/ContasPagarList'))
+const OrdemServicoDetalhePage = lazy(() => import('./pages/OrdemServicoDetalhePage').then(m => ({ default: m.OrdemServicoDetalhePage })))
+const OrdemServicoEditPage = lazy(() => import('./pages/OrdemServicoEditPage').then(m => ({ default: m.OrdemServicoEditPage })))
+const ConfiguracoesPage = lazy(() => import('./pages/ConfiguracoesPage').then(m => ({ default: m.ConfiguracoesPage })))
+const ConfiguracoesEmpresaPage = lazy(() => import('./pages/ConfiguracoesEmpresaPageNew').then(m => ({ default: m.ConfiguracoesEmpresaPage })))
+
+// Relatórios - lazy loading
+const RelatoriosPage = lazy(() => import('./pages/RelatoriosPage'))
+const RelatoriosPageAdvanced = lazy(() => import('./pages/RelatoriosPageAdvanced'))
+const ResumoDiarioPage = lazy(() => import('./pages/RelatoriosResumoDiarioPage'))
+const RelatoriosPeriodoPage = lazy(() => import('./pages/RelatoriosPeriodoPage'))
+const RelatoriosRankingPage = lazy(() => import('./pages/RelatoriosRankingPage'))
+const RelatoriosGraficosPage = lazy(() => import('./pages/RelatoriosGraficosPage'))
+const RelatoriosExportacoesPage = lazy(() => import('./pages/RelatoriosExportacoesPage'))
+const RelatoriosDetalhadoPage = lazy(() => import('./pages/RelatoriosDetalhadoPage'))
+
+// Backup/Importação - lazy loading
+const ImportBackupPage = lazy(() => import('./pages/ImportBackupPage'))
+const ImportacaoPrivadaPage = lazy(() => import('./pages/ImportacaoPrivadaPage'))
+const ImportacaoAutomaticaPage = lazy(() => import('./pages/ImportacaoAutomaticaPage'))
+
+// Loja pública - lazy loading
+const LojaPublicaPage = lazy(() => import('./pages/LojaPublicaPage'))
+
+// Pagamentos - lazy loading
+const PaymentPage = lazy(() => import('./components/subscription/PaymentPage').then(m => ({ default: m.PaymentPage })))
+const PaymentTest = lazy(() => import('./components/PaymentTest').then(m => ({ default: m.PaymentTest })))
+
+// Debug/Teste - lazy loading
+const TestePage = lazy(() => import('./pages/TestePage').then(m => ({ default: m.TestePage })))
+const TestPage = lazy(() => import('./pages/TestPage').then(m => ({ default: m.TestPage })))
+const DebugSupabase = lazy(() => import('./pages/DebugSupabase'))
+
+// 🎨 Loading Component - Exibido durante carregamento lazy
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="text-center">
+      <div className="relative">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-8 w-8 bg-blue-500 rounded-full animate-pulse"></div>
+        </div>
+      </div>
+      <p className="mt-6 text-gray-700 font-medium animate-pulse">Carregando...</p>
+      <p className="mt-2 text-sm text-gray-500">Aguarde um momento</p>
+    </div>
+  </div>
+)
 
 // 🎨 Componente que aplica tema globalmente (dentro do AuthProvider)
 function ThemeApplier() {
@@ -197,10 +233,9 @@ function App() {
         />
         
         {/* Indicador Offline e PWA */}
-        <OfflineIndicator />
         {/* PWA Install component now inline above */}
-        
-        <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -517,11 +552,12 @@ function App() {
           {/* Redirecionamento padrão */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
         
         {/* Componentes Globais */}
         <OfflineIndicator />
         <UpdateCard />
-          </Router>
+      </Router>
         </PermissionsProvider>
       </AuthProvider>
     </CacheErrorBoundary>

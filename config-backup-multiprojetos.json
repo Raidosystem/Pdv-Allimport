@@ -1,0 +1,37 @@
+{
+  "pasta_backup_local": "C:\\Users\\GrupoRaval\\OneDrive\\Backups-Supabase",
+  "horario_backup": "03:00",
+  "manter_ultimos_backups": 7,
+  "projetos": [
+    {
+      "nome": "PDV-Allimport",
+      "ativo": true,
+      "supabase_url": "https://kmcaaqetxtwkdcczdomw.supabase.co",
+      "service_role_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttY2FhcWV0eHR3a2RjY3pkb213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQyNjUxMywiZXhwIjoyMDcyMDAyNTEzfQ.Lgiq5fY-XMQyqhZYof4cvYMNkw4DTGikvAk56im-Hks",
+      "tabelas": [
+        "user_approvals",
+        "empresas",
+        "subscriptions",
+        "produtos",
+        "clientes",
+        "vendas",
+        "vendas_itens",
+        "caixa",
+        "categorias",
+        "fornecedores",
+        "despesas",
+        "ordens_servico",
+        "funcionarios"
+      ]
+    }
+  ],
+  "notificacoes": {
+    "email_notificar": false,
+    "email_destino": "",
+    "apenas_erros": true
+  },
+  "logs": {
+    "salvar_logs": true,
+    "pasta_logs": "C:\\Users\\GrupoRaval\\OneDrive\\Backups-Supabase\\logs"
+  }
+}

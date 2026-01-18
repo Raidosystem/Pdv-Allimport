@@ -11,31 +11,15 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <!-- Sistema de Limpeza de Cache Inline -->
+    <!-- Sistema Simplificado de Versão -->
     <script>
+      // ⚡ Versão simplificada para performance - apenas marca versão
       (function() {
-        const CACHE_VERSION = '2.2.8-stable'; // ✅ Nova versão - sem reload automático
-        const VERSION_KEY = 'pdv_cache_version_v2';
-        const LAST_VERSION = localStorage.getItem(VERSION_KEY);
-        
-        if (LAST_VERSION !== CACHE_VERSION) {
-          console.log('🧹 [INLINE] Nova versão detectada:', LAST_VERSION, '→', CACHE_VERSION);
-          
-          // Salvar nova versão IMEDIATAMENTE (sem reload)
-          localStorage.setItem(VERSION_KEY, CACHE_VERSION);
-          
-          // Limpar caches em background (SEM RELOAD)
-          if ('caches' in window) {
-            caches.keys().then(names => {
-              console.log('🗑️ [INLINE] Limpando', names.length, 'caches em background');
-              names.forEach(name => caches.delete(name));
-            });
-          }
-          
-          console.log('✅ [INLINE] Versão atualizada para', CACHE_VERSION);
-          console.log('ℹ️ [INLINE] Cache será atualizado automaticamente no próximo acesso');
-        } else {
-          console.log('✅ [INLINE] Versão atual:', CACHE_VERSION);
+        const v = '2.3.0';
+        if (localStorage.getItem('pdv_v') !== v) {
+          localStorage.setItem('pdv_v', v);
+          // Limpa cache em background sem bloquear
+          'caches' in window && caches.keys().then(k => k.forEach(n => caches.delete(n)));
         }
       })();
     </script>
@@ -50,14 +34,8 @@
     <!-- PWA MANIFEST - REATIVADO! -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- PWA ÍCONES - REATIVADOS! -->
-    <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
-    <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png" />
-    <link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128x128.png" />
-    <link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144x144.png" />
-    <link rel="icon" type="image/png" sizes="152x152" href="/icons/icon-152x152.png" />
+    <!-- PWA ÍCONES - Otimizado (apenas essenciais) -->
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
-    <link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384x384.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
     
@@ -74,112 +52,6 @@
   </head>
   <body>
     <div id="root"></div>
-    
-    <!-- Script Universal de Limpeza de Cache - Cross-Browser -->
-    <script>
-      (function () {
-        // evita executar 2x
-        if (window.__bootPatcherLoaded) return;
-        window.__bootPatcherLoaded = true;
-
-        // cache-buster para recarregar sem usar cache do navegador
-        function hardReload() {
-          var u = new URL(location.href);
-          u.searchParams.set("_v", Date.now().toString());
-          location.replace(u.toString());
-        }
-
-        async function deleteIndexedDBSafely() {
-          try {
-            if ('databases' in indexedDB && typeof indexedDB.databases === 'function') {
-              const dbs = await indexedDB.databases();
-              await Promise.all((dbs || []).map(db => {
-                try { return indexedDB.deleteDatabase(db.name); } catch(e) {}
-              }));
-            } else {
-              // Lista de DBs comuns (ajuste aos seus):
-              const known = [
-                // Supabase/LocalForage/etc.. ajuste se usar outros
-                "supabase-auth",
-                "supabase-cache",
-                "localforage",
-                "keyval-store"
-              ];
-              await Promise.all(known.map(name => {
-                try { return indexedDB.deleteDatabase(name); } catch(e) {}
-              }));
-            }
-          } catch(e) { /* ignora */ }
-        }
-
-        async function universalClean() {
-          try {
-            // 1) CacheStorage (SW caches)
-            if ('caches' in self) {
-              const keys = await caches.keys();
-              await Promise.all(keys.map(k => caches.delete(k).catch(()=>{})));
-            }
-
-            // 2) Service Workers
-            if ('serviceWorker' in navigator) {
-              const regs = await navigator.serviceWorker.getRegistrations();
-              await Promise.all(regs.map(r => r.unregister().catch(()=>{})));
-            }
-
-            // 3) IndexedDB
-            await deleteIndexedDBSafely();
-
-            // 4) local/session storage (só do seu domínio)
-            try { localStorage.clear(); } catch(e){}
-            try { sessionStorage.clear(); } catch(e){}
-
-          } catch (e) {
-            // passa
-          } finally {
-            hardReload();
-          }
-        }
-
-        // ------------- Detector de versão -------------
-        let currentVersion = null;
-        async function checkVersion() {
-          try {
-            const r = await fetch('/version.json', { cache: 'no-store' });
-            const j = await r.json();
-            if (!currentVersion) currentVersion = j.version;
-            else if (currentVersion !== j.version) {
-              // Nova versão disponível -> limpeza e reload garante pegar HTML/JS novos
-              await universalClean();
-            }
-          } catch (e) {
-            // offline? ignora
-          }
-        }
-
-        // Checa logo no início e depois a cada 60s (ajuste se quiser)
-        checkVersion();
-        setInterval(checkVersion, 60000);
-
-        // ------------- Auto-recovery: erro de chunk/bundle -------------
-        // Edge/Chrome/Safari: se algum script falhar (404 de asset antigo), limpa e recarrega
-        window.addEventListener('error', function (ev) {
-          const msg = (ev && ev.message || '').toLowerCase();
-          if (msg.includes('loading chunk') || msg.includes('chunk load') || msg.includes('failed to fetch') || msg.includes('script error')) {
-            universalClean();
-          }
-        }, true);
-
-        window.addEventListener('unhandledrejection', function (ev) {
-          const msg = (ev && ev.reason && (ev.reason.message || ev.reason.toString()) || '').toLowerCase();
-          if (msg.includes('loading chunk') || msg.includes('chunk load') || msg.includes('failed to fetch') || msg.includes('import()')) {
-            universalClean();
-          }
-        });
-
-        // ------------- Botão/manual (exponha p/ debug da sua UI) -------------
-        window.__forceCleanAndReload = universalClean; // você pode chamar pelo console ou de um botão
-      })();
-    </script>
     
     <script>
       // Registrar Service Worker apenas em produção

@@ -37,7 +37,7 @@ export interface OrdemServico {
   data_fim_garantia?: string
   
   // Controle
-  usuario_id: string
+  user_id: string
   criado_em: string
   atualizado_em: string
   

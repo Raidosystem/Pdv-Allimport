@@ -2,7 +2,7 @@
 
 export interface Caixa {
   id: string;
-  usuario_id: string;
+  user_id: string;
   valor_inicial: number;
   valor_final?: number;
   data_abertura: string;
@@ -20,7 +20,7 @@ export interface MovimentacaoCaixa {
   tipo: 'entrada' | 'saida';
   descricao: string;
   valor: number;
-  usuario_id: string;
+  user_id: string;
   venda_id?: string;
   data: string;
   criado_em: string;

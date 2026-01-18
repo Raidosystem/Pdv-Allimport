@@ -54,22 +54,40 @@ export function ResetPasswordPage() {
         console.log('⏳ Aguardando Supabase trocar code por tokens...')
         
         // Aguardar Supabase processar o code (detectSessionInUrl: true)
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Aumentar tempo de espera para garantir processamento
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Verificar se a sessão foi criada
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        if (sessionError || !session) {
-          console.error('❌ Erro ao obter sessão após PKCE:', sessionError)
+        console.log('🔍 Resultado getSession:', {
+          hasSession: !!session,
+          error: sessionError?.message,
+          user: session?.user?.email,
+          hasAccessToken: !!session?.access_token,
+          hasRefreshToken: !!session?.refresh_token
+        })
+        
+        if (sessionError) {
+          console.error('❌ Erro ao obter sessão:', sessionError)
+          console.error('❌ Detalhes completos:', JSON.stringify(sessionError, null, 2))
+          setError(`Erro ao processar link: ${sessionError.message}`)
+          return
+        }
+        
+        if (!session) {
+          console.error('❌ Sessão não criada após aguardar')
+          console.log('💡 Possíveis causas:')
+          console.log('   1. Supabase não conseguiu trocar o code')
+          console.log('   2. Code já foi usado ou expirou')
+          console.log('   3. Configuração de flowType incorreta')
           setError('Link inválido ou expirado. Solicite um novo link.')
           return
         }
         
-        console.log('✅ Sessão PKCE obtida:', {
-          user: session.user.email,
-          hasAccess: !!session.access_token,
-          hasRefresh: !!session.refresh_token
-        })
+        console.log('✅ Sessão PKCE obtida com sucesso!')
+        console.log('✅ Usuário:', session.user.email)
+        console.log('✅ Tokens obtidos e salvos')
         
         // Armazenar tokens
         setRecoveryTokens({ 
@@ -79,7 +97,8 @@ export function ResetPasswordPage() {
         
         // Fazer logout para não deixar sessão ativa
         await supabase.auth.signOut({ scope: 'local' })
-        console.log('🧹 Sessão temporária limpa (tokens salvos)')
+        console.log('🧹 Sessão temporária limpa (tokens salvos em memória)')
+        console.log('✅ Pronto para redefinir senha!')
         return
       }
       

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff, Check } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/Button'
@@ -14,6 +14,7 @@ export function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [sessionValid, setSessionValid] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -23,23 +24,37 @@ export function ResetPasswordPage() {
     const refreshToken = hashParams.get('refresh_token')
     const type = hashParams.get('type')
     
-    console.log('🔑 Tokens capturados:', { accessToken: accessToken?.substring(0, 20) + '...', refreshToken: refreshToken?.substring(0, 20) + '...', type })
+    console.log('🔍 URL completa:', window.location.href)
+    console.log('🔍 Hash completo:', window.location.hash)
+    console.log('🔑 Tokens capturados:', { 
+      accessToken: accessToken?.substring(0, 30) + '...', 
+      refreshToken: refreshToken?.substring(0, 30) + '...', 
+      type,
+      hasAccess: !!accessToken,
+      hasRefresh: !!refreshToken
+    })
     
-    if (!accessToken || !refreshToken || type !== 'recovery') {
+    // Validar apenas se há tokens - o type pode variar
+    if (!accessToken || !refreshToken) {
+      console.error('❌ Tokens ausentes no hash')
       setError('Link de recuperação inválido ou expirado.')
       return
     }
+
+    console.log('✅ Tokens encontrados, definindo sessão...')
 
     // Definir a sessão com os tokens
     supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
-    }).then(({ error }) => {
+    }).then(({ data, error }) => {
       if (error) {
         console.error('❌ Erro ao definir sessão:', error)
-        setError('Erro ao validar link de recuperação.')
+        setError('Erro ao validar link de recuperação: ' + error.message)
       } else {
-        console.log('✅ Sessão definida com sucesso')
+        console.log('✅ Sessão definida com sucesso:', data.session?.user?.email)
+        setSessionValid(true)
+        setError('') // Limpar erro se houver
       }
     })
   }, [])
@@ -154,9 +169,12 @@ export function ResetPasswordPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
+              {error && !sessionValid && (
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
                   <p className="text-red-600 font-medium text-center">{error}</p>
+                  <p className="text-red-500 text-sm text-center mt-2">
+                    Solicite um novo link de recuperação de senha.
+                  </p>
                 </div>
               )}
 
@@ -168,6 +186,7 @@ export function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  disabled={!sessionValid && !!error}
                   className="text-lg p-4 pr-12"
                 />
                 <button
@@ -191,6 +210,7 @@ export function ResetPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  disabled={!sessionValid && !!error}
                   className="text-lg p-4 pr-12"
                 />
                 <button
@@ -222,10 +242,21 @@ export function ResetPasswordPage() {
                 type="submit"
                 className="w-full text-lg py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg transform hover:scale-[1.02] transition-all"
                 loading={loading}
-                disabled={!password || !confirmPassword || password !== confirmPassword}
+                disabled={!password || !confirmPassword || password !== confirmPassword || (!sessionValid && !!error)}
               >
                 Redefinir Senha
               </Button>
+
+              {(!sessionValid && !!error) && (
+                <div className="text-center">
+                  <Link 
+                    to="/forgot-password" 
+                    className="text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    Solicitar novo link de recuperação
+                  </Link>
+                </div>
+              )}
             </form>
           </div>
         </Card>

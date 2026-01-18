@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
   Trophy, 
@@ -10,6 +10,8 @@ import {
   Crown,
   Star
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../modules/auth';
 
 interface ProdutoRanking {
   id: string;
@@ -42,13 +44,180 @@ interface ServicoRanking {
 }
 
 const RelatoriosRankingPage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'produtos' | 'clientes' | 'servicos'>('produtos');
+  const [loading, setLoading] = useState(true);
 
-  const produtosMaisVendidos: ProdutoRanking[] = [];
+  const [produtosMaisVendidos, setProdutosMaisVendidos] = useState<ProdutoRanking[]>([]);
+  const [clientesTopCompras, setClientesTopCompras] = useState<ClienteRanking[]>([]);
+  const [servicosMaisSolicitados, setServicosMaisSolicitados] = useState<ServicoRanking[]>([]);
 
-  const clientesTopCompras: ClienteRanking[] = [];
+  useEffect(() => {
+    if (user?.id) {
+      loadRankings();
+    }
+  }, [user]);
 
-  const servicosMaisSolicitados: ServicoRanking[] = [];
+  const loadRankings = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadProdutos(),
+        loadClientes(),
+        loadServicos()
+      ]);
+    } catch (error) {
+      console.error('Erro ao carregar rankings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProdutos = async () => {
+    // Buscar vendas agrupadas por produto
+    const { data, error } = await supabase
+      .from('vendas_itens')
+      .select(`
+        produto_id,
+        quantidade,
+        preco_unitario,
+        produtos (nome, categoria, preco_custo)
+      `)
+      .eq('user_id', user?.id);
+
+    if (error) {
+      console.error('Erro ao buscar produtos:', error);
+      return;
+    }
+
+    // Agrupar por produto
+    const grouped = data.reduce((acc: any, item: any) => {
+      const produtoId = item.produto_id;
+      if (!acc[produtoId]) {
+        acc[produtoId] = {
+          id: produtoId,
+          nome: item.produtos?.nome || 'Produto sem nome',
+          categoria: item.produtos?.categoria || 'Sem categoria',
+          quantidadeVendida: 0,
+          totalVendas: 0,
+          lucro: 0,
+          precoCusto: item.produtos?.preco_custo || 0
+        };
+      }
+      acc[produtoId].quantidadeVendida += item.quantidade;
+      acc[produtoId].totalVendas += item.quantidade * item.preco_unitario;
+      acc[produtoId].lucro += item.quantidade * (item.preco_unitario - acc[produtoId].precoCusto);
+      return acc;
+    }, {});
+
+    // Ordenar por total de vendas
+    const ranking = Object.values(grouped)
+      .sort((a: any, b: any) => b.totalVendas - a.totalVendas)
+      .slice(0, 10)
+      .map((item: any, index) => ({
+        ...item,
+        posicao: index + 1
+      }));
+
+    setProdutosMaisVendidos(ranking as ProdutoRanking[]);
+  };
+
+  const loadClientes = async () => {
+    // Buscar vendas agrupadas por cliente
+    const { data, error } = await supabase
+      .from('vendas')
+      .select(`
+        cliente_id,
+        valor_total,
+        clientes (nome, email)
+      `)
+      .eq('user_id', user?.id)
+      .not('cliente_id', 'is', null);
+
+    if (error) {
+      console.error('Erro ao buscar clientes:', error);
+      return;
+    }
+
+    // Agrupar por cliente
+    const grouped = data.reduce((acc: any, venda: any) => {
+      const clienteId = venda.cliente_id;
+      if (!acc[clienteId]) {
+        acc[clienteId] = {
+          id: clienteId,
+          nome: venda.clientes?.nome || 'Cliente sem nome',
+          email: venda.clientes?.email || '',
+          totalCompras: 0,
+          numeroCompras: 0,
+          ticketMedio: 0
+        };
+      }
+      acc[clienteId].totalCompras += venda.valor_total;
+      acc[clienteId].numeroCompras += 1;
+      return acc;
+    }, {});
+
+    // Calcular ticket médio e ordenar
+    const ranking = Object.values(grouped)
+      .map((item: any) => ({
+        ...item,
+        ticketMedio: item.totalCompras / item.numeroCompras
+      }))
+      .sort((a: any, b: any) => b.totalCompras - a.totalCompras)
+      .slice(0, 10)
+      .map((item: any, index) => ({
+        ...item,
+        posicao: index + 1
+      }));
+
+    setClientesTopCompras(ranking as ClienteRanking[]);
+  };
+
+  const loadServicos = async () => {
+    // Buscar ordens de serviço agrupadas por serviço
+    const { data, error } = await supabase
+      .from('ordens_servico')
+      .select('id, descricao, valor_total, status')
+      .eq('user_id', user?.id);
+
+    if (error) {
+      console.error('Erro ao buscar serviços:', error);
+      return;
+    }
+
+    // Agrupar por descrição (serviço)
+    const grouped = data.reduce((acc: any, os: any) => {
+      const servico = os.descricao || 'Serviço sem descrição';
+      if (!acc[servico]) {
+        acc[servico] = {
+          id: servico,
+          nome: servico,
+          categoria: 'Assistência Técnica',
+          numeroOs: 0,
+          valorMedio: 0,
+          totalFaturado: 0
+        };
+      }
+      acc[servico].numeroOs += 1;
+      acc[servico].totalFaturado += os.valor_total || 0;
+      return acc;
+    }, {});
+
+    // Calcular valor médio e ordenar
+    const ranking = Object.values(grouped)
+      .map((item: any) => ({
+        ...item,
+        valorMedio: item.totalFaturado / item.numeroOs
+      }))
+      .sort((a: any, b: any) => b.numeroOs - a.numeroOs)
+      .slice(0, 10)
+      .map((item: any, index) => ({
+        ...item,
+        posicao: index + 1
+      }));
+
+    setServicosMaisSolicitados(ranking as ServicoRanking[]);
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -148,7 +317,18 @@ const RelatoriosRankingPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {produtosMaisVendidos.map((produto) => (
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-4">Carregando produtos...</p>
+                  </div>
+                ) : produtosMaisVendidos.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum produto vendido no período</p>
+                  </div>
+                ) : (
+                  produtosMaisVendidos.map((produto) => (
                   <div
                     key={produto.id}
                     className={`p-6 rounded-lg border-2 ${getRankingBg(produto.posicao)}`}
@@ -191,7 +371,8 @@ const RelatoriosRankingPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))
+              }
               </div>
             </div>
           </div>
@@ -207,7 +388,18 @@ const RelatoriosRankingPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {clientesTopCompras.map((cliente) => (
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-4">Carregando clientes...</p>
+                  </div>
+                ) : clientesTopCompras.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum cliente com compras no período</p>
+                  </div>
+                ) : (
+                  clientesTopCompras.map((cliente) => (
                   <div
                     key={cliente.id}
                     className={`p-6 rounded-lg border-2 ${getRankingBg(cliente.posicao)}`}
@@ -244,7 +436,7 @@ const RelatoriosRankingPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
           </div>
@@ -260,7 +452,18 @@ const RelatoriosRankingPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {servicosMaisSolicitados.map((servico) => (
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-4">Carregando serviços...</p>
+                  </div>
+                ) : servicosMaisSolicitados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhuma ordem de serviço no período</p>
+                  </div>
+                ) : (
+                  servicosMaisSolicitados.map((servico) => (
                   <div
                     key={servico.id}
                     className={`p-6 rounded-lg border-2 ${getRankingBg(servico.posicao)}`}
@@ -297,7 +500,8 @@ const RelatoriosRankingPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))
+              }
               </div>
             </div>
           </div>

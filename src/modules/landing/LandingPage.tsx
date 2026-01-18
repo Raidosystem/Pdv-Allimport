@@ -1,8 +1,23 @@
 import { ShoppingCart, Users, Package, CreditCard, BarChart3, Wrench, Globe, FileText, MessageCircle } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { useEffect } from 'react'
 
 export function LandingPage() {
+  const navigate = useNavigate()
+
+  // Detectar se está rodando como PWA instalado
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         (window.navigator as any).standalone === true ||
+                         document.referrer.includes('android-app://');
+    
+    if (isStandalone) {
+      // PWA instalado - redirecionar para login
+      navigate('/login', { replace: true })
+    }
+  }, [navigate])
+
   const features = [
     {
       icon: ShoppingCart,

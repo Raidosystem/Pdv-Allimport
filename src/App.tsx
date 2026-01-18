@@ -18,7 +18,9 @@ import { useAppearanceSettings } from './hooks/useAppearanceSettings'
 import { LoginPage } from './modules/auth/LoginPage'
 import { LocalLoginPage } from './modules/auth/LocalLoginPage'
 import { SignupPageNew } from './modules/auth/SignupPageNew'
-import { LandingPage } from './modules/landing/LandingPage'
+
+// Landing page - lazy loading para melhorar performance inicial
+const LandingPage = lazy(() => import('./modules/landing/LandingPage').then(m => ({ default: m.LandingPage })))
 
 // Páginas principais - lazy loading
 const DashboardPage = lazy(() => import('./modules/dashboard/DashboardPageNew').then(m => ({ default: m.DashboardPage })))

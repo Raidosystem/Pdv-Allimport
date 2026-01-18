@@ -6,15 +6,16 @@ import { useEffect } from 'react'
 export function LandingPage() {
   const navigate = useNavigate()
 
-  // Detectar se está rodando como PWA instalado
+  // Detectar se está rodando como PWA instalado - ANTES de renderizar
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                          (window.navigator as any).standalone === true ||
                          document.referrer.includes('android-app://');
     
     if (isStandalone) {
-      // PWA instalado - redirecionar para login
+      // PWA instalado - redirecionar IMEDIATAMENTE para login
       navigate('/login', { replace: true })
+      return
     }
   }, [navigate])
 

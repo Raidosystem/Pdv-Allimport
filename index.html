@@ -4,24 +4,25 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RaVal pdv v2.2.5 - Sistema de Ponto de Venda</title>
+    <title>RaVal pdv v2.3.0 - Sistema de Ponto de Venda</title>
     
-    <!-- Cache Control - Evitar cache agressivo -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <!-- Preconnect para Supabase -->
+    <link rel="preconnect" href="https://ihgbcokavhfpzxqfigqz.supabase.co" />
+    <link rel="dns-prefetch" href="https://ihgbcokavhfpzxqfigqz.supabase.co" />
+    
+    <!-- Cache Control Otimizado -->
+    <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
     
     <!-- Sistema Simplificado de Versão -->
     <script>
-      // ⚡ Versão simplificada para performance - apenas marca versão
-      (function() {
-        const v = '2.3.0';
-        if (localStorage.getItem('pdv_v') !== v) {
-          localStorage.setItem('pdv_v', v);
-          // Limpa cache em background sem bloquear
+      // ⚡ Versão simplificada - não bloqueia carregamento
+      const v = '2.3.0';
+      if (localStorage.getItem('pdv_v') !== v) {
+        localStorage.setItem('pdv_v', v);
+        setTimeout(() => {
           'caches' in window && caches.keys().then(k => k.forEach(n => caches.delete(n)));
-        }
-      })();
+        }, 100);
+      }
     </script>
     
     <!-- PWA Meta Tags -->

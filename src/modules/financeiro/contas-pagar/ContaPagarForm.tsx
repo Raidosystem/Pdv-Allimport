@@ -27,6 +27,8 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
     boleto_linha_digitavel: ''
   });
 
+  const [quantidade, setQuantidade] = useState('');
+  const [valorUnitarioDisplay, setValorUnitarioDisplay] = useState('');
   const [valorDisplay, setValorDisplay] = useState('');
   const [loading, setLoading] = useState(false);
   const [showBoletoUpload, setShowBoletoUpload] = useState(false);
@@ -48,6 +50,9 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
       });
       // Formatar valor para exibição
       setValorDisplay(conta.valor.toFixed(2).replace('.', ','));
+      // Ao editar, definir quantidade 1 e valor unitário igual ao valor total
+      setQuantidade('1');
+      setValorUnitarioDisplay(conta.valor.toFixed(2).replace('.', ','));
     }
   }, [conta]);
 
@@ -65,7 +70,39 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
     return numero.toFixed(2).replace('.', ',');
   };
 
-  // Handler para mudança no campo de valor
+  // Handler para quantidade
+  const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuantidade(value);
+    
+    // Calcular total automaticamente
+    const qtd = parseFloat(value) || 0;
+    const unitario = parseFloat(valorUnitarioDisplay.replace(',', '.')) || 0;
+    const total = qtd * unitario;
+    
+    const formatted = total.toFixed(2).replace('.', ',');
+    setValorDisplay(formatted);
+    setFormData(prev => ({ ...prev, valor: total }));
+  };
+
+  // Handler para mudança no valor unitário
+  const handleValorUnitarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const formatted = formatarValor(value);
+    
+    setValorUnitarioDisplay(formatted);
+    
+    // Calcular total automaticamente
+    const unitario = parseFloat(formatted.replace(',', '.')) || 0;
+    const qtd = parseFloat(quantidade) || 0;
+    const total = qtd * unitario;
+    
+    const totalFormatted = total.toFixed(2).replace('.', ',');
+    setValorDisplay(totalFormatted);
+    setFormData(prev => ({ ...prev, valor: total }));
+  };
+
+  // Handler para mudança no campo de valor (mantido para compatibilidade)
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const formatted = formatarValor(value);
@@ -200,19 +237,46 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
             )}
           </div>
 
-          {/* Valor e Vencimento */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Quantidade, Valor Unitário e Valor Total */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Valor (R$) *
+                Quantidade *
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={quantidade}
+                onChange={handleQuantidadeChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Valor Unitário (R$) *
               </label>
               <input
                 type="text"
                 inputMode="numeric"
-                name="valor"
+                value={valorUnitarioDisplay}
+                onChange={handleValorUnitarioChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="0,00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Valor Total (R$) *
+              </label>
+              <input
+                type="text"
                 value={valorDisplay}
-                onChange={handleValorChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                readOnly
+                className={`w-full px-3 py-2 border rounded-lg bg-gray-50 font-semibold text-gray-900 ${
                   errors.valor ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="0,00"
@@ -221,24 +285,25 @@ const ContaPagarForm: React.FC<ContaPagarFormProps> = ({
                 <p className="text-sm text-red-600 mt-1">{errors.valor}</p>
               )}
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vencimento *
-              </label>
-              <input
-                type="date"
-                name="data_vencimento"
-                value={formData.data_vencimento}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.data_vencimento ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.data_vencimento && (
-                <p className="text-sm text-red-600 mt-1">{errors.data_vencimento}</p>
-              )}
-            </div>
+          {/* Vencimento */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Vencimento *
+            </label>
+            <input
+              type="date"
+              name="data_vencimento"
+              value={formData.data_vencimento}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.data_vencimento ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.data_vencimento && (
+              <p className="text-sm text-red-600 mt-1">{errors.data_vencimento}</p>
+            )}
           </div>
 
           {/* Categoria */}

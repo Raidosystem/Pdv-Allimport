@@ -19,11 +19,41 @@ export function ResetPasswordPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Verificar se há erro nos query params (Supabase envia erro antes do hash)
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlError = urlParams.get('error')
+    const errorCode = urlParams.get('error_code')
+    const errorDescription = urlParams.get('error_description')
+    
+    if (urlError) {
+      console.error('❌ Erro nos query params:', { urlError, errorCode, errorDescription })
+      if (errorCode === 'otp_expired') {
+        setError('Link de recuperação expirado. Por favor, solicite um novo link.')
+      } else {
+        setError(`Erro: ${errorDescription || urlError}`)
+      }
+      return
+    }
+
     // Supabase envia tokens no hash fragment (#), não em query params (?)
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
     const accessToken = hashParams.get('access_token')
     const refreshToken = hashParams.get('refresh_token')
     const type = hashParams.get('type')
+    
+    // Verificar erro no hash também
+    const hashError = hashParams.get('error')
+    const hashErrorCode = hashParams.get('error_code')
+    
+    if (hashError) {
+      console.error('❌ Erro no hash:', { hashError, hashErrorCode })
+      if (hashErrorCode === 'otp_expired') {
+        setError('Link de recuperação expirado. Por favor, solicite um novo link.')
+      } else {
+        setError(`Erro: ${hashError}`)
+      }
+      return
+    }
     
     console.log('🔍 URL completa:', window.location.href)
     console.log('🔍 Hash completo:', window.location.hash)

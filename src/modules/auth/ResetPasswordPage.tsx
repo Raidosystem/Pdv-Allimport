@@ -20,19 +20,82 @@ export function ResetPasswordPage() {
   useEffect(() => {
     // 🔒 SEGURANÇA CRÍTICA: Extrair tokens ANTES de limpar sessão
     const initResetPassword = async () => {
+      console.log('🔍 =========================')
+      console.log('🔍 DEBUG RESET PASSWORD')
+      console.log('🔍 =========================')
+      console.log('🔍 URL completa:', window.location.href)
+      console.log('🔍 Pathname:', window.location.pathname)
+      console.log('🔍 Search params:', window.location.search)
+      console.log('🔍 Hash completo:', window.location.hash)
+      
       // 1. PRIMEIRO extrair tokens do hash (antes de qualquer operação)
       const hashParams = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
+      const typeParam = hashParams.get('type')
       
-      console.log('🔍 URL:', window.location.href)
-      console.log('🔑 Tokens presentes:', { 
-        hasAccess: !!accessToken, 
-        hasRefresh: !!refreshToken 
+      // Também verificar query params (Supabase pode usar PKCE)
+      const queryParams = new URLSearchParams(window.location.search)
+      const code = queryParams.get('code')
+      const errorParam = queryParams.get('error')
+      const errorDescription = queryParams.get('error_description')
+      
+      console.log('🔑 Hash params:', {
+        hasAccess: !!accessToken,
+        hasRefresh: !!refreshToken,
+        type: typeParam,
+        accessPreview: accessToken?.substring(0, 20) + '...',
+        refreshPreview: refreshToken?.substring(0, 20) + '...'
       })
       
+      console.log('🔑 Query params:', {
+        hasCode: !!code,
+        code: code?.substring(0, 20) + '...',
+        error: errorParam,
+        errorDescription
+      })
+      
+      // Verificar se há erro
+      if (errorParam) {
+        console.error('❌ Erro na URL:', errorParam, errorDescription)
+        setError(`Erro: ${errorDescription || errorParam}`)
+        return
+      }
+      
+      // Verificar se há code (PKCE flow)
+      if (code && !accessToken) {
+        console.log('🔄 Detectado PKCE code - Supabase vai trocar por tokens automaticamente')
+        console.log('⏳ Aguardando Supabase processar code...')
+        // Supabase vai processar automaticamente e atualizar a URL
+        // Vamos aguardar um momento
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Verificar novamente após espera
+        const hashParamsRetry = new URLSearchParams(window.location.hash.substring(1))
+        const accessTokenRetry = hashParamsRetry.get('access_token')
+        const refreshTokenRetry = hashParamsRetry.get('refresh_token')
+        
+        console.log('🔁 Após espera, tokens:', {
+          hasAccess: !!accessTokenRetry,
+          hasRefresh: !!refreshTokenRetry
+        })
+        
+        if (accessTokenRetry && refreshTokenRetry) {
+          console.log('✅ Tokens obtidos via PKCE!')
+          setRecoveryTokens({ access: accessTokenRetry, refresh: refreshTokenRetry })
+          await supabase.auth.signOut({ scope: 'local' })
+          console.log('🧹 Sessão anterior limpa (tokens já salvos)')
+          return
+        }
+      }
+      
       if (!accessToken || !refreshToken) {
-        console.log('⚠️ Tokens não encontrados')
+        console.error('❌ Tokens não encontrados no hash')
+        console.log('💡 Isso pode significar:')
+        console.log('   1. Link expirado (mais de 1 hora)')
+        console.log('   2. Link já foi usado')
+        console.log('   3. Supabase não configurado corretamente')
+        console.log('   4. PKCE flow não completou')
         setError('Link inválido ou expirado. Solicite um novo link.')
         return
       }

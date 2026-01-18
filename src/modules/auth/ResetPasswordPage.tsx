@@ -17,6 +17,12 @@ export function ResetPasswordPage() {
   const [recoveryTokens, setRecoveryTokens] = useState<{ access: string; refresh: string } | null>(null)
   const navigate = useNavigate()
 
+  // Log imediato ao renderizar
+  console.log('🚀 ResetPasswordPage RENDERIZADO')
+  console.log('🌐 URL:', window.location.href)
+  console.log('🔗 Hash:', window.location.hash)
+  console.log('❓ Query:', window.location.search)
+
   useEffect(() => {
     // 🔒 SEGURANÇA CRÍTICA: Processar tokens de recuperação
     const initResetPassword = async () => {

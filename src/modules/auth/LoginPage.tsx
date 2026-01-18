@@ -15,13 +15,15 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false)
 
-  // Verificar se há funcionários e redirecionar adequadamente
+  // 🔒 SEGURANÇA: Não redirecionar automaticamente na página de login
+  // Apenas redirecionar APÓS o usuário fazer login manualmente
   useEffect(() => {
-    if (user) {
+    if (user && hasAttemptedLogin) {
       checkFuncionariosERedirect()
     }
-  }, [user, navigate])
+  }, [user, hasAttemptedLogin, navigate])
 
   // Verifica se há funcionários cadastrados e redireciona
   const checkFuncionariosERedirect = async () => {
@@ -74,7 +76,8 @@ export function LoginPage() {
       }
       setLoading(false)
     } else {
-      // Login bem-sucedido, será redirecionado para o dashboard automaticamente
+      // 🔒 Marcar que o usuário fez login manualmente
+      setHasAttemptedLogin(true)
       console.log('✅ Login bem-sucedido!')
     }
   }

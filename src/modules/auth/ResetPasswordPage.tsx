@@ -18,27 +18,36 @@ export function ResetPasswordPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 🔒 SEGURANÇA: NÃO fazer signOut aqui - apenas armazenar tokens
-    // Supabase envia tokens no hash fragment (#)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const refreshToken = hashParams.get('refresh_token')
-    
-    console.log('🔍 URL:', window.location.href)
-    console.log('🔑 Tokens presentes:', { 
-      hasAccess: !!accessToken, 
-      hasRefresh: !!refreshToken 
-    })
-    
-    if (!accessToken || !refreshToken) {
-      console.log('⚠️ Tokens não encontrados')
-      setError('Link inválido ou expirado. Solicite um novo link.')
-      return
-    }
+    // 🔒 SEGURANÇA CRÍTICA: Fazer logout de qualquer sessão existente ANTES de processar tokens
+    // Isso previne que sessões antigas interfiram com o fluxo de recuperação
+    const initResetPassword = async () => {
+      // 1. Limpar qualquer sessão existente
+      await supabase.auth.signOut({ scope: 'local' })
+      console.log('🧹 Sessão anterior limpa')
+      
+      // 2. Extrair tokens do hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      
+      console.log('🔍 URL:', window.location.href)
+      console.log('🔑 Tokens presentes:', { 
+        hasAccess: !!accessToken, 
+        hasRefresh: !!refreshToken 
+      })
+      
+      if (!accessToken || !refreshToken) {
+        console.log('⚠️ Tokens não encontrados')
+        setError('Link inválido ou expirado. Solicite um novo link.')
+        return
+      }
 
-    // 🔒 APENAS armazenar tokens - NÃO criar sessão ainda
-    console.log('✅ Tokens armazenados - aguardando redefinição de senha')
-    setRecoveryTokens({ access: accessToken, refresh: refreshToken })
+      // 3. Armazenar tokens - NÃO criar sessão ainda
+      console.log('✅ Tokens armazenados - aguardando redefinição de senha')
+      setRecoveryTokens({ access: accessToken, refresh: refreshToken })
+    }
+    
+    initResetPassword()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {

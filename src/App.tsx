@@ -109,11 +109,11 @@ function App() {
 
   useEffect(() => {
     try {
-      // Inicializar sistema de detecção de versão
-      initVersionCheck()
-      
-      // Inicializar sistema de controle de cache e versão
-      startVersionChecking()
+      // Inicializar verificações de versão de forma ASSÍNCRONA e NÃO BLOQUEANTE
+      setTimeout(() => {
+        initVersionCheck()
+        startVersionChecking()
+      }, 2000) // Espera 2 segundos após carregamento inicial
       
       const handleBeforeInstallPrompt = (e: Event) => {
         console.log('🎯 PWA install prompt captured!');

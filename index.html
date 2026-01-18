@@ -13,18 +13,6 @@
     <!-- Cache Control Otimizado -->
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
     
-    <!-- Sistema Simplificado de Versão -->
-    <script>
-      // ⚡ Versão simplificada - não bloqueia carregamento
-      const v = '2.3.0';
-      if (localStorage.getItem('pdv_v') !== v) {
-        localStorage.setItem('pdv_v', v);
-        setTimeout(() => {
-          'caches' in window && caches.keys().then(k => k.forEach(n => caches.delete(n)));
-        }, 100);
-      }
-    </script>
-    
     <!-- PWA Meta Tags -->
     <meta name="description" content="Sistema de ponto de venda completo com PWA" />
     <meta name="theme-color" content="#3b82f6" />

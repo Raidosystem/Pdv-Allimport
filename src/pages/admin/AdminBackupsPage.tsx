@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
+import { BackupAutomaticoDownload } from '../../components/BackupAutomaticoDownload';
 
 interface BackupInfo {
   id: string;
@@ -715,6 +716,9 @@ const AdminBackupsPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Backup Automático Local do Usuário */}
+      <BackupAutomaticoDownload />
 
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -73,102 +73,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
-    console.log('=== SIGNUP DEBUG ===')
-    console.log('Email:', email)
-    console.log('Is Admin:', ADMIN_EMAILS.includes(email.toLowerCase()))
+    console.log('=== SIGNUP AuthContext ===')
+    console.log('📧 Email:', email)
+    console.log('📋 Metadata:', metadata)
     
     try {
-      // Criar conta sem obrigar confirmação de email
+      // APENAS criar conta no Supabase Auth
+      // O resto do fluxo (aprovação, trial) é feito pelo SignupPageNew após verificar email
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata,
-          // Removido emailRedirectTo para evitar fluxo de confirmação obrigatório
+          // Sem emailRedirectTo - verificação é feita via código OTP
         }
       })
 
-      console.log('Supabase signUp result:', { data, error })
+      console.log('📊 Supabase signUp result:', { 
+        userId: data?.user?.id, 
+        hasError: !!error 
+      })
       
-      // Tratamento específico para erro de webhook 404
       if (error) {
-        const errorMessage = error.message || ''
-        console.error('❌ Signup error details:', {
-          message: errorMessage,
-          status: (error as any).status,
-          code: (error as any).code
-        })
-        
-        // Se for erro de webhook/hook 404
-        if (errorMessage.includes('404') || errorMessage.includes('hook') || errorMessage.includes('webhook')) {
-          throw new Error('ERRO DE CONFIGURAÇÃO: O sistema de autenticação está com um webhook configurado incorretamente no Supabase. Por favor, acesse o Dashboard do Supabase → Authentication → Hooks e desative/delete todos os webhooks configurados.')
-        }
-        
-        // Outros erros
+        console.error('❌ Signup error:', error)
         throw error
       }
 
-      // Se a conta foi criada com sucesso
-      if (data.user) {
-        // Verificar se é admin (admins são auto-aprovados)
-        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
-        
-        console.log('User created, isAdmin:', isAdmin)
-        
-        if (isAdmin) {
-          // Para admins, fazer login automático
-          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          })
-          
-          if (loginData.user && !loginError) {
-            console.log('Admin auto-login success')
-            return { data: loginData, error: null }
-          }
-        } else {
-          console.log('Non-admin user - auto-approving and logging in')
-          
-          // Para usuários normais, auto-aprovar e inserir na tabela user_approvals
-          try {
-            // Inserir o usuário na tabela de aprovações como aprovado
-            const { error: insertError } = await supabase
-              .from('user_approvals')
-              .insert({
-                user_id: data.user.id,
-                email: email,
-                full_name: metadata?.full_name || 'Usuário',
-                company_name: metadata?.company_name || 'Não informado',
-                cpf_cnpj: metadata?.cpf_cnpj,
-                whatsapp: metadata?.whatsapp,
-                document_type: metadata?.document_type,
-                phone_verified: false, // Será verificado depois
-                status: 'pending', // Pendente até verificar WhatsApp
-                user_role: 'owner',
-                created_at: new Date().toISOString()
-              })
-            
-            if (insertError) {
-              console.error('Warning: Could not insert into user_approvals:', insertError)
-            }
-            
-            // Enviar código de verificação via WhatsApp
-            if (metadata?.whatsapp) {
-              await sendWhatsAppCode(data.user.id, metadata.whatsapp as string)
-            }
-            
-            // Retornar sucesso para ir para tela de verificação
-            return { data: { user: data.user, session: null }, error: null }
-          } catch (err) {
-            console.log('Error in auto-approval process:', err)
-            throw err
-          }
-        }
-      }
-
+      // Retornar dados para o SignupPageNew continuar o fluxo
       return { data, error: null }
+      
     } catch (err: any) {
-      console.error('SignUp error:', err)
+      console.error('❌ SignUp error:', err)
       return {
         data: null,
         error: err

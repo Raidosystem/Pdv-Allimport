@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Eye, EyeOff, User, FileText, AlertCircle, Phone, MapPin } from 'lucide-react'
 import { useAuth } from './AuthContext'
+import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Card } from '../../components/ui/Card'
@@ -210,6 +211,12 @@ export function SignupPageNew() {
       if (result && 'data' in result && result.data) {
         const data = result.data as { user?: { id: string }; session?: unknown }
         if (data.user?.id) {
+          console.log('✅ Conta criada no Supabase Auth:', data.user.id)
+          
+          // ⚠️ NÃO inserir em user_approvals aqui!
+          // A função RPC approve_user_after_email_verification fará isso automaticamente
+          // após o usuário verificar o email. Isso evita problemas de RLS.
+          
           console.log('📧 Enviando código via Supabase OTP para:', formData.email)
           
           // ENVIAR CÓDIGO VIA SUPABASE OTP (funciona e envia email)

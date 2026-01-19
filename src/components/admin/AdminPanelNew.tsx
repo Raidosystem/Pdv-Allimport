@@ -723,6 +723,112 @@ export function AdminPanel() {
               </div>
             </Card>
 
+            {/* NOVOS CADASTROS - PROPRIETÁRIOS PENDENTES */}
+            {users.filter(u => (u.user_role === 'owner' || !u.user_role)).length > 0 && (
+              <>
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl shadow-xl p-8 text-white">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-bold mb-2 flex items-center">
+                        <Crown className="w-8 h-8 mr-3" />
+                        Novos Cadastros - Proprietários
+                      </h2>
+                      <p className="text-purple-100 text-lg">
+                        {users.filter(u => (u.user_role === 'owner' || !u.user_role) && u.approval_status === 'pending').length} proprietário(s) aguardando aprovação e ativação do teste
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lista de Proprietários Pendentes */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {users
+                    .filter(u => u.user_role === 'owner' || !u.user_role)
+                    .map((owner) => (
+                      <div key={owner.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border-2 border-purple-200">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center">
+                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+                              <Crown className="w-7 h-7" />
+                            </div>
+                            <div className="ml-4">
+                              <h3 className="font-bold text-lg text-gray-900">{owner.full_name || owner.email}</h3>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                owner.approval_status === 'approved' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : owner.approval_status === 'rejected'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                  owner.approval_status === 'approved' 
+                                    ? 'bg-green-500 animate-pulse' 
+                                    : owner.approval_status === 'rejected'
+                                    ? 'bg-red-500'
+                                    : 'bg-yellow-500 animate-pulse'
+                                }`}></span>
+                                {owner.approval_status === 'approved' ? 'Ativo' : owner.approval_status === 'rejected' ? 'Rejeitado' : 'Aguardando'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Mail className="w-4 h-4 mr-2" />
+                            {owner.email}
+                          </div>
+                          {owner.company_name && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <span className="font-medium mr-2">🏢</span>
+                              {owner.company_name}
+                            </div>
+                          )}
+                          <div className="flex items-center text-sm text-gray-600">
+                            <span className="font-medium mr-2">📅</span>
+                            Cadastro: {new Date(owner.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-4 border-t border-gray-100">
+                          {owner.approval_status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => approveUser(owner.id, owner.email)}
+                                className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Aprovar + Ativar 15 Dias
+                              </button>
+                              <button
+                                onClick={() => rejectUser(owner.id, owner.email)}
+                                className="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                          {owner.approval_status === 'approved' && (
+                            <div className="flex-1 text-center py-2 text-sm text-green-600 font-medium">
+                              ✅ Teste ativo até {owner.approved_at ? new Date(new Date(owner.approved_at).getTime() + 15*24*60*60*1000).toLocaleDateString('pt-BR') : 'N/A'}
+                            </div>
+                          )}
+                          {owner.approval_status === 'rejected' && (
+                            <button
+                              onClick={() => deleteEmployee(owner.id, owner.email, owner.full_name || owner.email)}
+                              className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Excluir
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+
             {/* Header de Gerenciamento */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl p-8 text-white">
               <div className="flex justify-between items-center">

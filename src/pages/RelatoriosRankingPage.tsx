@@ -74,6 +74,8 @@ const RelatoriosRankingPage: React.FC = () => {
   };
 
   const loadProdutos = async () => {
+    console.log('🔍 Iniciando carregamento de produtos...');
+    
     // Buscar vendas agrupadas por produto
     const { data, error } = await supabase
       .from('vendas_itens')
@@ -85,8 +87,16 @@ const RelatoriosRankingPage: React.FC = () => {
       `)
       .eq('user_id', user?.id);
 
+    console.log('📊 Dados de vendas_itens:', { data, error, count: data?.length });
+
     if (error) {
-      console.error('Erro ao buscar produtos:', error);
+      console.error('❌ Erro ao buscar produtos:', error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('⚠️ Nenhuma venda encontrada para o usuário');
+      setProdutosMaisVendidos([]);
       return;
     }
 
@@ -123,6 +133,8 @@ const RelatoriosRankingPage: React.FC = () => {
   };
 
   const loadClientes = async () => {
+    console.log('🔍 Iniciando carregamento de clientes...');
+    
     // Buscar vendas agrupadas por cliente
     const { data, error } = await supabase
       .from('vendas')
@@ -134,8 +146,16 @@ const RelatoriosRankingPage: React.FC = () => {
       .eq('user_id', user?.id)
       .not('cliente_id', 'is', null);
 
+    console.log('📊 Dados de vendas (clientes):', { data, error, count: data?.length });
+
     if (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('❌ Erro ao buscar clientes:', error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('⚠️ Nenhuma venda encontrada para clientes');
+      setClientesTopCompras([]);
       return;
     }
 
@@ -174,14 +194,24 @@ const RelatoriosRankingPage: React.FC = () => {
   };
 
   const loadServicos = async () => {
+    console.log('🔍 Iniciando carregamento de serviços...');
+    
     // Buscar ordens de serviço agrupadas por serviço
     const { data, error } = await supabase
       .from('ordens_servico')
       .select('id, descricao, valor_total, status')
       .eq('user_id', user?.id);
 
+    console.log('📊 Dados de ordens_servico:', { data, error, count: data?.length });
+
     if (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('❌ Erro ao buscar serviços:', error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('⚠️ Nenhuma ordem de serviço encontrada para o usuário');
+      setServicosMaisSolicitados([]);
       return;
     }
 
@@ -203,6 +233,8 @@ const RelatoriosRankingPage: React.FC = () => {
       return acc;
     }, {});
 
+    console.log('📦 Serviços agrupados:', grouped);
+
     // Calcular valor médio e ordenar
     const ranking = Object.values(grouped)
       .map((item: any) => ({
@@ -216,6 +248,7 @@ const RelatoriosRankingPage: React.FC = () => {
         posicao: index + 1
       }));
 
+    console.log('🏆 Ranking final de serviços:', ranking);
     setServicosMaisSolicitados(ranking as ServicoRanking[]);
   };
 

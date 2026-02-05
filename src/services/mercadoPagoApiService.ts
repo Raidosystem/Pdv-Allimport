@@ -6,11 +6,12 @@ const isProduction = !isLocalhost && !isDevelopment;
 // URLs das APIs baseadas no ambiente
 const getApiBaseUrl = () => {
   if (isLocalhost) {
-    // Em desenvolvimento local, retornar erro para forçar modo demo
-    return '';
+    // Em desenvolvimento local, usar API local se disponível
+    return 'http://localhost:3000';
   } else {
-    // Em produção, usar o domínio personalizado que o Vercel está redirecionando
-    return 'https://pdv.gruporaval.com.br';
+    // Em produção, usar o MESMO domínio da página atual (window.location.origin)
+    // Isso evita problemas de CORS com redirect www/non-www
+    return window.location.origin;
   }
 };
 
@@ -65,15 +66,16 @@ class MercadoPagoApiService {
       // Em desenvolvimento local, retornar erro para forçar uso do modo demonstração
       if (this.isLocalDev) {
         console.warn(`⚠️ makeApiCall bloqueado em desenvolvimento local para endpoint: ${endpoint}`);
-        console.log('� Use apenas o modo demonstração em ambiente local.');
+        console.log('💡 Use apenas o modo demonstração em ambiente local.');
         throw new Error('API calls not available in local development - use demo mode');
       }
 
-      // Para produção, usar a API do Vercel
-      const baseUrl = 'https://pdv.gruporaval.com.br';
+      // Para produção, usar o MESMO domínio da página atual (evita problemas de CORS com redirect www/non-www)
+      const baseUrl = window.location.origin; // https://www.pdv.gruporaval.com.br OU https://pdv.gruporaval.com.br
       const url = `${baseUrl}${endpoint}`;
       
       console.log(`🌐 API Call: ${method} ${url}`);
+      console.log(`🔍 Origin: ${window.location.origin}`);
       
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

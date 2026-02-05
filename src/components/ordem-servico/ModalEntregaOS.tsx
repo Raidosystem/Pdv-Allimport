@@ -9,7 +9,8 @@ import {
   Clock, 
   Shield, 
   CheckCircle,
-  Package
+  Package,
+  Printer
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { BackButton } from '../ui/BackButton'
@@ -39,6 +40,7 @@ interface ModalEntregaOSProps {
 
 export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEntregaOSProps) {
   const [loading, setLoading] = useState(false)
+  const [encerradoComSucesso, setEncerradoComSucesso] = useState(false)
 
   const {
     register,
@@ -101,9 +103,8 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
       }
 
       await onConfirmar(dadosEntrega)
+      setEncerradoComSucesso(true)
       toast.success('Ordem de serviço encerrada com sucesso!')
-      reset()
-      onClose()
     } catch (error: unknown) {
       console.error('Erro ao entregar equipamento:', error)
       toast.error('Erro ao processar entrega')
@@ -112,7 +113,64 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
     }
   }
 
+  const handleImprimir = () => {
+    window.print()
+  }
+
+  const handleFechar = () => {
+    reset()
+    setEncerradoComSucesso(false)
+    onClose()
+  }
+
   if (!isOpen) return null
+
+  // Se a OS foi encerrada com sucesso, mostrar opções de impressão
+  if (encerradoComSucesso) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              OS Encerrada com Sucesso!
+            </h2>
+            <p className="text-gray-600">
+              A ordem de serviço foi encerrada e está pronta para entrega.
+            </p>
+          </div>
+
+          <Card className="p-4 mb-6 bg-blue-50 border-blue-200">
+            <div className="text-center">
+              <Printer className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-sm text-blue-900 font-medium">
+                Deseja imprimir a OS agora?
+              </p>
+            </div>
+          </Card>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleFechar}
+              className="flex-1"
+            >
+              Não, obrigado
+            </Button>
+            <Button
+              onClick={handleImprimir}
+              className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <Printer className="w-4 h-4" />
+              Imprimir OS
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

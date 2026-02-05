@@ -81,16 +81,18 @@ export function OrdemServicoDetalhePage() {
     try {
       console.log('🔄 Processando entrega da OS:', id)
       await ordemServicoService.processarEntrega(id, dados)
+      
+      // Recarregar a ordem para mostrar status atualizado
+      await carregarOrdem()
+      
+      // Fechar o modal (que vai mostrar opção de imprimir)
       setModalEntregaAberto(false)
       
-      // Uma única mensagem de sucesso
-      toast.success('Ordem de serviço entregue!')
-      
-      // Apenas sinalizar refresh simples
+      // Sinalizar que a lista precisa refresh
       localStorage.setItem('os_refresh_needed', 'true')
       
-      console.log('🔄 Redirecionando para listagem...')
-      navigate('/ordens-servico')
+      // NÃO redirecionar mais - deixar usuário na página para poder imprimir
+      console.log('✅ OS encerrada - permanecendo na página de detalhes')
     } catch (error: any) {
       console.error('Erro ao processar entrega:', error)
       toast.error('Erro ao encerrar ordem de serviço')
@@ -161,10 +163,10 @@ export function OrdemServicoDetalhePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6 print-container">
       
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between no-print">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => window.history.back()}
@@ -183,7 +185,7 @@ export function OrdemServicoDetalhePage() {
           </div>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex gap-3 no-print">
           <Button variant="outline" onClick={imprimirOS} className="gap-2">
             <Printer className="w-4 h-4" />
             Imprimir
@@ -201,8 +203,15 @@ export function OrdemServicoDetalhePage() {
         </div>
       </div>
 
+      {/* Cabeçalho para impressão */}
+      <div className="print-only print-text-center">
+        <h1 className="text-2xl font-bold">ORDEM DE SERVIÇO</h1>
+        <p className="text-sm">OS #{ordem.id.slice(-6).toUpperCase()}</p>
+        <p className="text-xs">Criada em {formatarData(ordem.data_entrada)}</p>
+      </div>
+
       {/* Status */}
-      <Card className="p-6">
+      <Card className="p-6 print-no-break">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Status da Ordem</h2>
@@ -212,7 +221,7 @@ export function OrdemServicoDetalhePage() {
           </div>
           
           {ordem.status === 'Entregue' ? (
-            <div className="flex gap-3">
+            <div className="flex gap-3 no-print">
               <Button onClick={imprimirOS} className="gap-2">
                 <Printer className="w-4 h-4" />
                 Imprimir OS
@@ -227,7 +236,7 @@ export function OrdemServicoDetalhePage() {
               </Button>
             </div>
           ) : ordem.status === 'Pronto' ? (
-            <div className="flex gap-3">
+            <div className="flex gap-3 no-print">
               <Button 
                 onClick={() => setModalEntregaAberto(true)}
                 className="gap-2 bg-green-600 hover:bg-green-700"
@@ -242,7 +251,7 @@ export function OrdemServicoDetalhePage() {
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end no-print">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Alterar Status
@@ -270,7 +279,7 @@ export function OrdemServicoDetalhePage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print-no-break">
         
         {/* Dados do Cliente */}
         <Card className="p-6">
@@ -344,7 +353,7 @@ export function OrdemServicoDetalhePage() {
       </div>
 
       {/* Checklist Técnico */}
-      <Card className="p-6">
+      <Card className="p-6 print-no-break">
         <div className="flex items-center gap-2 mb-4">
           <Settings className="w-5 h-5 text-purple-600" />
           <h2 className="text-lg font-semibold text-gray-900">Checklist Técnico</h2>
@@ -379,7 +388,7 @@ export function OrdemServicoDetalhePage() {
       </Card>
 
       {/* Detalhes do Problema */}
-      <Card className="p-6">
+      <Card className="p-6 print-no-break">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Detalhes do Problema</h2>
         
         <div className="space-y-4">
@@ -402,7 +411,7 @@ export function OrdemServicoDetalhePage() {
       </Card>
 
       {/* Prazos e Valores */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print-no-break">
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-orange-600" />

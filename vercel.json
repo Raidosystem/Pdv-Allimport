@@ -2,13 +2,16 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/((?!assets|icons|manifest|sw\\.js|favicon|version|_headers|.*\\.).*)",
+      "source": "/((?!assets|icons|manifest|sw\\.js|favicon|version|_headers|api|.*\\.).*)",
       "destination": "/index.html"
     }
   ],
@@ -49,11 +52,13 @@
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, must-revalidate" },
         { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
-        { "key": "Access-Control-Allow-Credentials", "value": "true" }
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, PUT, DELETE, PATCH" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent" },
+        { "key": "Access-Control-Max-Age", "value": "86400" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
       ]
     }
   ]

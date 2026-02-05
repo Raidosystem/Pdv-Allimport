@@ -1,6 +1,8 @@
 export default async function handler(req, res) {
   // CORS headers - permitir múltiplos domínios
   const allowedOrigins = [
+    'https://pdv.gruporaval.com.br',
+    'https://www.pdv.gruporaval.com.br',
     'https://pdv.crmvsystem.com',
     'https://pdv-allimport.vercel.app',
     'http://localhost:5173',
@@ -19,11 +21,13 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
   
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
+    console.log('🔄 CORS Preflight request handled for origin:', origin);
     res.status(200).end();
     return;
   }

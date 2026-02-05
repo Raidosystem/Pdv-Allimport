@@ -3,10 +3,24 @@
 const MP_ACCESS_TOKEN = 'APP_USR-3807636986700595-080418-898de2d3ad6f6c10d2c5da46e68007d2-167089193';
 
 export default async function handler(req, res) {
-  // CORS headers mais permissivos para resolver problemas de redirecionamento
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS headers - aceitar origem específica da requisição
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://pdv.gruporaval.com.br',
+    'https://www.pdv.gruporaval.com.br',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight por 24h
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -14,7 +28,7 @@ export default async function handler(req, res) {
 
   // Responder imediatamente às requisições OPTIONS
   if (req.method === 'OPTIONS') {
-    console.log('🔄 CORS Preflight request handled');
+    console.log('🔄 CORS Preflight request handled for origin:', origin);
     res.status(200).end();
     return;
   }

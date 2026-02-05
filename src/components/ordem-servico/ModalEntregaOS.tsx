@@ -15,6 +15,7 @@ import {
 import { Button } from '../ui/Button'
 import { BackButton } from '../ui/BackButton'
 import { Card } from '../ui/Card'
+import { roundCurrency } from '../../utils/currency'
 import type { OrdemServico } from '../../types/ordemServico'
 
 // Schema de validação para entrega
@@ -53,7 +54,7 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
     resolver: zodResolver(entregaSchema),
     defaultValues: {
       garantia_tipo: 'sem_garantia',
-      valor_final: ordem.valor_orcamento,
+      valor_final: roundCurrency(ordem.valor_orcamento),
       garantia_meses: 12
     }
   })
@@ -94,7 +95,7 @@ export function ModalEntregaOS({ ordem, isOpen, onClose, onConfirmar }: ModalEnt
       const agora = new Date().toISOString()
       
       const dadosEntrega = {
-        valor_final: data.valor_final,
+        valor_final: roundCurrency(data.valor_final),
         data_entrega: agora,
         garantia_meses: data.garantia_tipo === 'com_garantia' ? data.garantia_meses : undefined,
         data_fim_garantia: data.garantia_tipo === 'com_garantia' && data.garantia_meses 

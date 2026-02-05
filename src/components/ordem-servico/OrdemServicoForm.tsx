@@ -23,6 +23,7 @@ import { useEmpresaSettings } from '../../hooks/useEmpresaSettings'
 import { usePrintSettings } from '../../hooks/usePrintSettings'
 import * as checklistTemplateService from '../../services/checklistTemplateService'
 import { supabase } from '../../lib/supabase'
+import { roundCurrency } from '../../utils/currency'
 import type { 
   NovaOrdemServicoForm, 
   TipoEquipamento,
@@ -872,7 +873,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel, onOrdemCriada }: 
           observacoes: data.observacoes,
           defeito_relatado: data.defeito_relatado,
           data_previsao: data.data_previsao,
-          valor_orcamento: data.valor_orcamento,
+          valor_orcamento: roundCurrency(data.valor_orcamento),
           cliente_id: clienteSelecionado.id,
           status: statusOrdem // Adicionar status
         }
@@ -923,7 +924,7 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel, onOrdemCriada }: 
           observacoes: data.observacoes,
           defeito_relatado: data.defeito_relatado,
           data_previsao: data.data_previsao,
-          valor_orcamento: data.valor_orcamento
+          valor_orcamento: roundCurrency(data.valor_orcamento)
         }
 
         console.log('💾 [CRIAR] Enviando para banco:', novaOrdem)

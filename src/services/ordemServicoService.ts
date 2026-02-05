@@ -1,6 +1,7 @@
 // 🔧 Serviço para Ordens de Serviço
 import { supabase } from '../lib/supabase'
 import { requireAuth } from '../utils/auth'
+import { roundCurrency } from '../utils/currency'
 import type { 
   OrdemServico, 
   NovaOrdemServicoForm, 
@@ -165,7 +166,7 @@ class OrdemServicoService {
       equipamento: `${dadosForm.tipo || ''} ${dadosForm.marca || ''} ${dadosForm.modelo || ''}`.trim(),
       status: 'Em análise', // ✅ Corrigido: usar status válido da enum
       data_previsao: dadosForm.data_previsao || null,
-      valor_orcamento: dadosForm.valor_orcamento,
+      valor_orcamento: roundCurrency(dadosForm.valor_orcamento),
       user_id: user.id
     }
 
@@ -287,7 +288,7 @@ class OrdemServicoService {
     const dadosAtualizacao = {
       status: 'Entregue' as StatusOS,
       data_entrega: dados.data_entrega,
-      valor_final: dados.valor_final,
+      valor_final: roundCurrency(dados.valor_final),
       garantia_meses: dados.garantia_meses || null,
       data_fim_garantia: dados.data_fim_garantia || null
     }

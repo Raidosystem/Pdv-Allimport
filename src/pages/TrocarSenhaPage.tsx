@@ -33,7 +33,7 @@ export default function TrocarSenhaPage() {
 
     if (!state?.funcionarioId) {
       toast.error('Sessão inválida. Faça login novamente.');
-      navigate('/funcionarios/login');
+      navigate('/login-local');
       return;
     }
 
@@ -122,7 +122,7 @@ export default function TrocarSenhaPage() {
     // Se é primeiro login, não pode cancelar - faz logout
     if (state?.isFirstLogin) {
       toast.error('Você precisa definir uma senha antes de continuar');
-      navigate('/funcionarios/login', { replace: true });
+      navigate('/login-local', { replace: true });
     } else {
       navigate(-1);
     }

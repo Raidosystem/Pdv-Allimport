@@ -111,7 +111,7 @@ export function ResumoOSWidget() {
           Ordens de Serviço
         </h3>
         <Link 
-          to="/os" 
+          to="/ordens-servico" 
           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
         >
           Ver todas
@@ -142,7 +142,7 @@ export function ResumoOSWidget() {
       </div>
 
       <div className="mt-4 pt-4 border-t">
-        <Link to="/os/nova">
+        <Link to="/ordens-servico">
           <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
             Nova Ordem de Serviço
           </button>

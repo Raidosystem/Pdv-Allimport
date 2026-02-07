@@ -44,6 +44,7 @@ const LojaOnlinePage = lazy(() => import('./pages/admin/LojaOnlinePage'))
 // Auth secundárias - lazy loading
 const ConfirmEmailPage = lazy(() => import('./modules/auth/ConfirmEmailPage').then(m => ({ default: m.ConfirmEmailPage })))
 const ForgotPasswordPage = lazy(() => import('./modules/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
+const ResendConfirmationPage = lazy(() => import('./modules/auth/ResendConfirmationPage').then(m => ({ default: m.ResendConfirmationPage })))
 // ResetPasswordPage removido do lazy - carregado diretamente acima
 const TrocarSenhaPage = lazy(() => import('./pages/TrocarSenhaPage'))
 
@@ -76,12 +77,6 @@ const LojaPublicaPage = lazy(() => import('./pages/LojaPublicaPage'))
 
 // Pagamentos - lazy loading
 const PaymentPage = lazy(() => import('./components/subscription/PaymentPage').then(m => ({ default: m.PaymentPage })))
-const PaymentTest = lazy(() => import('./components/PaymentTest').then(m => ({ default: m.PaymentTest })))
-
-// Debug/Teste - lazy loading
-const TestePage = lazy(() => import('./pages/TestePage').then(m => ({ default: m.TestePage })))
-const TestPage = lazy(() => import('./pages/TestPage').then(m => ({ default: m.TestPage })))
-const DebugSupabase = lazy(() => import('./pages/DebugSupabase'))
 
 // 🎨 Loading Component - Exibido durante carregamento lazy
 const PageLoader = () => (
@@ -254,6 +249,7 @@ function App() {
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/resend-confirmation" element={<ResendConfirmationPage />} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/old" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
           
@@ -413,7 +409,13 @@ function App() {
           />
           <Route 
             path="/import-automatico" 
-            element={<ImportacaoAutomaticaPage />} 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ImportacaoAutomaticaPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
           />
           <Route 
             path="/configuracoes-empresa" 

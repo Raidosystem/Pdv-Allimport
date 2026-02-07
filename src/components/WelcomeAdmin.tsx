@@ -11,19 +11,19 @@ export const WelcomeAdmin: React.FC<WelcomeAdminProps> = ({ onGetStarted }) => {
       icon: Users,
       title: 'Gerenciar Usuários',
       description: 'Controle quem tem acesso ao sistema e suas permissões',
-      link: '/admin/users'
+      link: '/admin/ativar-usuarios'
     },
     {
       icon: Settings,
       title: 'Configurações',
       description: 'Personalize o sistema conforme suas necessidades',
-      link: '/admin/settings'
+      link: '/configuracoes'
     },
     {
       icon: BarChart3,
       title: 'Relatórios',
       description: 'Visualize dados e métricas importantes do negócio',
-      link: '/admin/reports'
+      link: '/relatorios'
     }
   ];
 

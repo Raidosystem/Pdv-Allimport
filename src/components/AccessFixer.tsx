@@ -197,7 +197,7 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
   }
 
   if (status === 'welcome') {
-    return <WelcomeAdmin onGetStarted={() => window.location.href = '/admin/settings'} />;
+    return <WelcomeAdmin onGetStarted={() => window.location.href = '/configuracoes'} />;
   }
 
   // Se o usuário está logado, ele é admin da sua empresa - não mostrar nada
@@ -281,11 +281,11 @@ export const AccessFixer: React.FC<AccessFixerProps> = ({ onFixed, showWelcome =
                 Tentar Novamente
               </button>
               <button
-                onClick={() => window.location.href = '/admin/permissions-debug'}
+                onClick={() => window.location.href = '/dashboard'}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
               >
                 <Shield className="w-4 h-4" />
-                Debug Avançado
+                Voltar ao Dashboard
               </button>
             </div>
           </div>

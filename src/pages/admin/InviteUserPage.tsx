@@ -29,7 +29,7 @@ const InviteUserPage: React.FC = () => {
     if (can('administracao.usuarios', 'create') || isAdminEmpresa) {
       loadFuncoes();
     } else {
-      navigate('/admin/users');
+      navigate('/admin/ativar-usuarios');
     }
   }, []);
 
@@ -194,7 +194,7 @@ const InviteUserPage: React.FC = () => {
       console.log('✅ [InviteUser] Convite criado com sucesso!');
 
       // Redirecionar para lista de usuários com sucesso
-      navigate('/admin/users', { 
+      navigate('/admin/ativar-usuarios', { 
         state: { 
           message: `Convite enviado com sucesso para ${formData.email}!` 
         } 
@@ -240,7 +240,7 @@ const InviteUserPage: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate('/admin/ativar-usuarios')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -362,7 +362,7 @@ const InviteUserPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-end">
             <button
               type="button"
-              onClick={() => navigate('/admin/users')}
+              onClick={() => navigate('/admin/ativar-usuarios')}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               Cancelar

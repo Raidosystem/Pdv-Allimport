@@ -3,15 +3,13 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard,
   Users,
-  Shield,
   Settings,
   LogOut,
   Menu,
   X,
   ChevronRight,
   Building,
-  User,
-  Wrench
+  User
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
@@ -37,21 +35,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigationItems = [
     {
       name: 'Dashboard',
-      href: '/admin/dashboard',
+      href: '/admin',
       icon: LayoutDashboard,
       permission: 'administracao.dashboard'
     },
     {
       name: 'Usuários',
-      href: '/admin/usuarios',
+      href: '/admin/ativar-usuarios',
       icon: Users,
       permission: 'administracao.usuarios'
-    },
-    {
-      name: 'Funções & Permissões',
-      href: '/admin/funcoes-permissoes',
-      icon: Shield,
-      permission: 'administracao.funcoes'
     },
     {
       name: 'Módulos do Sistema',
@@ -60,14 +52,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       permission: 'administracao.sistema'
     },
     {
-      name: 'Ferramentas',
-      href: '/admin/ferramentas',
-      icon: Wrench,
+      name: 'Loja Online',
+      href: '/admin/loja-online',
+      icon: Settings,
       permission: 'administracao.sistema'
     },
     {
       name: 'Configurações',
-      href: '/admin/configuracoes',
+      href: '/configuracoes',
       icon: Settings,
       permission: 'administracao.sistema'
     }
@@ -233,7 +225,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             {/* Breadcrumb */}
             <nav className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-              <Link to="/admin/dashboard" className="hover:text-gray-700">
+              <Link to="/admin" className="hover:text-gray-700">
                 Admin
               </Link>
               <ChevronRight className="w-4 h-4" />

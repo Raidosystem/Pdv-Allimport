@@ -107,7 +107,7 @@ export function EmailInstructionsPage() {
                     <p className="text-green-700 text-sm mb-3">
                       Teste se sua conta já funciona mesmo sem confirmação
                     </p>
-                    <Link to="/test-login">
+                    <Link to="/login">
                       <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
                         Testar Login Agora
                       </Button>

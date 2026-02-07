@@ -161,7 +161,7 @@ export function DiagnosticPage() {
                 </a>
                 
                 <Link 
-                  to="/test-login"
+                  to="/login"
                   className="flex items-center gap-3 p-3 bg-white rounded-lg border hover:border-green-300 transition-colors"
                 >
                   <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">

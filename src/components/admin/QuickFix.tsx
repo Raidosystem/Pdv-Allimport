@@ -67,17 +67,17 @@ export function QuickFix({ onRetryLogin }: QuickFixProps) {
       </div>
 
       <div className="flex flex-wrap gap-3 justify-center">
-        <Link to="/test-login">
+        <Link to="/login">
           <Button className="gap-2 bg-green-600 hover:bg-green-700">
             <CheckCircle className="w-4 h-4" />
             Testar Login
           </Button>
         </Link>
         
-        <Link to="/diagnostic">
+        <Link to="/dashboard">
           <Button variant="outline" className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50">
             <Settings className="w-4 h-4" />
-            Diagnóstico Completo
+            Voltar ao Dashboard
           </Button>
         </Link>
         

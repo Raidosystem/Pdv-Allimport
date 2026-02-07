@@ -53,9 +53,36 @@ interface PrintReceiptData {
     fonte_tamanho?: 'pequena' | 'media' | 'grande';
     fonte_intensidade?: 'normal' | 'medio' | 'forte';
     fonte_negrito?: boolean;
-    papel_tamanho?: 'A4' | '80mm' | '58mm';
+    papel_tamanho?: 'auto' | 'A4' | '80mm' | '58mm';
     logo_recibo?: boolean;
   };
+}
+
+// Detectar automaticamente o tamanho do papel baseado na impressora do sistema
+function detectPaperSize(): 'A4' | '80mm' | '58mm' {
+  try {
+    // Verificar via matchMedia a largura disponível para impressão
+    const isNarrow = window.matchMedia('print and (max-width: 90mm)').matches;
+    const isVeryNarrow = window.matchMedia('print and (max-width: 62mm)').matches;
+    
+    if (isVeryNarrow) return '58mm';
+    if (isNarrow) return '80mm';
+    
+    // Verificar a largura da tela - dispositivos móveis/tablets geralmente usam térmica
+    if (window.innerWidth <= 768) return '80mm';
+    
+    // Fallback: verificar se há impressoras térmicas conhecidas via userAgent
+    // Em ambientes desktop com tela grande, provável que seja A4
+    return 'A4';
+  } catch {
+    return '80mm';
+  }
+}
+
+// Resolver 'auto' para tamanho real de papel
+function resolvePaperSize(size?: string): 'A4' | '80mm' | '58mm' {
+  if (!size || size === 'auto') return detectPaperSize();
+  return size as 'A4' | '80mm' | '58mm';
 }
 
 // Configurações de tamanho por tipo de papel (unidades em pt para impressoras)
@@ -155,8 +182,8 @@ export function usePrintReceipt() {
   const generateReceiptHTML = (data: PrintReceiptData) => {
     const { sale, customer, storeName = "RaVal pdv", storeInfo, cashReceived = 0, changeAmount = 0, printConfig } = data;
 
-    // Selecionar configuração do papel
-    const paperKey = (printConfig?.papel_tamanho || '80mm') as keyof typeof PAPER_CONFIGS;
+    // Selecionar configuração do papel (detecta automaticamente se 'auto' ou não definido)
+    const paperKey = resolvePaperSize(printConfig?.papel_tamanho);
     const cfg = PAPER_CONFIGS[paperKey];
     const baseFontSize = cfg.fontSize[printConfig?.fonte_tamanho || 'media'];
 

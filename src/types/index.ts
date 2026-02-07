@@ -199,7 +199,7 @@ export interface AppConfig {
   }
   printer: {
     type: 'thermal' | 'inkjet' | 'laser'
-    paperSize: '58mm' | '80mm' | 'A4'
+    paperSize: 'auto' | '58mm' | '80mm' | 'A4'
   }
   features: {
     whatsapp: boolean

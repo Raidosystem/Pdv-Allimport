@@ -38,8 +38,27 @@ interface PrintOrdemServicoData {
     rodape_linha2?: string;
     rodape_linha3?: string;
     rodape_linha4?: string;
-    papel_tamanho?: 'A4' | '80mm' | '58mm';
+    papel_tamanho?: 'auto' | 'A4' | '80mm' | '58mm';
   };
+}
+
+// Detectar automaticamente o tamanho do papel
+function detectPaperSize(): 'A4' | '80mm' | '58mm' {
+  try {
+    const isNarrow = window.matchMedia('print and (max-width: 90mm)').matches;
+    const isVeryNarrow = window.matchMedia('print and (max-width: 62mm)').matches;
+    if (isVeryNarrow) return '58mm';
+    if (isNarrow) return '80mm';
+    if (window.innerWidth <= 768) return '80mm';
+    return 'A4';
+  } catch {
+    return '80mm';
+  }
+}
+
+function resolvePaperSize(size?: string): 'A4' | '80mm' | '58mm' {
+  if (!size || size === 'auto') return detectPaperSize();
+  return size as 'A4' | '80mm' | '58mm';
 }
 
 export function usePrintOrdemServico() {
@@ -62,8 +81,8 @@ export function usePrintOrdemServico() {
         data.printConfig?.rodape_linha4
       ].filter(Boolean).join('\n');
 
-      // Detectar tamanho do papel
-      const paperKey = data.printConfig?.papel_tamanho || '80mm';
+      // Detectar tamanho do papel (auto = detecta pela impressora)
+      const paperKey = resolvePaperSize(data.printConfig?.papel_tamanho);
       const isTermica = paperKey !== 'A4';
 
       // Configurações por tamanho de papel

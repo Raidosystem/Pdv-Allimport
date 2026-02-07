@@ -15,7 +15,7 @@ export interface PrintSettings {
   rodapeOsLinha2: string;
   rodapeOsLinha3: string;
   rodapeOsLinha4: string;
-  papelTamanho: 'A4' | '80mm' | '58mm';
+  papelTamanho: 'auto' | 'A4' | '80mm' | '58mm';
   fonteTamanho: 'pequena' | 'media' | 'grande';
   fonteIntensidade: 'normal' | 'medio' | 'forte';
   fonteNegrito: boolean;
@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: PrintSettings = {
   rodapeOsLinha2: 'A partir do quarto mês será cobrado uma multa diária de 1,00',
   rodapeOsLinha3: 'Agradecemos pela preferencia, Volte sempre',
   rodapeOsLinha4: '',
-  papelTamanho: '80mm',
+  papelTamanho: 'auto',
   fonteTamanho: 'media',
   fonteIntensidade: 'normal',
   fonteNegrito: false,

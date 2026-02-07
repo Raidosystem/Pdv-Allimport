@@ -42,7 +42,7 @@ interface ConfiguracaoAparencia {
 
 interface ConfiguracaoImpressao {
   impressora_padrao: string
-  papel_tamanho: 'A4' | '80mm' | '58mm'
+  papel_tamanho: 'auto' | 'A4' | '80mm' | '58mm'
   margens: number
   impressao_automatica: boolean
   copias_recibo: number
@@ -524,7 +524,7 @@ export function ConfiguracoesPage() {
 
   const [configImpressao, setConfigImpressao] = useState<ConfiguracaoImpressao>({
     impressora_padrao: 'Impressora Térmica',
-    papel_tamanho: '80mm',
+    papel_tamanho: 'auto',
     margens: 5,
     impressao_automatica: true,
     copias_recibo: 2,
@@ -1047,12 +1047,13 @@ export function ConfiguracoesPage() {
             <select
               value={configImpressao.papel_tamanho}
               onChange={(e) => {
-                const valor = e.target.value as 'A4' | '80mm' | '58mm'
+                const valor = e.target.value as 'auto' | 'A4' | '80mm' | '58mm'
                 setConfigImpressao(prev => ({ ...prev, papel_tamanho: valor }))
                 savePrintSettings({ papelTamanho: valor })
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
+              <option value="auto">🔄 Automático (detecta impressora)</option>
               <option value="A4">A4 (210 x 297 mm)</option>
               <option value="80mm">Térmica 80mm</option>
               <option value="58mm">Térmica 58mm</option>

@@ -602,13 +602,25 @@ export function OrdensServicoPage() {
     const rodapeLinha2 = printSettings.rodapeOsLinha2 || ''
     const rodapeLinha3 = printSettings.rodapeOsLinha3 || ''
     const rodapeLinha4 = printSettings.rodapeOsLinha4 || ''
-    const papelTamanho = printSettings.papelTamanho || '80mm'
+    const papelTamanhoRaw = printSettings.papelTamanho || 'auto'
     
     const dataEntrega = new Date().toLocaleDateString('pt-BR')
     const dataGarantia = new Date()
     const mesesGarantia = ordem.garantia_meses || 3
     dataGarantia.setMonth(dataGarantia.getMonth() + mesesGarantia)
     const dataGarantiaFormatada = dataGarantia.toLocaleDateString('pt-BR')
+
+    // Resolver 'auto' para tamanho real
+    const resolvePaper = (size: string): 'A4' | '80mm' | '58mm' => {
+      if (size !== 'auto') return size as 'A4' | '80mm' | '58mm'
+      try {
+        if (window.matchMedia('print and (max-width: 62mm)').matches) return '58mm'
+        if (window.matchMedia('print and (max-width: 90mm)').matches) return '80mm'
+        if (window.innerWidth <= 768) return '80mm'
+        return 'A4'
+      } catch { return '80mm' }
+    }
+    const papelTamanho = resolvePaper(papelTamanhoRaw)
     
     // Configurações responsivas por tamanho de papel
     const isTermica = papelTamanho !== 'A4'

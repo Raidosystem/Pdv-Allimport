@@ -197,7 +197,7 @@ export function usePrintReceipt() {
 
     // CSS do @page adaptativo
     const pageCSS = isTermica 
-      ? `@page { size: ${cfg.pageWidth} auto; margin: 0; }`
+      ? `@page { size: ${cfg.pageWidth} auto; margin: 0 !important; padding: 0 !important; }`
       : `@page { size: A4 portrait; margin: 10mm; }`;
 
     return `
@@ -215,6 +215,10 @@ export function usePrintReceipt() {
 
             ${pageCSS}
 
+            html {
+              ${isTermica ? 'height: auto !important; min-height: 0 !important;' : ''}
+            }
+
             body {
               font-family: ${isTermica ? "'Courier New', 'Lucida Console', monospace" : "'Segoe UI', Arial, sans-serif"};
               background: white;
@@ -225,22 +229,33 @@ export function usePrintReceipt() {
               color: #000;
               filter: ${fontFilter};
               line-height: 1.3;
+              ${isTermica ? 'height: auto !important; min-height: 0 !important; overflow: visible !important;' : ''}
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
 
             @media print {
               html, body {
-                ${isTermica ? `width: ${cfg.pageWidth};` : 'width: 100%;'}
-                margin: 0 !important;
-                padding: 0 !important;
+                ${isTermica ? `
+                  width: ${cfg.pageWidth};
+                  height: auto !important;
+                  min-height: 0 !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  overflow: visible !important;
+                ` : 'width: 100%;'}
               }
+              ${isTermica ? `
+              /* Forçar sem espaço extra em térmicas */
+              html { height: fit-content !important; }
+              body { height: fit-content !important; }
+              ` : ''}
             }
 
             .receipt {
               width: ${cfg.receiptMaxWidth};
               max-width: ${cfg.receiptMaxWidth};
-              margin: 0 auto;
+              ${isTermica ? 'margin: 0;' : 'margin: 0 auto;'}
               padding: ${cfg.padding};
               font-size: ${baseFontSize};
               line-height: 1.3;

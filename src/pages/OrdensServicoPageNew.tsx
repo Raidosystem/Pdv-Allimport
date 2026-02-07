@@ -702,7 +702,12 @@ export function OrdensServicoPage() {
 
           @page {
             size: ${cfg.pageSize};
-            margin: ${isTermica ? '0' : '10mm'};
+            margin: ${isTermica ? '0 !important' : '10mm'};
+            ${isTermica ? 'padding: 0 !important;' : ''}
+          }
+
+          html {
+            ${isTermica ? 'height: auto !important; min-height: 0 !important;' : ''}
           }
 
           body {
@@ -712,8 +717,9 @@ export function OrdensServicoPage() {
             color: #000;
             width: ${cfg.bodyWidth};
             max-width: ${cfg.bodyWidth};
-            margin: 0 auto;
+            ${isTermica ? 'margin: 0;' : 'margin: 0 auto;'}
             padding: ${cfg.bodyPad};
+            ${isTermica ? 'height: auto !important; min-height: 0 !important; overflow: visible !important;' : ''}
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -722,7 +728,17 @@ export function OrdensServicoPage() {
             html, body {
               width: ${isTermica ? cfg.bodyWidth : 'auto'};
               margin: ${isTermica ? '0' : '0 auto'} !important;
+              ${isTermica ? `
+                height: auto !important;
+                min-height: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+              ` : ''}
             }
+            ${isTermica ? `
+            html { height: fit-content !important; }
+            body { height: fit-content !important; }
+            ` : ''}
           }
 
           .header {

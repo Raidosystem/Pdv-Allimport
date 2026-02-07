@@ -34,7 +34,6 @@ interface PrintReceiptData {
     cnpj?: string;
     razao_social?: string;
     email?: string;
-    // Endereço completo separado
     logradouro?: string;
     numero?: string;
     complemento?: string;
@@ -45,23 +44,101 @@ interface PrintReceiptData {
   };
   cashReceived?: number;
   changeAmount?: number;
-  // Configurações de impressão personalizadas
   printConfig?: {
-    // Textos personalizados
     cabecalho_personalizado?: string;
     rodape_linha1?: string;
     rodape_linha2?: string;
     rodape_linha3?: string;
     rodape_linha4?: string;
-    // Configurações de fonte
     fonte_tamanho?: 'pequena' | 'media' | 'grande';
     fonte_intensidade?: 'normal' | 'medio' | 'forte';
     fonte_negrito?: boolean;
-    // Outras configurações
     papel_tamanho?: 'A4' | '80mm' | '58mm';
     logo_recibo?: boolean;
   };
 }
+
+// Configurações de tamanho por tipo de papel (unidades em pt para impressoras)
+const PAPER_CONFIGS = {
+  '58mm': {
+    pageWidth: '58mm',
+    receiptMaxWidth: '54mm',      // Margem interna de 2mm cada lado
+    padding: '1mm 2mm',
+    fontSize: {
+      pequena: '6pt',
+      media: '7pt',
+      grande: '8pt',
+    },
+    storeNameSize: '9pt',
+    titleSize: '8pt',
+    itemSize: '7pt',
+    totalSize: '8pt',
+    totalFinalSize: '9pt',
+    infoSize: '6.5pt',
+    footerSize: '6pt',
+    footerInfoSize: '5.5pt',
+    skuSize: '5.5pt',
+    logoMax: '80px',
+    logoHeight: '50px',
+    separatorMargin: '2mm 0',
+    itemMargin: '1.5mm 0',
+    sectionMargin: '2mm 0',
+    garantiaSize: '7pt',
+    garantiaPad: '1.5mm',
+  },
+  '80mm': {
+    pageWidth: '80mm',
+    receiptMaxWidth: '76mm',      // Margem interna de 2mm cada lado
+    padding: '1mm 2mm',
+    fontSize: {
+      pequena: '7pt',
+      media: '8pt',
+      grande: '9pt',
+    },
+    storeNameSize: '10pt',
+    titleSize: '9pt',
+    itemSize: '8pt',
+    totalSize: '9pt',
+    totalFinalSize: '10pt',
+    infoSize: '7.5pt',
+    footerSize: '7pt',
+    footerInfoSize: '6pt',
+    skuSize: '6pt',
+    logoMax: '100px',
+    logoHeight: '60px',
+    separatorMargin: '2.5mm 0',
+    itemMargin: '2mm 0',
+    sectionMargin: '3mm 0',
+    garantiaSize: '8pt',
+    garantiaPad: '2mm',
+  },
+  'A4': {
+    pageWidth: '210mm',
+    receiptMaxWidth: '80mm',      // Cupom centralizado em A4
+    padding: '5mm',
+    fontSize: {
+      pequena: '8pt',
+      media: '9pt',
+      grande: '10pt',
+    },
+    storeNameSize: '12pt',
+    titleSize: '10pt',
+    itemSize: '9pt',
+    totalSize: '10pt',
+    totalFinalSize: '11pt',
+    infoSize: '8.5pt',
+    footerSize: '8pt',
+    footerInfoSize: '7pt',
+    skuSize: '7pt',
+    logoMax: '120px',
+    logoHeight: '80px',
+    separatorMargin: '3mm 0',
+    itemMargin: '2mm 0',
+    sectionMargin: '4mm 0',
+    garantiaSize: '9pt',
+    garantiaPad: '2.5mm',
+  },
+} as const;
 
 export function usePrintReceipt() {
   const formatCurrency = (value: number) => {
@@ -77,40 +154,25 @@ export function usePrintReceipt() {
 
   const generateReceiptHTML = (data: PrintReceiptData) => {
     const { sale, customer, storeName = "RaVal pdv", storeInfo, cashReceived = 0, changeAmount = 0, printConfig } = data;
-    
-    // Debug: verificar dados do cliente
-    console.log('🧾 Gerando HTML do cupom:', {
-      temCliente: !!customer,
-      nomeCliente: customer?.name,
-      customer,
-      printConfig
-    });
 
-    // Mapear configurações de tamanho de fonte
-    const fontSizeMap = {
-      'pequena': '10px',
-      'media': '12px',
-      'grande': '14px'
-    };
-    const baseFontSize = fontSizeMap[printConfig?.fonte_tamanho || 'media'];
+    // Selecionar configuração do papel
+    const paperKey = (printConfig?.papel_tamanho || '80mm') as keyof typeof PAPER_CONFIGS;
+    const cfg = PAPER_CONFIGS[paperKey];
+    const baseFontSize = cfg.fontSize[printConfig?.fonte_tamanho || 'media'];
 
-    // Mapear configurações de intensidade (peso da fonte + filtro CSS)
+    // Intensidade da fonte
     const fontIntensityConfig = {
       'normal': { weight: 'normal', filter: 'none', stroke: '0' },
-      'medio': { weight: '500', filter: 'contrast(1.2)', stroke: '0.3px' },
-      'forte': { weight: 'bold', filter: 'contrast(1.5)', stroke: '0.5px' }
+      'medio': { weight: '500', filter: 'contrast(1.15)', stroke: '0.2px' },
+      'forte': { weight: 'bold', filter: 'contrast(1.3)', stroke: '0.4px' }
     };
     const intensitySettings = fontIntensityConfig[printConfig?.fonte_intensidade || 'normal'];
-
-    // Aplicar negrito (se configurado, sobrescreve o peso da intensidade)
     const fontWeight = printConfig?.fonte_negrito ? 'bold' : intensitySettings.weight;
     const fontFilter = intensitySettings.filter;
     const textStroke = intensitySettings.stroke;
 
-    // Tamanho do papel
-    const paperSize = printConfig?.papel_tamanho || '80mm';
-    const paperWidth = paperSize === 'A4' ? '210mm' : paperSize === '58mm' ? '58mm' : '80mm';
-    
+    const isTermica = paperKey !== 'A4';
+
     return `
       <!DOCTYPE html>
       <html>
@@ -118,156 +180,188 @@ export function usePrintReceipt() {
           <meta charset="UTF-8">
           <title>Comprovante de Venda</title>
           <style>
-            * {
+            *, *::before, *::after {
               margin: 0;
               padding: 0;
               box-sizing: border-box;
             }
-            
+
+            @page {
+              size: ${cfg.pageWidth} auto;
+              margin: 0;
+            }
+
             body {
-              font-family: 'Courier New', monospace;
+              font-family: 'Courier New', 'Lucida Console', monospace;
               background: white;
               margin: 0;
-              padding: 5px;
+              padding: 0;
               font-size: ${baseFontSize};
               font-weight: ${fontWeight};
               color: #000;
               filter: ${fontFilter};
+              line-height: 1.3;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            
+
             @media print {
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              
-              @page {
-                size: ${paperWidth} auto;
-                margin: 0;
-              }
-              
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
+              html, body {
+                width: ${cfg.pageWidth};
+                margin: 0 !important;
+                padding: 0 !important;
               }
             }
-            
+
             .receipt {
-              width: ${paperWidth};
-              max-width: ${paperSize === 'A4' ? '210mm' : paperSize === '58mm' ? '220px' : '302px'};
+              width: ${cfg.receiptMaxWidth};
+              max-width: ${cfg.receiptMaxWidth};
               margin: 0 auto;
-              padding: 10px;
+              padding: ${cfg.padding};
               font-size: ${baseFontSize};
-              line-height: 1.2;
+              line-height: 1.3;
               color: #000;
               font-weight: ${fontWeight};
-              -webkit-text-stroke: ${textStroke} black;
+              ${textStroke !== '0' ? `-webkit-text-stroke: ${textStroke} black;` : ''}
+              overflow-wrap: break-word;
+              word-wrap: break-word;
             }
-            
+
             .header {
               text-align: center;
-              margin-bottom: 15px;
+              margin-bottom: ${cfg.sectionMargin};
               border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
+              padding-bottom: ${isTermica ? '2mm' : '3mm'};
             }
-            
+
             .store-name {
-              font-size: 16px;
+              font-size: ${cfg.storeNameSize};
               font-weight: bold;
-              margin-bottom: 5px;
+              margin-bottom: 1mm;
             }
-            
+
             .store-info {
-              font-size: 10px;
-              margin-bottom: 2px;
+              font-size: ${cfg.infoSize};
+              margin-bottom: 0.5mm;
+              line-height: 1.25;
             }
-            
+
             .sale-info {
-              margin-bottom: 15px;
-              font-size: 10px;
+              margin: ${cfg.sectionMargin};
+              font-size: ${cfg.infoSize};
             }
-            
+
             .info-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 2px;
+              margin-bottom: 0.5mm;
+              gap: 2mm;
             }
-            
+
+            .info-row span:last-child {
+              text-align: right;
+              flex-shrink: 0;
+            }
+
             .separator {
               border-top: 1px dashed #000;
-              margin: 10px 0;
+              margin: ${cfg.separatorMargin};
             }
-            
+
             .items-section {
-              margin-bottom: 15px;
+              margin: ${cfg.sectionMargin};
             }
-            
+
             .items-title {
-              font-size: 11px;
+              font-size: ${cfg.titleSize};
               font-weight: bold;
-              margin-bottom: 5px;
+              margin-bottom: 1mm;
             }
-            
+
             .item {
-              margin-bottom: 8px;
-              font-size: 10px;
+              margin: ${cfg.itemMargin};
+              font-size: ${cfg.itemSize};
             }
-            
+
             .item-name {
               font-weight: bold;
+              overflow-wrap: break-word;
             }
-            
+
             .item-details {
               display: flex;
               justify-content: space-between;
+              gap: 1mm;
             }
-            
+
+            .item-details span:last-child {
+              text-align: right;
+              flex-shrink: 0;
+            }
+
             .item-sku {
-              font-size: 9px;
-              color: #666;
+              font-size: ${cfg.skuSize};
+              color: #555;
             }
-            
+
             .totals {
-              margin-bottom: 15px;
-              font-size: 11px;
+              margin: ${cfg.sectionMargin};
+              font-size: ${cfg.totalSize};
             }
-            
+
             .total-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 3px;
+              margin-bottom: 0.5mm;
             }
-            
+
+            .total-row span:last-child {
+              text-align: right;
+              flex-shrink: 0;
+            }
+
             .total-final {
               display: flex;
               justify-content: space-between;
-              font-size: 13px;
+              font-size: ${cfg.totalFinalSize};
               font-weight: bold;
               border-top: 1px solid #000;
-              padding-top: 5px;
-              margin-top: 5px;
+              padding-top: 1mm;
+              margin-top: 1mm;
             }
-            
+
             .payment-section {
-              margin-bottom: 15px;
-              font-size: 10px;
+              margin: ${cfg.sectionMargin};
+              font-size: ${cfg.infoSize};
             }
-            
+
             .payment-title {
               font-weight: bold;
-              margin-bottom: 5px;
+              font-size: ${cfg.titleSize};
+              margin-bottom: 1mm;
             }
-            
+
+            .garantia {
+              text-align: center;
+              font-size: ${cfg.garantiaSize};
+              font-weight: bold;
+              margin: ${cfg.sectionMargin};
+              padding: ${cfg.garantiaPad};
+              border: 1.5px solid #000;
+              border-radius: 2px;
+            }
+
             .footer {
               text-align: center;
-              font-size: 9px;
-              margin-bottom: 10px;
+              font-size: ${cfg.footerSize};
+              margin: ${cfg.sectionMargin};
+              line-height: 1.4;
             }
-            
+
             .footer-info {
-              font-size: 8px;
-              margin-top: 10px;
+              font-size: ${cfg.footerInfoSize};
+              margin-top: 1.5mm;
+              color: #333;
             }
           </style>
         </head>
@@ -276,8 +370,8 @@ export function usePrintReceipt() {
             <!-- Cabeçalho da Loja -->
             <div class="header">
               ${(printConfig?.logo_recibo !== false && storeInfo?.logo) ? `
-                <div style="margin-bottom: 10px;">
-                  <img src="${storeInfo.logo}" alt="Logo" style="max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto; display: block;" />
+                <div style="margin-bottom: 1.5mm;">
+                  <img src="${storeInfo.logo}" alt="Logo" style="max-width: ${cfg.logoMax}; max-height: ${cfg.logoHeight}; object-fit: contain; margin: 0 auto; display: block;" />
                 </div>
               ` : ''}
               ${printConfig?.cabecalho_personalizado ? `
@@ -370,7 +464,7 @@ export function usePrintReceipt() {
 
             <!-- Forma de Pagamento -->
             <div class="payment-section">
-              <div class="payment-title">FORMA DE PAGAMENTO</div>
+              <div class="payment-title">PAGAMENTO</div>
               <div class="total-row">
                 <span>${sale.payment_method === 'cash' ? 'Dinheiro' : 
                          sale.payment_method === 'card' ? 'Cartão' :
@@ -378,10 +472,9 @@ export function usePrintReceipt() {
                          sale.payment_method === 'mixed' ? 'Misto' : sale.payment_method}:</span>
                 <span>${formatCurrency(sale.total_amount)}</span>
               </div>
-              
               ${sale.payment_method === 'cash' && cashReceived > 0 ? `
                 <div class="total-row">
-                  <span>Dinheiro Recebido:</span>
+                  <span>Recebido:</span>
                   <span>${formatCurrency(cashReceived)}</span>
                 </div>
                 ${changeAmount > 0 ? `
@@ -396,7 +489,7 @@ export function usePrintReceipt() {
             <div class="separator"></div>
 
             <!-- Garantia -->
-            <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 15px; padding: 8px; border: 2px solid #000; border-radius: 5px;">
+            <div class="garantia">
               ★ GARANTIA DE 3 MESES ★
             </div>
 
@@ -422,21 +515,23 @@ export function usePrintReceipt() {
   const printReceipt = useCallback((data: PrintReceiptData) => {
     const receiptHTML = generateReceiptHTML(data);
     
-    // Criar nova janela para impressão
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(receiptHTML);
       printWindow.document.close();
       
-      // Aguardar carregamento e imprimir
       printWindow.onload = () => {
         printWindow.focus();
         printWindow.print();
         
-        // Fechar janela após impressão
+        // Fechar após impressão
+        printWindow.onafterprint = () => {
+          setTimeout(() => printWindow.close(), 500);
+        };
+        // Fallback: fechar após 30s
         setTimeout(() => {
-          printWindow.close();
-        }, 1000);
+          if (!printWindow.closed) printWindow.close();
+        }, 30000);
       };
     }
   }, []);

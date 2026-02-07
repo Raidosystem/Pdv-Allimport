@@ -607,6 +607,21 @@ export function SignupPageNew() {
     <VerifyEmailCode 
       email={formData.email}
       password={formData.password}
+      empresaData={{
+        nome: formData.companyName || formData.fullName,
+        razao_social: formData.companyName || '',
+        cnpj: formData.documentType === 'CNPJ' ? formData.document : '',
+        cpf: formData.documentType === 'CPF' ? formData.document : '',
+        telefone: formData.whatsapp,
+        email: formData.email,
+        cep: formData.cep,
+        logradouro: formData.street,
+        numero: formData.number,
+        complemento: formData.complement,
+        bairro: formData.neighborhood,
+        cidade: formData.city,
+        estado: formData.state
+      }}
       onResend={async () => {
         console.log('🔄 Reenviando código via Supabase OTP...')
         const result = await resendEmailVerificationCode(formData.email)
@@ -623,10 +638,26 @@ export function SignupPageNew() {
 function VerifyEmailCode({ 
   email,
   password,
+  empresaData,
   onResend 
 }: { 
   email: string
   password: string
+  empresaData?: {
+    nome: string
+    razao_social: string
+    cnpj: string
+    cpf: string
+    telefone: string
+    email: string
+    cep: string
+    logradouro: string
+    numero: string
+    complemento: string
+    bairro: string
+    cidade: string
+    estado: string
+  }
   onResend: () => Promise<void>
 }) {
   const navigate = useNavigate()
@@ -699,6 +730,42 @@ function VerifyEmailCode({
           } else {
             console.log('✅ Login automático bem-sucedido!')
             setSuccessMessage(`✅ Bem-vindo! Você tem ${activationResult.daysRemaining || 15} dias de teste gratuito!`)
+            
+            // 🏢 Criar registro da empresa com dados do cadastro
+            if (empresaData) {
+              try {
+                const { data: { user: currentUser } } = await supabase.auth.getUser()
+                if (currentUser?.id) {
+                  console.log('🏢 Criando registro da empresa com dados do cadastro...')
+                  const { error: empresaError } = await supabase
+                    .from('empresas')
+                    .upsert({
+                      user_id: currentUser.id,
+                      nome: empresaData.nome,
+                      razao_social: empresaData.razao_social,
+                      cnpj: empresaData.cnpj || empresaData.cpf,
+                      telefone: empresaData.telefone,
+                      email: empresaData.email,
+                      cep: empresaData.cep,
+                      logradouro: empresaData.logradouro,
+                      numero: empresaData.numero,
+                      complemento: empresaData.complemento,
+                      bairro: empresaData.bairro,
+                      cidade: empresaData.cidade,
+                      estado: empresaData.estado,
+                      updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' })
+                  
+                  if (empresaError) {
+                    console.error('⚠️ Erro ao salvar empresa (não crítico):', empresaError)
+                  } else {
+                    console.log('✅ Dados da empresa salvos automaticamente!')
+                  }
+                }
+              } catch (empErr) {
+                console.error('⚠️ Erro ao criar empresa (não crítico):', empErr)
+              }
+            }
             
             // Aguardar mais tempo para garantir que useSubscription carregue
             console.log('⏳ Aguardando carregamento completo da assinatura...')

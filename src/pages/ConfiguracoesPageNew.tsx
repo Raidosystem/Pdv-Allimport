@@ -58,6 +58,11 @@ interface ConfiguracaoImpressao {
   rodape_linha2: string
   rodape_linha3: string
   rodape_linha4: string
+  // Rodapé separado para Ordem de Serviço
+  rodape_os_linha1: string
+  rodape_os_linha2: string
+  rodape_os_linha3: string
+  rodape_os_linha4: string
 }
 
 // Interfaces para futuras implementações
@@ -97,7 +102,10 @@ const ModalRodape = React.memo(({
   linha2, 
   linha3, 
   linha4,
-  onSave 
+  onSave,
+  titulo = 'Editar Rodapé do Recibo',
+  subtitulo = 'Personalize até 4 linhas no rodapé dos recibos',
+  cor = 'green'
 }: { 
   isOpen: boolean
   onClose: () => void
@@ -106,6 +114,9 @@ const ModalRodape = React.memo(({
   linha3: string
   linha4: string
   onSave: (l1: string, l2: string, l3: string, l4: string) => void
+  titulo?: string
+  subtitulo?: string
+  cor?: 'green' | 'orange'
 }) => {
   const [temp1, setTemp1] = useState(linha1)
   const [temp2, setTemp2] = useState(linha2)
@@ -136,10 +147,10 @@ const ModalRodape = React.memo(({
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="w-6 h-6 text-green-600" />
+              <FileText className={`w-6 h-6 ${cor === 'orange' ? 'text-orange-600' : 'text-green-600'}`} />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Editar Rodapé do Recibo</h3>
-                <p className="text-sm text-gray-600">Personalize até 4 linhas no rodapé dos recibos</p>
+                <h3 className="text-lg font-semibold text-gray-900">{titulo}</h3>
+                <p className="text-sm text-gray-600">{subtitulo}</p>
               </div>
             </div>
             <button
@@ -161,7 +172,7 @@ const ModalRodape = React.memo(({
               type="text"
               value={temp1}
               onChange={(e) => setTemp1(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ${cor === 'orange' ? 'focus:ring-orange-500 focus:border-orange-500' : 'focus:ring-green-500 focus:border-green-500'}`}
               placeholder="Ex: Obrigado pela preferência!"
             />
           </div>
@@ -174,7 +185,7 @@ const ModalRodape = React.memo(({
               type="text"
               value={temp2}
               onChange={(e) => setTemp2(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ${cor === 'orange' ? 'focus:ring-orange-500 focus:border-orange-500' : 'focus:ring-green-500 focus:border-green-500'}`}
               placeholder="Ex: Volte sempre!"
             />
           </div>
@@ -187,7 +198,7 @@ const ModalRodape = React.memo(({
               type="text"
               value={temp3}
               onChange={(e) => setTemp3(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ${cor === 'orange' ? 'focus:ring-orange-500 focus:border-orange-500' : 'focus:ring-green-500 focus:border-green-500'}`}
               placeholder="Ex: www.allimport.com.br"
             />
           </div>
@@ -200,13 +211,13 @@ const ModalRodape = React.memo(({
               type="text"
               value={temp4}
               onChange={(e) => setTemp4(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ${cor === 'orange' ? 'focus:ring-orange-500 focus:border-orange-500' : 'focus:ring-green-500 focus:border-green-500'}`}
               placeholder="Ex: WhatsApp: (11) 99999-9999"
             />
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p className="text-xs text-green-700">
+          <div className={`${cor === 'orange' ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'} border rounded-lg p-3`}>
+            <p className={`text-xs ${cor === 'orange' ? 'text-orange-700' : 'text-green-700'}`}>
               💡 <strong>Dica:</strong> Use essas linhas para informações de contato, redes sociais, horário de funcionamento ou mensagens especiais.
             </p>
           </div>
@@ -226,7 +237,7 @@ const ModalRodape = React.memo(({
               onSave(temp1, temp2, temp3, temp4)
               onClose()
             }}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className={`px-4 py-2 text-white rounded-lg ${cor === 'orange' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}`}
           >
             Salvar Rodapé
           </button>
@@ -421,6 +432,8 @@ export function ConfiguracoesPage() {
     settings: printSettings, 
     saveCabecalho, 
     saveRodape,
+    saveRodapeOs,
+    saveSettings: savePrintSettings,
     loading: loadingPrint,
     saving: savingPrint
   } = usePrintSettings()
@@ -464,31 +477,22 @@ export function ConfiguracoesPage() {
     if (!loadingEmpresa && empresaSettings.nome) {
       setConfigEmpresa(empresaSettings)
       
-      // PRIMEIRO: Carregar do localStorage (tem prioridade)
-      try {
-        const savedConfig = localStorage.getItem('print_config');
-        if (savedConfig) {
-          const config = JSON.parse(savedConfig);
-          console.log('📋 Carregando configurações salvas do localStorage:', config);
-          
-          setConfigImpressao(prev => ({
-            ...prev,
-            ...config
-          }));
-          return; // Se tem config salva, não usa os dados da empresa
-        }
-      } catch (error) {
-        console.error('Erro ao carregar configurações de impressão:', error);
+      // Se já tem cabeçalho salvo no banco (printSettings), NÃO sobrescrever
+      // O useEffect de printSettings já cuida disso
+      if (!loadingPrint && printSettings.cabecalhoPersonalizado) {
+        return; // Cabeçalho do banco tem prioridade
       }
       
-      // SEGUNDO: Se NÃO tem config salva, usar dados da empresa como padrão
-      setConfigImpressao(prev => ({
-        ...prev,
-        cabecalho_personalizado: gerarCabecalhoEmpresa(empresaSettings)
-      }))
+      // Se NÃO tem cabeçalho no banco, gerar a partir dos dados da empresa
+      if (!loadingPrint && !printSettings.cabecalhoPersonalizado) {
+        setConfigImpressao(prev => ({
+          ...prev,
+          cabecalho_personalizado: gerarCabecalhoEmpresa(empresaSettings)
+        }))
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingEmpresa])
+  }, [loadingEmpresa, loadingPrint])
 
   // Função para gerar cabeçalho com dados da empresa
   const gerarCabecalhoEmpresa = (empresa: ConfiguracaoEmpresa) => {
@@ -535,28 +539,38 @@ export function ConfiguracoesPage() {
     rodape_linha1: printSettings.rodapeLinha1,
     rodape_linha2: printSettings.rodapeLinha2,
     rodape_linha3: printSettings.rodapeLinha3,
-    rodape_linha4: printSettings.rodapeLinha4
+    rodape_linha4: printSettings.rodapeLinha4,
+    // Rodapé de Ordem de Serviço
+    rodape_os_linha1: printSettings.rodapeOsLinha1,
+    rodape_os_linha2: printSettings.rodapeOsLinha2,
+    rodape_os_linha3: printSettings.rodapeOsLinha3,
+    rodape_os_linha4: printSettings.rodapeOsLinha4
   })
 
   // Estados para os modais
   const [modalCabecalhoOpen, setModalCabecalhoOpen] = useState(false)
   const [modalRodapeOpen, setModalRodapeOpen] = useState(false)
+  const [modalRodapeOsOpen, setModalRodapeOsOpen] = useState(false)
 
   // Sincronizar com as configurações de impressão carregadas do banco
   useEffect(() => {
     if (!loadingPrint) {
-      console.log('🔄 [CONFIGURACOES PAGE] Sincronizando configurações do hook:', {
-        cabecalho: printSettings.cabecalhoPersonalizado?.substring(0, 50),
-        rodape1: printSettings.rodapeLinha1?.substring(0, 30),
-        timestamp: new Date().toISOString()
-      });
       setConfigImpressao(prev => ({
         ...prev,
         cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
         rodape_linha1: printSettings.rodapeLinha1,
         rodape_linha2: printSettings.rodapeLinha2,
         rodape_linha3: printSettings.rodapeLinha3,
-        rodape_linha4: printSettings.rodapeLinha4
+        rodape_linha4: printSettings.rodapeLinha4,
+        rodape_os_linha1: printSettings.rodapeOsLinha1,
+        rodape_os_linha2: printSettings.rodapeOsLinha2,
+        rodape_os_linha3: printSettings.rodapeOsLinha3,
+        rodape_os_linha4: printSettings.rodapeOsLinha4,
+        papel_tamanho: printSettings.papelTamanho || prev.papel_tamanho,
+        fonte_tamanho: printSettings.fonteTamanho || prev.fonte_tamanho,
+        fonte_intensidade: printSettings.fonteIntensidade || prev.fonte_intensidade,
+        fonte_negrito: printSettings.fonteNegrito ?? prev.fonte_negrito,
+        logo_recibo: printSettings.logoRecibo ?? prev.logo_recibo,
       }))
     }
   }, [printSettings, loadingPrint])
@@ -1032,10 +1046,11 @@ export function ConfiguracoesPage() {
             </label>
             <select
               value={configImpressao.papel_tamanho}
-              onChange={(e) => setConfigImpressao(prev => ({ 
-                ...prev, 
-                papel_tamanho: e.target.value as 'A4' | '80mm' | '58mm' 
-              }))}
+              onChange={(e) => {
+                const valor = e.target.value as 'A4' | '80mm' | '58mm'
+                setConfigImpressao(prev => ({ ...prev, papel_tamanho: valor }))
+                savePrintSettings({ papelTamanho: valor })
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="A4">A4 (210 x 297 mm)</option>
@@ -1074,7 +1089,7 @@ export function ConfiguracoesPage() {
         </div>
 
         {/* Cards de Cabeçalho e Rodapé */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Card Cabeçalho */}
           <button
             type="button"
@@ -1106,7 +1121,7 @@ export function ConfiguracoesPage() {
             </span>
           </button>
 
-          {/* Card Rodapé */}
+          {/* Card Rodapé de Vendas */}
           <button
             type="button"
             onClick={() => setModalRodapeOpen(true)}
@@ -1115,12 +1130,12 @@ export function ConfiguracoesPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-green-600" />
-                <h4 className="font-semibold text-gray-900">Rodapé do Recibo</h4>
+                <h4 className="font-semibold text-gray-900">Rodapé de Vendas</h4>
               </div>
               <Edit className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
             </div>
             
-            {/* Preview do Rodapé */}
+            {/* Preview do Rodapé de Vendas */}
             <div className="bg-gray-50 rounded-lg p-3 mb-3 min-h-[100px] border border-gray-200">
               {configImpressao.rodape_linha1 || configImpressao.rodape_linha2 || configImpressao.rodape_linha3 || configImpressao.rodape_linha4 ? (
                 <div className="text-xs text-gray-700 space-y-1">
@@ -1150,11 +1165,65 @@ export function ConfiguracoesPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-xs text-gray-400 italic">Nenhum rodapé configurado</p>
+                <p className="text-xs text-gray-400 italic">Nenhum rodapé de vendas configurado</p>
               )}
             </div>
             
             <span className="text-xs text-green-600 mt-2 flex items-center gap-1">
+              <Edit className="w-3 h-3" />
+              Clique para editar (4 linhas)
+            </span>
+          </button>
+
+          {/* Card Rodapé de Ordem de Serviço */}
+          <button
+            type="button"
+            onClick={() => setModalRodapeOsOpen(true)}
+            className="p-6 border-2 border-gray-300 hover:border-orange-500 rounded-lg transition-all text-left group hover:shadow-md"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-orange-600" />
+                <h4 className="font-semibold text-gray-900">Rodapé de Ordem de Serviço</h4>
+              </div>
+              <Edit className="w-4 h-4 text-gray-400 group-hover:text-orange-600" />
+            </div>
+            
+            {/* Preview do Rodapé de OS */}
+            <div className="bg-gray-50 rounded-lg p-3 mb-3 min-h-[100px] border border-gray-200">
+              {configImpressao.rodape_os_linha1 || configImpressao.rodape_os_linha2 || configImpressao.rodape_os_linha3 || configImpressao.rodape_os_linha4 ? (
+                <div className="text-xs text-gray-700 space-y-1">
+                  {configImpressao.rodape_os_linha1 && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-400 font-mono">1.</span>
+                      <span className="flex-1">{configImpressao.rodape_os_linha1}</span>
+                    </div>
+                  )}
+                  {configImpressao.rodape_os_linha2 && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-400 font-mono">2.</span>
+                      <span className="flex-1">{configImpressao.rodape_os_linha2}</span>
+                    </div>
+                  )}
+                  {configImpressao.rodape_os_linha3 && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-400 font-mono">3.</span>
+                      <span className="flex-1">{configImpressao.rodape_os_linha3}</span>
+                    </div>
+                  )}
+                  {configImpressao.rodape_os_linha4 && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-400 font-mono">4.</span>
+                      <span className="flex-1">{configImpressao.rodape_os_linha4}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 italic">Nenhum rodapé de OS configurado</p>
+              )}
+            </div>
+            
+            <span className="text-xs text-orange-600 mt-2 flex items-center gap-1">
               <Edit className="w-3 h-3" />
               Clique para editar (4 linhas)
             </span>
@@ -1178,10 +1247,11 @@ export function ConfiguracoesPage() {
               </label>
               <select
                 value={configImpressao.fonte_tamanho}
-                onChange={(e) => setConfigImpressao(prev => ({ 
-                  ...prev, 
-                  fonte_tamanho: e.target.value as 'pequena' | 'media' | 'grande'
-                }))}
+                onChange={(e) => {
+                  const valor = e.target.value as 'pequena' | 'media' | 'grande'
+                  setConfigImpressao(prev => ({ ...prev, fonte_tamanho: valor }))
+                  savePrintSettings({ fonteTamanho: valor })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="pequena">Pequena (9pt)</option>
@@ -1197,10 +1267,11 @@ export function ConfiguracoesPage() {
               </label>
               <select
                 value={configImpressao.fonte_intensidade}
-                onChange={(e) => setConfigImpressao(prev => ({ 
-                  ...prev, 
-                  fonte_intensidade: e.target.value as 'normal' | 'medio' | 'forte'
-                }))}
+                onChange={(e) => {
+                  const valor = e.target.value as 'normal' | 'medio' | 'forte'
+                  setConfigImpressao(prev => ({ ...prev, fonte_intensidade: valor }))
+                  savePrintSettings({ fonteIntensidade: valor })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="normal">Normal (Economia)</option>
@@ -1222,7 +1293,11 @@ export function ConfiguracoesPage() {
                   <input
                     type="checkbox"
                     checked={configImpressao.fonte_negrito}
-                    onChange={(e) => setConfigImpressao(prev => ({ ...prev, fonte_negrito: e.target.checked }))}
+                    onChange={(e) => {
+                      const valor = e.target.checked
+                      setConfigImpressao(prev => ({ ...prev, fonte_negrito: valor }))
+                      savePrintSettings({ fonteNegrito: valor })
+                    }}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
                 </label>
@@ -1271,7 +1346,11 @@ export function ConfiguracoesPage() {
               <input
                 type="checkbox"
                 checked={configImpressao.logo_recibo}
-                onChange={(e) => setConfigImpressao(prev => ({ ...prev, logo_recibo: e.target.checked }))}
+                onChange={(e) => {
+                  const valor = e.target.checked
+                  setConfigImpressao(prev => ({ ...prev, logo_recibo: valor }))
+                  savePrintSettings({ logoRecibo: valor })
+                }}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -1296,7 +1375,7 @@ export function ConfiguracoesPage() {
         }}
       />
 
-      {/* Modal de Rodapé */}
+      {/* Modal de Rodapé de Vendas */}
       <ModalRodape
         isOpen={modalRodapeOpen}
         onClose={() => setModalRodapeOpen(false)}
@@ -1304,6 +1383,9 @@ export function ConfiguracoesPage() {
         linha2={configImpressao.rodape_linha2}
         linha3={configImpressao.rodape_linha3}
         linha4={configImpressao.rodape_linha4}
+        titulo="Editar Rodapé de Vendas"
+        subtitulo="Personalize até 4 linhas no rodapé dos recibos de venda"
+        cor="green"
         onSave={async (l1, l2, l3, l4) => {
           const success = await saveRodape({
             linha1: l1,
@@ -1319,9 +1401,41 @@ export function ConfiguracoesPage() {
               rodape_linha3: l3,
               rodape_linha4: l4
             }))
-            toast.success('Rodapé salvo no banco de dados!')
+            toast.success('Rodapé de vendas salvo no banco de dados!')
           } else {
             toast.error('Erro ao salvar rodapé. Tente novamente.')
+          }
+        }}
+      />
+
+      {/* Modal de Rodapé de Ordem de Serviço */}
+      <ModalRodape
+        isOpen={modalRodapeOsOpen}
+        onClose={() => setModalRodapeOsOpen(false)}
+        linha1={configImpressao.rodape_os_linha1}
+        linha2={configImpressao.rodape_os_linha2}
+        linha3={configImpressao.rodape_os_linha3}
+        linha4={configImpressao.rodape_os_linha4}
+        titulo="Editar Rodapé de Ordem de Serviço"
+        subtitulo="Personalize até 4 linhas no rodapé das ordens de serviço"
+        cor="orange"
+        onSave={async (l1, l2, l3, l4) => {
+          const success = await saveRodapeOs({
+            linha1: l1,
+            linha2: l2,
+            linha3: l3,
+            linha4: l4
+          })
+          if (success) {
+            setConfigImpressao(prev => ({
+              ...prev,
+              rodape_os_linha1: l1,
+              rodape_os_linha2: l2,
+              rodape_os_linha3: l3,
+              rodape_os_linha4: l4
+            }))
+          } else {
+            toast.error('Erro ao salvar rodapé de OS. Tente novamente.')
           }
         }}
       />

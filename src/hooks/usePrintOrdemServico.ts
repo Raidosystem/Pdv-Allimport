@@ -38,17 +38,13 @@ interface PrintOrdemServicoData {
     rodape_linha2?: string;
     rodape_linha3?: string;
     rodape_linha4?: string;
+    papel_tamanho?: 'A4' | '80mm' | '58mm';
   };
 }
 
 export function usePrintOrdemServico() {
   const printOrdemServico = useCallback((data: PrintOrdemServicoData) => {
     try {
-      console.log('🖨️ [PRINT] Iniciando impressão de Ordem de Serviço');
-      console.log('🖨️ [PRINT] Dados recebidos:', data);
-      console.log('🖨️ [PRINT] Cliente nome:', data.ordem.cliente_nome);
-      console.log('🖨️ [PRINT] Estrutura ordem:', Object.keys(data.ordem));
-
       // Formatar data
       const dataOS = data.ordem.created_at 
         ? new Date(data.ordem.created_at).toLocaleString('pt-BR')
@@ -66,6 +62,52 @@ export function usePrintOrdemServico() {
         data.printConfig?.rodape_linha4
       ].filter(Boolean).join('\n');
 
+      // Detectar tamanho do papel
+      const paperKey = data.printConfig?.papel_tamanho || '80mm';
+      const isTermica = paperKey !== 'A4';
+
+      // Configurações por tamanho de papel
+      const paperCfg = {
+        '58mm': {
+          pageSize: '58mm auto',
+          bodyWidth: '54mm',
+          fontSize: '7pt',
+          titleSize: '9pt',
+          subtitleSize: '8pt',
+          sectionTitle: '7.5pt',
+          labelSize: '7pt',
+          footerSize: '6pt',
+          padding: '1mm 2mm',
+          borderWidth: '1px',
+        },
+        '80mm': {
+          pageSize: '80mm auto',
+          bodyWidth: '76mm',
+          fontSize: '8pt',
+          titleSize: '10pt',
+          subtitleSize: '9pt',
+          sectionTitle: '8.5pt',
+          labelSize: '8pt',
+          footerSize: '7pt',
+          padding: '1.5mm 2mm',
+          borderWidth: '1.5px',
+        },
+        'A4': {
+          pageSize: 'A4 portrait',
+          bodyWidth: '80mm',
+          fontSize: '9pt',
+          titleSize: '12pt',
+          subtitleSize: '10pt',
+          sectionTitle: '9.5pt',
+          labelSize: '9pt',
+          footerSize: '8pt',
+          padding: '3mm 4mm',
+          borderWidth: '2px',
+        },
+      } as const;
+
+      const cfg = paperCfg[paperKey as keyof typeof paperCfg] || paperCfg['80mm'];
+
       // HTML do recibo
       const printContent = `
         <!DOCTYPE html>
@@ -74,88 +116,124 @@ export function usePrintOrdemServico() {
           <meta charset="UTF-8">
           <title>Ordem de Serviço - ${data.ordem.numero_ordem || data.ordem.id}</title>
           <style>
-            @media print {
-              @page { 
-                margin: 10mm;
-                size: A4;
-              }
-              body { margin: 0; }
+            *, *::before, *::after {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
             }
-            
+
+            @page {
+              size: ${cfg.pageSize};
+              margin: ${isTermica ? '0' : '10mm'};
+            }
+
             body {
-              font-family: 'Courier New', monospace;
-              font-size: 12pt;
-              line-height: 1.4;
+              font-family: 'Courier New', 'Lucida Console', monospace;
+              font-size: ${cfg.fontSize};
+              line-height: 1.35;
               color: #000;
-              max-width: 80mm;
+              width: ${cfg.bodyWidth};
+              max-width: ${cfg.bodyWidth};
               margin: 0 auto;
-              padding: 10px;
+              padding: ${cfg.padding};
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            
+
+            @media print {
+              html, body {
+                width: ${isTermica ? cfg.bodyWidth : 'auto'};
+                margin: ${isTermica ? '0' : '0 auto'} !important;
+              }
+            }
+
             .recibo {
-              border: 2px solid #000;
-              padding: 15px;
+              border: ${cfg.borderWidth} solid #000;
+              padding: ${cfg.padding};
             }
             
             .cabecalho {
               text-align: center;
-              border-bottom: 2px dashed #000;
-              padding-bottom: 10px;
-              margin-bottom: 15px;
+              border-bottom: 1.5px dashed #000;
+              padding-bottom: 2mm;
+              margin-bottom: 2.5mm;
               font-weight: bold;
+              font-size: ${cfg.fontSize};
             }
             
             .titulo {
-              font-size: 14pt;
+              font-size: ${cfg.titleSize};
               font-weight: bold;
               text-align: center;
-              margin-bottom: 5px;
+              margin-bottom: 1mm;
             }
             
             .numero-os {
-              font-size: 13pt;
+              font-size: ${cfg.subtitleSize};
               text-align: center;
-              margin-bottom: 10px;
+              margin-bottom: 2.5mm;
             }
             
             .secao {
-              margin-bottom: 15px;
-              border-bottom: 1px solid #ccc;
-              padding-bottom: 10px;
+              margin-bottom: 2.5mm;
+              border-bottom: 0.5px solid #ccc;
+              padding-bottom: 2mm;
             }
             
             .secao-titulo {
               font-weight: bold;
-              font-size: 11pt;
-              margin-bottom: 5px;
+              font-size: ${cfg.sectionTitle};
+              margin-bottom: 1mm;
               text-decoration: underline;
             }
             
             .linha {
-              margin: 3px 0;
+              margin: 0.8mm 0;
+              font-size: ${cfg.labelSize};
             }
             
             .label {
               font-weight: bold;
               display: inline-block;
-              min-width: 100px;
+              min-width: ${isTermica ? '18mm' : '22mm'};
             }
             
             .rodape {
-              border-top: 2px dashed #000;
-              padding-top: 10px;
-              margin-top: 15px;
+              border-top: 1.5px dashed #000;
+              padding-top: 2mm;
+              margin-top: 2.5mm;
               text-align: center;
-              font-size: 10pt;
+              font-size: ${cfg.footerSize};
             }
             
             .observacoes-texto {
               white-space: pre-wrap;
               word-wrap: break-word;
-              margin-top: 5px;
-              padding: 5px;
+              overflow-wrap: break-word;
+              margin-top: 1mm;
+              padding: 1mm 1.5mm;
               background: #f5f5f5;
-              border-left: 3px solid #333;
+              border-left: 2px solid #333;
+              font-size: ${cfg.labelSize};
+            }
+
+            .assinaturas {
+              margin-top: ${isTermica ? '4mm' : '12mm'};
+              display: flex;
+              justify-content: space-between;
+              gap: ${isTermica ? '3mm' : '10mm'};
+            }
+
+            .assinatura {
+              width: 48%;
+              text-align: center;
+            }
+
+            .assinatura-linha {
+              border-top: 1px solid #333;
+              margin-top: ${isTermica ? '6mm' : '18mm'};
+              padding-top: 0.5mm;
+              font-size: ${cfg.footerSize};
             }
           </style>
         </head>
@@ -233,10 +311,20 @@ export function usePrintOrdemServico() {
               </div>
             </div>
             
+            <!-- Assinaturas -->
+            <div class="assinaturas">
+              <div class="assinatura">
+                <div class="assinatura-linha">Assinatura do Cliente</div>
+              </div>
+              <div class="assinatura">
+                <div class="assinatura-linha">Assinatura da Empresa</div>
+              </div>
+            </div>
+
             <!-- Rodapé -->
             ${rodape ? `
               <div class="rodape">
-                <div style="white-space: pre-line; font-size: 9pt;">${rodape}</div>
+                <div style="white-space: pre-line;">${rodape}</div>
               </div>
             ` : ''}
           </div>
@@ -244,7 +332,7 @@ export function usePrintOrdemServico() {
         </html>
       `;
 
-      // Abrir janela de impressão (com timeout para evitar bloqueio)
+      // Abrir janela de impressão
       setTimeout(() => {
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -254,33 +342,22 @@ export function usePrintOrdemServico() {
         printWindow.document.write(printContent);
         printWindow.document.close();
 
-        // Aguardar carregamento e imprimir
         printWindow.onload = () => {
           setTimeout(() => {
             printWindow.focus();
             printWindow.print();
             
-            // ✅ CORRIGIDO: Fechar janela automaticamente após impressão
-            // Isso previne tela branca ao voltar
             printWindow.onafterprint = () => {
-              console.log('✅ Impressão concluída, fechando janela');
-              setTimeout(() => {
-                printWindow.close();
-              }, 500);
+              setTimeout(() => printWindow.close(), 500);
             };
             
-            // Fallback: fechar após 30 segundos se usuário não imprimir
+            // Fallback: fechar após 30s
             setTimeout(() => {
-              if (!printWindow.closed) {
-                console.log('⚠️ Fechando janela de impressão por timeout');
-                printWindow.close();
-              }
+              if (!printWindow.closed) printWindow.close();
             }, 30000);
           }, 250);
         };
       }, 100);
-
-      console.log('✅ Impressão enviada com sucesso');
     } catch (error) {
       console.error('❌ Erro ao imprimir ordem de serviço:', error);
       throw error;

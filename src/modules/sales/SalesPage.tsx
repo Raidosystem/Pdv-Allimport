@@ -474,7 +474,12 @@ export function SalesPage() {
           rodape_linha1: printSettings.rodapeLinha1,
           rodape_linha2: printSettings.rodapeLinha2,
           rodape_linha3: printSettings.rodapeLinha3,
-          rodape_linha4: printSettings.rodapeLinha4
+          rodape_linha4: printSettings.rodapeLinha4,
+          papel_tamanho: printSettings.papelTamanho,
+          fonte_tamanho: printSettings.fonteTamanho,
+          fonte_intensidade: printSettings.fonteIntensidade,
+          fonte_negrito: printSettings.fonteNegrito,
+          logo_recibo: printSettings.logoRecibo,
         }
       };
 

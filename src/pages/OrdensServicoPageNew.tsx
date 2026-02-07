@@ -596,24 +596,13 @@ export function OrdensServicoPage() {
   }
 
   const imprimirComprovanteEntrega = async (ordem: OrdemServico) => {
-    console.log('🖨️ [DEBUG IMPRESSÃO] Iniciando impressão com garantia:', {
-      garantia_meses: ordem.garantia_meses,
-      tipo: typeof ordem.garantia_meses,
-      ordem_completa: ordem
-    })
-    
-    // Usar configurações do hook usePrintSettings
+    // Usar configurações do hook usePrintSettings (rodapé separado para OS)
     const cabecalho = printSettings.cabecalhoPersonalizado || 'COMPROVANTE DE ENTREGA'
-    const rodapeLinha1 = printSettings.rodapeLinha1 || ''
-    const rodapeLinha2 = printSettings.rodapeLinha2 || ''
-    const rodapeLinha3 = printSettings.rodapeLinha3 || ''
-    const rodapeLinha4 = printSettings.rodapeLinha4 || ''
-    
-    console.log('✅ [IMPRESSÃO OS] Configurações carregadas:', { 
-      cabecalho: cabecalho.substring(0, 50),
-      rodape1: rodapeLinha1.substring(0, 30),
-      timestamp: new Date().toISOString()
-    })
+    const rodapeLinha1 = printSettings.rodapeOsLinha1 || ''
+    const rodapeLinha2 = printSettings.rodapeOsLinha2 || ''
+    const rodapeLinha3 = printSettings.rodapeOsLinha3 || ''
+    const rodapeLinha4 = printSettings.rodapeOsLinha4 || ''
+    const papelTamanho = printSettings.papelTamanho || '80mm'
     
     const dataEntrega = new Date().toLocaleDateString('pt-BR')
     const dataGarantia = new Date()
@@ -621,12 +610,73 @@ export function OrdensServicoPage() {
     dataGarantia.setMonth(dataGarantia.getMonth() + mesesGarantia)
     const dataGarantiaFormatada = dataGarantia.toLocaleDateString('pt-BR')
     
-    console.log('📅 [DEBUG IMPRESSÃO] Cálculo de garantia:', {
-      mesesGarantia,
-      dataEntrega,
-      dataGarantiaFormatada
-    })
-    
+    // Configurações responsivas por tamanho de papel
+    const isTermica = papelTamanho !== 'A4'
+    const paperCfg = {
+      '58mm': {
+        pageSize: '58mm auto',
+        bodyWidth: '54mm',
+        bodyPad: '1mm 2mm',
+        fontFamily: "'Courier New', monospace",
+        baseFontSize: '7pt',
+        h1Size: '8.5pt',
+        h2Size: '7.5pt',
+        labelWidth: '16mm',
+        infoSize: '6.5pt',
+        footerSize: '6pt',
+        garantiaSize: '6.5pt',
+        garantiaPad: '1.5mm',
+        sectionGap: '2mm',
+        borderWidth: '1px',
+        showAssinaturas: true,
+        assinaturaMarginTop: '4mm',
+        assinaturaLineMarginTop: '6mm',
+        assinaturaFontSize: '5.5pt',
+      },
+      '80mm': {
+        pageSize: '80mm auto',
+        bodyWidth: '76mm',
+        bodyPad: '1.5mm 2mm',
+        fontFamily: "'Courier New', monospace",
+        baseFontSize: '8pt',
+        h1Size: '9.5pt',
+        h2Size: '8.5pt',
+        labelWidth: '20mm',
+        infoSize: '7.5pt',
+        footerSize: '7pt',
+        garantiaSize: '7.5pt',
+        garantiaPad: '2mm',
+        sectionGap: '2.5mm',
+        borderWidth: '1.5px',
+        showAssinaturas: true,
+        assinaturaMarginTop: '5mm',
+        assinaturaLineMarginTop: '8mm',
+        assinaturaFontSize: '6.5pt',
+      },
+      'A4': {
+        pageSize: 'A4 portrait',
+        bodyWidth: '180mm',
+        bodyPad: '15mm 15mm',
+        fontFamily: "Arial, Helvetica, sans-serif",
+        baseFontSize: '10pt',
+        h1Size: '14pt',
+        h2Size: '11pt',
+        labelWidth: '40mm',
+        infoSize: '9pt',
+        footerSize: '8pt',
+        garantiaSize: '9pt',
+        garantiaPad: '3mm 4mm',
+        sectionGap: '5mm',
+        borderWidth: '2px',
+        showAssinaturas: true,
+        assinaturaMarginTop: '12mm',
+        assinaturaLineMarginTop: '18mm',
+        assinaturaFontSize: '8pt',
+      },
+    } as const
+
+    const cfg = paperCfg[papelTamanho as keyof typeof paperCfg] || paperCfg['80mm']
+
     const conteudo = `
       <!DOCTYPE html>
       <html>
@@ -634,89 +684,141 @@ export function OrdensServicoPage() {
         <meta charset="UTF-8">
         <title>Comprovante de Entrega - OS ${ordem.numero_os || ordem.id.slice(-6)}</title>
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20mm;
-            max-width: 210mm;
-            margin: 0 auto;
+          *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
           }
+
+          @page {
+            size: ${cfg.pageSize};
+            margin: ${isTermica ? '0' : '10mm'};
+          }
+
+          body {
+            font-family: ${cfg.fontFamily};
+            font-size: ${cfg.baseFontSize};
+            line-height: 1.35;
+            color: #000;
+            width: ${cfg.bodyWidth};
+            max-width: ${cfg.bodyWidth};
+            margin: 0 auto;
+            padding: ${cfg.bodyPad};
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          @media print {
+            html, body {
+              width: ${isTermica ? cfg.bodyWidth : 'auto'};
+              margin: ${isTermica ? '0' : '0 auto'} !important;
+            }
+          }
+
           .header {
             text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            border-bottom: ${cfg.borderWidth} solid #333;
+            padding-bottom: ${cfg.sectionGap};
+            margin-bottom: ${cfg.sectionGap};
           }
+
           .header h1 {
-            margin: 0;
-            font-size: 24px;
-          }
-          .header p {
-            margin: 5px 0;
-            color: #666;
-          }
-          .info-section {
-            margin-bottom: 20px;
-          }
-          .info-section h2 {
-            font-size: 16px;
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-          }
-          .info-row {
-            display: flex;
-            margin-bottom: 8px;
-          }
-          .info-label {
+            font-size: ${cfg.h1Size};
             font-weight: bold;
-            width: 180px;
-            color: #555;
-          }
-          .info-value {
-            flex: 1;
-            color: #333;
-          }
-          .garantia-box {
-            background-color: #f0f9ff;
-            border: 2px solid #3b82f6;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-          }
-          .garantia-box h3 {
-            margin: 0 0 10px 0;
-            color: #1e40af;
-          }
-          .garantia-box p {
-            margin: 5px 0;
-            font-size: 14px;
-          }
-          .assinaturas {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-          }
-          .assinatura {
-            width: 45%;
-            text-align: center;
-          }
-          .assinatura-linha {
-            border-top: 1px solid #333;
-            margin-top: 60px;
-            padding-top: 5px;
-          }
-          .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
+            margin: 0 0 1mm 0;
             white-space: pre-line;
           }
-          @media print {
-            body {
-              padding: 10mm;
-            }
+
+          .header p {
+            font-size: ${cfg.infoSize};
+            margin: 0.5mm 0;
+            color: #333;
+          }
+
+          .info-section {
+            margin-bottom: ${cfg.sectionGap};
+          }
+
+          .info-section h2 {
+            font-size: ${cfg.h2Size};
+            font-weight: bold;
+            color: #333;
+            border-bottom: 0.5px solid #ccc;
+            padding-bottom: 0.5mm;
+            margin-bottom: 1mm;
+          }
+
+          .info-row {
+            display: flex;
+            margin-bottom: 0.5mm;
+            font-size: ${cfg.infoSize};
+            gap: 1mm;
+          }
+
+          .info-label {
+            font-weight: bold;
+            width: ${cfg.labelWidth};
+            flex-shrink: 0;
+            color: #333;
+          }
+
+          .info-value {
+            flex: 1;
+            color: #000;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+          }
+
+          .garantia-box {
+            border: ${cfg.borderWidth} solid #000;
+            padding: ${cfg.garantiaPad};
+            margin: ${cfg.sectionGap} 0;
+            ${isTermica ? '' : 'border-radius: 3px;'}
+          }
+
+          .garantia-box h3 {
+            font-size: ${cfg.garantiaSize};
+            font-weight: bold;
+            margin: 0 0 1mm 0;
+          }
+
+          .garantia-box p {
+            font-size: ${cfg.garantiaSize};
+            margin: 0.5mm 0;
+          }
+
+          .garantia-aviso {
+            font-size: ${cfg.footerSize};
+            margin-top: 1mm;
+            line-height: 1.3;
+          }
+
+          .assinaturas {
+            margin-top: ${(cfg as any).assinaturaMarginTop || '5mm'};
+            display: flex;
+            justify-content: space-between;
+            gap: ${isTermica ? '3mm' : '10mm'};
+          }
+
+          .assinatura {
+            width: 48%;
+            text-align: center;
+          }
+
+          .assinatura-linha {
+            border-top: 1px solid #333;
+            margin-top: ${(cfg as any).assinaturaLineMarginTop || '8mm'};
+            padding-top: 0.5mm;
+            font-size: ${(cfg as any).assinaturaFontSize || cfg.infoSize};
+          }
+
+          .footer {
+            margin-top: ${cfg.sectionGap};
+            ${isTermica ? `border-top: 1px dashed #000; padding-top: ${cfg.sectionGap};` : ''}
+            text-align: center;
+            font-size: ${cfg.footerSize};
+            line-height: 1.4;
+            color: #555;
           }
         </style>
       </head>
@@ -767,7 +869,7 @@ export function OrdensServicoPage() {
           ` : ''}
           ${ordem.numero_serie ? `
           <div class="info-row">
-            <span class="info-label">Número de Série:</span>
+            <span class="info-label">Nº Série:</span>
             <span class="info-value">${ordem.numero_serie}</span>
           </div>
           ` : ''}
@@ -776,19 +878,19 @@ export function OrdensServicoPage() {
         <div class="info-section">
           <h2>Serviço Realizado</h2>
           <div class="info-row">
-            <span class="info-label">Defeito Relatado:</span>
+            <span class="info-label">Defeito:</span>
             <span class="info-value">${ordem.defeito_relatado}</span>
           </div>
           ${ordem.observacoes ? `
           <div class="info-row">
-            <span class="info-label">Serviço Executado:</span>
+            <span class="info-label">Serviço:</span>
             <span class="info-value">${ordem.observacoes}</span>
           </div>
           ` : ''}
           ${ordem.valor_final && ordem.valor_final > 0 ? `
           <div class="info-row">
             <span class="info-label">Valor Total:</span>
-            <span class="info-value">R$ ${ordem.valor_final.toFixed(2).replace('.', ',')}</span>
+            <span class="info-value" style="font-weight:bold;">R$ ${ordem.valor_final.toFixed(2).replace('.', ',')}</span>
           </div>
           ` : ''}
         </div>
@@ -796,25 +898,20 @@ export function OrdensServicoPage() {
         ${ordem.garantia_meses && ordem.garantia_meses > 0 ? `
         <div class="garantia-box">
           <h3>⚠️ GARANTIA DO SERVIÇO</h3>
-          <p><strong>Prazo de Garantia:</strong> ${ordem.garantia_meses} ${ordem.garantia_meses === 1 ? 'mês' : 'meses'}</p>
+          <p><strong>Prazo:</strong> ${ordem.garantia_meses} ${ordem.garantia_meses === 1 ? 'mês' : 'meses'}</p>
           <p><strong>Válida até:</strong> ${dataGarantiaFormatada}</p>
-          <p style="margin-top: 10px; font-size: 12px;">
-            A garantia cobre defeitos relacionados ao serviço executado. 
-            Não cobre danos causados por mau uso, quedas, água ou modificações não autorizadas.
+          <p class="garantia-aviso">
+            A garantia cobre defeitos do serviço executado. Não cobre mau uso, quedas, água ou modificações.
           </p>
         </div>
         ` : ''}
 
         <div class="assinaturas">
           <div class="assinatura">
-            <div class="assinatura-linha">
-              Assinatura do Cliente
-            </div>
+            <div class="assinatura-linha">Assinatura do Cliente</div>
           </div>
           <div class="assinatura">
-            <div class="assinatura-linha">
-              Assinatura da Empresa
-            </div>
+            <div class="assinatura-linha">Assinatura da Empresa</div>
           </div>
         </div>
 
@@ -825,12 +922,6 @@ export function OrdensServicoPage() {
           ${rodapeLinha4 ? `<div>${rodapeLinha4}</div>` : ''}
           ${!rodapeLinha1 && !rodapeLinha2 && !rodapeLinha3 && !rodapeLinha4 ? `<div>Obrigado pela preferência!</div>` : ''}
         </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-          }
-        </script>
       </body>
       </html>
     `
@@ -839,6 +930,19 @@ export function OrdensServicoPage() {
     if (janelaImpressao) {
       janelaImpressao.document.write(conteudo)
       janelaImpressao.document.close()
+      
+      janelaImpressao.onload = () => {
+        janelaImpressao.focus()
+        janelaImpressao.print()
+        
+        janelaImpressao.onafterprint = () => {
+          setTimeout(() => janelaImpressao.close(), 500)
+        }
+        // Fallback: fechar após 30s
+        setTimeout(() => {
+          if (!janelaImpressao.closed) janelaImpressao.close()
+        }, 30000)
+      }
     }
   }
 

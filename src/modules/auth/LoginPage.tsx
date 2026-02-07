@@ -224,7 +224,7 @@ export function LoginPage() {
               
               <Link 
                 to="/resend-confirmation" 
-                className="block text-primary-600 hover:text-primary-700 font-semibold transition-colors hover:scale-105 transform duration-200 inline-block"
+                className="inline-block text-primary-600 hover:text-primary-700 font-semibold transition-colors hover:scale-105 transform duration-200"
               >
                 📧 Não recebeu o email de confirmação?
               </Link>

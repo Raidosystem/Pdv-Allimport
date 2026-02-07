@@ -14,6 +14,7 @@ export function useEmpresa() {
     if (!user) return;
 
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('empresas')
         .select('*')
@@ -30,6 +31,8 @@ export function useEmpresa() {
       setEmpresa(data && data.length > 0 ? data[0] : null);
     } catch (error) {
       console.error('Erro ao buscar empresa:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -302,6 +305,8 @@ export function useEmpresa() {
   useEffect(() => {
     if (user) {
       fetchEmpresa();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
@@ -310,12 +315,6 @@ export function useEmpresa() {
       fetchFuncionarios();
     }
   }, [empresa]);
-
-  useEffect(() => {
-    if (user) {
-      setLoading(false);
-    }
-  }, [user]);
 
   return {
     empresa,

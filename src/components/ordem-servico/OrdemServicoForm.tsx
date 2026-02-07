@@ -800,10 +800,11 @@ export function OrdemServicoForm({ ordem, onSuccess, onCancel, onOrdemCriada }: 
         },
         printConfig: {
           cabecalho_personalizado: printSettings.cabecalhoPersonalizado,
-          rodape_linha1: printSettings.rodapeLinha1,
-          rodape_linha2: printSettings.rodapeLinha2,
-          rodape_linha3: printSettings.rodapeLinha3,
-          rodape_linha4: printSettings.rodapeLinha4
+          rodape_linha1: printSettings.rodapeOsLinha1,
+          rodape_linha2: printSettings.rodapeOsLinha2,
+          rodape_linha3: printSettings.rodapeOsLinha3,
+          rodape_linha4: printSettings.rodapeOsLinha4,
+          papel_tamanho: printSettings.papelTamanho,
         }
       });
       

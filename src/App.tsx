@@ -254,20 +254,11 @@ function App() {
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/old" element={<AdminPanel />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/old" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
           
           {/* Loja Pública - SEM proteção de login */}
           <Route path="/loja/:slug" element={<LojaPublicaPage />} />
-          
-          <Route path="/debug-supabase" element={<DebugSupabase />} />
-          <Route path="/debug-supabase" element={<DebugSupabase />} />
-          
-          {/* Página de Teste de Pagamento */}
-          <Route path="/payment-test" element={<PaymentTest />} />
-          
-          {/* Página de Teste do Sistema */}
-          <Route path="/test" element={<TestPage />} />
           
           {/* Página de Assinatura */}
           <Route 
@@ -312,7 +303,13 @@ function App() {
           />
           <Route 
             path="/produtos" 
-            element={<ProductsPage />} 
+            element={
+              <ProtectedRoute>
+                <SubscriptionGuard>
+                  <ProductsPage />
+                </SubscriptionGuard>
+              </ProtectedRoute>
+            } 
           />
           <Route 
             path="/fornecedores" 
@@ -323,10 +320,6 @@ function App() {
                 </SubscriptionGuard>
               </ProtectedRoute>
             } 
-          />
-          <Route 
-            path="/teste" 
-            element={<TestePage />} 
           />
           <Route 
             path="/caixa" 

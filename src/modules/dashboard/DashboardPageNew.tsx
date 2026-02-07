@@ -24,8 +24,6 @@ import {
   Clock,
   TrendingUp,
   CreditCard,
-  Receipt,
-  UserPlus,
   Search,
   History,
   CheckCircle,
@@ -140,9 +138,7 @@ export function DashboardPage() {
       priority: true, // Menu destacado
       options: [
         { title: 'Nova Venda', path: '/vendas', icon: Plus, description: 'Realizar nova venda' },
-        { title: 'Histórico de Vendas', path: '/vendas/historico', icon: History, description: 'Ver vendas realizadas' },
-        { title: 'Cupons Fiscais', path: '/vendas/cupons', icon: Receipt, description: 'Reimprimir cupons' },
-        { title: 'Vendas do Dia', path: '/relatorios/vendas', icon: Calendar, description: 'Relatório diário' }
+        { title: 'Relatório Diário', path: '/relatorios/resumo-diario', icon: Calendar, description: 'Resumo de vendas do dia' }
       ]
     },
     {
@@ -152,10 +148,7 @@ export function DashboardPage() {
       color: 'secondary' as const,
       priority: true, // Menu destacado
       options: [
-        { title: 'Novo Cliente', path: '/clientes/novo', icon: UserPlus, description: 'Cadastrar novo cliente' },
-        { title: 'Lista de Clientes', path: '/clientes', icon: Search, description: 'Ver todos os clientes' },
-        { title: 'Histórico de Compras', path: '/clientes/historico', icon: History, description: 'Consultar vendas por cliente' },
-        { title: 'Relatório Clientes', path: '/relatorios/clientes', icon: BarChart3, description: 'Análises de clientes' }
+        { title: 'Lista de Clientes', path: '/clientes', icon: Search, description: 'Ver e cadastrar clientes' }
       ]
     },
     {
@@ -165,10 +158,7 @@ export function DashboardPage() {
       color: 'info' as const,
       priority: true, // Menu destacado
       options: [
-        { title: 'Novo Produto', path: '/produtos/novo', icon: Plus, description: 'Cadastrar novo produto' },
-        { title: 'Lista de Produtos', path: '/produtos', icon: Search, description: 'Ver todos os produtos' },
-        { title: 'Controle de Estoque', path: '/produtos/estoque', icon: Archive, description: 'Gerenciar estoque' },
-        { title: 'Relatório Produtos', path: '/relatorios/produtos', icon: BarChart3, description: 'Análises de produtos' }
+        { title: 'Lista de Produtos', path: '/produtos', icon: Search, description: 'Ver e cadastrar produtos' }
       ]
     },
     {
@@ -178,8 +168,7 @@ export function DashboardPage() {
       color: 'danger' as const,
       priority: true, // Menu destacado
       options: [
-        { title: 'Nova OS', path: '/ordens-servico/nova', icon: Plus, description: 'Criar nova ordem de serviço' },
-        { title: 'Lista de OS', path: '/ordens-servico', icon: Eye, description: 'Ver todas as ordens' },
+        { title: 'Lista de OS', path: '/ordens-servico', icon: Eye, description: 'Ver e criar ordens de serviço' },
         { title: 'OS em Andamento', path: '/ordens-servico?status=andamento', icon: Clock, description: 'Acompanhar serviços em execução' },
         { title: 'OS Finalizadas', path: '/ordens-servico?status=finalizada', icon: CheckCircle, description: 'Ver serviços concluídos' }
       ]
@@ -192,8 +181,7 @@ export function DashboardPage() {
       priority: true, // Menu destacado
       options: [
         { title: 'Abrir Caixa', path: '/caixa', icon: CreditCard, description: 'Iniciar movimento do caixa' },
-        { title: 'Fechar Caixa', path: '/caixa/fechar', icon: CheckCircle, description: 'Finalizar movimento diário' },
-        { title: 'Histórico', path: '/historico-caixa', icon: History, description: 'Consultar movimentos anteriores' },
+        { title: 'Histórico', path: '/caixa/historico', icon: History, description: 'Consultar movimentos anteriores' },
         { title: 'Relatórios', path: '/relatorios', icon: BarChart3, description: 'Análises financeiras' }
       ]
     },
@@ -237,7 +225,7 @@ export function DashboardPage() {
       priority: true,
       options: [
         { title: 'Backup', path: '/configuracoes', icon: Archive, description: 'Backup do sistema' },
-        { title: 'Usuários', path: '/admin/usuarios', icon: Users, description: 'Gerenciar usuários' }
+        { title: 'Usuários', path: '/admin/ativar-usuarios', icon: Users, description: 'Gerenciar usuários' }
       ]
     })
   }
@@ -253,7 +241,7 @@ export function DashboardPage() {
         { title: 'Empresa', path: '/configuracoes-empresa', icon: Settings, description: 'Configurar empresa' },
         { title: 'Módulos do Sistema', path: '/admin/configuracao-modulos', icon: Settings, description: 'Ativar/desativar módulos (OS, Vendas, etc)' },
         { title: 'Assinatura', path: '/assinatura', icon: Crown, description: 'Gerenciar plano e pagamento' },
-        { title: 'Funcionários', path: '/admin/usuarios', icon: Users, description: 'Gerenciar equipe' }
+        { title: 'Funcionários', path: '/admin/ativar-usuarios', icon: Users, description: 'Gerenciar equipe' }
       ]
     })
   }

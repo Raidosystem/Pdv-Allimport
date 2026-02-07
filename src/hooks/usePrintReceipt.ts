@@ -59,20 +59,15 @@ interface PrintReceiptData {
 }
 
 // Detectar automaticamente o tamanho do papel baseado na impressora do sistema
+// Detectar automaticamente o tamanho do papel
+// Abordagem: verificar a largura da tela como heurística
+// Em dispositivos móveis/tablets → provavelmente impressora térmica
+// Em desktop → verificar se tem impressora térmica ou A4
 function detectPaperSize(): 'A4' | '80mm' | '58mm' {
   try {
-    // Verificar via matchMedia a largura disponível para impressão
-    const isNarrow = window.matchMedia('print and (max-width: 90mm)').matches;
-    const isVeryNarrow = window.matchMedia('print and (max-width: 62mm)').matches;
-    
-    if (isVeryNarrow) return '58mm';
-    if (isNarrow) return '80mm';
-    
-    // Verificar a largura da tela - dispositivos móveis/tablets geralmente usam térmica
-    if (window.innerWidth <= 768) return '80mm';
-    
-    // Fallback: verificar se há impressoras térmicas conhecidas via userAgent
-    // Em ambientes desktop com tela grande, provável que seja A4
+    // Dispositivos com tela pequena geralmente estão conectados a térmicas
+    if (window.innerWidth <= 1024) return '80mm';
+    // Desktop com tela grande → A4
     return 'A4';
   } catch {
     return '80mm';
@@ -89,7 +84,7 @@ function resolvePaperSize(size?: string): 'A4' | '80mm' | '58mm' {
 const PAPER_CONFIGS = {
   '58mm': {
     pageWidth: '58mm',
-    receiptMaxWidth: '54mm',      // Margem interna de 2mm cada lado
+    receiptMaxWidth: '54mm',
     padding: '1mm 2mm',
     fontSize: {
       pequena: '6pt',
@@ -115,7 +110,7 @@ const PAPER_CONFIGS = {
   },
   '80mm': {
     pageWidth: '80mm',
-    receiptMaxWidth: '76mm',      // Margem interna de 2mm cada lado
+    receiptMaxWidth: '76mm',
     padding: '1mm 2mm',
     fontSize: {
       pequena: '7pt',
@@ -140,30 +135,30 @@ const PAPER_CONFIGS = {
     garantiaPad: '2mm',
   },
   'A4': {
-    pageWidth: '210mm',
-    receiptMaxWidth: '80mm',      // Cupom centralizado em A4
-    padding: '5mm',
+    pageWidth: 'auto',
+    receiptMaxWidth: '190mm',
+    padding: '10mm 10mm',
     fontSize: {
-      pequena: '8pt',
-      media: '9pt',
-      grande: '10pt',
+      pequena: '9pt',
+      media: '10pt',
+      grande: '11pt',
     },
-    storeNameSize: '12pt',
-    titleSize: '10pt',
-    itemSize: '9pt',
-    totalSize: '10pt',
-    totalFinalSize: '11pt',
-    infoSize: '8.5pt',
-    footerSize: '8pt',
-    footerInfoSize: '7pt',
-    skuSize: '7pt',
-    logoMax: '120px',
-    logoHeight: '80px',
-    separatorMargin: '3mm 0',
-    itemMargin: '2mm 0',
-    sectionMargin: '4mm 0',
-    garantiaSize: '9pt',
-    garantiaPad: '2.5mm',
+    storeNameSize: '14pt',
+    titleSize: '12pt',
+    itemSize: '10pt',
+    totalSize: '11pt',
+    totalFinalSize: '13pt',
+    infoSize: '9pt',
+    footerSize: '9pt',
+    footerInfoSize: '8pt',
+    skuSize: '8pt',
+    logoMax: '150px',
+    logoHeight: '100px',
+    separatorMargin: '4mm 0',
+    itemMargin: '3mm 0',
+    sectionMargin: '5mm 0',
+    garantiaSize: '10pt',
+    garantiaPad: '3mm',
   },
 } as const;
 
@@ -200,6 +195,11 @@ export function usePrintReceipt() {
 
     const isTermica = paperKey !== 'A4';
 
+    // CSS do @page adaptativo
+    const pageCSS = isTermica 
+      ? `@page { size: ${cfg.pageWidth} auto; margin: 0; }`
+      : `@page { size: A4 portrait; margin: 10mm; }`;
+
     return `
       <!DOCTYPE html>
       <html>
@@ -213,13 +213,10 @@ export function usePrintReceipt() {
               box-sizing: border-box;
             }
 
-            @page {
-              size: ${cfg.pageWidth} auto;
-              margin: 0;
-            }
+            ${pageCSS}
 
             body {
-              font-family: 'Courier New', 'Lucida Console', monospace;
+              font-family: ${isTermica ? "'Courier New', 'Lucida Console', monospace" : "'Segoe UI', Arial, sans-serif"};
               background: white;
               margin: 0;
               padding: 0;
@@ -234,7 +231,7 @@ export function usePrintReceipt() {
 
             @media print {
               html, body {
-                width: ${cfg.pageWidth};
+                ${isTermica ? `width: ${cfg.pageWidth};` : 'width: 100%;'}
                 margin: 0 !important;
                 padding: 0 !important;
               }

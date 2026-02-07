@@ -45,11 +45,7 @@ interface PrintOrdemServicoData {
 // Detectar automaticamente o tamanho do papel
 function detectPaperSize(): 'A4' | '80mm' | '58mm' {
   try {
-    const isNarrow = window.matchMedia('print and (max-width: 90mm)').matches;
-    const isVeryNarrow = window.matchMedia('print and (max-width: 62mm)').matches;
-    if (isVeryNarrow) return '58mm';
-    if (isNarrow) return '80mm';
-    if (window.innerWidth <= 768) return '80mm';
+    if (window.innerWidth <= 1024) return '80mm';
     return 'A4';
   } catch {
     return '80mm';
@@ -113,14 +109,14 @@ export function usePrintOrdemServico() {
         },
         'A4': {
           pageSize: 'A4 portrait',
-          bodyWidth: '80mm',
-          fontSize: '9pt',
-          titleSize: '12pt',
-          subtitleSize: '10pt',
-          sectionTitle: '9.5pt',
-          labelSize: '9pt',
-          footerSize: '8pt',
-          padding: '3mm 4mm',
+          bodyWidth: '190mm',
+          fontSize: '10pt',
+          titleSize: '14pt',
+          subtitleSize: '11pt',
+          sectionTitle: '10.5pt',
+          labelSize: '10pt',
+          footerSize: '9pt',
+          padding: '5mm 10mm',
           borderWidth: '2px',
         },
       } as const;

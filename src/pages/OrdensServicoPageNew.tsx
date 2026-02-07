@@ -614,9 +614,7 @@ export function OrdensServicoPage() {
     const resolvePaper = (size: string): 'A4' | '80mm' | '58mm' => {
       if (size !== 'auto') return size as 'A4' | '80mm' | '58mm'
       try {
-        if (window.matchMedia('print and (max-width: 62mm)').matches) return '58mm'
-        if (window.matchMedia('print and (max-width: 90mm)').matches) return '80mm'
-        if (window.innerWidth <= 768) return '80mm'
+        if (window.innerWidth <= 1024) return '80mm'
         return 'A4'
       } catch { return '80mm' }
     }

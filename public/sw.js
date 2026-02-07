@@ -1,5 +1,5 @@
 // Service Worker para PWA - PDV Allimport
-const CACHE_VERSION = '2.3.3'; // ATUALIZAR SEMPRE QUE FIZER DEPLOY
+const CACHE_VERSION = '2.3.0'; // ATUALIZAR SEMPRE QUE FIZER DEPLOY
 const CACHE_NAME = `pdv-allimport-v${CACHE_VERSION}`;
 const STATIC_CACHE = `pdv-static-v${CACHE_VERSION}`;
 

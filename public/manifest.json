@@ -3,8 +3,8 @@
   "short_name": "RaVal pdv",
   "description": "Sistema completo de ponto de venda com controle de estoque, vendas e relatórios",
   "start_url": "/login",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
@@ -13,7 +13,6 @@
   "categories": ["business", "productivity", "finance"],
   "dir": "ltr",
   "prefer_related_applications": false,
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },

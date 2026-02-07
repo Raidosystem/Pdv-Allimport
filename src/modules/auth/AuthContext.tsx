@@ -38,15 +38,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Definir loading como false imediatamente para não bloquear UI
-    setLoading(false)
-    
-    // Obter sessão de forma assíncrona sem bloquear
+    // Obter sessão antes de liberar a UI
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
     }).catch(err => {
       console.error('Erro ao obter sessão:', err)
+    }).finally(() => {
+      setLoading(false)
     })
 
     // Escutar mudanças de autenticação do Supabase
